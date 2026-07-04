@@ -33,6 +33,7 @@ STATIC_PATHS = [
     "extra/Eduardo_Introduction_Exomindset.mp4",
     "extra/Eduardo_Introduction_Dexian.mp4",
     "extra/Eduardo_Gusmao_Data_Engineer_Video_Intro.mp4",
+    "extra/Eduardo_Gusmao_Engenheiro_de_Dados_Introducao_Video.mp4",
     "static",
 ]
 
@@ -46,6 +47,9 @@ EXTRA_PATH_METADATA = {
     },
     "extra/Eduardo_Gusmao_Data_Engineer_Video_Intro.mp4": {
         "path": "cv/Eduardo_Gusmao_Data_Engineer_Video_Intro.mp4"
+    },
+    "extra/Eduardo_Gusmao_Engenheiro_de_Dados_Introducao_Video.mp4": {
+        "path": "cv/Eduardo_Gusmao_Engenheiro_de_Dados_Introducao_Video.mp4"
     },
     "extra/CNAME": {"path": "CNAME"},
     "extra/css/tokens.css": {"path": "static/css/tokens.css"},
