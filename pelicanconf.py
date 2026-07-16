@@ -41,7 +41,9 @@ STATIC_PATHS = [
 ]
 
 EXTRA_PATH_METADATA = {
-    "extra/CV_Eduardo_Gusmao.pdf": {"path": "cv/CV_Eduardo_Gusmao.pdf"},
+    "extra/CV_Eduardo_Gusmao.pdf": {
+        "path": "cv/CV_Eduardo_Gusmao.pdf",
+    },
     "extra/Eduardo_Introduction_Exomindset.mp4": {
         "path": "cv/Eduardo_Introduction_Exomindset.mp4",
     },
