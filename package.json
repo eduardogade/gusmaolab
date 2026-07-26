@@ -12,16 +12,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eggduzao/gusmaolab.git"
+    "url": "git+https://github.com/eduardogade/gusmaolab.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/eggduzao/gusmaolab/issues"
+    "url": "https://github.com/eduardogade/gusmaolab/issues"
   },
-  "homepage": "https://github.com/eggduzao/gusmaolab#readme",
+  "homepage": "https://github.com/eduardogade/gusmaolab#readme",
   "devDependencies": {
     "prettier": "^3.6.2"
   }

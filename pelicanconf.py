@@ -86,7 +86,7 @@ ARTICLE_SAVE_AS = "blog/{slug}/index.html"
 
 # Social links (use your links or placeholders)
 SOCIAL = (
-    ("GitHub", "https://github.com/eggduzao"),
+    ("GitHub", "https://github.com/eduardogade"),
     ("LinkedIn", "https://www.linkedin.com/in/eduardogade/"),
     ("ResearchGate", "https://www.researchgate.net/profile/Eduardo-Gusmao"),
     ("ORCID", "https://orcid.org/0000-0001-7461-1443"),

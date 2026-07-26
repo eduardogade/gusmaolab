@@ -9,7 +9,7 @@ This page is being rebuilt around my current professional focus: **data engineer
 
 Meanwhile, you can explore my work on GitHub:
 
-[github.com/eggduzao](https://github.com/eggduzao)
+[github.com/eduardogade](https://github.com/eduardogade)
 
 I am actively organizing and publishing projects related to:
 

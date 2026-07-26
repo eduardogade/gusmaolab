@@ -13,7 +13,7 @@ I am currently open to conversations around **Data Engineering**, **Data Platfor
 
 ## Links
 
-- **GitHub:** [github.com/eggduzao](https://github.com/eggduzao)
+- **GitHub:** [github.com/eduardogade](https://github.com/eduardogade)
 - **LinkedIn:** [https://www.linkedin.com/in/eduardogade/](https://www.linkedin.com/in/eduardogade/)
 - **CV / Resume:** [https://www.gusmaolab.org/cv/CV_Eduardo_Gusmao.pdf](https://www.gusmaolab.org/cv/CV_Eduardo_Gusmao.pdf)
 - **Portfolio:** [https://www.gusmaolab.org/portfolio/](https://www.gusmaolab.org/portfolio/)

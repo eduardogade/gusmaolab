@@ -71,7 +71,7 @@ Languages:
   - Chinese - Mandarim (Basic Proficiency).
 
 Current number of pages **fully understood** of
-[James Joyce's Finnegans Wake](https://github.com/eggduzao/gusmaolab/): 77/628
+[James Joyce's Finnegans Wake](https://github.com/eduardogade/gusmaolab/): 77/628
 
 ---
 

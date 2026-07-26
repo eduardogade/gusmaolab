@@ -11,7 +11,7 @@ contributed to.
 
 Placeholder.
 
-eggduzao/Phenoteka
+eduardogade/Phenoteka
 
 ### Stainalyzer
 
@@ -24,19 +24,19 @@ eggduzao/
 
 Placeholder.
 
-eggduzao/LumenNet
+eduardogade/LumenNet
 
 ### TryDInn
 
 A three-tiered architecture for intelligent missing data imputation in EHRs and omics.
 
-eggduzao/TryDINN
+eduardogade/TryDINN
 
 ### Bloom
 
 A deep-learning framework for scHi-C chromatin architecture discovery.
 
-eggduzao/Bloom
+eduardogade/Bloom
 
 ## Finished Products
 
@@ -50,7 +50,7 @@ eggduzao/
 
 HINT.
 
-eggduzao/HINT
+eduardogade/HINT
 
 ### Placeholder
 
@@ -68,7 +68,7 @@ eggduzao/
 
 Placeholder.
 
-eggduzao/SNPet
+eduardogade/SNPet
 "Gusmao_MultiSNP",
 
 ### Placeholder
@@ -113,7 +113,7 @@ eggduzao/
 
 Placeholder.
 
-eggduzao/REDCap-Vizr
+eduardogade/REDCap-Vizr
 dunno/REDCap-Vizr
 
 ### Placeholder

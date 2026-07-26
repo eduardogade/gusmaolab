@@ -2,7 +2,7 @@ Title: Questionnaire - Eduardo Gusmao
 Slug: questionnaire
 Date: 2026-03-29
 
-_Recife, Brazil | +5581981052040 | eduardo@gusmaolab.org | github.com/eggduzao_
+_Recife, Brazil | +5581981052040 | eduardo@gusmaolab.org | github.com/eduardogade_
 
 ## SQL
 

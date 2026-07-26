@@ -50,10 +50,10 @@ jobs:
         uses: peaceiris/actions-gh-pages@v4
         with:
           personal_token: ${{ secrets.PAGES_DEPLOY_TOKEN }}
-          external_repository: eggduzao/eggduzao.github.io
+          external_repository: eduardogade/eduardogade.github.io
           publish_branch: main
           publish_dir: ./output
-          user_name: "eggduzao"
+          user_name: "eduardogade"
           user_email: "eggduzao@gmail.com"
           force_orphan: true
 
