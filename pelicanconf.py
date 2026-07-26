@@ -44,21 +44,21 @@ EXTRA_PATH_METADATA = {
     "extra/CV_Eduardo_Gusmao.pdf": {
         "path": "cv/CV_Eduardo_Gusmao.pdf",
     },
-    "extra/Eduardo_Introduction_Exomindset.mp4": {
-        "path": "cv/Eduardo_Introduction_Exomindset.mp4",
-    },
-    "extra/Eduardo_Introduction_Dexian.mp4": {
-        "path": "cv/Eduardo_Introduction_Dexian.mp4",
-    },
-    "extra/Eduardo_Gusmao_Data_Engineer_Video_Intro.mp4": {
-        "path": "cv/Eduardo_Gusmao_Data_Engineer_Video_Intro.mp4",
-    },
-    "extra/Eduardo_Gusmao_Engenheiro_de_Dados_Introducao_Video.mp4": {
-        "path": "cv/Eduardo_Gusmao_Engenheiro_de_Dados_Introducao_Video.mp4",
-    },
-    "extra/conversion_logix_partial_delivery_5b.zip": {
-        "path": "cv/conversion_logix_partial_delivery_5b.zip",
-    },
+    # "extra/Eduardo_Introduction_Exomindset.mp4": {
+    #    "path": "cv/Eduardo_Introduction_Exomindset.mp4",
+    # },
+    # "extra/Eduardo_Introduction_Dexian.mp4": {
+    #    "path": "cv/Eduardo_Introduction_Dexian.mp4",
+    # },
+    # "extra/Eduardo_Gusmao_Data_Engineer_Video_Intro.mp4": {
+    #    "path": "cv/Eduardo_Gusmao_Data_Engineer_Video_Intro.mp4",
+    # },
+    # "extra/Eduardo_Gusmao_Engenheiro_de_Dados_Introducao_Video.mp4": {
+    #    "path": "cv/Eduardo_Gusmao_Engenheiro_de_Dados_Introducao_Video.mp4",
+    # },
+    # "extra/conversion_logix_partial_delivery_5b.zip": {
+    #    "path": "cv/conversion_logix_partial_delivery_5b.zip",
+    # },
     "extra/CNAME": {"path": "CNAME"},
     "extra/css/tokens.css": {"path": "static/css/tokens.css"},
     "extra/css/dark.css": {"path": "static/css/dark.css"},
