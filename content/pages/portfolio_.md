@@ -18,7 +18,7 @@ eduardogade/Phenoteka
 A lightweight, open-source pipeline for histopathological image segmentation and
 staining quantification.
 
-eggduzao/
+eduardogade/
 
 ### LumenNet
 
@@ -44,7 +44,7 @@ eduardogade/Bloom
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 
 ### HINT
 
@@ -56,13 +56,13 @@ eduardogade/HINT
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 
 ### Placeholder
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 
 ### SNPet
 
@@ -75,37 +75,37 @@ eduardogade/SNPet
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 
 ### Placeholder
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 
 ### Placeholder
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 
 ### Placeholder
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 
 ### Placeholder
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 
 ### Placeholder
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 
 ## Collaborated With
 
@@ -120,70 +120,70 @@ dunno/REDCap-Vizr
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 dunno/
 
 ### Placeholder
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 dunno/
 
 ### Placeholder
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 dunno/
 
 ### Placeholder
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 dunno/
 
 ### Placeholder
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 dunno/
 
 ### Placeholder
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 dunno/
 
 ### Placeholder
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 dunno/
 
 ### Placeholder
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 dunno/
 
 ### Placeholder
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 dunno/
 
 ### Placeholder
 
 Placeholder.
 
-eggduzao/
+eduardogade/
 dunno/
 
 <!-- "reg-gen",
