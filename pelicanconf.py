@@ -122,6 +122,19 @@ GOOGLE_ANALYTICS = ""
 # Default pagination
 DEFAULT_PAGINATION = 10
 
+# TOC (Table of Contents) settings
+MARKDOWN = {
+    "extensions": [
+        "markdown.extensions.extra",
+        "markdown.extensions.toc",
+    ],
+    "extension_configs": {
+        "markdown.extensions.toc": {
+            "toc_depth": "2-3",
+        },
+    },
+}
+
 # Uncomment following line if you want document-relative URLs when developing
 # RELATIVE_URLS = True
 ######################################
