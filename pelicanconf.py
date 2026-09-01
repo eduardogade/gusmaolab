@@ -84,7 +84,7 @@ ARTICLE_SAVE_AS = "blog/{slug}/index.html"
 #     ("Jinja2", "https://palletsprojects.com/p/jinja/"),
 # )
 
-# Social links (use your links or placeholders)
+# Social links
 SOCIAL = (
     ("GitHub", "https://github.com/eduardogade"),
     ("LinkedIn", "https://www.linkedin.com/in/eduardogade/"),
