@@ -1,6 +1,6 @@
 # Open issues
 
-None.
+- ISSUE-0003 — Recruiter-era files remain in public Git history — Medium — opened in P02 — [record](investigations/ISSUE-0003.md)
 
 Add one line per open issue, with a link to its record in `investigations/`:
 
