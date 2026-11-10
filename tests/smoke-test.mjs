@@ -6,6 +6,7 @@ import { join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 import { ENVIRONMENTS } from "../src/design/contract.mjs"
 import { readTokens } from "../src/design/css-tokens.mjs"
+import { siteNavigation } from "../src/navigation/index.ts"
 
 // Pages the build is expected to produce. Extend this list as pages are added.
 const expectedPages = ["index.html"]
@@ -156,10 +157,28 @@ for (const { id } of ENVIRONMENTS) {
   )
 }
 
+// 6. Route contract (P04): every built page is a registered navigation destination, so
+//    no page can exist outside the folder system. The reverse, every destination having a
+//    page, becomes a requirement once section pages are generated.
+const pagePaths = files
+  .filter((file) => file.endsWith(".html"))
+  .map((file) => `/${file.replace(/(^|\/)index\.html$/, "$1")}`)
+for (const path of pagePaths) {
+  check(
+    siteNavigation.resolve(path).found,
+    `built page ${path} is not in the navigation registry`,
+  )
+}
+const destinations = siteNavigation.pagePaths()
+const built = destinations.filter((path) => pagePaths.includes(path)).length
+
 if (failures.length > 0) {
   for (const message of failures) console.error(`FAIL: ${message}`)
   process.exit(1)
 }
 console.log(
   `PASS: dist/ holds ${files.length} file(s), ${totalBytes} bytes: ${files.join(", ")}`,
+)
+console.log(
+  `INFO: ${built} of ${destinations.length} registered destinations have a built page so far`,
 )

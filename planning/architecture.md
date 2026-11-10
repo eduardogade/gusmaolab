@@ -1,6 +1,6 @@
 # Architecture
 
-Status: approved direction recorded in P01. The Astro foundation was set up in P02 and the design-token foundation in P03 (2026-11-10). The visual interface is not implemented.
+Status: approved direction recorded in P01. The Astro foundation was set up in P02, the design-token foundation in P03 and the navigation data model in P04 (2026-11-10). The visual interface is not implemented.
 
 ## Approved direction
 
@@ -22,20 +22,37 @@ Status: approved direction recorded in P01. The Astro foundation was set up in P
 | `site` | `https://www.gusmaolab.org` |
 | `base` | None: the site is served from the domain root |
 | Build output | `dist/` (gitignored) |
-| TypeScript | Extends `astro/tsconfigs/strict`; excludes `dist`, `_backup`, `brand` and the private folders |
+| TypeScript | Extends `astro/tsconfigs/strict` with `erasableSyntaxOnly` (D-040); excludes `dist`, `_backup`, `brand` and the private folders |
 | Diagnostics | `astro check`, using `@astrojs/check` 0.9.12 and TypeScript 6.0.3 |
 | Styles | Native CSS custom properties in `src/styles/`, imported by `BaseLayout` (D-026). No CSS framework or preprocessor. |
 | Environments | `data-environment` on `<html>` via BaseLayout's `environment` prop, or on any element (D-027) |
-| Tests | `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs` and `tests/smoke-test.mjs` (D-032) |
+| Navigation | A typed, declarative registry in `src/navigation/` (D-036–D-039) |
+| Tests | `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs` and `tests/smoke-test.mjs` (D-032, D-040) |
 
-## Repository layout after P03
+## Navigation and Astro routes
+
+Two systems, kept separate:
+
+- **Navigation** (`src/navigation/`) decides which folder tabs exist, their order, URLs and environments, and which folder each URL selects. It is pure data and functions, evaluated at build time, with no client-side router and no server.
+- **Routing** stays Astro's: files in `src/pages/` and, later, content collections produce the pages. The registry creates no pages by itself.
+
+They meet through a contract (`information-architecture.md`, section 12):
+
+1. A page component calls `siteNavigation.resolve(Astro.url.pathname)` at build time. It renders the returned tab rows and passes `state.environment` to BaseLayout, setting no attribute for `core`.
+2. Section pages are generated from the registry's nodes, never from a hand-maintained list.
+3. Content routes are built from collections, registered with an owning folder, and generate their pages from the same list.
+4. The smoke test fails if a built page is not a registered destination.
+5. There is no catch-all route.
+
+## Repository layout after P04
 
 | Path | Role |
 | --- | --- |
 | `src/pages/`, `src/layouts/` | Astro source: the temporary design specimen and one shared layout |
 | `src/styles/` | `tokens.css`, `environments.css` and `global.css` |
 | `src/design/` | The token contract and the CSS token reader, shared by the specimen and the tests |
-| `tests/` | Token, contrast and build-output checks |
+| `src/navigation/` | Navigation types, registry and helpers; `index.ts` exports the compiled `siteNavigation`. Not `src/lib/`, which the root `.gitignore` would hide (KL-11). |
+| `tests/` | Token, contrast, navigation and build-output checks |
 | `.claude/launch.json` | Local preview servers for the Claude desktop app (D-034) |
 | `astro.config.mjs`, `tsconfig.json` | Astro and TypeScript configuration |
 | `package.json`, `package-lock.json`, `.node-version` | npm project, lockfile and Node.js version policy |

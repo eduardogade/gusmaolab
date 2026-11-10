@@ -42,19 +42,56 @@ Statuses: **Passed**, **Failed**, **Untested**, **Not applicable**. An untested 
 | G-P03-10 | Canonical Bearnard assets untouched, none in the output | Passed | 352 of 352 checksums match; smoke test compares `dist/` with them |
 | G-P03-11 | Documentation and records updated | Passed | `planning/design-system.md` and the development and debugging records |
 | G-P03-12 | Committed locally, not pushed | Passed | Branch `feat/gusmaolab-design-system-p03` has no upstream |
-| G-P03-13 | The owner approves the visual design | **Untested** | Awaiting the owner's review of the specimen |
+| G-P03-13 | The owner approves the visual design | Passed | The owner approved the visual direction and overall appearance after reviewing the screenshots (P04 brief, D-041). Refinements remain open. |
+
+## P04 gates
+
+| ID | Gate | Status | Evidence |
+| --- | --- | --- | --- |
+| G-P04-01 | Persistent `development` branch established safely | Passed | Created from `851fdbb`; none existed locally or on `origin`; milestone branches kept |
+| G-P04-02 | Approved hierarchy represented as validated data | Passed | `registry.ts`: 12 + 25 folders; `validateNavigation()` reports no issues |
+| G-P04-03 | Unique identity and destination for every node | Passed | NAV-002, NAV-003 |
+| G-P04-04 | State derived deterministically from URLs | Passed | NAV-004, NAV-005, NAV-011 |
+| G-P04-05 | Three tab levels supported | Passed | NAV-006 (synthetic fixture) |
+| G-P04-06 | Deeper content creates no fourth level | Passed | NAV-009 |
+| G-P04-07 | Immediate-child preview data | Passed | NAV-007, NAV-008 |
+| G-P04-08 | Core and four section environments, inherited | Passed | NAV-012 |
+| G-P04-09 | Invalid configurations detected | Passed | NAV-010, NAV-013 |
+| G-P04-10 | Labels independent of identity and URL | Passed | NAV-014 |
+| G-P04-11 | P03 specimen unchanged; Astro still builds | Passed | `npm run verify`; output byte-identical to P03 |
+| G-P04-12 | Records updated | Passed | `planning/information-architecture.md`, `planning/architecture.md`, `development/` |
+| G-P04-13 | Committed locally on `development`, not pushed | Passed | No upstream for `development` |
+
+### Navigation tests (`tests/navigation.mjs`)
+
+| Test | Result |
+| --- | --- |
+| NAV-001 Top-level order | Pass |
+| NAV-002 Unique identity | Pass |
+| NAV-003 Parent destinations | Pass |
+| NAV-004 Home selection | Pass |
+| NAV-005 Two-level selection | Pass |
+| NAV-006 Three-level selection (synthetic fixture) | Pass |
+| NAV-007 Immediate children | Pass |
+| NAV-008 Leaf behavior | Pass |
+| NAV-009 Deep content ownership (synthetic fixture) | Pass |
+| NAV-010 Unknown route | Pass |
+| NAV-011 URL normalization | Pass |
+| NAV-012 Environment inheritance | Pass |
+| NAV-013 Invalid configuration | Pass |
+| NAV-014 Content independence | Pass |
 
 ## Future gates
 
 | ID | Gate | Source | Status |
 | --- | --- | --- | --- |
 | G-01 | Reproducible static build | P02 | **Passed** in P02: a clean `npm ci` and `npm run verify` in an empty copy rebuilt an identical `index.html` |
-| G-02 | At most three visible tab levels | R-02 | Untested |
-| G-03 | Clicking a tab opens its destination page | Information architecture | Untested |
-| G-04 | Hovering an expandable tab previews only its immediate children | Information architecture | Untested |
+| G-02 | At most three visible tab levels | R-02 | Untested in the UI. The data model enforces it (NAV-006, NAV-009, NAV-013). |
+| G-03 | Clicking a tab opens its destination page | Information architecture | Untested. Every node has a destination (NAV-003); no tab UI or section pages exist yet. |
+| G-04 | Hovering an expandable tab previews only its immediate children | Information architecture | Untested in the UI. The preview data is immediate children only (NAV-007). |
 | G-05 | Active tab shows a V-shaped indicator; inactive tabs stay visible | Information architecture | Untested |
 | G-06 | No persistent sidebar, no breadcrumbs, no file-manager design | Information architecture | Untested |
-| G-07 | Content deeper than level three lives in the third-level folder body | Information architecture | Untested |
+| G-07 | Content deeper than level three lives in the third-level folder body | Information architecture | Untested in the UI. The model keeps the owning folder selected (NAV-009). |
 | G-08 | Shared design system across sections | R-03, R-04 | Untested. P03 built the candidate tokens and four environments, but no section page uses them yet and the owner has not reviewed them. |
 | G-09 | Only Bearnard v1.3 and approved variants appear; no full-resolution masters in the public directory | R-05 | Untested |
 | G-10 | Eight independent editorial collections | R-06 | Untested |

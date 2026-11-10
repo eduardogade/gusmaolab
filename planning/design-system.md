@@ -1,6 +1,6 @@
 # Design system
 
-Status: **first implemented candidate**, P03 (2026-11-10). The owner approved the general direction below. **Every precise value (hex colors, typefaces, sizes, texture strength) is awaiting the owner's visual review** of the specimen on the temporary homepage. Nothing here is locked; change values through a recorded decision.
+Status: **implemented and approved.** Built in P03 (2026-11-10); in P04 the owner reviewed the specimen screenshots and approved the visual direction and overall appearance (D-041). The questions in section 10 remain open refinements. **Deferred visual refinement: typography consolidation** (D-042): the owner would like fewer font families eventually, to be revisited once the folder layout and real pages exist. Change values through a recorded decision.
 
 Source files: `src/styles/tokens.css`, `src/styles/environments.css`, `src/styles/global.css`, and the contract in `src/design/contract.mjs`. The specimen and the tests read the values from those files, so this document can go stale but the page cannot. Regenerate the contrast tables with `node tests/contrast.mjs --markdown`.
 

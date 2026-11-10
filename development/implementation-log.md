@@ -2,6 +2,63 @@
 
 Newest entry first.
 
+## P04 — Navigation Data Model, Hierarchy & Route Configuration — 2026-11-10
+
+**Agent:** Claude Code. **Branch:** `development`, created from `851fdbb` (the P03 commit). **Result:** completed. Nothing was pushed or deployed, and nothing visual changed.
+
+### Starting state (verified)
+
+- HEAD was `feat/gusmaolab-design-system-p03` at `851fdbb`. `npm run verify` passed.
+- No `development` branch existed locally or on `origin`. `git ls-remote --heads origin development` returned nothing; it is a read-only query.
+- One untracked file had appeared since the P03 commit: `clean`, at 18:01:41, byte-identical to the tracked `clean.sh`. No process held it open and nothing else had changed. The brief says to stop on unexplained changes, so the owner was asked and chose to proceed with the file left untouched. It was not run, edited or committed.
+- No dev server running; one worktree; no stashes.
+
+### Changes
+
+- Branch policy (D-035): created `development` from `851fdbb`; the milestone branches stay.
+- New navigation module (D-036–D-039):
+  - `src/navigation/types.ts`
+  - `src/navigation/registry.ts`: 12 top-level and 25 second-level folders, no third level
+  - `src/navigation/navigation.ts`
+  - `src/navigation/index.ts`
+- Tests (D-040):
+  - new `tests/navigation.mjs` (NAV-001 to NAV-014);
+  - `tests/smoke-test.mjs` now fails if a built page is not a registered destination;
+  - `npm test` runs the navigation tests;
+  - `tsconfig.json` adds `erasableSyntaxOnly`.
+- Records:
+  - `planning/information-architecture.md` rewritten;
+  - updated `planning/architecture.md`, `planning/design-system.md` (approval and the deferred typography refinement), `README.md`, `AGENTS.md`, `CLAUDE.md` and the development records.
+- Not changed: the specimen, the styles, `astro.config.mjs`, dependencies, `_backup/` and `brand/`.
+
+### Commands run
+
+- Inspect: `git status`, `git reflog`, `git branch -vv`, `git ls-remote --heads origin development`, `cmp clean clean.sh`, then `git switch -c development 851fdbb`.
+- Probe: a scratch check that Node 26 imports `.ts` from `.mjs` with no warning (`process.features.typescript` is `strip`).
+- Test: `node tests/navigation.mjs`. A negative run on a scratch copy with two top-level sections swapped failed NAV-001 and exited 1, as intended.
+- Format: `npx prettier --check` and `--write` on the new TypeScript and test files only.
+- Validate: `npm run verify`, `git diff --check`, `cmp` of the output against the P03 build, and `shasum -a 256 -c assets/bearnard/SHA256SUMS`.
+
+Every Astro command ran with `ASTRO_TELEMETRY_DISABLED=1`.
+
+### Validation
+
+| Check | Result |
+| --- | --- |
+| `npm run check` | 0 errors, 0 warnings, 0 hints (18 files) |
+| `npm run build` | 1 page; `index.html` and the stylesheet byte-identical to the P03 build |
+| `tests/navigation.mjs` | 14 of 14 pass |
+| Token and contrast tests | Pass, unchanged |
+| Smoke test | Pass; the only built page, `/`, is registered; 1 of 37 destinations has a page |
+| JavaScript in the output | None: no `<script>` and no `.js` files |
+| Bearnard | 352 of 352 checksums match |
+| `_backup/` | Unchanged |
+
+### Problems encountered
+
+- The suggested `src/lib/navigation.ts` would have been silently ignored: `git check-ignore` matched the root `.gitignore`'s `lib/` (KL-11). The module went to `src/navigation/` instead.
+- None of the tests failed during development.
+
 ## P03 — Design Tokens, Palette Architecture & Visual Foundations — 2026-11-10
 
 **Agent:** Claude Code. **Branch:** `feat/gusmaolab-design-system-p03`, from `5fab52c` (end of P02). **Result:** technically completed; the visual design awaits the owner's review. Nothing was pushed or deployed.

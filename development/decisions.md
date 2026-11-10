@@ -16,7 +16,7 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 | D-010 | Keep `docs/`, `cv/`, `publications/`, `scripts/`, `data/` and `hyperglam/` at the root | Provisional | 2026-11-10 |
 | D-011 | Leave Bearnard masters in `brand/bearnard/`; do not copy them into `assets/bearnard/masters/` yet | Deferred | 2026-11-10 |
 | D-012 | Node.js 26 LTS line | Approved in P02 (was Deferred) | 2026-11-10 |
-| D-013 | One branch per prompt, with a checkpoint tag before structural changes | Approved | 2026-11-10 |
+| D-013 | One branch per prompt, with a checkpoint tag before structural changes | Superseded by D-035 (the checkpoint tag stays) | 2026-11-10 |
 | D-014 | Replace the root README with a short pointer; archive the Pelican README | Approved | 2026-11-10 |
 | D-015 | Pin Astro 7.4.8 | Approved | 2026-11-10 |
 | D-016 | npm as the package manager; commit `package-lock.json`; install with `npm ci` | Approved | 2026-11-10 |
@@ -31,13 +31,21 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 | D-025 | Remove two recruiter-era files from the working branch | Approved by the owner | 2026-11-10 |
 | D-026 | Design tokens in three layers of native CSS custom properties, in `src/styles/` | Approved (P03 brief); values Provisional | 2026-11-10 |
 | D-027 | Section environments selected declaratively with `data-environment`; a fixed environment contract | Approved | 2026-11-10 |
-| D-028 | Palette candidate: 24 primitives and their semantic roles | Provisional, awaiting the owner's review | 2026-11-10 |
-| D-029 | Typography from installed system fonts only; no web fonts | Provisional, awaiting the owner's review | 2026-11-10 |
-| D-030 | Flannel lining and paper materials in CSS only | Provisional, awaiting the owner's review | 2026-11-10 |
+| D-028 | Palette candidate: 24 primitives and their semantic roles | Approved in P04 (overall appearance; see D-041) | 2026-11-10 |
+| D-029 | Typography from installed system fonts only; no web fonts | Approved in P04 (overall appearance); consolidation deferred (D-042) | 2026-11-10 |
+| D-030 | Flannel lining and paper materials in CSS only | Approved in P04 (overall appearance; see D-041) | 2026-11-10 |
 | D-031 | Contrast policy: WCAG 2.2 thresholds, enforced by a test; one focus style everywhere | Approved | 2026-11-10 |
 | D-032 | Design checks as plain Node scripts sharing one token reader | Approved | 2026-11-10 |
 | D-033 | The temporary homepage becomes the P03 design specimen | Approved (temporary) | 2026-11-10 |
 | D-034 | Add `.claude/launch.json` for local preview servers | Approved | 2026-11-10 |
+| D-035 | One persistent `development` branch for ordinary prompts; `experiment/*` branches only for isolated work | Approved by the owner (P04 brief) | 2026-11-10 |
+| D-036 | A declarative, typed navigation registry in `src/navigation/` | Approved | 2026-11-10 |
+| D-037 | Canonical URL policy: derived lowercase paths with trailing slashes | Approved; slugs Provisional until first publication | 2026-11-10 |
+| D-038 | At most three visible tab levels; content routes may go deeper | Approved | 2026-11-10 |
+| D-039 | Content routes are registered explicitly with an owning folder | Approved | 2026-11-10 |
+| D-040 | Test TypeScript modules under Node's native type stripping; `erasableSyntaxOnly` | Approved | 2026-11-10 |
+| D-041 | The owner approved the P03 visual direction and overall appearance | Approved by the owner (P04 brief) | 2026-11-10 |
+| D-042 | Typography consolidation: fewer font families | Deferred | 2026-11-10 |
 
 ## Details
 
@@ -57,7 +65,7 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 
 **D-012.** The nodejs.org release index shows that Node.js 26 entered Active LTS ("Lithium") with v26.13.0 on 2026-10-28. P01 described the local v26.12.0 as "not an LTS release". That was true of that build, which predates the LTS designation, but it wrongly suggested the 26 line was not LTS. Policy: `.node-version` says `26`, so version managers and CI pick the latest 26.x release. `package.json` engines are `>=26.12.0 <27`: from the version validated in P02 up to the next major. The local v26.12.0 lacks the v26.12.1 security release; updating it is the owner's call (KL-06).
 
-**D-013.** P01 used `chore/gusmaolab-foundation-p01` and P02 uses `chore/gusmaolab-astro-foundation-p02`. The annotated tag `pre-astro-checkpoint` marks the original state. All are local only.
+**D-013.** P01 used `chore/gusmaolab-foundation-p01` and P02 uses `chore/gusmaolab-astro-foundation-p02`. The annotated tag `pre-astro-checkpoint` marks the original state. All are local only. P03 used `feat/gusmaolab-design-system-p03`; from P04, D-035 replaces per-prompt branches with `development`.
 
 **D-014.** The old README documented the Pelican build. Leaving it at the root would have misled readers once that build was archived. P02 expanded the new README with prerequisites and commands.
 
@@ -100,3 +108,19 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 **D-033.** The P02 foundation page is replaced by a specimen, clearly labeled temporary, so the owner can review the visual language before P05–P09 build on it. Its layout styles are scoped to the page and leave with it; the real homepage composition is a later prompt.
 
 **D-034.** The Claude desktop app starts local preview servers from `.claude/launch.json`. `astro-preview` serves the built `dist/` on port 4322, and `astro-dev` runs the dev server on 4321. Both set `ASTRO_TELEMETRY_DISABLED=1` (KL-14). Other tools can ignore the file.
+
+**D-035.** Separate milestone branches suited preservation and setup, but not routine work. Ordinary prompts now start from the verified `development` HEAD, implement one milestone, validate it and commit with the prompt ID, then continue on the same branch. No `feature/pNN` branches. An `experiment/<topic>` branch (for example `experiment/nucleus` or `experiment/scheduling`), or a worktree, is only for independent, high-risk work that needs isolation. P04 created `development` from `851fdbb`, the P03 commit, after confirming that no `development` branch existed locally or on `origin`. The P01–P03 branches and the `pre-astro-checkpoint` tag stay. Nothing is merged into `main` or pushed without the owner.
+
+**D-036.** The registry (`registry.ts`) is plain typed data, nested in display order, so adding or reordering a tab means editing one declaration and no component. `types.ts` holds the types and `navigation.ts` the pure helpers. `index.ts` compiles the site registry once and fails the build if it is invalid. Hierarchy and paths are derived, never stored twice. IDs are stable and separate from labels and URLs. The data names environments only, never styles. The helpers live in `src/navigation/` rather than the suggested `src/lib/`, because the root `.gitignore` pattern `lib/` would silently ignore `src/lib/` (KL-11). No dependency was added.
+
+**D-037.** `normalizePath()` drops the origin, query and fragment, collapses repeated slashes, resolves dot segments, removes a trailing `index.html` and adds a trailing slash; `/` is the homepage. Paths are case-sensitive, like the static host. A tab's path is its parent's path plus a single lowercase kebab-case slug, so a child cannot escape its parent. The top-level URLs are the brief's suggestions. Second-level slugs were chosen in P04, shortened where a label is long (`talks`, `mentoring`, `awards`, `outreach`, `greenhouse`, `kosmos`). They can change freely until publication; after that, a changed URL needs a redirect. `astro.config.mjs` is unchanged; whether to enforce `trailingSlash: "always"` is for when section pages exist.
+
+**D-038.** The global row is level 1. Validation rejects an entry at level 4, and the resolver never returns more than three rows. URL depth is not limited: content deeper than level three is shown inside the third-level folder's body.
+
+**D-039.** A folder is a tab; a content route is any other real page. Each content route is `{ path, owner }`. The owner must exist, contain the path, and be the deepest folder containing it. Only registered folders and routes resolve. An unknown URL returns `found: false`, with the deepest containing folder as context only, so a matching prefix never makes a page valid. No catch-all route. The production list is empty until content collections generate it (Wave III).
+
+**D-040.** Node.js 26 runs `.ts` files directly by stripping types, so `tests/navigation.mjs` imports the real modules with no test framework, build step or new dependency. Such modules must use only erasable TypeScript: no enums, namespaces or parameter properties. They import types with `import type` and use `.ts` extensions on relative imports, which Astro's base `tsconfig` allows. `erasableSyntaxOnly` in `tsconfig.json` makes `astro check` enforce this.
+
+**D-041.** The P04 brief records that the owner reviewed the P03 screenshots and approved the visual direction and overall appearance. D-028–D-030 move from Provisional to Approved, and gate G-P03-13 passes. The questions in `planning/design-system.md` section 10 remain refinements, not blockers. P04 changed nothing visual.
+
+**D-042.** The owner would eventually like fewer font families. Typography stays as it is (D-029) until the physical folder layout and real content pages exist and the type can be judged in context. Recorded as a deferred refinement; no change in P04.

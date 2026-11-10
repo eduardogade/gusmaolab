@@ -24,7 +24,15 @@ The site is an Astro static project. The only page is a temporary design specime
 
 ## Commands
 
-Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `npm run verify` (diagnostics, build, token and contrast checks, smoke test) before committing. `README.md` lists every command.
+Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `npm run verify` (diagnostics, build, token, contrast and navigation tests, smoke test) before committing. `README.md` lists every command.
+
+## Navigation
+
+- `src/navigation/registry.ts` is the only place that declares tabs, labels, URLs, order and environments (`planning/information-architecture.md`). Components read `siteNavigation` from `src/navigation/index.ts`; they never hardcode labels or URLs.
+- At most three visible tab levels. Deeper pages are content routes registered with an owning folder, never extra tabs. No breadcrumbs, sidebars, dropdown trees or computer-folder icons.
+- Do not add third-level folders that the owner has not approved. Mark test-only data as synthetic.
+- No catch-all route, server rendering or client-side router. Keep `tests/navigation.mjs` passing.
+- Code under `src/navigation/` also runs directly in Node.js: use erasable TypeScript only, `import type` for types, and `.ts` extensions on relative imports (D-040).
 
 ## Styling
 
@@ -51,7 +59,9 @@ Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `n
 ## Version control
 
 - Inspect before modifying, and prefer reversible operations.
-- Work on one branch per prompt. Do not commit directly to `main`.
+- Ordinary prompts work on the persistent `development` branch (D-035). Start from its verified HEAD, check the working tree, implement one milestone, validate it, and commit with the prompt ID. Do not create `feature/pNN` branches.
+- Use an `experiment/<topic>` branch or a worktree only for independent, high-risk work that needs isolation, such as `experiment/nucleus`. Never reset, rebase or overwrite `development`; if it has diverged unexpectedly, stop and report.
+- Do not commit directly to `main`, and do not merge into it without the owner.
 - Never push, force-push, rewrite history, amend pushed commits, or move or delete tags unless the owner explicitly asks.
 - Never run destructive commands such as `git reset --hard`, `git clean -fd` or `rm -rf` on project content. Never discard changes you did not make.
 - The repository is public. Do not commit secrets, credentials or unexpectedly large binary files.

@@ -1,0 +1,443 @@
+// Navigation model tests (P04): NAV-001 to NAV-014. Pure functions only; no build needed.
+// Node.js 26 imports the TypeScript modules directly (native type stripping).
+//
+// Third-level folders and content routes below are SYNTHETIC FIXTURES, labeled as such.
+// They test what the model supports; they are not approved site content.
+import assert from "node:assert/strict"
+import { ENVIRONMENTS } from "../src/design/contract.mjs"
+import {
+  ENVIRONMENT_IDS,
+  MAX_TAB_LEVELS,
+  NavigationConfigError,
+  createNavigation,
+  normalizePath,
+  validateNavigation,
+} from "../src/navigation/navigation.ts"
+import { CONTENT_ROUTES, SECTIONS } from "../src/navigation/registry.ts"
+
+const site = createNavigation(SECTIONS, CONTENT_ROUTES)
+
+// --- Synthetic fixtures ------------------------------------------------------------------
+
+/** A copy of `entries` with `change` applied to the entry with `id`. The registry is not modified. */
+const edit = (entries, id, change) =>
+  entries.map((entry) => {
+    const copy = entry.id === id ? change(entry) : entry
+    return copy.children ? { ...copy, children: edit(copy.children, id, change) } : copy
+  })
+const addChild = (entries, parentId, child) =>
+  edit(entries, parentId, (entry) => ({
+    ...entry,
+    children: [...(entry.children ?? []), child],
+  }))
+
+const SYNTHETIC_THIRD_LEVEL = {
+  id: "synthetic-projects",
+  label: "Synthetic: Projects",
+  slug: "synthetic-projects",
+}
+const fixtureSections = addChild(SECTIONS, "cv-research", SYNTHETIC_THIRD_LEVEL)
+const fixtureRoutes = [
+  { path: "/lecture-notes/berries/synthetic-article/", owner: "lecture-notes-berries" },
+  { path: "/blog/2026/11/10/synthetic-post/", owner: "blog" },
+  {
+    path: "/cv/research/synthetic-projects/synthetic-paper/",
+    owner: "synthetic-projects",
+  },
+]
+const fixture = createNavigation(fixtureSections, fixtureRoutes)
+
+// --- Harness ------------------------------------------------------------------------------
+
+const results = []
+const test = (id, name, fn) => {
+  try {
+    fn()
+    results.push({ id, name, ok: true })
+  } catch (error) {
+    results.push({ id, name, ok: false, error })
+  }
+}
+const ids = (nodes) => nodes.map((node) => node.id)
+const stateOf = (navigation, path) => {
+  const result = navigation.resolve(path)
+  assert.equal(result.found, true, `${path} should resolve`)
+  return result.state
+}
+
+// --- Tests --------------------------------------------------------------------------------
+
+test("NAV-001", "Top-level order", () => {
+  const expected = [
+    ["Home", "/"],
+    ["About", "/about/"],
+    ["Blog", "/blog/"],
+    ["Portfolio", "/portfolio/"],
+    ["Contact", "/contact/"],
+    ["External", "/external/"],
+    ["Schedule", "/schedule/"],
+    ["CV", "/cv/"],
+    ["Lab", "/lab/"],
+    ["Lecture Notes", "/lecture-notes/"],
+    ["Writing", "/writing/"],
+    ["Bearnard's Area", "/bearnards-area/"],
+  ]
+  assert.deepEqual(
+    site.sections.map((node) => [node.label, node.path]),
+    expected,
+  )
+  for (const node of site.sections) assert.equal(node.level, 1)
+})
+
+test("NAV-002", "Unique identity", () => {
+  assert.deepEqual(validateNavigation(SECTIONS, CONTENT_ROUTES), [])
+  const nodes = [...site.nodes.values()]
+  assert.equal(new Set(nodes.map((n) => n.id)).size, nodes.length, "duplicate IDs")
+  assert.equal(new Set(nodes.map((n) => n.path)).size, nodes.length, "duplicate paths")
+  assert.equal(
+    new Set(site.pagePaths()).size,
+    site.pagePaths().length,
+    "duplicate page paths",
+  )
+})
+
+test("NAV-003", "Parent destinations", () => {
+  const parents = [...site.nodes.values()].filter((node) => node.children.length > 0)
+  assert.ok(parents.length > 0)
+  for (const parent of parents) {
+    const state = stateOf(site, parent.path)
+    assert.equal(state.page.kind, "folder")
+    assert.equal(
+      state.page.node.id,
+      parent.id,
+      `${parent.path} opens ${parent.id} itself`,
+    )
+  }
+  // CV opens its overview page, with its children available but none selected.
+  const cv = stateOf(site, "/cv/")
+  assert.equal(cv.page.node.id, "cv")
+  assert.equal(cv.rows.length, 2)
+  assert.equal(cv.rows[1].selectedId, null)
+  assert.deepEqual(ids(cv.rows[1].tabs), ids(site.preview("cv")))
+})
+
+test("NAV-004", "Home selection", () => {
+  const home = stateOf(site, "/")
+  assert.equal(home.page.node.id, "home")
+  assert.deepEqual(ids(home.selection), ["home"])
+  assert.equal(home.rows.length, 1, "only the global row")
+  assert.equal(home.rows[0].selectedId, "home")
+  assert.equal(home.environment, "core")
+})
+
+test("NAV-005", "Two-level selection", () => {
+  const state = stateOf(site, "/cv/research/")
+  assert.deepEqual(ids(state.selection), ["cv", "cv-research"])
+  assert.equal(state.page.node.id, "cv-research", "Research has its own page")
+  assert.deepEqual(
+    state.rows.map((row) => [row.level, row.parent?.id ?? null, row.selectedId]),
+    [
+      [1, null, "cv"],
+      [2, "cv", "cv-research"],
+    ],
+  )
+})
+
+test("NAV-006", "Three-level selection (synthetic fixture)", () => {
+  const state = stateOf(fixture, "/cv/research/synthetic-projects/")
+  assert.deepEqual(ids(state.selection), ["cv", "cv-research", "synthetic-projects"])
+  assert.equal(state.page.node.id, "synthetic-projects")
+  assert.equal(state.rows.length, MAX_TAB_LEVELS)
+  assert.deepEqual(
+    state.rows.map((row) => [row.level, row.selectedId]),
+    [
+      [1, "cv"],
+      [2, "cv-research"],
+      [3, "synthetic-projects"],
+    ],
+  )
+  // Opening Research shows its third-level row with nothing selected.
+  const research = stateOf(fixture, "/cv/research/")
+  assert.equal(research.rows.length, 3)
+  assert.equal(research.rows[2].selectedId, null)
+})
+
+test("NAV-007", "Immediate children", () => {
+  assert.deepEqual(ids(site.preview("cv")), [
+    "cv-teaching",
+    "cv-research",
+    "cv-publications",
+    "cv-talks",
+    "cv-mentoring",
+    "cv-awards",
+    "cv-service",
+    "cv-outreach",
+  ])
+  // A grandchild never appears in its grandparent's preview.
+  assert.ok(!ids(fixture.preview("cv")).includes("synthetic-projects"))
+  assert.deepEqual(ids(fixture.preview("cv-research")), ["synthetic-projects"])
+  for (const child of site.preview("lab")) assert.equal(child.parentId, "lab")
+})
+
+test("NAV-008", "Leaf behavior", () => {
+  assert.deepEqual(site.preview("home"), [])
+  assert.deepEqual(site.preview("blog"), [])
+  assert.deepEqual(site.preview("cv-teaching"), [])
+  assert.deepEqual(fixture.preview("synthetic-projects"), [])
+})
+
+test("NAV-009", "Deep content ownership (synthetic fixture)", () => {
+  const article = stateOf(fixture, "/lecture-notes/berries/synthetic-article/")
+  assert.equal(article.page.kind, "content")
+  assert.equal(article.folder.id, "lecture-notes-berries")
+  assert.deepEqual(ids(article.selection), ["lecture-notes", "lecture-notes-berries"])
+  assert.equal(article.rows.length, 2, "no tab for the article itself")
+  assert.equal(article.environment, "technical")
+
+  const deep = stateOf(fixture, "/cv/research/synthetic-projects/synthetic-paper/")
+  assert.equal(deep.folder.id, "synthetic-projects")
+  assert.equal(deep.rows.length, 3, "never a fourth row")
+
+  // Content depth is not limited to three segments.
+  const post = stateOf(fixture, "/blog/2026/11/10/synthetic-post/")
+  assert.equal(post.page.kind, "content")
+  assert.deepEqual(ids(post.selection), ["blog"])
+  assert.equal(post.rows.length, 1)
+})
+
+test("NAV-010", "Unknown route", () => {
+  const unknown = site.resolve("/cv/this-page-does-not-exist/")
+  assert.equal(unknown.found, false)
+  assert.equal(unknown.context?.id, "cv", "context for a future 404 page only")
+  // A registered article does not make its siblings valid.
+  assert.equal(fixture.resolve("/lecture-notes/berries/not-registered/").found, false)
+  assert.equal(site.resolve("/lecture-notes/berries/synthetic-article/").found, false)
+  assert.equal(site.resolve("/does-not-exist/").found, false)
+})
+
+test("NAV-011", "URL normalization", () => {
+  const cases = [
+    ["/cv/research", "/cv/research/"],
+    ["/cv/research/?tab=talks#top", "/cv/research/"],
+    ["/cv//research///", "/cv/research/"],
+    ["//cv/", "/cv/"],
+    ["cv/research", "/cv/research/"],
+    ["/cv/index.html", "/cv/"],
+    ["/cv/./research/../research/", "/cv/research/"],
+    ["https://www.gusmaolab.org/lab/people?x=1", "/lab/people/"],
+    ["", "/"],
+    ["/", "/"],
+    ["/?q=1#x", "/"],
+  ]
+  for (const [input, expected] of cases)
+    assert.equal(normalizePath(input), expected, input)
+  for (const variant of [
+    "/cv/research",
+    "/cv/research/?x=1",
+    "/cv/research#y",
+    "/cv//research/",
+  ]) {
+    assert.deepEqual(
+      ids(stateOf(site, variant).selection),
+      ["cv", "cv-research"],
+      variant,
+    )
+  }
+  // Paths are case-sensitive, like the static host: /CV/ is not a known page.
+  assert.equal(site.resolve("/CV/").found, false)
+})
+
+test("NAV-012", "Environment inheritance", () => {
+  const expected = {
+    home: "core",
+    about: "core",
+    blog: "core",
+    contact: "core",
+    external: "core",
+    schedule: "core",
+    portfolio: "scientific",
+    cv: "scientific",
+    "cv-research": "scientific",
+    "lab-people": "scientific",
+    "lecture-notes-berries": "technical",
+    "writing-book-club": "literary",
+    "bearnards-area-photos": "personal",
+  }
+  for (const [id, environment] of Object.entries(expected)) {
+    assert.equal(site.node(id).environment, environment, id)
+  }
+  assert.equal(fixture.node("synthetic-projects").environment, "scientific")
+  // An override applies to the node and is inherited below it.
+  const overridden = createNavigation(
+    addChild(
+      edit(SECTIONS, "cv-research", (e) => ({ ...e, environment: "literary" })),
+      "cv-research",
+      {
+        id: "synthetic-essay",
+        label: "Synthetic: Essay",
+        slug: "synthetic-essay",
+      },
+    ),
+  )
+  assert.equal(overridden.node("cv-research").environment, "literary")
+  assert.equal(overridden.node("synthetic-essay").environment, "literary")
+  assert.equal(overridden.node("cv-teaching").environment, "scientific")
+  // The environment names match the CSS environments, plus the core default.
+  assert.deepEqual(ENVIRONMENT_IDS, ["core", ...ENVIRONMENTS.map((env) => env.id)])
+})
+
+test("NAV-013", "Invalid configuration", () => {
+  const rejects = (sections, routes, pattern, why) => {
+    const issues = validateNavigation(sections, routes)
+    assert.ok(
+      issues.some((issue) => pattern.test(issue)),
+      `${why}: expected ${pattern}, got ${JSON.stringify(issues)}`,
+    )
+  }
+  const tab = (id, slug, extra = {}) => ({
+    id,
+    label: `Synthetic ${id}`,
+    slug,
+    ...extra,
+  })
+  rejects([], [], /non-empty/, "empty registry")
+  rejects(
+    [tab("a", "a"), tab("a", "b")],
+    [],
+    /id "a" is used more than once/,
+    "duplicate ID",
+  )
+  rejects(
+    [tab("a", "same"), tab("b", "same")],
+    [],
+    /path \/same\/ is used/,
+    "duplicate path",
+  )
+  rejects([{ id: "a", label: " ", slug: "a" }], [], /needs a label/, "missing label")
+  rejects([tab("a", "Not Kebab")], [], /lowercase kebab-case segment/, "invalid slug")
+  rejects(
+    [tab("a", "a/b")],
+    [],
+    /lowercase kebab-case segment/,
+    "slug escaping its parent",
+  )
+  rejects([tab("A b", "a")], [], /needs an id/, "invalid ID")
+  rejects(
+    [tab("a", "a", { environment: "scientifc" })],
+    [],
+    /unknown environment/,
+    "bad environment",
+  )
+  rejects(
+    [tab("a", "a", { enviroment: "core" })],
+    [],
+    /unknown field "enviroment"/,
+    "typo in a field",
+  )
+  rejects(
+    [tab("a", "a", { children: [tab("b", "")] })],
+    [],
+    /empty slug/,
+    "child with an empty slug",
+  )
+  rejects(
+    [
+      tab("a", "a", {
+        children: [
+          tab("b", "b", { children: [tab("c", "c", { children: [tab("d", "d")] })] }),
+        ],
+      }),
+    ],
+    [],
+    /tab level 4/,
+    "fourth tab level",
+  )
+  const loop = tab("loop", "loop")
+  loop.children = [loop]
+  rejects([loop], [], /cycle/, "cycle")
+  const shared = tab("shared", "shared")
+  rejects(
+    [tab("a", "a", { children: [shared] }), tab("b", "b", { children: [shared] })],
+    [],
+    /more than one place/,
+    "reused entry",
+  )
+
+  const sections = [
+    tab("home", ""),
+    tab("notes", "notes", { children: [tab("berries", "berries")] }),
+  ]
+  rejects(
+    sections,
+    [{ path: "/notes/x/", owner: "missing" }],
+    /unknown owner/,
+    "unknown owner",
+  )
+  rejects(
+    sections,
+    [{ path: "/elsewhere/x/", owner: "berries" }],
+    /outside its owner/,
+    "route outside its owner",
+  )
+  rejects(
+    sections,
+    [{ path: "/notes/berries/x/", owner: "notes" }],
+    /lies inside "berries"/,
+    "owner is not the deepest folder",
+  )
+  rejects(
+    sections,
+    [{ path: "/notes/berries/", owner: "notes" }],
+    /duplicates the folder/,
+    "route duplicating a folder",
+  )
+  rejects(
+    sections,
+    [{ path: "/notes/x", owner: "notes" }],
+    /not a canonical path/,
+    "non-canonical route path",
+  )
+  rejects(
+    sections,
+    [
+      { path: "/notes/x/", owner: "notes" },
+      { path: "/notes/x/", owner: "notes" },
+    ],
+    /more than once/,
+    "duplicate route",
+  )
+
+  assert.throws(
+    () => createNavigation([tab("a", "a"), tab("a", "a")]),
+    NavigationConfigError,
+  )
+})
+
+test("NAV-014", "Content independence", () => {
+  const relabeled = createNavigation(
+    edit(SECTIONS, "cv", (e) => ({ ...e, label: "Curriculum Vitae" })),
+  )
+  assert.equal(relabeled.node("cv").label, "Curriculum Vitae")
+  assert.equal(relabeled.node("cv").path, "/cv/")
+  assert.deepEqual(ids(stateOf(relabeled, "/cv/").selection), ["cv"])
+  // Reordering sections changes display order only, never identities or URLs.
+  const reordered = createNavigation([...SECTIONS].reverse())
+  assert.equal(reordered.sections[0].id, "bearnards-area")
+  for (const node of site.nodes.values())
+    assert.equal(reordered.node(node.id).path, node.path)
+})
+
+// --- Report -------------------------------------------------------------------------------
+
+for (const r of results) {
+  console.log(`${r.ok ? "PASS" : "FAIL"} ${r.id} ${r.name}`)
+  if (!r.ok) console.error(`     ${r.error.message.split("\n").join("\n     ")}`)
+}
+const failed = results.filter((r) => !r.ok).length
+if (failed > 0) {
+  console.error(`FAIL: ${failed} of ${results.length} navigation tests`)
+  process.exit(1)
+}
+console.log(
+  `PASS: ${results.length} navigation tests; ${site.sections.length} sections, ${site.nodes.size} folders`,
+)

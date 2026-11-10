@@ -18,7 +18,7 @@ Source for [www.gusmaolab.org](https://www.gusmaolab.org), Eduardo Gade Gusmao's
 | `npm run check` | Run Astro and TypeScript diagnostics |
 | `npm run build` | Build the static site into `dist/` |
 | `npm run preview` | Serve the built `dist/` locally (port 4321 by default) |
-| `npm test` | Check the design tokens and color contrast, then smoke-test the built output (run `npm run build` first) |
+| `npm test` | Check the design tokens, color contrast and navigation model, then smoke-test the built output (run `npm run build` first) |
 | `npm run verify` | Run `check`, `build` and `test` in one go |
 | `node tests/contrast.mjs --markdown` | Print every contrast ratio as Markdown tables |
 
