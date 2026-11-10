@@ -1,0 +1,13 @@
+{
+  "extends": "astro/tsconfigs/strict",
+  "include": [".astro/types.d.ts", "**/*"],
+  "exclude": [
+    "dist",
+    "_backup",
+    "brand",
+    "_books",
+    "_papers",
+    "_references",
+    "_reports"
+  ]
+}

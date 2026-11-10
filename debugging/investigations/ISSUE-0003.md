@@ -50,8 +50,4 @@ Pending the owner's decision. Removing the files from the current branch does **
 
 ## Relevant commits
 
-The P02 privacy commit on `chore/gusmaolab-astro-foundation-p02` removed both files from the working branch. To find it:
-
-```bash
-git log --diff-filter=D --oneline -- _backup/pelican-legacy/content/extra/conversion_logix_partial_delivery_5b.zip
-```
+`d94f170` — chore(privacy): remove two recruiter-era files from the legacy archive [P02], on `chore/gusmaolab-astro-foundation-p02`. It removes them from the working branch only.

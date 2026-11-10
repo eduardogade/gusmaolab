@@ -1,6 +1,6 @@
 # Architecture
 
-Status: approved direction recorded in P01 (2026-11-10). Astro is **not installed yet**. P02 initializes it.
+Status: approved direction recorded in P01. The Astro foundation was set up in P02 (2026-11-10). The visual interface is not implemented.
 
 ## Approved direction
 
@@ -13,10 +13,27 @@ Status: approved direction recorded in P01 (2026-11-10). Astro is **not installe
 - A separate external service for booking where necessary. Booking credentials never go in the repository.
 - Deployment to GitHub Pages.
 
-## Repository layout after P01
+## Astro configuration
+
+| Setting | Value |
+| --- | --- |
+| Astro | 7.4.8, pinned exactly |
+| Output | `static`, with no adapter and no server rendering |
+| `site` | `https://www.gusmaolab.org` |
+| `base` | None: the site is served from the domain root |
+| Build output | `dist/` (gitignored) |
+| TypeScript | Extends `astro/tsconfigs/strict`; excludes `dist`, `_backup`, `brand` and the private folders |
+| Diagnostics | `astro check`, using `@astrojs/check` 0.9.12 and TypeScript 6.0.3 |
+| Smoke test | `tests/smoke-test.mjs` checks `dist/` |
+
+## Repository layout after P02
 
 | Path | Role |
 | --- | --- |
+| `src/pages/`, `src/layouts/` | Astro source: one temporary homepage and one shared layout |
+| `tests/` | Smoke test for the built output |
+| `astro.config.mjs`, `tsconfig.json` | Astro and TypeScript configuration |
+| `package.json`, `package-lock.json`, `.node-version` | npm project, lockfile and Node.js version policy |
 | `planning/` | Requirements and specifications |
 | `development/` | Roadmap, current state, decisions, logs, acceptance gates, releases |
 | `debugging/` | Issues, regressions, known limitations, investigations |
@@ -26,26 +43,24 @@ Status: approved direction recorded in P01 (2026-11-10). Astro is **not installe
 | `docs/` | Pelican-era planning notes; several are empty placeholders |
 | `cv/`, `publications/`, `scripts/`, `data/`, `hyperglam/` | Retained from the old plan; every tracked file in them is empty |
 | `.github/workflows/` | Eight placeholder workflows, all commented out. No active workflow. |
-| `package.json`, `.pre-commit-config.yaml`, `.editorconfig`, `.prettierrc` | Repository tooling (Prettier, pre-commit) |
+| `.pre-commit-config.yaml`, `.editorconfig`, `.prettierrc`, `.prettierignore` | Formatting and commit-hook configuration |
 | `_books/`, `_papers/`, `_references/`, `_reports/` | Private workspace, gitignored. Never commit. |
 | `backup/`, `releases/`, `resources/`, `viz/`, `_logo/` | Empty, untracked placeholder folders |
 
-Astro's own files (`src/`, `public/`, configuration and lockfile) are added in P02.
+`src/components/`, `src/styles/` and `public/` do not exist yet (D-019).
 
 ## Deployment
 
-- **Legacy:** `_backup/pelican-legacy/.github/workflows/deploy.yml` built Pelican on every push to `main` and force-pushed the output to `eduardogade/eduardogade.github.io` using the `PAGES_DEPLOY_TOKEN` secret. The custom domain came from `content/extra/CNAME` (`www.gusmaolab.org`). The workflow is archived and inactive, so merging this work will not trigger a deployment.
-- **New:** **To be decided**, in P02 or later: target repository, workflow, and whether the CNAME and token carry over.
+- **Legacy:** `_backup/pelican-legacy/.github/workflows/deploy.yml` built Pelican on every push to `main` and force-pushed the output to `eduardogade/eduardogade.github.io` using the `PAGES_DEPLOY_TOKEN` secret. The custom domain came from `content/extra/CNAME` (`www.gusmaolab.org`). The workflow is archived and inactive.
+- **New:** **To be decided**: target repository, workflow, and whether the CNAME and token carry over (D-005). P02 changed nothing related to deployment.
 
 ## Local tooling (checked 2026-11-10)
 
 | Tool | Found |
 | --- | --- |
-| Node.js | v26.12.0 (Homebrew), not an LTS release |
+| Node.js | v26.12.0 (Homebrew). The 26 line has been LTS since v26.13.0 (2026-10-28); this build predates that and lacks the v26.12.1 security release. |
 | npm | 11.20.0. pnpm, yarn and bun are not installed. |
 | Git | 2.56.0 |
 | Python | 3.12.2 via pyenv (`.python-version` says 3.12) |
 | Quarto | 1.10.19 |
 | conda | 25.11.1. The pre-commit hook runs from the micromamba environment `web`, defined by the archived `environment.yml`. |
-
-On 2026-11-10 the npm registry listed `astro@7.4.8` as the latest release, requiring Node `>=22.23.4` and npm `>=9.6.5`. `create-astro` was at 5.3.1. The local versions meet those ranges. P02 chooses and pins the versions to use, for example an LTS Node line for CI.

@@ -230,10 +230,13 @@ cache/
 # Cache Data
 data/viz_cache/
 
-# node / js
+# node / js (package-lock.json is committed for reproducible installs, P02)
 node_modules/
-package-lock.json
 npm-debug.log*
+
+# Astro
+.astro/
+.env.production
 
 # Ignore all files inside Flex, but keep the submodule pointer
 themes/Flex/*

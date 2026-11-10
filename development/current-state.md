@@ -1,51 +1,66 @@
 # Current state
 
-Last updated: P01, 2026-11-10. Verified facts only.
+Last updated: P02, 2026-11-10. Verified facts only.
 
 ## Framework
 
-- **No framework is active.** The Pelican site is archived in `_backup/pelican-legacy/` and does not build from the repository root.
-- **Astro is not installed.** There are no Astro files, dependencies or lockfile yet.
-- **The new website is not implemented.** P01 pushed nothing and triggered no deployment.
+- **Astro 7.4.8** is installed and pinned. The repository root is the Astro project, with static output.
+- Only a temporary foundation page exists (`src/pages/index.astro`). **The website's visual interface is not implemented.**
+- The archived Pelican site in `_backup/pelican-legacy/` is not built.
+- Nothing has been deployed, and no deployment workflow is active.
+
+## Toolchain
+
+| Item | Value |
+| --- | --- |
+| Node.js policy | The 26 LTS line: `.node-version` says `26`; `package.json` engines `>=26.12.0 <27` |
+| Local Node.js | v26.12.0. Compatible, but it predates the first 26 LTS release (v26.13.0) and lacks the v26.12.1 security release. |
+| Package manager | npm 11.20.0. `package-lock.json` is committed; install with `npm ci`. |
+| Dependencies | `astro` 7.4.8 |
+| Dev dependencies | `@astrojs/check` 0.9.12, `typescript` 6.0.3, `prettier` 3.6.2 (range `^3.6.2`) |
+| TypeScript | Extends `astro/tsconfigs/strict`; excludes `dist`, `_backup`, `brand` and the private folders |
+| Astro config | `site: "https://www.gusmaolab.org"`, `output: "static"`, no `base`, no adapter |
+
+## npm scripts
+
+`dev`, `build`, `preview`, `check`, `test` (smoke test of `dist/`), `verify` (`check`, then `build`, then `test`), `astro` and `format`.
+
+## Build status
+
+`npm run verify` passes: `astro check` reports 0 errors, 0 warnings and 0 hints; `astro build` builds 1 page; the smoke test passes. `dist/` holds only `index.html` (437 bytes). A clean `npm ci` in an empty copy of the committed files reproduces the same `index.html` byte for byte.
 
 ## Repository
 
 | Item | Value |
 | --- | --- |
-| Working branch | `chore/gusmaolab-foundation-p01`, local only |
-| Base | `main` at `6eedf02a9e8343a77871ff82ae0c8cded3d028a1` |
-| Recovery reference | Annotated tag `pre-astro-checkpoint` → `6eedf02`, local only |
-| P01 commits | `e33e333` (archive), then the commit that adds these records |
-| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, a **public** repository. 20 other remote branches exist; none were checked out or changed. |
-| Submodule | Flex theme, now at `_backup/pelican-legacy/themes/Flex`, commit `bbf8768` |
+| P02 branch | `chore/gusmaolab-astro-foundation-p02`, local only, branched from `4096691` (end of P01) |
+| P02 commits | `d94f170` (privacy removal), then the Astro foundation commit |
+| P01 branch | `chore/gusmaolab-foundation-p01` at `4096691` |
+| Recovery tag | `pre-astro-checkpoint` → `6eedf02`, local only |
+| `origin/main` | `757c95d`: two commits after the checkpoint that add three files under `__bak9/`. They do not overlap with P01 or P02 changes; integrate them before merging into `main`. |
+| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, public. Nothing was pushed in P01 or P02. |
 
 ## Assets
 
-- The 352 Bearnard images are in `brand/bearnard/`, gitignored and unchanged by P01.
-- Canonical master: `brand/bearnard/bearnard_v1.3.png`, SHA-256 `71040bf6…d432a`.
-- Inventory and checksums: `assets/bearnard/`.
-- External backup `GusmaoLab-pre-astro-backup.zip`, in the folder that contains the repository: 1,172,441,521 bytes, created 2026-11-10 13:24 (−03:00). It passed `unzip -t` and holds byte-identical copies of every Bearnard image.
+- The 352 Bearnard images in `brand/bearnard/` are unchanged and gitignored; every checksum in `assets/bearnard/SHA256SUMS` matches.
+- The external backup `GusmaoLab-pre-astro-backup.zip` is unchanged.
 
 ## Legacy archive
 
-Archived with `git mv` as 183 pure renames: the Pelican configuration and tooling (`pelicanconf.py`, `publishconf.py`, `tasks.py`, `Makefile`, `requirements.txt`, `environment.yml`, `environment.txt`), the old `README.md`, `content/`, `content-pt/`, `themes/` (including the Flex submodule), `static/`, `tree.txt`, `cloc.txt` and `.github/workflows/deploy.yml`.
-
-## Records
-
-`planning/`, `development/`, `debugging/`, `AGENTS.md`, `CLAUDE.md` and a new root `README.md` exist. The planning documents are summaries with marked gaps.
+Unchanged since P01, except that P02 removed two recruiter-era files with the owner's authorization. Their exposure in the public history is still open (ISSUE-0003).
 
 ## Completed prompts
 
-P01.
+P01, P02.
 
 ## Blockers
 
-None for P02.
+None for P03.
 
 ## Waiting for the owner
 
-- Node.js and package manager pins (P02).
-- The new deployment design: target repository, CNAME and token.
+- Update the local Node.js to the latest 26.x LTS release (KL-06).
+- Decide what to do about the recruiter-era files in the public history (ISSUE-0003).
+- The deployment design: target repository, CNAME and token (D-005).
 - How to store Bearnard masters (D-011).
-- A review of potentially sensitive tracked files (`debugging/known-limitations.md`, KL-08).
 - Approval of the 204 Codex expression candidates.

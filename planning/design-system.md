@@ -1,6 +1,6 @@
 # Design system
 
-Status: summary written in P01 (2026-11-10). Only the direction is approved. Concrete values are **To be supplied**, expected in Wave II (P05–P09).
+Status: summary written in P01 (2026-11-10). Only the direction is approved. Concrete values are **To be supplied**, starting with P03 (design tokens, palette architecture and visual foundations).
 
 ## Identity
 

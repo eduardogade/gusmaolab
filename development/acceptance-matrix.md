@@ -14,11 +14,23 @@ Statuses: **Passed**, **Failed**, **Untested**, **Not applicable**. An untested 
 | G-P01-06 | Planning, development and debugging records and agent files exist | Passed | See `development/implementation-log.md` |
 | G-P01-07 | Nothing pushed | Passed | No push was run; the P01 branch has no upstream |
 
+## P02 gates
+
+| ID | Gate | Status | Evidence |
+| --- | --- | --- | --- |
+| G-P02-01 | Astro installed and pinned | Passed | `astro` 7.4.8 in `package.json` and `package-lock.json` |
+| G-P02-02 | Diagnostics pass | Passed | `astro check`: 0 errors, 0 warnings, 0 hints |
+| G-P02-03 | Production build succeeds | Passed | `astro build`: 1 page |
+| G-P02-04 | Output holds only the foundation page | Passed | `dist/` contains only `index.html` (437 bytes); the smoke test passes; preview returns 404 for `_backup/` and `brand/bearnard/` paths |
+| G-P02-05 | Clean, reproducible install | Passed | `npm ci` in an empty copy: 0 vulnerabilities, no warnings |
+| G-P02-06 | Bearnard masters unchanged | Passed | 352 of 352 checksums match |
+| G-P02-07 | No deployment | Passed | No active workflow; nothing pushed |
+
 ## Future gates
 
 | ID | Gate | Source | Status |
 | --- | --- | --- | --- |
-| G-01 | Reproducible static build | P02 | Untested |
+| G-01 | Reproducible static build | P02 | **Passed** in P02: a clean `npm ci` and `npm run verify` in an empty copy rebuilt an identical `index.html` |
 | G-02 | At most three visible tab levels | R-02 | Untested |
 | G-03 | Clicking a tab opens its destination page | Information architecture | Untested |
 | G-04 | Hovering an expandable tab previews only its immediate children | Information architecture | Untested |

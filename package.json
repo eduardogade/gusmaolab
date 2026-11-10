@@ -1,14 +1,24 @@
 {
   "name": "gusmaolab",
   "version": "1.0.0",
+  "private": true,
   "description": "This is the source folder for https://www.gusmaolab.org",
-  "main": "index.js",
   "directories": {
     "doc": "docs"
   },
+  "type": "module",
+  "engines": {
+    "node": ">=26.12.0 <27"
+  },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "format": "prettier --write \"**/*.{md,markdown,yml,yaml,json}\""
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "check": "astro check",
+    "test": "node tests/smoke-test.mjs",
+    "verify": "npm run check && npm run build && npm test",
+    "astro": "astro",
+    "format": "prettier --write \"**/*.{md,markdown,yml,yaml,json,mjs,ts,css}\""
   },
   "repository": {
     "type": "git",
@@ -16,13 +26,20 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "type": "commonjs",
+  "license": "SEE LICENSE IN LICENSE",
   "bugs": {
     "url": "https://github.com/eduardogade/gusmaolab/issues"
   },
   "homepage": "https://github.com/eduardogade/gusmaolab#readme",
+  "dependencies": {
+    "astro": "7.4.8"
+  },
   "devDependencies": {
-    "prettier": "^3.6.2"
+    "@astrojs/check": "0.9.12",
+    "prettier": "^3.6.2",
+    "typescript": "6.0.3"
+  },
+  "allowScripts": {
+    "fsevents": false
   }
 }

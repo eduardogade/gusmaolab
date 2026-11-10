@@ -6,7 +6,7 @@ Shared rules for every coding agent in this repository: Claude Code, Codex and o
 
 GusmaoLab is Eduardo Gade Gusmao's personal website and publishing ecosystem: computational biology, bioinformatics, research, software engineering, teaching, literature and personal interests. Scientific rigor and visual humor go together.
 
-The site is being rebuilt with Astro. The old Pelican site is archived in `_backup/pelican-legacy/`.
+The site is an Astro static project. Only a temporary foundation page exists; the visual interface is not implemented yet. The old Pelican site is archived in `_backup/pelican-legacy/`.
 
 ## Where things are
 
@@ -22,9 +22,13 @@ The site is being rebuilt with Astro. The old Pelican site is archived in `_back
 | Plan | `development/roadmap.md` |
 | Bearnard assets | `assets/bearnard/README.md` |
 
+## Commands
+
+Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `npm run verify` (diagnostics, build, smoke test) before committing. `README.md` lists every command.
+
 ## Invariants
 
-- **Architecture:** Astro, static by default, TypeScript where appropriate, semantic HTML and CSS, minimal isolated client-side JavaScript, Markdown-first authoring, GitHub Pages. Booking uses an external service where necessary.
+- **Architecture:** Astro, static by default, TypeScript where appropriate, semantic HTML and CSS, minimal isolated client-side JavaScript, Markdown-first authoring, GitHub Pages. Booking uses an external service where necessary. Add dependencies only through a recorded decision.
 - **Physical folders:** real paper-folder tabs with at most three visible levels. Clicking a tab opens its page, and hovering previews only its immediate children. The active tab has a V-shaped indicator and inactive tabs stay visible. No persistent sidebar, no breadcrumbs, no file-manager look. Deeper content goes in the body of the third-level folder.
 - **Approved requirements change only through a recorded decision** in `development/decisions.md`, never as a side effect of implementation or debugging.
 
@@ -43,6 +47,8 @@ The site is being rebuilt with Astro. The old Pelican site is archived in `_back
 - Never push, force-push, rewrite history, amend pushed commits, or move or delete tags unless the owner explicitly asks.
 - Never run destructive commands such as `git reset --hard`, `git clean -fd` or `rm -rf` on project content. Never discard changes you did not make.
 - The repository is public. Do not commit secrets, credentials or unexpectedly large binary files.
+- Commit `package-lock.json`. Never commit `node_modules/`, `dist/` or `.astro/`.
+- The root `.gitignore` has Python-template patterns, such as `lib/` and `build/`, that match folders at any depth. Check new folders with `git check-ignore -v <path>`.
 - Never commit the private workspace folders `_books/`, `_papers/`, `_references/` or `_reports/`.
 - `_backup/` is a read-only archive, excluded from pre-commit hooks. Do not edit it.
 - Do not bypass hooks with `--no-verify` unless the owner explicitly asks.

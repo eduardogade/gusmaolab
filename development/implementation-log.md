@@ -2,6 +2,70 @@
 
 Newest entry first.
 
+## P02 — Astro Foundation, Development Environment & Reproducible Static Build — 2026-11-10
+
+**Agent:** Claude Code. **Branch:** `chore/gusmaolab-astro-foundation-p02`, from `4096691` (end of P01). **Result:** completed. Nothing was pushed or deployed.
+
+### Starting state (verified)
+
+- The P01 branch was clean at `4096691`, and the tag `pre-astro-checkpoint` pointed to `6eedf02`. One worktree. Bearnard checksums and the external backup were unchanged.
+- No agent process was working in the repository; Codex and the other Claude sessions were idle.
+- `origin/main` had moved to `757c95d` through a fetch at 14:38: two commits adding three files under `__bak9/`, unrelated to P01 or P02.
+
+### Version research
+
+- nodejs.org release index: Node.js 26 entered LTS ("Lithium") with v26.13.0 on 2026-10-28. v26.12.1 (2026-10-21) was a security release. The local v26.12.0 (2026-10-14) predates both.
+- npm registry: `astro` `latest` is 7.4.8, published 2026-11-09 and not deprecated, with engines node `>=22.23.4` and npm `>=9.6.5`.
+- `@astrojs/check` 0.9.12 requires TypeScript `^5 || ^6`. The latest TypeScript is 7.0.2, so the latest 6.x release, 6.0.3, was chosen.
+- Astro 7.4.8's official `examples/minimal` was the reference for `package.json`, `astro.config.mjs` and `tsconfig.json`.
+
+### Changes
+
+1. Commit `d94f170`: removed two recruiter-era files with `git rm`, after confirming byte-identical backup copies, and opened ISSUE-0003.
+2. The Astro foundation commit:
+   - `package.json`: `private`, `type: module`, `engines`, scripts and dependencies. Removed the obsolete `main` field and the placeholder `test` script that always failed. The license field now reads `SEE LICENSE IN LICENSE`. `allowScripts` denies fsevents' build script.
+   - `package-lock.json` is now committed; `.gitignore` no longer ignores it and now ignores `.astro/` and `.env.production`.
+   - New files: `.node-version`, `astro.config.mjs`, `tsconfig.json`, `src/layouts/BaseLayout.astro`, `src/pages/index.astro` and `tests/smoke-test.mjs`.
+   - `.prettierignore` replaces its obsolete Pelican paths with `_backup/`, `brand/`, the private folders and generated files. `.editorconfig` uses 2-space indentation for web source files, matching Prettier.
+   - Updated the records, `README.md`, `AGENTS.md` and `CLAUDE.md`.
+
+### Dependencies
+
+`astro` 7.4.8; dev dependencies `@astrojs/check` 0.9.12, `typescript` 6.0.3 and `prettier` 3.6.2. The lockfile has 338 entries. It includes `sharp` 0.35.5, an optional dependency of Astro that nothing uses yet, and `fsevents` 2.3.3, which only installs on macOS.
+
+### Commands run
+
+- Install: `npm install`, then `npm install --save-dev prettier@3.6.2` and `npm install-scripts deny fsevents`.
+- Validate: `npm run check`, `npm run build` and `npm test`. `astro dev` and `astro preview` were smoke-tested with `curl`, then stopped.
+- Format: `npx prettier --check` and `--write`, on the new files only.
+- Reproduce: `npm ci` and `npm run verify` in an empty scratch copy, then `npm audit`.
+
+Every Astro command ran with `ASTRO_TELEMETRY_DISABLED=1`.
+
+### Validation
+
+| Check | Result |
+| --- | --- |
+| `npm audit` | 0 vulnerabilities |
+| `npm run check` | 0 errors, 0 warnings, 0 hints |
+| `npm run build` | 1 page. `dist/` holds only `index.html` (437 bytes). |
+| `npm test` | PASS. A negative run with a wrong title and a leaked file failed as intended. |
+| `npm ci` in a clean copy | 266 packages, 0 vulnerabilities, no warnings. `npm run verify` passed and rebuilt an identical `index.html`. |
+| Dev server | `GET /` returned 200 with the foundation text |
+| Preview server | `GET /` returned 200, byte-identical to `dist/index.html`. `/_backup/…` and `/brand/bearnard/…` returned 404. |
+| TypeScript program | No files from `_backup/`, `brand/` or the private folders |
+| Bearnard | 352 of 352 checksums match; no file changed since the backup |
+| `_backup/` | Only the two authorized deletions |
+| Workflows | None active |
+| `git diff --check` | No whitespace errors |
+
+### Problems encountered
+
+- `npm install` upgraded Prettier from the previously installed 3.6.2 to 3.9.10, within `^3.6.2`. It was pinned back with `npm install --save-dev prettier@3.6.2`; `package.json` kept `^3.6.2` and the lockfile now records 3.6.2.
+- npm 11.20 held back fsevents' implicit build script pending approval. The prebuilt binary loads, so the script was denied explicitly (D-022).
+- `astro dev` and `astro preview` hand off to a detached child process, so stopping the launcher left both servers running. They were then stopped through the PIDs listening on their ports, and the ports were confirmed free.
+- Prettier re-wrapped long lines in `tsconfig.json` and `tests/smoke-test.mjs`.
+
 ## P01 — Workspace Audit, Preservation & Astro Preparation — 2026-11-10
 
 **Agent:** Claude Code. **Branch:** `chore/gusmaolab-foundation-p01`, from `main` at `6eedf02`. **Result:** completed. Nothing was pushed.
