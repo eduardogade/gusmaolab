@@ -232,3 +232,9 @@ Not done, by design: no Astro installation, no dependencies, no masters copied (
 | Pelican or Astro build | Not run; neither is required in P01 |
 
 The pre-commit hooks also run when the records commit is made.
+
+## Bearnard WhatsApp preparation — Prompt 1/3 (2026-11-10)
+
+Local derivatives are complete in `brand/bearnard/expressions2/_all/`: 204 static transparent 512 × 512 WebPs, each ≤100,000 bytes (79,210–99,996 bytes; total 18,872,908 bytes). All exports pass decode, static-frame, dimensions, alpha, margin and size checks. All 210 protected source/reference/prompt files retain their hashes. Nine existing side-edge contacts are documented and preserved. Every sticker received overview QA; 18 representative/edge cases received larger previews. Ready for emotional categorization; no packs or app were created. Script, manifest, preparation report and QA previews are local ignored assets.
+
+Executed `python3 tools/prepare_whatsapp_stickers.py --workers 4` and `python3 tools/sticker_qa_previews.py` from the expressions2 project. Export audit: 204 passed, 0 missing/failed/unresolved. Restart reused 204 files with identical hashes and modification times; deterministic encoding and missing/unmanaged-file checks passed. No dependencies were installed. Site-wide build checks were not run for these local image derivatives.

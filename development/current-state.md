@@ -90,3 +90,7 @@ None for P05.
 - How to store Bearnard masters (D-011).
 - Approval of the 204 Codex expression candidates.
 - What to do with the untracked `clean` file.
+
+## Bearnard WhatsApp preparation — Prompt 1/3 (2026-11-10)
+
+Local derivatives are complete in `brand/bearnard/expressions2/_all/`: 204 static transparent 512 × 512 WebPs, each ≤100,000 bytes (79,210–99,996 bytes; total 18,872,908 bytes). All exports pass decode, static-frame, dimensions, alpha, margin and size checks. All 210 protected source/reference/prompt files retain their hashes. Nine existing side-edge contacts are documented and preserved. Every sticker received overview QA; 18 representative/edge cases received larger previews. Ready for emotional categorization; no packs or app were created. Script, manifest, preparation report and QA previews are local ignored assets.
