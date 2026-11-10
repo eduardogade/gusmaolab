@@ -1,0 +1,333 @@
+/*
+ * GusmaoLab design tokens. P03 candidate, awaiting the owner's visual review.
+ *
+ * Three layers:
+ *   1. Primitives (--palette-*): raw colours. Only this file and environments.css use them.
+ *   2. Semantic tokens: roles such as --color-text-primary or --color-folder-parent.
+ *      Components use only these. The :root values below are the core environment;
+ *      environments.css overrides the environment contract (src/design/contract.mjs)
+ *      for each section environment.
+ *   3. Aliases: semantic tokens derived from other semantic tokens. They are declared on
+ *      `:root, [data-environment]` so that every environment recomputes them.
+ *
+ * Every hex value is a design candidate, not a certified brand or flag value.
+ * The specimen page and the contrast test read the values from this file.
+ */
+
+/* 1. Primitives ------------------------------------------------------------------- */
+
+:root {
+  /* Bark and ember: the browns and oranges of the bear-pride stripe family */
+  --palette-bark: #1f1713;
+  --palette-espresso: #32251e;
+  --palette-chestnut: #463128;
+  --palette-umber: #5c4033;
+  --palette-cocoa: #6e5646;
+  --palette-warm-brown: #74422d;
+  --palette-rust: #8e3d1c;
+  --palette-ember: #aa5b22;
+
+  /* Honey and paper */
+  --palette-honey: #d89348;
+  --palette-gold: #e5b45a;
+  --palette-kraft: #d4b089;
+  --palette-parchment: #f4e2c9;
+  --palette-ivory: #fff8ea;
+
+  /* Bearnard: midnight-navy fur, denim, green eyes */
+  --palette-midnight: #16202a;
+  --palette-navy: #202d39;
+  --palette-slate: #3d4e60;
+  --palette-denim: #556373;
+  --palette-forest: #3d6b2f;
+  --palette-eye-green: #8db04a;
+  --palette-spruce: #1f5f5b;
+
+  /* Neutrals and grounds */
+  --palette-ash: #8a827a;
+  --palette-charcoal: #28282d;
+  --palette-terrain: #3a3125;
+  --palette-oxblood: #55301f;
+}
+
+/* 2. Semantic tokens that never change between environments -------------------------- */
+
+:root {
+  /* Identity: the bear-pride stripe family, top to bottom */
+  --color-pride-brown: var(--palette-warm-brown);
+  --color-pride-orange: var(--palette-ember);
+  --color-pride-gold: var(--palette-gold);
+  --color-pride-tan: var(--palette-parchment);
+  --color-pride-white: var(--palette-ivory);
+  --color-pride-gray: var(--palette-ash);
+  --color-pride-black: var(--palette-charcoal);
+
+  /* Materials */
+  --color-flannel-twill: var(--palette-ivory);
+  --color-folder-edge: var(--palette-ivory);
+  --color-folder-recess: var(--palette-bark);
+
+  /* Interaction. Focus looks the same everywhere, so it is learnable. */
+  --color-focus-ring: var(--palette-navy);
+  --color-focus-ring-on-dark: var(--palette-honey);
+  --color-state-disabled: var(--palette-ash);
+  --color-state-disabled-surface: color-mix(
+    in srgb,
+    var(--palette-ash) 16%,
+    var(--palette-ivory)
+  );
+  --color-text-selection: color-mix(
+    in srgb,
+    var(--palette-honey) 45%,
+    var(--palette-ivory)
+  );
+}
+
+/* 3. Core environment: the defaults for the environment contract --------------------- */
+
+:root {
+  /* Surroundings */
+  --color-backdrop: var(--palette-oxblood);
+  --color-flannel-band: var(--palette-bark);
+  --color-flannel-line: var(--palette-navy);
+  --color-flannel-thread: var(--palette-honey);
+  --color-shell: var(--palette-espresso);
+  --color-shell-border: var(--palette-chestnut);
+  --color-shadow: var(--palette-bark);
+
+  /* Folder materials */
+  --color-folder-parent: var(--palette-kraft);
+  --color-folder-nested: var(--palette-parchment);
+  --color-folder-active: var(--palette-ivory);
+  --color-folder-border: color-mix(in srgb, var(--palette-bark) 16%, transparent);
+
+  /* Text */
+  --color-text-primary: var(--palette-espresso);
+  --color-text-secondary: var(--palette-umber);
+  --color-text-muted: var(--palette-cocoa);
+  --color-text-heading: var(--palette-espresso);
+  --color-text-link: var(--palette-forest);
+  --color-text-link-hover: color-mix(
+    in srgb,
+    var(--palette-forest) 70%,
+    var(--palette-bark)
+  );
+  --color-text-on-dark: var(--palette-parchment);
+  --color-text-on-dark-muted: var(--palette-kraft);
+  --color-text-link-on-dark: var(--palette-eye-green);
+
+  /* Interaction */
+  --color-accent: var(--palette-honey);
+  --color-state-active: var(--palette-rust);
+  --color-indicator-selected: var(--palette-rust);
+
+  /* Typography roles */
+  --font-body: var(--font-interface);
+  --font-heading: var(--font-display);
+  --font-heading-style: normal;
+  --font-heading-weight: 400;
+  --letter-spacing-heading: -0.01em;
+  --font-size-body: clamp(1rem, 0.96rem + 0.18vw, 1.125rem);
+  --line-height-body: 1.6;
+  --measure-prose: 68ch;
+
+  /* Texture and ornament, from 0 (none) upwards */
+  --texture-flannel-strength: 1;
+  --ornament-intensity: 0.5;
+}
+
+/* 4. Typography -------------------------------------------------------------------- */
+
+:root {
+  /* System font stacks: nothing is downloaded or redistributed. */
+  --font-interface:
+    Seravek, "Gill Sans Nova", Ubuntu, Calibri, "DejaVu Sans", source-sans-pro,
+    sans-serif;
+  --font-editorial:
+    "Iowan Old Style", "Palatino Linotype", "URW Palladio L", P052, serif;
+  --font-display:
+    Superclarendon, "Bookman Old Style", "URW Bookman", "URW Bookman L", "Georgia Pro",
+    Georgia, serif;
+  --font-mono:
+    ui-monospace, "Cascadia Code", "Source Code Pro", Menlo, Consolas,
+    "DejaVu Sans Mono", monospace;
+  --font-math: "STIX Two Math", "Cambria Math", "Latin Modern Math", math;
+  --font-label: var(--font-interface);
+  --font-code: var(--font-mono);
+
+  --font-weight-light: 300;
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-black: 900;
+
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-lead: clamp(1.125rem, 1.06rem + 0.3vw, 1.3125rem);
+  --font-size-h4: clamp(1.0625rem, 1.03rem + 0.15vw, 1.1875rem);
+  --font-size-h3: clamp(1.1875rem, 1.1rem + 0.4vw, 1.4375rem);
+  --font-size-h2: clamp(1.5rem, 1.3rem + 0.9vw, 2.125rem);
+  --font-size-h1: clamp(2rem, 1.6rem + 1.9vw, 3.25rem);
+  --font-size-display: clamp(2.5rem, 1.7rem + 3.9vw, 5.25rem);
+
+  --line-height-display: 1.02;
+  --line-height-heading: 1.15;
+  --line-height-ui: 1.35;
+  --line-height-code: 1.6;
+
+  --letter-spacing-display: -0.015em;
+  --letter-spacing-label: 0.09em;
+  --letter-spacing-ui: 0.005em;
+
+  --measure-narrow: 46ch;
+  --measure-wide: 80ch;
+
+  /* Folder-tab labels, three levels (P05–P07) */
+  --font-size-tab-1: 1rem;
+  --font-size-tab-2: 0.9375rem;
+  --font-size-tab-3: 0.875rem;
+  --font-size-tab-preview: 0.875rem;
+  --font-weight-tab: 600;
+  --letter-spacing-tab: 0.01em;
+
+  /* Code */
+  --font-size-code: 0.9em;
+  --font-size-code-block: 0.9375rem;
+  --tab-size: 4;
+}
+
+/* 5. Space and size ---------------------------------------------------------------- */
+
+:root {
+  --space-3xs: 0.25rem;
+  --space-2xs: 0.5rem;
+  --space-xs: 0.75rem;
+  --space-s: 1rem;
+  --space-m: 1.5rem;
+  --space-l: 2rem;
+  --space-xl: 3rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+
+  /* Fluid page rhythm */
+  --space-gutter: clamp(0.5rem, 0.1rem + 2vw, 2.5rem);
+  --space-shell-padding: clamp(0.5rem, 0.3rem + 0.9vw, 1.125rem);
+  --space-content-inline: clamp(1rem, 0.5rem + 2.2vw, 3rem);
+  --space-content-block: clamp(1.5rem, 0.9rem + 2.6vw, 3.5rem);
+
+  --size-shell-max: 80rem;
+}
+
+/* 6. Geometry and depth ------------------------------------------------------------ */
+
+:root {
+  --border-width-hairline: 1px;
+  --border-width-thin: 2px;
+  --border-width-thick: 3px;
+
+  --radius-paper: 3px;
+  --radius-control: 5px;
+  --radius-card: 6px;
+  --radius-folder: 10px;
+  --radius-shell: 18px;
+
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 2px;
+
+  /*
+   * Physical-folder geometry, prepared for P05–P07 and not used yet. A tab is part of
+   * its folder: it rises from the body through concave fillets, its sides slope over
+   * --folder-tab-slant, and neighbouring tabs tuck behind each other by
+   * --folder-tab-overlap. They never become separate pills.
+   */
+  --folder-tab-height-1: 2.75rem;
+  --folder-tab-height-2: 2.5rem;
+  --folder-tab-height-3: 2.25rem;
+  --folder-tab-padding-inline: 1.25rem;
+  --folder-tab-min-inline-size: 6rem;
+  --folder-tab-max-inline-size: 16rem;
+  --folder-tab-slant: 0.875rem;
+  --folder-tab-corner-radius: 0.5rem;
+  --folder-tab-fillet-radius: 0.5rem;
+  --folder-tab-overlap: 0.625rem;
+  --folder-tab-rise: 0.25rem;
+  --folder-tab-inactive-mix: 78%;
+  --folder-tab-hover-mix: 90%;
+  --folder-indicator-width: 1rem;
+  --folder-indicator-depth: 0.5rem;
+  --folder-indicator-gap: 0.375rem;
+  --folder-nest-inset: clamp(0.5rem, 0.3rem + 1vw, 1rem);
+  --folder-layer-offset: 0.375rem;
+
+  /* Stacking order for the folder system */
+  --z-folder-inactive: 1;
+  --z-folder-active: 2;
+  --z-folder-preview: 10;
+  --z-overlay: 100;
+
+  /* Flannel weave: one repeat of the plaid, and the twill line spacing */
+  --texture-flannel-sett: 8.25rem;
+  --texture-flannel-twill: 4px;
+}
+
+/* 7. Aliases, recomputed in every environment --------------------------------------- */
+
+:root,
+[data-environment] {
+  /* Folder tabs share their folder's material; inactive tabs sink toward the shell. */
+  --color-folder-tab-active: var(--color-folder-parent);
+  --color-folder-tab-inactive: color-mix(
+    in srgb,
+    var(--color-folder-parent) var(--folder-tab-inactive-mix),
+    var(--color-shell)
+  );
+  --color-folder-tab-hover: color-mix(
+    in srgb,
+    var(--color-folder-parent) var(--folder-tab-hover-mix),
+    var(--color-shell)
+  );
+  --color-folder-tab-text: var(--color-text-primary);
+  --color-folder-preview: var(--color-folder-nested);
+  --color-state-hover: color-mix(
+    in srgb,
+    var(--color-accent) 18%,
+    var(--color-folder-active)
+  );
+
+  /* Supporting surfaces */
+  --color-surface-card: var(--color-folder-active);
+  --color-surface-card-border: var(--color-folder-border);
+  --color-surface-code: var(--color-shell);
+  --color-text-code: var(--color-text-on-dark);
+  --color-surface-code-inline: var(--color-folder-nested);
+  --color-surface-quote: var(--color-folder-nested);
+  --color-quote-rule: var(--color-accent);
+  --color-surface-table-header: var(--color-folder-nested);
+  --color-table-rule: var(--color-folder-border);
+  --color-table-stripe: color-mix(
+    in srgb,
+    var(--color-folder-nested) 40%,
+    var(--color-folder-active)
+  );
+  --color-surface-callout: var(--color-folder-nested);
+  --color-callout-border: var(--color-accent);
+
+  /* Depth */
+  --shadow-shell:
+    inset 0 1px 0 color-mix(in srgb, var(--color-folder-edge) 7%, transparent),
+    0 30px 60px -28px color-mix(in srgb, var(--color-shadow) 90%, transparent),
+    0 12px 24px -14px color-mix(in srgb, var(--color-shadow) 70%, transparent);
+  --shadow-folder:
+    inset 0 1px 0 color-mix(in srgb, var(--color-folder-edge) 55%, transparent),
+    0 1px 0 color-mix(in srgb, var(--color-shadow) 35%, transparent),
+    0 8px 20px -12px color-mix(in srgb, var(--color-shadow) 80%, transparent);
+  --shadow-paper:
+    0 1px 1px color-mix(in srgb, var(--color-shadow) 14%, transparent),
+    0 4px 12px -6px color-mix(in srgb, var(--color-shadow) 26%, transparent);
+  --shadow-paper-raised:
+    0 1px 2px color-mix(in srgb, var(--color-shadow) 16%, transparent),
+    0 12px 28px -16px color-mix(in srgb, var(--color-shadow) 40%, transparent);
+  --shadow-recess: inset 0 10px 14px -12px
+    color-mix(in srgb, var(--color-folder-recess) 45%, transparent);
+}

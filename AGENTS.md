@@ -6,7 +6,7 @@ Shared rules for every coding agent in this repository: Claude Code, Codex and o
 
 GusmaoLab is Eduardo Gade Gusmao's personal website and publishing ecosystem: computational biology, bioinformatics, research, software engineering, teaching, literature and personal interests. Scientific rigor and visual humor go together.
 
-The site is an Astro static project. Only a temporary foundation page exists; the visual interface is not implemented yet. The old Pelican site is archived in `_backup/pelican-legacy/`.
+The site is an Astro static project. The only page is a temporary design specimen (P03); the visual interface is not implemented yet. The old Pelican site is archived in `_backup/pelican-legacy/`.
 
 ## Where things are
 
@@ -24,7 +24,15 @@ The site is an Astro static project. Only a temporary foundation page exists; th
 
 ## Commands
 
-Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `npm run verify` (diagnostics, build, smoke test) before committing. `README.md` lists every command.
+Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `npm run verify` (diagnostics, build, token and contrast checks, smoke test) before committing. `README.md` lists every command.
+
+## Styling
+
+- Native CSS only. Tokens live in `src/styles/tokens.css`, environment overrides in `src/styles/environments.css`, and global defaults in `src/styles/global.css` (`planning/design-system.md`).
+- Components use semantic tokens (`--color-*`, `--font-*`, `--space-*` …), never `--palette-*` primitives or raw colors.
+- Choose a section environment with `data-environment` (BaseLayout's `environment` prop). Change what an environment can set only through `src/design/contract.mjs` and a recorded decision.
+- Keep `tests/design-tokens.mjs` and `tests/contrast.mjs` passing. Do not lower a contrast threshold to make a color pass.
+- Never place text directly on the flannel lining. Add no transitions, animation or smooth scrolling without a decision.
 
 ## Invariants
 

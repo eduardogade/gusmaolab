@@ -29,6 +29,15 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 | D-023 | Point the `package.json` license field to `LICENSE` | Approved | 2026-11-10 |
 | D-024 | Exclude the archive, `brand/` and the private folders from TypeScript | Approved | 2026-11-10 |
 | D-025 | Remove two recruiter-era files from the working branch | Approved by the owner | 2026-11-10 |
+| D-026 | Design tokens in three layers of native CSS custom properties, in `src/styles/` | Approved (P03 brief); values Provisional | 2026-11-10 |
+| D-027 | Section environments selected declaratively with `data-environment`; a fixed environment contract | Approved | 2026-11-10 |
+| D-028 | Palette candidate: 24 primitives and their semantic roles | Provisional, awaiting the owner's review | 2026-11-10 |
+| D-029 | Typography from installed system fonts only; no web fonts | Provisional, awaiting the owner's review | 2026-11-10 |
+| D-030 | Flannel lining and paper materials in CSS only | Provisional, awaiting the owner's review | 2026-11-10 |
+| D-031 | Contrast policy: WCAG 2.2 thresholds, enforced by a test; one focus style everywhere | Approved | 2026-11-10 |
+| D-032 | Design checks as plain Node scripts sharing one token reader | Approved | 2026-11-10 |
+| D-033 | The temporary homepage becomes the P03 design specimen | Approved (temporary) | 2026-11-10 |
+| D-034 | Add `.claude/launch.json` for local preview servers | Approved | 2026-11-10 |
 
 ## Details
 
@@ -60,7 +69,7 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 
 **D-018.** Static output is Astro's default and matches D-002. `site` sets the canonical origin. The site is served from the domain root, so there is no `base`, even though the source repository is named GusmaoLab.
 
-**D-019.** P02 created `src/pages/`, `src/layouts/` and `tests/smoke-test.mjs`. `src/components/`, `src/styles/` and `public/` will be created when something needs them: nothing does yet, and Git cannot track empty folders. Astro treats `public/` as optional. The homepage is intentionally plain, with no CSS.
+**D-019.** P02 created `src/pages/`, `src/layouts/` and `tests/smoke-test.mjs`. `src/components/`, `src/styles/` and `public/` will be created when something needs them: nothing does yet, and Git cannot track empty folders. Astro treats `public/` as optional. The homepage is intentionally plain, with no CSS. P03 later added `src/styles/` and `src/design/` (D-026, D-032); `src/components/` and `public/` still do not exist.
 
 **D-020.** No React, Vue, Svelte, Tailwind, Bootstrap, UI kits, Three.js, animation, calendar, Quarto front-end or icon packages. Each needs a feature decision first.
 
@@ -73,3 +82,21 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 **D-024.** Astro's base preset includes every file under the root and allows JavaScript. Excluding `_backup`, `brand` and the private folders keeps archived and private files out of diagnostics. The empty placeholder scripts in `hyperglam/` and `scripts/` are still included.
 
 **D-025.** The owner authorized deleting obsolete recruiter-related material, which is in the external backup. Both files were confirmed byte-identical there and removed with `git rm` in `d94f170`. Their exposure in the public history remains open as ISSUE-0003.
+
+**D-026.** The P03 brief asked for `tokens.css`, `environments.css` and `global.css`, native CSS, and no Tailwind, Sass, CSS-in-JS or component framework. The layers are primitives (`--palette-*`), semantic tokens and aliases. Aliases are declared on `:root, [data-environment]`: a custom property is computed where it is declared, so a derived token declared only on `:root` would keep its core value inside an environment. BaseLayout imports the three files in cascade order. The structure is approved; the values are not (D-028–D-030).
+
+**D-027.** Every environment defines exactly the 33 tokens of `ENVIRONMENT_TOKENS` in `src/design/contract.mjs`, and `:root` defines them as the core environment. `BaseLayout`'s `environment` prop sets `data-environment` on `<html>`; any element can carry the attribute for a nested scope. No JavaScript theme system and no light/dark toggle. Which section uses which environment comes from the P03 brief for now; P04's route data decides it for real pages.
+
+**D-028.** The brief's suggested colors were kept where they worked (espresso, chestnut, warm brown, muted honey, parchment, warm ivory, charcoal, midnight navy). P03 chose forest `#3D6B2F` from the hue of Bearnard's eyes and added ember, kraft, gold, text tiers, a navy family, spruce, ash and two flannel grounds. Hex values were sampled read-only from the v1.3 master as references, not as specifications. The bear-pride stripes are palette interpretations, not certified flag values. Details and open questions: `planning/design-system.md`.
+
+**D-029.** Seravek for interface and body, Iowan Old Style for editorial text, Superclarendon for display, the system monospace for code and STIX Two Math for MathML. All are installed system fonts, so nothing is downloaded, bundled or redistributed, and the build has no font files. The trade-off: other platforms fall back to close relatives (KL-15). BD Plakatbau, the _Kid A_ reference, is proprietary and unlicensed here, so it was not used.
+
+**D-030.** The flannel is layered CSS gradients (a twill plus warp and weft stripes), scaled by `--texture-flannel-strength`, with `--color-backdrop` as its plain fallback. No image files, no animation, no fixed attachment, and never text on it. It is dropped under `prefers-contrast: more`, `forced-colors: active` and in print. Paper surfaces are flat colors with edge highlights and warm shadows; no paper grain yet.
+
+**D-031.** The thresholds are 4.5:1 for body text and 3:1 for essential non-text indicators, on opaque pairings, in every environment. Disabled text is reported but exempt. Focus uses the same tokens in every environment: a 3 px navy ring on paper and a honey ring on dark surfaces, 2 px offset. Passing the test is not accessibility compliance (KL-17, KL-19).
+
+**D-032.** `npm test` runs three scripts with no test framework: `tests/design-tokens.mjs` (token architecture), `tests/contrast.mjs` (WCAG ratios) and `tests/smoke-test.mjs` (build output). They share `src/design/css-tokens.mjs`, which resolves `var()` and `color-mix(in srgb, …)` as the browser does, and the contract in `src/design/contract.mjs`. The specimen uses the same reader, so the values it shows always match the CSS. The smoke test now checks structural invariants instead of exact text and sizes. It also compares every output file with the Bearnard checksums.
+
+**D-033.** The P02 foundation page is replaced by a specimen, clearly labeled temporary, so the owner can review the visual language before P05–P09 build on it. Its layout styles are scoped to the page and leave with it; the real homepage composition is a later prompt.
+
+**D-034.** The Claude desktop app starts local preview servers from `.claude/launch.json`. `astro-preview` serves the built `dist/` on port 4322, and `astro-dev` runs the dev server on 4321. Both set `ASTRO_TELEMETRY_DISABLED=1` (KL-14). Other tools can ignore the file.

@@ -2,7 +2,7 @@
 
 Source for [www.gusmaolab.org](https://www.gusmaolab.org), Eduardo Gade Gusmao's website and publishing ecosystem.
 
-**Status:** this repository is an [Astro](https://astro.build) 7 static site. Only a temporary foundation page exists: **the website itself is not implemented yet**, and nothing is deployed from here. The previous Pelican site, including its original README, is archived in [`_backup/pelican-legacy/`](_backup/pelican-legacy/).
+**Status:** this repository is an [Astro](https://astro.build) 7 static site. The only page is a temporary design specimen of the visual foundations, awaiting review: **the website itself is not implemented yet**, and nothing is deployed from here. The previous Pelican site, including its original README, is archived in [`_backup/pelican-legacy/`](_backup/pelican-legacy/).
 
 ## Prerequisites
 
@@ -17,9 +17,12 @@ Source for [www.gusmaolab.org](https://www.gusmaolab.org), Eduardo Gade Gusmao's
 | `npm run dev` | Start the local development server (port 4321 by default) |
 | `npm run check` | Run Astro and TypeScript diagnostics |
 | `npm run build` | Build the static site into `dist/` |
-| `npm run preview` | Serve the built `dist/` locally |
-| `npm test` | Smoke-test the built output (run `npm run build` first) |
+| `npm run preview` | Serve the built `dist/` locally (port 4321 by default) |
+| `npm test` | Check the design tokens and color contrast, then smoke-test the built output (run `npm run build` first) |
 | `npm run verify` | Run `check`, `build` and `test` in one go |
+| `node tests/contrast.mjs --markdown` | Print every contrast ratio as Markdown tables |
+
+To review the design specimen, run `npm run build` and `npm run preview`, then open the address it prints. The design tokens live in `src/styles/` and are described in [`planning/design-system.md`](planning/design-system.md).
 
 ## Project records
 

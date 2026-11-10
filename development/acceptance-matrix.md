@@ -26,6 +26,24 @@ Statuses: **Passed**, **Failed**, **Untested**, **Not applicable**. An untested 
 | G-P02-06 | Bearnard masters unchanged | Passed | 352 of 352 checksums match |
 | G-P02-07 | No deployment | Passed | No active workflow; nothing pushed |
 
+## P03 gates
+
+| ID | Gate | Status | Evidence |
+| --- | --- | --- | --- |
+| G-P03-01 | Design-token system exists: primitives, semantic tokens, aliases | Passed | `src/styles/tokens.css`; `tests/design-tokens.mjs` |
+| G-P03-02 | Warm core palette defined | Passed | 24 primitives; core semantic roles on `:root` |
+| G-P03-03 | Four environment variants, each defining the full contract | Passed | `src/styles/environments.css`; 4 × 33 tokens checked |
+| G-P03-04 | Typography and spacing foundations | Passed | Font, size, line-height, measure and spacing tokens |
+| G-P03-05 | Folder color and geometry tokens (not implemented as components) | Passed | Tab, indicator, nesting and stacking tokens; no tabs built |
+| G-P03-06 | Subtle flannel lining with a plain fallback | Passed | `.gl-flannel`, `--texture-flannel-strength`, `--color-backdrop` |
+| G-P03-07 | A visually inspectable specimen builds | Passed | `npm run build`; inspected at 1440, 1280, 768 and 390 px |
+| G-P03-08 | Essential contrast checks pass | Passed | `tests/contrast.mjs`: 165 of 165 enforced pairings |
+| G-P03-09 | Existing verification still passes | Passed | `npm run verify` |
+| G-P03-10 | Canonical Bearnard assets untouched, none in the output | Passed | 352 of 352 checksums match; smoke test compares `dist/` with them |
+| G-P03-11 | Documentation and records updated | Passed | `planning/design-system.md` and the development and debugging records |
+| G-P03-12 | Committed locally, not pushed | Passed | Branch `feat/gusmaolab-design-system-p03` has no upstream |
+| G-P03-13 | The owner approves the visual design | **Untested** | Awaiting the owner's review of the specimen |
+
 ## Future gates
 
 | ID | Gate | Source | Status |
@@ -37,7 +55,7 @@ Statuses: **Passed**, **Failed**, **Untested**, **Not applicable**. An untested 
 | G-05 | Active tab shows a V-shaped indicator; inactive tabs stay visible | Information architecture | Untested |
 | G-06 | No persistent sidebar, no breadcrumbs, no file-manager design | Information architecture | Untested |
 | G-07 | Content deeper than level three lives in the third-level folder body | Information architecture | Untested |
-| G-08 | Shared design system across sections | R-03, R-04 | Untested |
+| G-08 | Shared design system across sections | R-03, R-04 | Untested. P03 built the candidate tokens and four environments, but no section page uses them yet and the owner has not reviewed them. |
 | G-09 | Only Bearnard v1.3 and approved variants appear; no full-resolution masters in the public directory | R-05 | Untested |
 | G-10 | Eight independent editorial collections | R-06 | Untested |
 | G-11 | Canonical records reused across pages | R-07 | Untested |

@@ -1,0 +1,302 @@
+/*
+ * GusmaoLab global foundation (P03): a small reset, document defaults, base typography,
+ * focus, semantic content styles, the flannel lining and a few utilities.
+ *
+ * - Semantic tokens only: never --palette-* primitives or raw colour values.
+ * - Element defaults sit inside :where(), so they have zero specificity and any
+ *   component can override them.
+ * - No transitions, animation or smooth scrolling.
+ */
+
+/* 1. Reset -------------------------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  color-scheme: light;
+}
+
+:where(body, h1, h2, h3, h4, h5, h6, p, figure, blockquote, dl, dd, pre) {
+  margin: 0;
+}
+
+:where(img, picture, video, canvas) {
+  display: block;
+  max-inline-size: 100%;
+}
+
+:where(input, button, textarea, select) {
+  color: inherit;
+  font: inherit;
+}
+
+/* 2. Document ----------------------------------------------------------------------- */
+
+body {
+  min-block-size: 100vh;
+  min-block-size: 100dvh;
+  background-color: var(--color-backdrop);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  font-kerning: normal;
+  line-height: var(--line-height-body);
+}
+
+/*
+ * An environment set below the root (a nested preview, say) re-applies the inherited
+ * text properties, which would otherwise keep the values computed on <body>. Not on
+ * :root, where a font size would rescale every rem.
+ */
+:where([data-environment]:not(:root)) {
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-body);
+}
+
+/* 3. Typography --------------------------------------------------------------------- */
+
+:where(h1, h2, h3, h4, h5, h6) {
+  color: var(--color-text-heading);
+  font-family: var(--font-heading);
+  font-style: var(--font-heading-style);
+  font-weight: var(--font-heading-weight);
+  letter-spacing: var(--letter-spacing-heading);
+  line-height: var(--line-height-heading);
+  overflow-wrap: break-word;
+  text-wrap: balance;
+}
+
+:where(h1) {
+  font-size: var(--font-size-h1);
+}
+
+:where(h2) {
+  font-size: var(--font-size-h2);
+}
+
+:where(h3) {
+  font-size: var(--font-size-h3);
+}
+
+:where(h4, h5, h6) {
+  font-size: var(--font-size-h4);
+}
+
+:where(p, li, dd, figcaption, blockquote) {
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}
+
+:where(small) {
+  font-size: var(--font-size-sm);
+}
+
+/* 4. Links, focus and selection ------------------------------------------------------ */
+
+:where(a) {
+  color: var(--color-text-link);
+  text-decoration-line: underline;
+  text-decoration-thickness: 0.075em;
+  text-underline-offset: 0.2em;
+}
+
+:where(a:hover) {
+  color: var(--color-text-link-hover);
+  text-decoration-thickness: 0.14em;
+}
+
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+::selection {
+  background-color: var(--color-text-selection);
+  color: var(--color-text-primary);
+}
+
+/* 5. Semantic content ---------------------------------------------------------------- */
+
+:where(code, kbd, samp, pre) {
+  font-family: var(--font-code);
+  font-size: var(--font-size-code);
+}
+
+:where(:not(pre) > code, kbd) {
+  padding: 0.08em 0.35em;
+  border-radius: var(--radius-control);
+  background-color: var(--color-surface-code-inline);
+  color: var(--color-text-primary);
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+
+:where(pre) {
+  overflow-x: auto;
+  padding: var(--space-s) var(--space-m);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface-code);
+  color: var(--color-text-code);
+  font-size: var(--font-size-code-block);
+  line-height: var(--line-height-code);
+  tab-size: var(--tab-size);
+}
+
+:where(pre code) {
+  font-size: inherit;
+}
+
+:where(blockquote) {
+  padding: var(--space-s) var(--space-m);
+  border-inline-start: var(--border-width-thick) solid var(--color-quote-rule);
+  background-color: var(--color-surface-quote);
+  font-family: var(--font-editorial);
+  font-style: italic;
+}
+
+:where(table) {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+}
+
+:where(th, td) {
+  padding: var(--space-2xs) var(--space-xs);
+  border-block-end: var(--border-width-hairline) solid var(--color-table-rule);
+  text-align: start;
+  vertical-align: top;
+}
+
+:where(th) {
+  background-color: var(--color-surface-table-header);
+  font-family: var(--font-label);
+  font-weight: var(--font-weight-semibold);
+}
+
+:where(tbody tr:nth-child(even)) {
+  background-color: var(--color-table-stripe);
+}
+
+:where(hr) {
+  border: 0;
+  border-block-start: var(--border-width-hairline) solid var(--color-folder-border);
+}
+
+:where(math) {
+  font-family: var(--font-math);
+}
+
+/* A wide display formula scrolls inside its column instead of widening the page. */
+:where(math[display="block"]) {
+  overflow-x: auto;
+  max-inline-size: 100%;
+}
+
+:where(mark) {
+  background-color: var(--color-text-selection);
+  color: inherit;
+}
+
+/* 6. Long-form text ------------------------------------------------------------------ */
+
+.gl-prose {
+  max-inline-size: var(--measure-prose);
+}
+
+.gl-prose > * + * {
+  margin-block-start: 1em;
+}
+
+/* 7. Dark-surface context: the shell and any other dark surface ---------------------- */
+
+.gl-on-dark {
+  --color-text-heading: var(--color-text-on-dark);
+  --color-text-secondary: var(--color-text-on-dark-muted);
+  --color-text-muted: var(--color-text-on-dark-muted);
+  --color-text-link: var(--color-text-link-on-dark);
+  --color-text-link-hover: var(--color-text-on-dark);
+  --color-focus-ring: var(--color-focus-ring-on-dark);
+  color: var(--color-text-on-dark);
+}
+
+/*
+ * 8. Flannel lining: a woven plaid for the area outside the shell. Decorative only,
+ * so never place text directly on it. --texture-flannel-strength scales every thread;
+ * 0 leaves the plain --color-backdrop, which is also the fallback.
+ */
+
+.gl-flannel {
+  --_band: color-mix(
+    in srgb,
+    var(--color-flannel-band)
+      clamp(0%, calc(var(--texture-flannel-strength) * 46%), 100%),
+    transparent
+  );
+  --_line: color-mix(
+    in srgb,
+    var(--color-flannel-line)
+      clamp(0%, calc(var(--texture-flannel-strength) * 44%), 100%),
+    transparent
+  );
+  --_thread: color-mix(
+    in srgb,
+    var(--color-flannel-thread)
+      clamp(0%, calc(var(--texture-flannel-strength) * 24%), 100%),
+    transparent
+  );
+  --_twill: color-mix(
+    in srgb,
+    var(--color-flannel-twill)
+      clamp(0%, calc(var(--texture-flannel-strength) * 5%), 100%),
+    transparent
+  );
+  --_stripes:
+    transparent 0 6%, var(--_band) 6% 40%, transparent 40% 47%, var(--_line) 47% 50%,
+    transparent 50% 71%, var(--_thread) 71% 72.4%, transparent 72.4%;
+  background-color: var(--color-backdrop);
+  background-image:
+    repeating-linear-gradient(
+      45deg,
+      var(--_twill) 0 1px,
+      transparent 1px var(--texture-flannel-twill)
+    ),
+    linear-gradient(90deg, var(--_stripes)), linear-gradient(0deg, var(--_stripes));
+  background-size:
+    auto,
+    var(--texture-flannel-sett) var(--texture-flannel-sett),
+    var(--texture-flannel-sett) var(--texture-flannel-sett);
+}
+
+@media (prefers-contrast: more), (forced-colors: active) {
+  .gl-flannel {
+    background-image: none;
+  }
+}
+
+@media print {
+  .gl-flannel {
+    background: none;
+  }
+}
+
+/* 9. Utilities ----------------------------------------------------------------------- */
+
+.gl-visually-hidden {
+  position: absolute;
+  overflow: hidden;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

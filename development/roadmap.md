@@ -4,7 +4,7 @@ Status: provisional. The six-wave structure is approved. Individual tasks are no
 
 | Wave | Prompts | Status |
 | --- | --- | --- |
-| I — Foundations | P01–P04 | P01 and P02 completed 2026-11-10; P03–P04 not started |
+| I — Foundations | P01–P04 | P01, P02 and P03 completed 2026-11-10 (P03's visual design awaits review); P04 next |
 | II — Physical Folders & Visual Identity | P05–P09 | Not started |
 | III — Publishing & Content | P10–P14 | Not started |
 | IV — Website Composition | P15–P18 | Not started |
@@ -15,8 +15,9 @@ Status: provisional. The six-wave structure is approved. Individual tasks are no
 
 - **P01** — Workspace Audit, Preservation & Astro Preparation (completed)
 - **P02** — Astro Foundation, Development Environment & Reproducible Static Build (completed)
-- **P03** — GusmaoLab Design Tokens, Palette Architecture & Visual Foundations (next)
-- P04–P24 — titles not yet supplied
+- **P03** — GusmaoLab Design Tokens, Palette Architecture & Visual Foundations (technically completed; visual approval pending)
+- **P04** — Navigation Data Model and Hierarchical Route Configuration (next)
+- P05–P24 — titles not yet supplied
 
 ## Feasibility experiments
 

@@ -1,21 +1,29 @@
 ---
+// Order matters: primitives and semantic tokens, then environment overrides, then the
+// global foundation that consumes them.
+import "../styles/tokens.css"
+import "../styles/environments.css"
+import "../styles/global.css"
+
 interface Props {
   title: string
   description?: string
+  /** Section environment from src/styles/environments.css. Omit for the core environment. */
+  environment?: "scientific" | "technical" | "literary" | "personal"
 }
 
-const { title, description } = Astro.props
+const { title, description, environment } = Astro.props
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="en" data-environment={environment}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     {description && <meta name="description" content={description} />}
     <title>{title}</title>
   </head>
-  <body>
+  <body class="gl-flannel">
     <main>
       <slot />
     </main>

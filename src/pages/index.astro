@@ -1,12 +1,1685 @@
 ---
+// Temporary P03 design specimen. It is not the GusmaoLab homepage: it exists so the owner
+// can review colours, type, materials and environments before the folder interface is
+// built. Every hex value and contrast ratio shown is read from the token stylesheets at
+// build time, so the page cannot drift from them.
 import BaseLayout from "../layouts/BaseLayout.astro"
+import { CONTRAST_PAIRS, ENVIRONMENTS } from "../design/contract.mjs"
+import { contrastRatio, readTokens } from "../design/css-tokens.mjs"
+import environmentsCss from "../styles/environments.css?raw"
+import tokensCss from "../styles/tokens.css?raw"
+
+const tokens = readTokens(tokensCss, environmentsCss)
+const hex = (name: string, env?: string) => tokens.color(name, env).hex.toUpperCase()
+const ratioOf = (foreground: string, background: string, env?: string) =>
+  contrastRatio(tokens.color(foreground, env).rgba, tokens.color(background, env).rgba)
+const show = (ratio: number) => `${(Math.floor(ratio * 10) / 10).toFixed(1)}:1`
+const stack = (name: string) => tokens.resolve(name).text
+
+const scopes = [undefined, ...ENVIRONMENTS.map((env) => env.id)]
+const enforced = CONTRAST_PAIRS.filter((pair) => pair.min !== null)
+const contrastChecks = scopes.flatMap((env) =>
+  enforced.map((pair) => ratioOf(pair.foreground, pair.background, env) >= (pair.min ?? 0)),
+)
+const contrastPassing = contrastChecks.filter(Boolean).length
+
+const foundations = [
+  { token: "--palette-espresso", name: "Espresso", role: "The shell; primary text" },
+  { token: "--palette-chestnut", name: "Chestnut", role: "Shell edges; dark details" },
+  { token: "--palette-warm-brown", name: "Warm brown", role: "Bear-pride brown; literary flannel" },
+  { token: "--palette-ember", name: "Ember", role: "Bear-pride orange; Bearnard's flannel" },
+  { token: "--palette-honey", name: "Muted honey", role: "Accents; focus on dark surfaces" },
+  { token: "--palette-kraft", name: "Kraft", role: "Parent folders and their tabs" },
+  { token: "--palette-parchment", name: "Parchment", role: "Nested folders; quotes; code chips" },
+  { token: "--palette-ivory", name: "Warm ivory", role: "Active reading paper" },
+  { token: "--palette-navy", name: "Midnight navy", role: "Bearnard's fur; focus ring" },
+  { token: "--palette-forest", name: "Forest", role: "Links; the deep side of his green eyes" },
+  { token: "--palette-charcoal", name: "Charcoal", role: "Bear-pride black; technical shell" },
+]
+
+const supporting = [
+  { token: "--palette-bark", name: "Bark", role: "Shadows, flannel bands" },
+  { token: "--palette-umber", name: "Umber", role: "Secondary text" },
+  { token: "--palette-cocoa", name: "Cocoa", role: "Muted text" },
+  { token: "--palette-rust", name: "Rust", role: "Selection indicator; literary links" },
+  { token: "--palette-gold", name: "Gold", role: "Bear-pride gold; personal folders" },
+  { token: "--palette-midnight", name: "Midnight", role: "Scientific text and lining" },
+  { token: "--palette-slate", name: "Slate", role: "Navy edges; scientific secondary text" },
+  { token: "--palette-denim", name: "Denim", role: "Scientific muted text" },
+  { token: "--palette-eye-green", name: "Eye green", role: "Bearnard's eyes; links on dark" },
+  { token: "--palette-spruce", name: "Spruce", role: "Technical links and details" },
+  { token: "--palette-ash", name: "Ash", role: "Bear-pride gray; disabled states" },
+  { token: "--palette-terrain", name: "Terrain", role: "Technical flannel lining" },
+  { token: "--palette-oxblood", name: "Oxblood", role: "Core flannel lining" },
+]
+
+const pride = [
+  { token: "--color-pride-brown", stripe: "Dark brown" },
+  { token: "--color-pride-orange", stripe: "Orange and rust" },
+  { token: "--color-pride-gold", stripe: "Golden yellow" },
+  { token: "--color-pride-tan", stripe: "Cream and tan" },
+  { token: "--color-pride-white", stripe: "White" },
+  { token: "--color-pride-gray", stripe: "Gray" },
+  { token: "--color-pride-black", stripe: "Black" },
+]
+
+const roles = [
+  { token: "--color-backdrop", role: "Flannel lining and its plain fallback" },
+  { token: "--color-shell", role: "The main shell around the site" },
+  { token: "--color-folder-parent", role: "Parent folder material" },
+  { token: "--color-folder-tab-inactive", role: "Inactive tabs, sunk toward the shell" },
+  { token: "--color-folder-nested", role: "Nested folder material" },
+  { token: "--color-folder-active", role: "Active reading paper" },
+  { token: "--color-text-primary", role: "Primary text" },
+  { token: "--color-text-link", role: "Links on paper" },
+  { token: "--color-accent", role: "Decorative accent" },
+  { token: "--color-indicator-selected", role: "The V-shaped selection indicator" },
+  { token: "--color-focus-ring", role: "Keyboard focus on paper" },
+  { token: "--color-focus-ring-on-dark", role: "Keyboard focus on the shell" },
+]
+
+const layers = [
+  { token: "--color-shell", name: "Main shell", note: "The dark frame. Tabs will rise from it." },
+  { token: "--color-folder-parent", name: "Parent folder", note: "Kraft. Its tabs share this material." },
+  { token: "--color-folder-nested", name: "Nested folder", note: "Parchment: one step lighter, not a leap." },
+  {
+    token: "--color-folder-active",
+    name: "Active reading paper",
+    note: "Ivory and quiet, because reading happens here.",
+  },
+]
+
+const samples: Record<string, { heading: string; text: string; link: string; code?: string }> = {
+  scientific: {
+    heading: "Research",
+    text: "Chromatin conformation, gene regulation and the probabilistic models that read them, with the methods and data behind each result.",
+    link: "Read the research notes",
+  },
+  technical: {
+    heading: "Lecture Notes",
+    text: "Hidden Markov models and dynamic programming, with runnable code and the occasional mathematical pun.",
+    code: "viterbi(observations, states)",
+    link: "Open the notes",
+  },
+  literary: {
+    heading: "Writing",
+    text: "Literary experiments deserve a quieter page: an honest serif, generous margins and room for a footnote or two.",
+    link: "Begin reading",
+  },
+  personal: {
+    heading: "Bear Life",
+    text: "Photos, training logs and Bearnard's own corner. More color, more character, and still the same archive.",
+    link: "Visit Bearnard's Area",
+  },
+}
+
+const environmentCards = ENVIRONMENTS.map((env) => ({
+  ...env,
+  sample: samples[env.id],
+  ratios: [
+    { label: "Text", value: show(ratioOf("--color-text-primary", "--color-folder-active", env.id)) },
+    { label: "Link", value: show(ratioOf("--color-text-link", "--color-folder-active", env.id)) },
+    { label: "Muted", value: show(ratioOf("--color-text-muted", "--color-folder-active", env.id)) },
+    { label: "On shell", value: show(ratioOf("--color-text-on-dark", "--color-shell", env.id)) },
+  ],
+}))
 ---
 
 <BaseLayout
-  title="GusmaoLab — foundation page"
-  description="Temporary foundation page for the GusmaoLab website."
+  title="GusmaoLab — design study (P03, temporary)"
+  description="Temporary design specimen for the GusmaoLab website: palette, typography, paper materials and section environments awaiting the owner's review."
 >
-  <h1>GusmaoLab</h1>
-  <p>This is a temporary foundation page for the GusmaoLab website.</p>
-  <p>The visual interface is not implemented yet.</p>
+  <div class="frame" data-specimen="p03">
+    <div class="shell">
+      <header class="masthead gl-on-dark">
+        <p class="wordmark">
+          <span class="pride-mark" aria-hidden="true"></span>
+          <span class="wordmark-name">Gusmao<b>Lab</b></span>
+        </p>
+        <p class="masthead-note">
+          Design study · P03 · <strong>Temporary specimen</strong>, awaiting the owner's review
+        </p>
+      </header>
+
+      <div class="folder">
+        <section class="sheet hero" aria-labelledby="specimen-title">
+          <p class="overline">Visual foundations · first candidate</p>
+          <h1 id="specimen-title" class="display">
+            <span>The Lumberjack's</span> <b>Archive</b>
+          </h1>
+          <p class="lead">
+            Paper folders, honey light and a flannel lining, with a navy bear who is welcome
+            in every room of the lab.
+          </p>
+          <div class="hero-body">
+            <p>
+              This page is a <strong>temporary design study</strong>, not the GusmaoLab
+              homepage. It shows the proposed palette, typefaces, paper materials and section
+              environments before any folder navigation exists. Every value on it is a
+              candidate awaiting the owner's review.
+            </p>
+            <p class="muted">
+              Bioinformatics, AI, personal projects, literary experiments and occasional
+              mathematical puns all have to feel at home here, so nothing is stern and
+              nothing is shouting.
+            </p>
+          </div>
+          <ul class="principles" role="list">
+            <li>
+              <span class="principle-mark mark-identity" aria-hidden="true"></span>
+              <strong>Identity</strong>
+              <span>The bear-pride stripe family: brown, rust, gold, tan, white, gray, black.</span>
+            </li>
+            <li>
+              <span class="principle-mark mark-character" aria-hidden="true">
+                <i></i><i></i><i></i><i></i>
+              </span>
+              <strong>Character</strong>
+              <span>Bearnard: midnight-navy fur, green eyes, amber glasses, cream markings.</span>
+            </li>
+            <li>
+              <span class="principle-mark mark-atmosphere gl-flannel" aria-hidden="true"></span>
+              <strong>Atmosphere</strong>
+              <span>A quiet flannel lining around the archive, never behind text.</span>
+            </li>
+            <li>
+              <span class="principle-mark mark-structure" aria-hidden="true"><i></i></span>
+              <strong>Structure</strong>
+              <span>Real paper folders: kraft, parchment and ivory.</span>
+            </li>
+          </ul>
+        </section>
+
+        <section class="sheet" id="palette" aria-labelledby="palette-title">
+          <header class="sheet-head">
+            <p class="overline">Specimen A</p>
+            <h2 id="palette-title">Identity palette</h2>
+            <p class="sheet-intro">
+              Eleven foundation colors carry the identity; thirteen supporting tones serve
+              specific roles. Components never use these primitives directly: they use the
+              semantic roles below, which each environment can reassign. The hex values are
+              read from <code>src/styles/tokens.css</code> when the site is built.
+            </p>
+          </header>
+
+          <h3 class="group-title">Foundations</h3>
+          <ul class="swatches" role="list">
+            {
+              foundations.map((swatch) => (
+                <li class="swatch">
+                  <span class="swatch-chip" style={`--chip: var(${swatch.token})`} />
+                  <span class="swatch-name">{swatch.name}</span>
+                  <span class="swatch-code">
+                    <code>{swatch.token}</code>
+                    <code>{hex(swatch.token)}</code>
+                  </span>
+                  <span class="swatch-role">{swatch.role}</span>
+                </li>
+              ))
+            }
+          </ul>
+
+          <div class="palette-split">
+            <div>
+              <h3 class="group-title">The bear-pride stripe family</h3>
+              <ol class="pride" role="list">
+                {
+                  pride.map((band) => (
+                    <li>
+                      <span class="pride-band" style={`--chip: var(${band.token})`} />
+                      <span class="pride-label">
+                        <strong>{band.stripe}</strong>
+                        <code>{hex(band.token)}</code>
+                      </span>
+                    </li>
+                  ))
+                }
+              </ol>
+              <p class="note">
+                Palette interpretations of the seven-stripe family, toned to sit with the
+                rest of the palette. They are not certified flag values.
+              </p>
+            </div>
+            <div>
+              <h3 class="group-title">Supporting tones</h3>
+              <ul class="tones" role="list">
+                {
+                  supporting.map((swatch) => (
+                    <li>
+                      <span class="tone-chip" style={`--chip: var(${swatch.token})`} />
+                      <span class="tone-text">
+                        <strong>{swatch.name}</strong> <code>{hex(swatch.token)}</code>
+                        <span>{swatch.role}</span>
+                      </span>
+                    </li>
+                  ))
+                }
+              </ul>
+            </div>
+          </div>
+
+          <h3 class="group-title" id="roles-title">Semantic roles in the core environment</h3>
+          <div class="table-wrap" role="region" aria-labelledby="roles-title" tabindex="0">
+            <table>
+              <thead>
+                <tr>
+                  <th scope="col">Role token</th>
+                  <th scope="col">Value</th>
+                  <th scope="col">Used for</th>
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  roles.map((row) => (
+                    <tr>
+                      <td>
+                        <code>{row.token}</code>
+                      </td>
+                      <td class="role-value">
+                        <span class="role-chip" style={`--chip: var(${row.token})`} />
+                        <code>{hex(row.token)}</code>
+                      </td>
+                      <td>{row.role}</td>
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="sheet" id="typography" aria-labelledby="typography-title">
+          <header class="sheet-head">
+            <p class="overline">Specimen B</p>
+            <h2 id="typography-title">Typography</h2>
+            <p class="sheet-intro">
+              Four roles, all from fonts already installed on readers' devices, so nothing is
+              downloaded or redistributed. Where a face is missing, its stack falls back to a
+              close relative.
+            </p>
+          </header>
+
+          <div class="type-grid">
+            <figure class="type-card type-card-wide">
+              <figcaption class="type-label">
+                Display · <code>--font-display</code> · light and bold · <code>--font-size-display</code>
+              </figcaption>
+              <p class="sample-display">Field notes on the <b>folded genome</b></p>
+              <p class="type-stack">{stack("--font-display")}</p>
+            </figure>
+
+            <figure class="type-card">
+              <figcaption class="type-label">
+                Section heading · <code>--font-heading</code> · <code>--font-size-h2</code>
+              </figcaption>
+              <p class="sample-heading">Chromatin conformation and gene regulation</p>
+              <p class="type-stack">Core environment: the display face at regular weight</p>
+            </figure>
+
+            <figure class="type-card">
+              <figcaption class="type-label">
+                Interface and body · <code>--font-interface</code> · <code>--font-size-body</code>
+              </figcaption>
+              <p>
+                GusmaoLab gathers research, software, teaching and writing in one archive.
+                Each section is a folder with its own paper, and Bearnard is allowed in all of
+                them, including the CV.
+              </p>
+              <p class="type-stack">{stack("--font-interface")}</p>
+            </figure>
+
+            <figure class="type-card">
+              <figcaption class="type-label">
+                Editorial · <code>--font-editorial</code> · literary pages
+              </figcaption>
+              <p class="sample-editorial">
+                Every archive keeps two kinds of record: the ones it meant to keep, and the
+                ones that slipped in between the folders. A ticket stub, a pressed leaf, a note
+                in pencil that only makes sense years later.
+              </p>
+              <p class="type-stack">{stack("--font-editorial")}</p>
+            </figure>
+
+            <figure class="type-card type-card-wide type-card-code">
+              <figcaption class="type-label">
+                Code · <code>--font-mono</code> · <code>--font-size-code-block</code>
+              </figcaption>
+              <pre tabindex="0" aria-label="Python code sample"><code>{`def reverse_complement(sequence: str) -> str:
+    """Return the reverse complement of a DNA sequence."""
+    pairs = str.maketrans("ACGTacgt", "TGCAtgca")
+    return sequence.translate(pairs)[::-1]`}</code></pre>
+              <p class="type-stack">{stack("--font-mono")}</p>
+            </figure>
+
+            <figure class="type-card">
+              <figcaption class="type-label">
+                Mathematics · <code>--font-math</code> · MathML
+              </figcaption>
+              <math display="block" class="sample-math">
+                <mrow>
+                  <mi>H</mi><mo stretchy="false">(</mo><mi>X</mi><mo stretchy="false">)</mo>
+                  <mo>=</mo><mo>−</mo>
+                  <munder><mo>∑</mo><mrow><mi>x</mi><mo>∈</mo><mi>𝒳</mi></mrow></munder>
+                  <mi>p</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo>
+                  <msub><mi>log</mi><mn>2</mn></msub>
+                  <mi>p</mi><mo stretchy="false">(</mo><mi>x</mi><mo stretchy="false">)</mo>
+                </mrow>
+              </math>
+              <p class="type-stack">Shannon entropy, as used for sequence-motif information</p>
+            </figure>
+
+            <figure class="type-card">
+              <figcaption class="type-label">Quotation · <code>--color-surface-quote</code></figcaption>
+              <blockquote>
+                <p>
+                  From so simple a beginning endless forms most beautiful and most wonderful
+                  have been, and are being, evolved.
+                </p>
+              </blockquote>
+              <p class="type-stack">Charles Darwin, <cite>On the Origin of Species</cite> (1859)</p>
+            </figure>
+
+            <figure class="type-card">
+              <figcaption class="type-label">
+                Muted supporting text · <code>--color-text-muted</code>
+              </figcaption>
+              <p class="muted">
+                Figure 2. Muted text is for captions, dates and quiet metadata. It still
+                clears 4.5:1 on every paper.
+              </p>
+              <p class="sample-small">
+                Run <code>npm run verify</code> before committing; press <kbd>Tab</kbd> to move
+                focus.
+              </p>
+            </figure>
+
+            <figure class="type-card type-card-wide">
+              <figcaption class="type-label">
+                Folder-label roles · <code>--font-size-tab-1</code> to <code>-3</code> · labels
+                only, no tabs yet
+              </figcaption>
+              <dl class="tab-labels">
+                <div>
+                  <dt>Level 1</dt>
+                  <dd class="tab-label-1">Research</dd>
+                </div>
+                <div>
+                  <dt>Level 2</dt>
+                  <dd class="tab-label-2">Publications</dd>
+                </div>
+                <div>
+                  <dt>Level 3</dt>
+                  <dd class="tab-label-3">Chromatin architecture</dd>
+                </div>
+                <div>
+                  <dt>Hover preview</dt>
+                  <dd class="tab-label-preview">Immediate children only</dd>
+                </div>
+              </dl>
+            </figure>
+          </div>
+        </section>
+
+        <section class="sheet" id="materials" aria-labelledby="materials-title">
+          <header class="sheet-head">
+            <p class="overline">Specimen C</p>
+            <h2 id="materials-title">Paper and materials</h2>
+            <p class="sheet-intro">
+              A small number of surfaces, each a step from the last. Depth comes from edges
+              and soft shadows as much as from lightness, so deeper folders never jump in
+              brightness.
+            </p>
+          </header>
+
+          <div class="materials">
+            <figure class="stack">
+              <div class="layer layer-shell">
+                <p class="layer-label gl-on-dark">
+                  <strong>{layers[0].name}</strong>
+                  <code>{layers[0].token}</code>
+                  <span>{hex(layers[0].token)} · {layers[0].note}</span>
+                </p>
+                <div class="layer layer-parent">
+                  <p class="layer-label">
+                    <strong>{layers[1].name}</strong>
+                    <code>{layers[1].token}</code>
+                    <span>{hex(layers[1].token)} · {layers[1].note}</span>
+                  </p>
+                  <div class="layer layer-nested">
+                    <p class="layer-label">
+                      <strong>{layers[2].name}</strong>
+                      <code>{layers[2].token}</code>
+                      <span>{hex(layers[2].token)} · {layers[2].note}</span>
+                    </p>
+                    <div class="layer layer-active">
+                      <p class="layer-label">
+                        <strong>{layers[3].name}</strong>
+                        <code>{layers[3].token}</code>
+                        <span>{hex(layers[3].token)} · {layers[3].note}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <figcaption class="note">
+                Rectangular specimens only. The connected tab silhouettes come in P05–P07.
+              </figcaption>
+            </figure>
+
+            <div class="material-side">
+              <div class="textiles">
+                <figure>
+                  <div class="textile gl-flannel"></div>
+                  <figcaption>
+                    <strong>Flannel lining</strong>{" "}
+                    CSS gradients only, no image files. Strength 1, set by <code>--texture-flannel-strength</code>.
+                  </figcaption>
+                </figure>
+                <figure>
+                  <div class="textile textile-plain"></div>
+                  <figcaption>
+                    <strong>Plain fallback</strong>{" "}
+                    <code>{hex("--color-backdrop")}</code>, used in high-contrast and forced-colors
+                    modes or with the texture switched off.
+                  </figcaption>
+                </figure>
+              </div>
+
+              <ul class="depths" role="list">
+                <li>
+                  <span class="depth-tile depth-edge"></span>
+                  <strong>Edge highlight</strong>
+                  <code>--color-folder-edge</code>
+                </li>
+                <li>
+                  <span class="depth-tile depth-recess"></span>
+                  <strong>Recess</strong>
+                  <code>--shadow-recess</code>
+                </li>
+                <li>
+                  <span class="depth-tile depth-paper"><i></i></span>
+                  <strong>Resting paper</strong>
+                  <code>--shadow-paper</code>
+                </li>
+                <li>
+                  <span class="depth-tile depth-raised"><i></i></span>
+                  <strong>Raised paper</strong>
+                  <code>--shadow-paper-raised</code>
+                </li>
+              </ul>
+
+              <aside class="mascot-slot" aria-labelledby="mascot-title">
+                <div class="mascot-frame" aria-hidden="true">
+                  <span>Bearnard</span>
+                </div>
+                <div class="mascot-text">
+                  <h3 id="mascot-title">Mascot slot</h3>
+                  <p>
+                    Reserved for an approved Bearnard derivative. This study shows no mascot
+                    image: the canonical masters stay untouched and out of the site.
+                  </p>
+                  <ul class="bear-colors" role="list">
+                    <li><i style="--chip: var(--palette-navy)"></i>Navy fur</li>
+                    <li><i style="--chip: var(--palette-eye-green)"></i>Green eyes</li>
+                    <li><i style="--chip: var(--palette-honey)"></i>Amber glasses</li>
+                    <li><i style="--chip: var(--palette-ember)"></i>Flannel</li>
+                  </ul>
+                </div>
+              </aside>
+            </div>
+          </div>
+        </section>
+
+        <section class="sheet" id="environments" aria-labelledby="environments-title">
+          <header class="sheet-head">
+            <p class="overline">Specimen D</p>
+            <h2 id="environments-title">Section environments</h2>
+            <p class="sheet-intro">
+              One folder system, four atmospheres. Each panel below is the same composition
+              with <code>data-environment</code> set, so only tokens change: lining, shell,
+              folder, text, links, accents and type.
+            </p>
+          </header>
+
+          <div class="environments">
+            {
+              environmentCards.map((env) => (
+                <figure class="env-figure">
+                  <div class="env" data-environment={env.id}>
+                    <div class="env-lining gl-flannel">
+                      <div class="env-shell">
+                        <p class="env-name gl-on-dark">
+                          <strong>{env.name}</strong>
+                          <span>{env.sections.join(" · ")}</span>
+                        </p>
+                        <div class="env-folder">
+                          <div class="env-paper">
+                            <h3>{env.sample.heading}</h3>
+                            <p>{env.sample.text}</p>
+                            {env.sample.code && (
+                              <p>
+                                <code>{env.sample.code}</code>
+                              </p>
+                            )}
+                            <p>
+                              <a href="#environments">{env.sample.link}</a>
+                            </p>
+                            <p class="env-chips">
+                              <span class="env-accent" />
+                              <span class="env-indicator">
+                                <i />
+                              </span>
+                              <span class="muted">Accent and selection colors</span>
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <figcaption class="env-contrast">
+                    {env.ratios.map((r) => (
+                      <span>
+                        {r.label} <strong>{r.value}</strong>
+                      </span>
+                    ))}
+                  </figcaption>
+                </figure>
+              ))
+            }
+          </div>
+        </section>
+
+        <section class="sheet" id="interaction" aria-labelledby="interaction-title">
+          <header class="sheet-head">
+            <p class="overline">Specimen E</p>
+            <h2 id="interaction-title">Interaction states</h2>
+            <p class="sheet-intro">
+              Static examples sit next to live ones. Press <kbd>Tab</kbd> to move the focus
+              ring through the live link and buttons; nothing here navigates anywhere.
+            </p>
+          </header>
+
+          <div class="states">
+            <div class="state-group">
+              <h3 class="group-title">On reading paper</h3>
+              <dl class="state-list">
+                <div>
+                  <dt>Link</dt>
+                  <dd><a href="#interaction">Chromatin architecture notes</a></dd>
+                </div>
+                <div>
+                  <dt>Hover, shown statically</dt>
+                  <dd><span class="demo-link-hover">Chromatin architecture notes</span></dd>
+                </div>
+                <div>
+                  <dt>Keyboard focus, shown statically</dt>
+                  <dd><span class="demo-focus">Open the Research folder</span></dd>
+                </div>
+                <div>
+                  <dt>Live focus on a control</dt>
+                  <dd><button type="button" class="demo-button">Sample button</button></dd>
+                </div>
+                <div>
+                  <dt>Active state</dt>
+                  <dd><span class="demo-active">Research, the open folder</span></dd>
+                </div>
+                <div>
+                  <dt>Selection indicator on tab material</dt>
+                  <dd>
+                    <span class="demo-indicator">Research<i aria-hidden="true"></i></span>
+                  </dd>
+                </div>
+                <div>
+                  <dt>Muted text</dt>
+                  <dd><span class="muted">Captions, dates and quiet metadata</span></dd>
+                </div>
+                <div>
+                  <dt>Disabled control</dt>
+                  <dd>
+                    <button type="button" class="demo-button" disabled>Not available yet</button>
+                  </dd>
+                </div>
+              </dl>
+            </div>
+
+            <div class="state-group state-dark gl-on-dark">
+              <h3 class="group-title">On the dark shell</h3>
+              <dl class="state-list">
+                <div>
+                  <dt>Link</dt>
+                  <dd><a href="#interaction">Read the lab notes</a></dd>
+                </div>
+                <div>
+                  <dt>Keyboard focus, shown statically</dt>
+                  <dd><span class="demo-focus">Open the Lab folder</span></dd>
+                </div>
+                <div>
+                  <dt>Muted text</dt>
+                  <dd><span class="muted">Secondary labels on the shell</span></dd>
+                </div>
+              </dl>
+              <p class="state-summary">
+                Contrast: {contrastPassing} of {contrastChecks.length} checked pairings meet
+                their WCAG minimum across the core and four environments.
+              </p>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <footer class="colophon gl-on-dark">
+        <p>Temporary design study for P03. Not the final homepage, and not deployed.</p>
+        <p>
+          Values in <code>src/styles/</code> · contrast checks in <code>tests/contrast.mjs</code>
+          · notes in <code>planning/design-system.md</code>
+        </p>
+      </footer>
+    </div>
+  </div>
 </BaseLayout>
+
+<style>
+  /* Specimen layout. Temporary: it leaves with the specimen. Semantic tokens only,
+     except the palette chips, which show primitives on purpose. */
+
+  .frame {
+    padding: var(--space-gutter);
+  }
+
+  .shell {
+    max-inline-size: var(--size-shell-max);
+    margin-inline: auto;
+    padding: var(--space-shell-padding);
+    border: var(--border-width-hairline) solid var(--color-shell-border);
+    border-radius: var(--radius-shell);
+    background-color: var(--color-shell);
+    box-shadow: var(--shadow-shell);
+  }
+
+  /* Masthead and colophon, on the shell */
+
+  .masthead {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2xs) var(--space-m);
+    padding: var(--space-2xs) var(--space-xs) var(--space-s);
+  }
+
+  .wordmark {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    font-family: var(--font-display);
+    font-size: clamp(1.375rem, 1.2rem + 0.6vw, 1.75rem);
+    line-height: 1;
+  }
+
+  .wordmark-name {
+    font-weight: var(--font-weight-light);
+    letter-spacing: -0.01em;
+  }
+
+  .wordmark-name b {
+    font-weight: var(--font-weight-bold);
+  }
+
+  .pride-mark {
+    flex: none;
+    inline-size: 0.625rem;
+    block-size: 1.875rem;
+    border-radius: 2px;
+    background: linear-gradient(
+      var(--color-pride-brown) 0 14.29%,
+      var(--color-pride-orange) 0 28.57%,
+      var(--color-pride-gold) 0 42.86%,
+      var(--color-pride-tan) 0 57.14%,
+      var(--color-pride-white) 0 71.43%,
+      var(--color-pride-gray) 0 85.71%,
+      var(--color-pride-black) 0
+    );
+  }
+
+  .masthead-note,
+  .colophon {
+    color: var(--color-text-on-dark-muted);
+    font-family: var(--font-label);
+    font-size: var(--font-size-sm);
+    letter-spacing: var(--letter-spacing-ui);
+  }
+
+  .masthead-note strong {
+    color: var(--color-text-on-dark);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .colophon {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-2xs) var(--space-l);
+    padding: var(--space-s) var(--space-xs) var(--space-2xs);
+  }
+
+  /* The parent folder and its sheets of paper */
+
+  /* Single-column grids get minmax(0, 1fr) so wide content (code, formulas, long token
+     names) scrolls or wraps inside its card instead of widening the page. */
+  .folder,
+  .type-card,
+  .layer,
+  .material-side,
+  .env-paper,
+  .mascot-text {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .folder {
+    display: grid;
+    gap: var(--space-m);
+    padding: var(--folder-nest-inset);
+    border-radius: var(--radius-folder);
+    background-color: var(--color-folder-parent);
+    box-shadow: var(--shadow-folder);
+  }
+
+  .sheet {
+    padding: var(--space-content-block) var(--space-content-inline);
+    border-radius: var(--radius-paper);
+    background-color: var(--color-folder-active);
+    box-shadow: var(--shadow-paper-raised);
+  }
+
+  .sheet-head {
+    display: grid;
+    gap: var(--space-2xs);
+    max-inline-size: var(--measure-prose);
+    margin-block-end: var(--space-l);
+  }
+
+  .sheet-intro {
+    color: var(--color-text-secondary);
+  }
+
+  .overline,
+  .group-title,
+  .type-label,
+  .state-list dt {
+    color: var(--color-text-secondary);
+    font-family: var(--font-label);
+    font-size: var(--font-size-xs);
+    font-style: normal;
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-label);
+    line-height: var(--line-height-ui);
+    text-transform: uppercase;
+  }
+
+  .group-title {
+    margin-block: var(--space-xl) var(--space-s);
+  }
+
+  .muted {
+    color: var(--color-text-muted);
+  }
+
+  .note {
+    margin-block-start: var(--space-s);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  /* Hero */
+
+  .display {
+    margin-block: var(--space-xs) var(--space-m);
+    font-family: var(--font-display);
+    font-size: var(--font-size-display);
+    font-weight: var(--font-weight-light);
+    letter-spacing: var(--letter-spacing-display);
+    line-height: var(--line-height-display);
+  }
+
+  .display b {
+    font-weight: var(--font-weight-bold);
+  }
+
+  .lead {
+    max-inline-size: 38ch;
+    color: var(--color-text-secondary);
+    font-family: var(--font-editorial);
+    font-size: var(--font-size-lead);
+    font-style: italic;
+    line-height: 1.45;
+  }
+
+  .hero-body {
+    display: grid;
+    gap: var(--space-s);
+    max-inline-size: var(--measure-prose);
+    margin-block-start: var(--space-l);
+  }
+
+  .principles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13.5rem), 1fr));
+    gap: var(--space-m);
+    margin: var(--space-xl) 0 0;
+    padding: var(--space-l) 0 0;
+    border-block-start: var(--border-width-hairline) solid var(--color-folder-border);
+    list-style: none;
+  }
+
+  .principles li {
+    display: grid;
+    gap: var(--space-3xs);
+    align-content: start;
+  }
+
+  .principles span:last-child {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+  }
+
+  .principle-mark {
+    display: block;
+    inline-size: 3.5rem;
+    block-size: 2.25rem;
+    margin-block-end: var(--space-2xs);
+    border-radius: var(--radius-control);
+  }
+
+  .mark-identity {
+    background: linear-gradient(
+      var(--color-pride-brown) 0 14.29%,
+      var(--color-pride-orange) 0 28.57%,
+      var(--color-pride-gold) 0 42.86%,
+      var(--color-pride-tan) 0 57.14%,
+      var(--color-pride-white) 0 71.43%,
+      var(--color-pride-gray) 0 85.71%,
+      var(--color-pride-black) 0
+    );
+    box-shadow: inset 0 0 0 1px var(--color-folder-border);
+  }
+
+  /* Miniatures weave the same flannel at a smaller scale. */
+  .mark-atmosphere {
+    --texture-flannel-sett: 1.75rem;
+    box-shadow: var(--shadow-paper);
+  }
+
+  .mark-character {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  .mark-character i {
+    inline-size: 1.25rem;
+    block-size: 1.25rem;
+    border-radius: 50%;
+    background: var(--palette-navy);
+  }
+
+  .mark-character i:nth-child(2) {
+    background: var(--palette-eye-green);
+  }
+
+  .mark-character i:nth-child(3) {
+    background: var(--palette-honey);
+  }
+
+  .mark-character i:nth-child(4) {
+    background: var(--palette-parchment);
+    box-shadow: inset 0 0 0 1px var(--color-folder-border);
+  }
+
+  .mark-structure {
+    padding: 0.3rem 0.3rem 0;
+    background: var(--color-folder-parent);
+    box-shadow: var(--shadow-folder);
+  }
+
+  .mark-structure i {
+    display: block;
+    block-size: 100%;
+    padding: 0.25rem 0.25rem 0;
+    border-radius: 2px 2px 0 0;
+    background: var(--color-folder-nested);
+  }
+
+  .mark-structure i::after {
+    content: "";
+    display: block;
+    block-size: 100%;
+    border-radius: 1px 1px 0 0;
+    background: var(--color-folder-active);
+    box-shadow: var(--shadow-paper);
+  }
+
+  /* Specimen A: palette */
+
+  .swatches,
+  .tones,
+  .pride,
+  .depths,
+  .bear-colors {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .swatches {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 10.5rem), 1fr));
+    gap: var(--space-s);
+  }
+
+  .swatch {
+    display: grid;
+    align-content: start;
+    gap: var(--space-3xs);
+    overflow: hidden;
+    padding-block-end: var(--space-xs);
+    border: var(--border-width-hairline) solid var(--color-surface-card-border);
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface-card);
+    box-shadow: var(--shadow-paper);
+  }
+
+  .swatch-chip {
+    display: block;
+    block-size: 5.5rem;
+    margin-block-end: var(--space-2xs);
+    background: var(--chip);
+    box-shadow: inset 0 -1px 0 var(--color-folder-border);
+  }
+
+  .swatch-name,
+  .swatch-code,
+  .swatch-role {
+    padding-inline: var(--space-xs);
+  }
+
+  .swatch-name {
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-ui);
+  }
+
+  .swatch-code {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0 var(--space-2xs);
+  }
+
+  .swatch-code code,
+  .tone-text code,
+  .pride-label code,
+  .layer-label code,
+  .depths code,
+  .role-value code {
+    padding: 0;
+    background: none;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-xs);
+  }
+
+  .swatch-role {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-ui);
+  }
+
+  .palette-split {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: 0 var(--space-xl);
+  }
+
+  .pride {
+    display: grid;
+    overflow: hidden;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-paper);
+  }
+
+  .pride li {
+    display: grid;
+    grid-template-columns: 1fr minmax(9rem, 40%);
+    align-items: stretch;
+    background: var(--color-surface-card);
+  }
+
+  .pride li + li .pride-label {
+    border-block-start: var(--border-width-hairline) solid var(--color-folder-border);
+  }
+
+  .pride-band {
+    min-block-size: 2.25rem;
+    background: var(--chip);
+  }
+
+  .pride-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2xs);
+    padding: 0 var(--space-xs);
+    font-size: var(--font-size-sm);
+  }
+
+  .tones {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+    gap: var(--space-xs) var(--space-s);
+  }
+
+  .tones li {
+    display: flex;
+    gap: var(--space-xs);
+    align-items: center;
+  }
+
+  .tone-chip {
+    flex: none;
+    inline-size: 2.75rem;
+    block-size: 2.75rem;
+    border-radius: var(--radius-control);
+    background: var(--chip);
+    box-shadow: inset 0 0 0 1px var(--color-folder-border);
+  }
+
+  .tone-text {
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-ui);
+  }
+
+  .tone-text span {
+    display: block;
+    color: var(--color-text-muted);
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-paper);
+  }
+
+  .table-wrap table {
+    font-size: var(--font-size-sm);
+  }
+
+  /* Keep token names whole; on narrow screens the table scrolls inside its wrapper. */
+  .role-value,
+  .table-wrap td:first-child code {
+    white-space: nowrap;
+  }
+
+  .role-chip {
+    display: inline-block;
+    inline-size: 1rem;
+    block-size: 1rem;
+    margin-inline-end: var(--space-2xs);
+    border-radius: 3px;
+    background: var(--chip);
+    box-shadow: inset 0 0 0 1px var(--color-folder-border);
+    vertical-align: -0.15em;
+  }
+
+  /* Specimen B: typography */
+
+  .type-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    gap: var(--space-m);
+  }
+
+  .type-card {
+    display: grid;
+    align-content: start;
+    gap: var(--space-s);
+    margin: 0;
+    padding: var(--space-m);
+    border: var(--border-width-hairline) solid var(--color-surface-card-border);
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface-card);
+  }
+
+  .type-card-wide {
+    grid-column: 1 / -1;
+  }
+
+  .type-label code,
+  .type-stack {
+    font-size: var(--font-size-xs);
+  }
+
+  .type-label code {
+    padding: 0;
+    background: none;
+    color: inherit;
+    letter-spacing: 0;
+    text-transform: none;
+  }
+
+  /* Token names wrap between tokens, never at their own hyphens. */
+  .type-label code,
+  .sheet-intro code {
+    white-space: nowrap;
+  }
+
+  .type-stack {
+    color: var(--color-text-muted);
+    font-family: var(--font-code);
+    overflow-wrap: anywhere;
+  }
+
+  .sample-display {
+    font-family: var(--font-display);
+    font-size: clamp(2.25rem, 1.5rem + 3.2vw, 4.25rem);
+    font-weight: var(--font-weight-light);
+    letter-spacing: var(--letter-spacing-display);
+    line-height: var(--line-height-display);
+  }
+
+  .sample-display b {
+    font-weight: var(--font-weight-bold);
+  }
+
+  .sample-heading {
+    color: var(--color-text-heading);
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h2);
+    font-style: var(--font-heading-style);
+    font-weight: var(--font-heading-weight);
+    letter-spacing: var(--letter-spacing-heading);
+    line-height: var(--line-height-heading);
+  }
+
+  .sample-editorial {
+    font-family: var(--font-editorial);
+    font-size: 1.1875rem;
+    line-height: 1.7;
+  }
+
+  .sample-small {
+    font-size: var(--font-size-sm);
+  }
+
+  .type-card-code pre {
+    margin: 0;
+  }
+
+  .sample-math {
+    font-size: clamp(1.0625rem, 0.9rem + 1vw, 1.375rem);
+  }
+
+  .type-card blockquote p {
+    font-size: 1.125rem;
+  }
+
+  .tab-labels {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
+    gap: var(--space-s) var(--space-m);
+    margin: 0;
+  }
+
+  .tab-labels dt {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+  }
+
+  .tab-labels dd {
+    font-family: var(--font-label);
+    font-weight: var(--font-weight-tab);
+    letter-spacing: var(--letter-spacing-tab);
+  }
+
+  .tab-label-1 {
+    font-size: var(--font-size-tab-1);
+  }
+
+  .tab-label-2 {
+    font-size: var(--font-size-tab-2);
+  }
+
+  .tab-label-3 {
+    font-size: var(--font-size-tab-3);
+  }
+
+  .tab-label-preview {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-tab-preview);
+    font-weight: var(--font-weight-regular);
+  }
+
+  /* Specimen C: materials */
+
+  .materials {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 24rem), 1fr));
+    gap: var(--space-xl);
+    align-items: start;
+  }
+
+  .stack {
+    margin: 0;
+  }
+
+  .layer {
+    display: grid;
+    gap: var(--space-s);
+    padding: var(--space-s);
+  }
+
+  .layer-shell {
+    border: var(--border-width-hairline) solid var(--color-shell-border);
+    border-radius: var(--radius-shell);
+    background-color: var(--color-shell);
+    box-shadow: var(--shadow-shell);
+  }
+
+  .layer-parent {
+    border-radius: var(--radius-folder);
+    background-color: var(--color-folder-parent);
+    box-shadow: var(--shadow-folder);
+  }
+
+  .layer-nested {
+    border-radius: var(--radius-card);
+    background-color: var(--color-folder-nested);
+    box-shadow: var(--shadow-paper), var(--shadow-recess);
+  }
+
+  .layer-active {
+    min-block-size: 7rem;
+    border-radius: var(--radius-paper);
+    background-color: var(--color-folder-active);
+    box-shadow: var(--shadow-paper-raised);
+  }
+
+  .layer-label {
+    display: grid;
+    gap: 0.125rem;
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-ui);
+  }
+
+  .layer-label span {
+    color: var(--color-text-secondary);
+  }
+
+  .layer-label.gl-on-dark code {
+    color: var(--color-text-on-dark-muted);
+  }
+
+  .material-side {
+    display: grid;
+    gap: var(--space-l);
+  }
+
+  .textiles {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 10rem), 1fr));
+    gap: var(--space-s);
+  }
+
+  .textiles code,
+  .layer-label code,
+  .swatch-code code,
+  .depths code {
+    overflow-wrap: anywhere;
+  }
+
+  .textiles figure {
+    display: grid;
+    gap: var(--space-2xs);
+    margin: 0;
+  }
+
+  .textiles figcaption {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-ui);
+  }
+
+  .textiles figcaption strong {
+    display: block;
+    color: var(--color-text-primary);
+  }
+
+  .textile {
+    block-size: 9rem;
+    border-radius: var(--radius-card);
+    box-shadow: var(--shadow-paper);
+  }
+
+  .textile-plain {
+    background-color: var(--color-backdrop);
+  }
+
+  .depths {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-s);
+  }
+
+  .depths li {
+    display: grid;
+    gap: 0.125rem;
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-ui);
+  }
+
+  .depth-tile {
+    display: grid;
+    place-items: center;
+    block-size: 4.5rem;
+    margin-block-end: var(--space-2xs);
+    border-radius: var(--radius-card);
+    background-color: var(--color-folder-parent);
+  }
+
+  .depth-edge {
+    box-shadow:
+      inset 0 2px 0 color-mix(in srgb, var(--color-folder-edge) 70%, transparent),
+      var(--shadow-paper);
+  }
+
+  .depth-recess {
+    box-shadow: var(--shadow-recess);
+  }
+
+  .depth-paper,
+  .depth-raised {
+    background-color: var(--color-folder-nested);
+  }
+
+  .depth-paper i,
+  .depth-raised i {
+    inline-size: 60%;
+    block-size: 55%;
+    border-radius: var(--radius-paper);
+    background-color: var(--color-folder-active);
+  }
+
+  .depth-paper i {
+    box-shadow: var(--shadow-paper);
+  }
+
+  .depth-raised i {
+    box-shadow: var(--shadow-paper-raised);
+  }
+
+  .mascot-slot {
+    display: grid;
+    grid-template-columns: minmax(6rem, 9rem) 1fr;
+    gap: var(--space-m);
+    align-items: center;
+    padding: var(--space-m);
+    border-inline-start: var(--border-width-thick) solid var(--color-callout-border);
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface-callout);
+  }
+
+  .mascot-frame {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 3 / 4;
+    border: var(--border-width-thin) dashed var(--color-text-muted);
+    border-radius: var(--radius-card);
+    color: var(--color-text-muted);
+    font-family: var(--font-display);
+    font-size: var(--font-size-sm);
+  }
+
+  .mascot-text {
+    display: grid;
+    gap: var(--space-2xs);
+  }
+
+  @media (max-width: 32rem) {
+    .mascot-slot {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .mascot-frame {
+      inline-size: 7rem;
+    }
+  }
+
+  .mascot-text h3 {
+    font-size: var(--font-size-h3);
+  }
+
+  .bear-colors {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3xs) var(--space-s);
+    font-size: var(--font-size-sm);
+  }
+
+  .bear-colors li {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3xs);
+  }
+
+  .bear-colors i {
+    inline-size: 0.875rem;
+    block-size: 0.875rem;
+    border-radius: 50%;
+    background: var(--chip);
+  }
+
+  /* Specimen D: environments */
+
+  .environments {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 26rem), 1fr));
+    gap: var(--space-xl) var(--space-l);
+  }
+
+  .env-figure {
+    display: grid;
+    gap: var(--space-2xs);
+    margin: 0;
+  }
+
+  .env-lining {
+    --texture-flannel-sett: 4.5rem;
+    padding: clamp(0.625rem, 0.4rem + 1vw, 1.25rem);
+    border-radius: var(--radius-card);
+  }
+
+  .env-shell {
+    padding: var(--space-2xs);
+    border: var(--border-width-hairline) solid var(--color-shell-border);
+    border-radius: calc(var(--radius-shell) * 0.65);
+    background-color: var(--color-shell);
+    box-shadow: var(--shadow-shell);
+  }
+
+  .env-name {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0 var(--space-s);
+    padding: var(--space-3xs) var(--space-2xs) var(--space-2xs);
+    font-family: var(--font-label);
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-ui);
+  }
+
+  .env-name strong {
+    font-family: var(--font-heading);
+    font-size: 1.0625rem;
+    font-style: var(--font-heading-style);
+    font-weight: var(--font-heading-weight);
+  }
+
+  .env-name span {
+    color: var(--color-text-on-dark-muted);
+  }
+
+  .env-folder {
+    padding: var(--folder-nest-inset);
+    border-radius: var(--radius-folder);
+    background-color: var(--color-folder-parent);
+    box-shadow: var(--shadow-folder);
+  }
+
+  .env-paper {
+    display: grid;
+    gap: var(--space-xs);
+    padding: var(--space-m);
+    border-radius: var(--radius-paper);
+    background-color: var(--color-folder-active);
+    box-shadow: var(--shadow-paper-raised);
+  }
+
+  .env-paper h3 {
+    font-size: var(--font-size-h2);
+  }
+
+  .env-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    align-items: center;
+    margin-block-start: var(--space-2xs);
+    font-size: var(--font-size-xs);
+  }
+
+  .env-accent {
+    inline-size: 2.5rem;
+    block-size: 0.5rem;
+    border-radius: 999px;
+    background: var(--color-accent);
+    opacity: calc(0.55 + var(--ornament-intensity) * 0.45);
+  }
+
+  .env-indicator,
+  .demo-indicator {
+    display: inline-grid;
+    justify-items: center;
+    border-radius: var(--radius-control);
+    background: var(--color-folder-tab-active);
+  }
+
+  .env-indicator {
+    inline-size: 2.75rem;
+    padding-block: 0.5rem 0.375rem;
+  }
+
+  .env-indicator i,
+  .demo-indicator i {
+    display: block;
+    inline-size: var(--folder-indicator-width);
+    block-size: var(--folder-indicator-depth);
+    background: var(--color-indicator-selected);
+    clip-path: polygon(0 0, 50% 100%, 100% 0, 78% 0, 50% 58%, 22% 0);
+  }
+
+  .env-contrast {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3xs) var(--space-s);
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+  }
+
+  .env-contrast strong {
+    color: var(--color-text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Specimen E: interaction */
+
+  .states {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: var(--space-l);
+    align-items: start;
+  }
+
+  .state-group .group-title {
+    margin-block-start: 0;
+  }
+
+  .state-dark {
+    padding: var(--space-m);
+    border: var(--border-width-hairline) solid var(--color-shell-border);
+    border-radius: var(--radius-folder);
+    background-color: var(--color-shell);
+  }
+
+  .state-list {
+    display: grid;
+    gap: var(--space-s);
+    margin: 0;
+  }
+
+  .state-list div {
+    display: grid;
+    gap: var(--space-3xs);
+  }
+
+  .demo-link-hover {
+    color: var(--color-text-link-hover);
+    text-decoration-line: underline;
+    text-decoration-thickness: 0.14em;
+    text-underline-offset: 0.2em;
+  }
+
+  .demo-focus {
+    display: inline-block;
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--radius-control);
+    outline: var(--focus-ring-width) solid var(--color-focus-ring);
+    outline-offset: var(--focus-ring-offset);
+  }
+
+  .demo-button {
+    padding: var(--space-2xs) var(--space-s);
+    border: var(--border-width-hairline) solid var(--color-folder-border);
+    border-radius: var(--radius-control);
+    background-color: var(--color-folder-nested);
+    color: var(--color-text-primary);
+    font-family: var(--font-label);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .demo-button:hover:not(:disabled) {
+    background-color: var(--color-state-hover);
+  }
+
+  .demo-button:disabled {
+    background-color: var(--color-state-disabled-surface);
+    color: var(--color-state-disabled);
+    cursor: not-allowed;
+  }
+
+  .demo-active {
+    color: var(--color-state-active);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .demo-indicator {
+    gap: var(--folder-indicator-gap);
+    padding: var(--space-2xs) var(--space-m) var(--space-2xs);
+    font-family: var(--font-label);
+    font-size: var(--font-size-tab-1);
+    font-weight: var(--font-weight-tab);
+    letter-spacing: var(--letter-spacing-tab);
+  }
+
+  .state-summary {
+    margin-block-start: var(--space-m);
+    color: var(--color-text-on-dark-muted);
+    font-size: var(--font-size-sm);
+  }
+</style>

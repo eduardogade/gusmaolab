@@ -1,6 +1,6 @@
 # Architecture
 
-Status: approved direction recorded in P01. The Astro foundation was set up in P02 (2026-11-10). The visual interface is not implemented.
+Status: approved direction recorded in P01. The Astro foundation was set up in P02 and the design-token foundation in P03 (2026-11-10). The visual interface is not implemented.
 
 ## Approved direction
 
@@ -24,14 +24,19 @@ Status: approved direction recorded in P01. The Astro foundation was set up in P
 | Build output | `dist/` (gitignored) |
 | TypeScript | Extends `astro/tsconfigs/strict`; excludes `dist`, `_backup`, `brand` and the private folders |
 | Diagnostics | `astro check`, using `@astrojs/check` 0.9.12 and TypeScript 6.0.3 |
-| Smoke test | `tests/smoke-test.mjs` checks `dist/` |
+| Styles | Native CSS custom properties in `src/styles/`, imported by `BaseLayout` (D-026). No CSS framework or preprocessor. |
+| Environments | `data-environment` on `<html>` via BaseLayout's `environment` prop, or on any element (D-027) |
+| Tests | `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs` and `tests/smoke-test.mjs` (D-032) |
 
-## Repository layout after P02
+## Repository layout after P03
 
 | Path | Role |
 | --- | --- |
-| `src/pages/`, `src/layouts/` | Astro source: one temporary homepage and one shared layout |
-| `tests/` | Smoke test for the built output |
+| `src/pages/`, `src/layouts/` | Astro source: the temporary design specimen and one shared layout |
+| `src/styles/` | `tokens.css`, `environments.css` and `global.css` |
+| `src/design/` | The token contract and the CSS token reader, shared by the specimen and the tests |
+| `tests/` | Token, contrast and build-output checks |
+| `.claude/launch.json` | Local preview servers for the Claude desktop app (D-034) |
 | `astro.config.mjs`, `tsconfig.json` | Astro and TypeScript configuration |
 | `package.json`, `package-lock.json`, `.node-version` | npm project, lockfile and Node.js version policy |
 | `planning/` | Requirements and specifications |
@@ -47,12 +52,12 @@ Status: approved direction recorded in P01. The Astro foundation was set up in P
 | `_books/`, `_papers/`, `_references/`, `_reports/` | Private workspace, gitignored. Never commit. |
 | `backup/`, `releases/`, `resources/`, `viz/`, `_logo/` | Empty, untracked placeholder folders |
 
-`src/components/`, `src/styles/` and `public/` do not exist yet (D-019).
+`src/components/` and `public/` do not exist yet (D-019). The site ships no JavaScript, images or font files.
 
 ## Deployment
 
 - **Legacy:** `_backup/pelican-legacy/.github/workflows/deploy.yml` built Pelican on every push to `main` and force-pushed the output to `eduardogade/eduardogade.github.io` using the `PAGES_DEPLOY_TOKEN` secret. The custom domain came from `content/extra/CNAME` (`www.gusmaolab.org`). The workflow is archived and inactive.
-- **New:** **To be decided**: target repository, workflow, and whether the CNAME and token carry over (D-005). P02 changed nothing related to deployment.
+- **New:** **To be decided**: target repository, workflow, and whether the CNAME and token carry over (D-005). P02 and P03 changed nothing related to deployment.
 
 ## Local tooling (checked 2026-11-10)
 

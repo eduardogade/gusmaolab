@@ -3,7 +3,7 @@
 | Field | Value |
 | --- | --- |
 | Issue ID | ISSUE-0003 |
-| Related prompt | P02 |
+| Related prompt | P02; observation added in P03 |
 | Status | **Open**, awaiting the owner's decision |
 | Severity | Medium: obsolete recruiter-related material may be publicly retrievable |
 | Affected component | Git history of the public repository `eduardogade/GusmaoLab`; possibly the deployed legacy site |
@@ -20,6 +20,16 @@ P01 flagged two tracked files (KL-08). With the owner's authorization, P02 remov
 - Both files remain in earlier commits under their original `content/…` paths: the ZIP in 2 commits (1 of them on `origin/main`), the questionnaire in 9 (8 on `origin/main`). Anyone can retrieve them from the public history.
 - The old Pelican configuration published both: the ZIP was listed in `STATIC_PATHS`, and `content/static/` was published through the `"static"` entry. The deployed site in `eduardogade/eduardogade.github.io` may still serve them. P02 did not check this, because it must not touch that repository.
 - The archived `pelicanconf.py` still lists the ZIP in `STATIC_PATHS`. It was left unchanged as historical material.
+
+### P03 observation: a possible third file
+
+While reading legacy content for the specimen's wording, P03 noticed `_backup/pelican-legacy/content/pages/questionnaire.md`. It was **not opened**, and only metadata was checked:
+
+- It is 13,545 bytes, within 50 bytes of the removed questionnaire, but its blob hash differs.
+- It was first added in `c6edab9` (2026-03-28) and appears in 4 commits, 3 of them on `origin/main`. It is still tracked on the working branches.
+- Pelican publishes pages in `content/pages/` unless their metadata hides them. That was not checked, because checking means reading the file.
+
+Whether it belongs with the recruiter-era material is the owner's call. P03 did not remove it.
 
 ## Expected behavior
 
