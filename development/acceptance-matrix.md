@@ -191,7 +191,7 @@ NAV-003 and NAV-006 (P04) were updated: they expected an open parent's row to ha
 
 ## P07 gates
 
-Checked by `npm run verify`, by `npm run test:browser` (headless Chrome 157) and by screenshots of the built site at 1440, 1280, 1024, 768 and 390 px. Chromium only (KL-28). **The owner has not yet reviewed the preview's appearance (G-P07-19).**
+Checked by `npm run verify`, by `npm run test:browser` (headless Chrome 157) and by screenshots of the built site at 1440, 1280, 1024, 768 and 390 px. Chromium only (KL-28). **The owner reviewed the screenshots and approved the previews (G-P07-19, D-063).**
 
 | ID | Gate | Status | Evidence |
 | --- | --- | --- | --- |
@@ -213,7 +213,7 @@ Checked by `npm run verify`, by `npm run test:browser` (headless Chrome 157) and
 | G-P07-16 | Automated and browser checks pass | Passed | `npm run verify`; `npm run test:browser` 12 of 12; `git diff --check` |
 | G-P07-17 | Documentation and records updated | Passed | `planning/information-architecture.md` (section 15), `design-system.md`, `architecture.md`, `development/`, `debugging/known-limitations.md`, `README.md`, `AGENTS.md` |
 | G-P07-18 | Committed locally on `development`, not pushed | Passed | The P07 commit; `development` has no upstream |
-| G-P07-19 | The owner approves the preview's appearance | **Untested** | Awaiting the owner's review of the P07 screenshots. Not marked on the owner's behalf. |
+| G-P07-19 | The owner approves the preview's appearance | Passed | The owner approved the previews after reviewing the 13 P07 screenshots (D-063). Question 21 in `planning/design-system.md` section 10 remains a refinement. |
 
 ### Preview tests (P07)
 
@@ -259,7 +259,7 @@ The browser tests are run by `npm run test:browser`, not by `npm run verify` (D-
 | G-01 | Reproducible static build | P02 | **Passed** in P02: a clean `npm ci` and `npm run verify` in an empty copy rebuilt an identical `index.html` |
 | G-02 | At most three visible tab levels | R-02 | **Passed** in P06 on the site's pages (NAV-025, NAV-032; `FolderStack` rejects a fourth row). No third-level folder is registered yet, so site pages show at most two. |
 | G-03 | Clicking a tab opens its destination page | Information architecture | **Passed** in P06: NAV-022, and clicking through the pages in the browser |
-| G-04 | Hovering an expandable tab previews only its immediate children | Information architecture | **Passed** in P07 in Chromium (PREV-001, PREV-006, PREV-011); keyboard focus does the same (PREV-008). Appearance awaits the owner (G-P07-19). |
+| G-04 | Hovering an expandable tab previews only its immediate children | Information architecture | **Passed** in P07 in Chromium (PREV-001, PREV-006, PREV-011); keyboard focus does the same (PREV-008). Appearance approved by the owner (G-P07-19). |
 | G-05 | Active tab shows a V-shaped indicator; inactive tabs stay visible | Information architecture | **Passed** in P06 on the site's pages (NAV-028, NAV-030); appearance approved in P05 (G-P05-17) and on the P06 pages (G-P06-20) |
 | G-06 | No persistent sidebar, no breadcrumbs, no file-manager design | Information architecture | **Passed** in P06 on the site's pages: they hold only rows of folder tabs and the content (NAV-028 counts the landmarks); the temporary content repeats no trail of folders |
 | G-07 | Content deeper than level three lives in the third-level folder body | Information architecture | Untested on site pages: no content route exists yet. The model keeps the owning folder selected (NAV-009, NAV-025), and `FolderPage` puts any page in its folder's body. |

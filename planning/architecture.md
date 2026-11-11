@@ -1,6 +1,6 @@
 # Architecture
 
-Status: approved direction recorded in P01. The Astro foundation was set up in P02, the design-token foundation in P03, the navigation data model in P04 and the physical folder components in P05 (2026-11-10). P06 (2026-11-11) connected them: every registered folder has a generated page inside the folders, with temporary content. The owner approved the folder appearance (D-049) and the P06 navigation (D-057). P07 (2026-11-11) added previews of an unopened folder's contents, the site's first client-side script (D-058–D-062).
+Status: approved direction recorded in P01. The Astro foundation was set up in P02, the design-token foundation in P03, the navigation data model in P04 and the physical folder components in P05 (2026-11-10). P06 (2026-11-11) connected them: every registered folder has a generated page inside the folders, with temporary content. The owner approved the folder appearance (D-049) and the P06 navigation (D-057). P07 (2026-11-11) added previews of an unopened folder's contents, the site's first client-side script (D-058–D-062), which the owner approved (D-063).
 
 ## Approved direction
 

@@ -10,7 +10,7 @@ Status: **implemented and approved.** Built in P03 (2026-11-10); in P04 the owne
 - links;
 - hover feedback on inactive tabs.
 
-**P07 (2026-11-11): folder previews** (section 9, "Folder previews"). Hovering or keyboard-focusing an unopened folder with children shows a small parchment index card of its contents, hanging from its tab. The folders, tabs, V and environments are unchanged. The card's look is provisional until the owner reviews it (D-061).
+**P07 (2026-11-11): folder previews** (section 9, "Folder previews"). Hovering or keyboard-focusing an unopened folder with children shows a small parchment index card of its contents, hanging from its tab. The folders, tabs, V and environments are unchanged. The owner approved the previews after reviewing the screenshots (D-063); question 21 in section 10 remains a refinement.
 
 **Deferred refinements:** stronger palette differences between the environments (D-056) and typography consolidation (D-042). Neither changed in P06 or P07.
 
@@ -392,7 +392,7 @@ A stack holds one to three folder levels. Each level is a row of tabs, exactly o
 
 ### Folder previews (P07)
 
-A preview is a glimpse into an unopened folder, not another open folder (D-058, D-061). Shown at `/_design/folders/` (every case; case H previews a second-level folder) and on every site page.
+A preview is a glimpse into an unopened folder, not another open folder (D-058, D-061). **Approved by the owner (D-063).** Shown at `/_design/folders/` (every case; case H previews a second-level folder) and on every site page.
 
 - **Material.** A small index card of parchment, `--color-folder-preview`, with a hairline `--color-folder-border` edge, a 2 px top edge in the environment's `--color-accent` (honey, gold or eye green), `--shadow-paper-raised` and `--radius-card` lower corners. It has no tab, no V and no folder body, so it never reads as a fourth folder.
 - **Content.** A small upper-case title in `--color-text-muted` (the folder's name), then the folder's Overview and its children as a compact vertical list in `--font-size-tab-preview` at medium weight, in the tab text color. Labels are never cut: the card is as wide as its longest label, up to a tab's maximum label width plus padding, and wraps no sooner than a tab would.

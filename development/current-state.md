@@ -94,7 +94,7 @@ Built:
 - Cards live in the top layer: never clipped by a scrolling row, kept 8 px inside the viewport, scrolling inside themselves when long.
 - Without JavaScript or the Popover API, no previews and the same plain links.
 
-**Visual approval of P07:** not yet given (G-P07-19).
+**Visual approval of P07:** the owner approved the folder previews (G-P07-19, D-063). Question 21 in `planning/design-system.md` section 10 remains a refinement.
 
 ## Toolchain
 
@@ -132,7 +132,7 @@ Built:
 
 | Item | Value |
 | --- | --- |
-| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; P05 at `4771127` and `40083ce`; the Bearnard sticker task's notes at `cda026e`, `fa522dc` and `aaa32a7`; P06 at `39bc564` and its approval record `f8eead2`; then the P07 commit |
+| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; P05 at `4771127` and `40083ce`; the Bearnard sticker task's notes at `cda026e`, `fa522dc` and `aaa32a7`; P06 at `39bc564` and its approval record `f8eead2`; P07 at `750e98f` and the approval record that follows it |
 | Milestone branches | `chore/gusmaolab-foundation-p01` (`4096691`), `chore/gusmaolab-astro-foundation-p02` (`5fab52c`), `feat/gusmaolab-design-system-p03` (`851fdbb`), all kept |
 | Recovery tag | `pre-astro-checkpoint` → `6eedf02`, local only |
 | `main` and `origin/main` | `6036137`, the same tree as the checkpoint. No `development` branch exists on `origin`. |
@@ -150,7 +150,7 @@ Unchanged since P03; P05, P06 and P07 did not touch it. ISSUE-0003 stays open: t
 
 ## Completed prompts
 
-P01, P02, P03, P04, P05 and P06. P07 is technically complete; its visual approval is pending.
+P01, P02, P03, P04, P05, P06 and P07.
 
 ## Blockers
 
@@ -158,8 +158,7 @@ None for P08.
 
 ## Waiting for the owner
 
-- **Review the P07 folder previews** and their screenshots, and approve the preview's appearance or ask for changes (G-P07-19; `planning/design-system.md` section 10, question 21).
-- Optional refinements to the folders and the Overview tab, if wanted: `planning/design-system.md` section 10, questions 13–20.
+- Optional refinements to the folders, the Overview tab and the previews, if wanted: `planning/design-system.md` section 10, questions 13–21.
 - Stronger palette differences between environments (D-056) and typography consolidation (D-042), both deferred.
 - The third-level folders, when content work reaches them (`planning/information-architecture.md` section 3).
 - Whether the second-level slugs are final before first publication (D-037).

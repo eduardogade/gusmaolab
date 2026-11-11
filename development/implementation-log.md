@@ -4,7 +4,7 @@ Newest entry first.
 
 ## P07 — Immediate-Child Hover Previews & Keyboard-Accessible Folder Discovery — 2026-11-11
 
-**Agent:** Claude Code. **Branch:** `development`. **Result:** technically complete; **the owner's visual approval of the preview is pending** (G-P07-19). Nothing was pushed or deployed.
+**Agent:** Claude Code. **Branch:** `development`. **Result:** completed. The owner approved the folder previews after reviewing the screenshots (G-P07-19, D-063, recorded after the P07 commit). Nothing was pushed or deployed.
 
 ### Starting state (verified)
 
@@ -55,7 +55,6 @@ Screenshots of the built site in headless Chrome 157 (in the scratchpad, sent to
 
 ### Not done
 
-- **Owner's review:** the preview's appearance awaits the owner (G-P07-19; design-system question 21).
 - **Browsers:** Chromium only; touch was emulated; Safari, Firefox, real touch devices, `forced-colors` and screen readers were not tested (KL-28).
 - **Left to P08:** the responsive strategy, including what a selected folder's tab should do if its row is ever hidden.
 - **Not started:** P08.
