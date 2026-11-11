@@ -81,17 +81,58 @@ Statuses: **Passed**, **Failed**, **Untested**, **Not applicable**. An untested 
 | NAV-013 Invalid configuration | Pass |
 | NAV-014 Content independence | Pass |
 
+## P05 gates
+
+Technical completion and visual approval are separate. The technical gates below were checked by tests and by inspecting the rendered study in Chromium at 1440, 1280, 1024, 768 and 390 px. **The owner has not yet reviewed the folder appearance (G-P05-17).**
+
+| ID | Gate | Status | Evidence |
+| --- | --- | --- | --- |
+| G-P05-01 | Reusable Astro physical-folder components exist | Passed | `src/components/folders/` (four components) and `src/styles/folders.css` |
+| G-P05-02 | The selected tab is joined to its folder body | Passed (technical) | Every selected tab, at all 17 levels in the study, reaches exactly 2 px into its body, with no row scrolled vertically (measured in the browser). No seam at 4–8× magnification (screenshots 11, 12). |
+| G-P05-03 | Inactive tabs are recognizable and subtly recessed | Passed (technical) | FOLD-006; labels at 4.5:1 or more on inactive tabs at every level (`tests/contrast.mjs`) |
+| G-P05-04 | The V indicator is visible on the selected tab | Passed | FOLD-005; screenshots |
+| G-P05-05 | Nested components support three levels and never a fourth | Passed | FOLD-002, FOLD-003; `FolderStack` rejects more than three rows at build time |
+| G-P05-06 | Parent tabs stay visible when a deeper folder is open | Passed | FOLD-002, FOLD-006; cases B, C and D |
+| G-P05-07 | The page content sits inside the selected folder | Passed | FOLD-009; case C at 390 px leaves a reading column of about 300 px |
+| G-P05-08 | Environments reuse one component system | Passed | FOLD-007; `tests/design-tokens.mjs` rejects environment selectors and primitives in component files |
+| G-P05-09 | Long labels do not break the layout | Passed | FOLD-008; case D screenshot |
+| G-P05-10 | No page-wide horizontal overflow | Passed | Page `scrollWidth` equals the viewport width at 1440, 1280, 1024, 768 and 390 px. Overflowing rows scroll inside their own strip (D-047). |
+| G-P05-11 | The visual study page renders | Passed | `/_design/folders/`; smoke test section 7 |
+| G-P05-12 | Automated checks pass | Passed | `npm run verify`; `git diff --check` |
+| G-P05-13 | The P03 specimen is intact | Passed | FOLD-010. A pixel comparison with the P04 build at 1440 and 390 px differs only in the contrast count it reads from the contract (165 → 215; D-048). |
+| G-P05-14 | Bearnard masters unchanged | Passed | 352 of 352 checksums match |
+| G-P05-15 | Documentation updated | Passed | `planning/design-system.md`, `planning/information-architecture.md`, `planning/architecture.md`, `development/`, `debugging/known-limitations.md` |
+| G-P05-16 | Committed locally on `development`, not pushed | Passed | No upstream for `development` |
+| G-P05-17 | The owner approves the physical-folder appearance | **Untested** | Pending the owner's review of the screenshots. Not marked on the owner's behalf. |
+
+### Folder tests (`tests/folders.mjs`)
+
+| Test | Result |
+| --- | --- |
+| FOLD-001 Single-level rendering | Pass |
+| FOLD-002 Two-level rendering | Pass |
+| FOLD-003 Three-level rendering, never a fourth | Pass |
+| FOLD-004 Exactly one selected tab per open level | Pass |
+| FOLD-005 The V indicator | Pass |
+| FOLD-006 Inactive tabs stay present and labelled | Pass |
+| FOLD-007 One component structure in every environment | Pass |
+| FOLD-008 Long labels keep their full text | Pass |
+| FOLD-009 Folder bodies show arbitrary content | Pass |
+| FOLD-010 The P03 specimen is untouched | Pass |
+
+Each test was also run against a deliberately broken copy of the build: a missing selection, a V on an inactive tab, a fourth level, an environment rule in `folders.css`, and folder styles reaching the specimen. Each copy failed with exit code 1.
+
 ## Future gates
 
 | ID | Gate | Source | Status |
 | --- | --- | --- | --- |
 | G-01 | Reproducible static build | P02 | **Passed** in P02: a clean `npm ci` and `npm run verify` in an empty copy rebuilt an identical `index.html` |
-| G-02 | At most three visible tab levels | R-02 | Untested in the UI. The data model enforces it (NAV-006, NAV-009, NAV-013). |
+| G-02 | At most three visible tab levels | R-02 | Untested on site pages. The data model (NAV-006, NAV-009, NAV-013) and the folder components (FOLD-003) enforce it. |
 | G-03 | Clicking a tab opens its destination page | Information architecture | Untested. Every node has a destination (NAV-003); no tab UI or section pages exist yet. |
 | G-04 | Hovering an expandable tab previews only its immediate children | Information architecture | Untested in the UI. The preview data is immediate children only (NAV-007). |
-| G-05 | Active tab shows a V-shaped indicator; inactive tabs stay visible | Information architecture | Untested |
-| G-06 | No persistent sidebar, no breadcrumbs, no file-manager design | Information architecture | Untested |
-| G-07 | Content deeper than level three lives in the third-level folder body | Information architecture | Untested in the UI. The model keeps the owning folder selected (NAV-009). |
+| G-05 | Active tab shows a V-shaped indicator; inactive tabs stay visible | Information architecture | Untested on site pages. Shown in the P05 folder study (FOLD-005, FOLD-006); appearance awaits the owner (G-P05-17). |
+| G-06 | No persistent sidebar, no breadcrumbs, no file-manager design | Information architecture | Untested on site pages. The P05 folder components have none. |
+| G-07 | Content deeper than level three lives in the third-level folder body | Information architecture | Untested on site pages. The model keeps the owning folder selected (NAV-009), and the components put the page in the deepest folder (FOLD-003, FOLD-009). |
 | G-08 | Shared design system across sections | R-03, R-04 | Untested. P03 built the candidate tokens and four environments, but no section page uses them yet and the owner has not reviewed them. |
 | G-09 | Only Bearnard v1.3 and approved variants appear; no full-resolution masters in the public directory | R-05 | Untested |
 | G-10 | Eight independent editorial collections | R-06 | Untested |

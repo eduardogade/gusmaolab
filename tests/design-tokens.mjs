@@ -12,6 +12,15 @@ import {
 import { readTokens, references, stripComments } from "../src/design/css-tokens.mjs"
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8")
+// Files that style components (P05). Like global.css, they use semantic tokens only.
+const componentFiles = [
+  "src/styles/folders.css",
+  "src/components/folders/FolderStack.astro",
+  "src/components/folders/FolderLayer.astro",
+  "src/components/folders/FolderTabStrip.astro",
+  "src/components/folders/FolderTab.astro",
+  "src/pages/[design]/folders.astro",
+]
 const sources = {
   "src/styles/tokens.css": await read("src/styles/tokens.css"),
   "src/styles/environments.css": await read("src/styles/environments.css"),
@@ -19,6 +28,7 @@ const sources = {
   "src/layouts/BaseLayout.astro": await read("src/layouts/BaseLayout.astro"),
   "src/pages/index.astro": await read("src/pages/index.astro"),
 }
+for (const file of componentFiles) sources[file] = await read(file)
 const tokensCss = sources["src/styles/tokens.css"]
 const environmentsCss = sources["src/styles/environments.css"]
 const globalCss = stripComments(sources["src/styles/global.css"])
@@ -134,9 +144,18 @@ check(
   "environments.css contains a raw colour",
 )
 
-// 8. The global foundation uses semantic tokens only.
+// 8. The global foundation and the components use semantic tokens only. Components never
+//    target an environment either: environments change tokens, not component rules.
 check(!/--palette-/.test(globalCss), "global.css references a --palette-* primitive")
 check(!rawColour.test(globalCss), "global.css contains a raw colour")
+for (const file of componentFiles) {
+  const text = stripComments(sources[file])
+  check(!/--palette-/.test(text), `${file} references a --palette-* primitive`)
+  check(!rawColour.test(text), `${file} contains a raw colour`)
+  if (file.endsWith(".css")) {
+    check(!/\[data-environment/.test(text), `${file} styles a specific environment`)
+  }
+}
 
 // 9. Every var() reference in the stylesheets, layout and specimen resolves to a token or
 //    to a custom property declared locally (for example the specimen's --chip).
@@ -166,7 +185,7 @@ check(
   "BaseLayout must import tokens.css, environments.css and global.css, in that order",
 )
 
-// 11. P03 adds no motion: no transitions, animation or smooth scrolling.
+// 11. No motion: no transitions, animation or smooth scrolling (P03, P05).
 const motion =
   /\b(?:transition|animation)(?:-[\w-]+)?\s*:|scroll-behavior\s*:\s*smooth/i
 for (const [file, text] of Object.entries(sources)) {

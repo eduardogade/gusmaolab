@@ -1,11 +1,14 @@
 # Current state
 
-Last updated: P04, 2026-11-10. Verified facts only.
+Last updated: P05, 2026-11-10. Verified facts only.
 
 ## Framework
 
 - **Astro 7.4.8**, static output. The repository root is the Astro project.
-- The only page is the **temporary P03 design specimen** (`src/pages/index.astro`), unchanged in P04. **The physical-folder interface, navigation UI, section pages and Bearnard rendering are not implemented.**
+- Two temporary pages, neither part of the website:
+  - the **P03 design specimen** at `/` (`src/pages/index.astro`);
+  - the **P05 folder study** at `/_design/folders/` (`src/pages/[design]/folders.astro`).
+- **Section pages, working navigation, hover previews and Bearnard rendering are not implemented.**
 - The archived Pelican site in `_backup/pelican-legacy/` is not built.
 - Nothing has been deployed, and no deployment workflow is active.
 
@@ -23,7 +26,34 @@ The owner approved the visual direction and overall appearance (D-041). Tokens a
 | Compiled site navigation (`siteNavigation`) | `src/navigation/index.ts` |
 | Rules and site map | `planning/information-architecture.md` |
 
-No component uses it yet; P05–P07 build the tabs. Of the 37 registered destinations, only `/` has a page (the specimen). The content-route list is empty until content collections exist.
+The P05 folder components draw its tab rows; no section page uses it yet (P06). Of the 37 registered destinations, only `/` has a page (the specimen). The content-route list is empty until content collections exist.
+
+## Physical folders (P05)
+
+| Item | Where |
+| --- | --- |
+| Components: `FolderStack`, `FolderLayer`, `FolderTabStrip`, `FolderTab` | `src/components/folders/` |
+| Styles: tab silhouette, seam, fillets, V, materials, scrolling rows | `src/styles/folders.css` |
+| Description and open visual questions | `planning/design-system.md` sections 9 and 10 |
+| Study page: cases A–F | `/_design/folders/` |
+
+Built: one to three nested folder levels drawn from P04's `state.rows`. Each level has:
+
+- a selected tab joined to its open body, with a V;
+- recessed inactive tabs;
+- the page on ivory paper in the deepest folder;
+- the same structure in every environment.
+
+A row that is too wide scrolls inside its own strip. All of this renders statically, with no client-side JavaScript.
+
+**Not built:**
+
+- tabs as links (labels only until P06);
+- route-driven section pages (P06);
+- hover previews and keyboard discovery (P07);
+- the responsive navigation strategy (P08).
+
+**Visual approval:** pending the owner's review of the P05 screenshots (G-P05-17).
 
 ## Toolchain
 
@@ -32,7 +62,7 @@ No component uses it yet; P05–P07 build the tabs. Of the 37 registered destina
 | Node.js policy | The 26 LTS line: `.node-version` says `26`; `package.json` engines `>=26.12.0 <27` |
 | Local Node.js | v26.12.0. Compatible, but it predates the first 26 LTS release (v26.13.0) and lacks the v26.12.1 security release. |
 | Package manager | npm 11.20.0. `package-lock.json` is committed; install with `npm ci`. |
-| Dependencies | `astro` 7.4.8. P03 and P04 added none. |
+| Dependencies | `astro` 7.4.8. P03–P05 added none. |
 | Dev dependencies | `@astrojs/check` 0.9.12, `typescript` 6.0.3, `prettier` 3.6.2 (range `^3.6.2`) |
 | TypeScript | `astro/tsconfigs/strict` with `erasableSyntaxOnly` |
 | Astro config | `site: "https://www.gusmaolab.org"`, `output: "static"`, no `base`, no adapter |
@@ -40,27 +70,28 @@ No component uses it yet; P05–P07 build the tabs. Of the 37 registered destina
 
 ## npm scripts
 
-`dev`, `build`, `preview`, `check`, `test`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs` and `tests/smoke-test.mjs`.
+`dev`, `build`, `preview`, `check`, `test`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs` and `tests/folders.mjs`.
 
 ## Build status
 
 `npm run verify` passes:
 
-- `astro check`: 0 errors, 0 warnings, 0 hints across 18 files.
-- Build: 1 page. `dist/` holds `index.html` and one stylesheet, byte-identical to the P03 build.
-- Token checks and contrast checks pass (165 of 165 enforced pairings).
+- `astro check`: 0 errors, 0 warnings, 0 hints across 24 files.
+- Build: 2 pages. `dist/` holds them and three stylesheets; no JavaScript.
+- Token checks and contrast checks pass (215 of 215 enforced pairings).
 - Navigation: 14 of 14 tests pass (NAV-001 to NAV-014).
-- Smoke test passes, including the rule that every built page is a registered destination.
+- Smoke test passes. Every built page is a registered destination, except the declared `/_design/` study.
+- Folders: 10 of 10 tests pass (FOLD-001 to FOLD-010).
 
 ## Repository
 
 | Item | Value |
 | --- | --- |
-| Working branch | `development` (D-035), local only, created from `851fdbb` (the P03 commit) |
+| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; the other task's records note at `cda026e`; then the P05 commit |
 | Milestone branches | `chore/gusmaolab-foundation-p01` (`4096691`), `chore/gusmaolab-astro-foundation-p02` (`5fab52c`), `feat/gusmaolab-design-system-p03` (`851fdbb`), all kept |
 | Recovery tag | `pre-astro-checkpoint` → `6eedf02`, local only |
 | `main` and `origin/main` | `6036137`, the same tree as the checkpoint. No `development` branch exists on `origin`. |
-| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, public. Nothing was pushed in P01–P04. |
+| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, public. Nothing was pushed in P01–P05. |
 | Untracked | `clean`, a byte-identical copy of `clean.sh` that appeared at 18:01 on 2026-11-10. Claude Code did not create it, and left it alone at the owner's instruction. |
 
 ## Assets
@@ -70,18 +101,19 @@ No component uses it yet; P05–P07 build the tabs. Of the 37 registered destina
 
 ## Legacy archive
 
-Unchanged since P03. ISSUE-0003 stays open: the recruiter-era files in the public history, and a possible third file.
+Unchanged since P03; P05 did not touch it. ISSUE-0003 stays open: the recruiter-era files in the public history, and a possible third file.
 
 ## Completed prompts
 
-P01, P02, P03 and P04.
+P01, P02, P03 and P04. P05 is technically complete; its visual approval is pending.
 
 ## Blockers
 
-None for P05.
+None for P06. P06 can start before the owner's P05 review, but a change to the folder look would then touch both.
 
 ## Waiting for the owner
 
+- **Review the P05 folder study** (`/_design/folders/`) and its screenshots. Approve the physical-folder appearance, or ask for changes (`planning/design-system.md` section 10, questions 13–17).
 - The third-level folders, when content work reaches them (`planning/information-architecture.md` section 3).
 - Whether the second-level slugs are final before first publication (D-037).
 - Update the local Node.js to the latest 26.x LTS release (KL-06).

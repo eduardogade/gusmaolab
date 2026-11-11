@@ -1,5 +1,6 @@
 /*
- * GusmaoLab design tokens. P03 candidate, awaiting the owner's visual review.
+ * GusmaoLab design tokens. Built in P03 and approved by the owner (D-041); folder
+ * geometry and the third folder material added in P05.
  *
  * Three layers:
  *   1. Primitives (--palette-*): raw colours. Only this file and environments.css use them.
@@ -236,33 +237,47 @@
   --focus-ring-offset: 2px;
 
   /*
-   * Physical-folder geometry, prepared for P05–P07 and not used yet. A tab is part of
-   * its folder: it rises from the body through concave fillets, its sides slope over
+   * Physical-folder geometry (P05, src/styles/folders.css). A tab is part of its folder:
+   * it rises from the body through concave fillets, its sides slope over
    * --folder-tab-slant, and neighbouring tabs tuck behind each other by
-   * --folder-tab-overlap. They never become separate pills.
+   * --folder-tab-overlap. They never become separate pills. Heights are the visible
+   * height of a selected tab, from the folder's top edge to the tab's top.
    */
-  --folder-tab-height-1: 2.75rem;
-  --folder-tab-height-2: 2.5rem;
-  --folder-tab-height-3: 2.25rem;
-  --folder-tab-padding-inline: 1.25rem;
-  --folder-tab-min-inline-size: 6rem;
+  --folder-tab-height-1: 2.875rem;
+  --folder-tab-height-2: 2.625rem;
+  --folder-tab-height-3: 2.5rem;
+  --folder-tab-padding-inline: 0.625rem;
+  --folder-tab-min-inline-size: 4.5rem;
   --folder-tab-max-inline-size: 16rem;
-  --folder-tab-slant: 0.875rem;
+  --folder-tab-slant: 0.625rem;
   --folder-tab-corner-radius: 0.5rem;
   --folder-tab-fillet-radius: 0.5rem;
-  --folder-tab-overlap: 0.625rem;
+  --folder-tab-overlap: 0.5rem;
   --folder-tab-rise: 0.25rem;
+  --folder-tab-line-height: 1.2;
   --folder-tab-inactive-mix: 78%;
   --folder-tab-hover-mix: 90%;
   --folder-indicator-width: 1rem;
   --folder-indicator-depth: 0.5rem;
   --folder-indicator-gap: 0.375rem;
+  --folder-indicator-stroke: 2px;
   --folder-nest-inset: clamp(0.5rem, 0.3rem + 1vw, 1rem);
   --folder-layer-offset: 0.375rem;
+  /* How far a selected tab reaches into its body, hiding the body's top edge. */
+  --folder-seam: 2px;
+  /* Room above a tab row for the raised tab and its shadow. */
+  --folder-strip-headroom: 0.5rem;
+  /* The fade that marks more tabs beyond the edge of a scrolling row. */
+  --folder-scroll-hint-size: 1.25rem;
 
-  /* Stacking order for the folder system */
+  /*
+   * Stacking order inside one folder level, lowest first. Each level is its own
+   * stacking context, so these values never compete with another level's.
+   */
   --z-folder-inactive: 1;
-  --z-folder-active: 2;
+  --z-folder-body: 2;
+  --z-folder-active: 3;
+  --z-folder-scroll-hint: 4;
   --z-folder-preview: 10;
   --z-overlay: 100;
 
@@ -275,11 +290,34 @@
 
 :root,
 [data-environment] {
-  /* Folder tabs share their folder's material; inactive tabs sink toward the shell. */
+  /*
+   * A third folder level (P05): a pale kraft between the parent and nested materials, so
+   * the three folders read as related card stock rather than three brightness steps.
+   */
+  --color-folder-deep: color-mix(
+    in srgb,
+    var(--color-folder-parent) 45%,
+    var(--color-folder-nested)
+  );
+
+  /*
+   * Folder tabs share their folder's material; inactive tabs sink toward the shell.
+   * Level 1 uses the parent material, level 2 the nested one and level 3 the deep one.
+   */
   --color-folder-tab-active: var(--color-folder-parent);
   --color-folder-tab-inactive: color-mix(
     in srgb,
     var(--color-folder-parent) var(--folder-tab-inactive-mix),
+    var(--color-shell)
+  );
+  --color-folder-tab-inactive-nested: color-mix(
+    in srgb,
+    var(--color-folder-nested) var(--folder-tab-inactive-mix),
+    var(--color-shell)
+  );
+  --color-folder-tab-inactive-deep: color-mix(
+    in srgb,
+    var(--color-folder-deep) var(--folder-tab-inactive-mix),
     var(--color-shell)
   );
   --color-folder-tab-hover: color-mix(

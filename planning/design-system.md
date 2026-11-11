@@ -2,7 +2,9 @@
 
 Status: **implemented and approved.** Built in P03 (2026-11-10); in P04 the owner reviewed the specimen screenshots and approved the visual direction and overall appearance (D-041). The questions in section 10 remain open refinements. **Deferred visual refinement: typography consolidation** (D-042): the owner would like fewer font families eventually, to be revisited once the folder layout and real pages exist. Change values through a recorded decision.
 
-Source files: `src/styles/tokens.css`, `src/styles/environments.css`, `src/styles/global.css`, and the contract in `src/design/contract.mjs`. The specimen and the tests read the values from those files, so this document can go stale but the page cannot. Regenerate the contrast tables with `node tests/contrast.mjs --markdown`.
+**P05 (2026-11-10): the physical folders are built (section 9) and await the owner's visual review.** Their geometry values, the third folder material and the inactive-tab colors for levels 2 and 3 are provisional until then (D-044–D-047).
+
+Source files: `src/styles/tokens.css`, `src/styles/environments.css`, `src/styles/global.css`, `src/styles/folders.css` and the contract in `src/design/contract.mjs`. The specimen, the folder study and the tests read the values from those files, so this document can go stale but the pages cannot. Regenerate the contrast tables with `node tests/contrast.mjs --markdown`.
 
 ## 1. Aesthetic direction (approved)
 
@@ -155,19 +157,24 @@ Every size includes a rem term, so text still grows with browser zoom. Radiohead
 - Radii: paper 3 px, control 5 px, card 6 px, folder 10 px, shell 18 px.
 - Focus: `--focus-ring-width` 3 px, `--focus-ring-offset` 2 px.
 
-**Folder geometry, prepared for P05–P07 and unused so far.** A tab is part of its folder. It rises from the body through concave fillets (`--folder-tab-fillet-radius`), slopes over `--folder-tab-slant`, rounds at `--folder-tab-corner-radius`, and tucks behind its neighbours by `--folder-tab-overlap`. Tabs must never become separate pills.
+**Folder geometry, used by the folder components since P05 (section 9).** A tab is part of its folder. It rises from the body through concave fillets (`--folder-tab-fillet-radius`), slopes over `--folder-tab-slant`, rounds at `--folder-tab-corner-radius`, and tucks behind its neighbours by `--folder-tab-overlap`. Tabs must never become separate pills. P05 tuned the values in the browser (D-046); the P03 values are in brackets where they changed.
 
 | Token | Value |
 | --- | --- |
-| `--folder-tab-height-1`, `-2`, `-3` | 2.75rem, 2.5rem, 2.25rem |
-| `--folder-tab-padding-inline` | 1.25rem |
-| `--folder-tab-min-inline-size`, `-max-inline-size` | 6rem, 16rem |
-| `--folder-tab-slant`, `-corner-radius`, `-fillet-radius` | 0.875rem, 0.5rem, 0.5rem |
-| `--folder-tab-overlap`, `--folder-tab-rise` | 0.625rem, 0.25rem |
+| `--folder-tab-height-1`, `-2`, `-3` | 2.875rem, 2.625rem, 2.5rem (2.75, 2.5, 2.25): visible height of a selected tab |
+| `--folder-tab-padding-inline` | 0.625rem (1.25rem) |
+| `--folder-tab-min-inline-size`, `-max-inline-size` | 4.5rem (6rem), 16rem |
+| `--folder-tab-slant`, `-corner-radius`, `-fillet-radius` | 0.625rem (0.875rem), 0.5rem, 0.5rem |
+| `--folder-tab-overlap`, `--folder-tab-rise` | 0.5rem (0.625rem), 0.25rem |
+| `--folder-tab-line-height` | 1.2 (new) |
 | `--folder-tab-inactive-mix`, `-hover-mix` | 78%, 90% (share of folder material against the shell) |
-| `--folder-indicator-width`, `-depth`, `-gap` | 1rem, 0.5rem, 0.375rem |
+| `--folder-indicator-width`, `-depth`, `-gap`, `-stroke` | 1rem, 0.5rem, 0.375rem, 2px (stroke new) |
 | `--folder-nest-inset`, `--folder-layer-offset` | 0.5–1rem, 0.375rem |
-| `--z-folder-inactive`, `-active`, `-preview`, `--z-overlay` | 1, 2, 10, 100 |
+| `--folder-seam` | 2px (new): how far a selected tab reaches into its body |
+| `--folder-strip-headroom` | 0.5rem (new): room above a row for the raised tab and its shadow |
+| `--folder-scroll-hint-size` | 1.25rem (new): the fade at the edge of a scrolling row |
+| `--z-folder-inactive`, `-body`, `-active`, `-scroll-hint` | 1, 2 (new), 3 (was 2), 4 (new) |
+| `--z-folder-preview`, `--z-overlay` | 10, 100 |
 
 ## 6. Materials and flannel
 
@@ -176,6 +183,7 @@ Every size includes a rem term, so text still grows with browser zoom. Radiohead
 | Shell `--color-shell` | espresso `#32251E` | Hairline edge, deep soft shadow (`--shadow-shell`) |
 | Parent folder `--color-folder-parent` | kraft `#D4B089` | Edge highlight, lifted shadow (`--shadow-folder`) |
 | Nested folder `--color-folder-nested` | parchment `#F4E2C9` | Resting shadow, optional recess |
+| Third-level folder `--color-folder-deep` (P05) | pale kraft `#E6CCAC`: 45% parent, 55% nested | Edge highlight and resting shadow, like the nested folder |
 | Active paper `--color-folder-active` | ivory `#FFF8EA` | Raised shadow; the quietest surface |
 
 Depth comes from edges and soft warm shadows as much as from lightness, so deeper layers step up gently rather than jump. Shadow tokens: `--shadow-shell`, `--shadow-folder`, `--shadow-paper`, `--shadow-paper-raised`, `--shadow-recess`. Edge highlight `--color-folder-edge` (ivory); recess `--color-folder-recess` (bark). Shadows are tinted with each environment's `--color-shadow`, never neutral black.
@@ -210,6 +218,9 @@ One folder system, four environments. Section lists come from the P03 brief; P04
 | Parent folder | `#D4B089` | `#D4B089` | `#D4B089` | `#D5A672` | `#E5B45A` |
 | Inactive tab (derived) | `#B09171` | `#AC9377` | `#AE9275` | `#B18A60` | `#BA9653` |
 | Nested folder | `#F4E2C9` | `#F4E2C9` | `#F4E2C9` | `#F4E2C9` | `#F4E2C9` |
+| Inactive nested tab (derived, P05) | `#C9B8A3` | `#C5BAA9` | `#C7B9A7` | `#C9B8A3` | `#C5BAA9` |
+| Third-level folder (derived, P05) | `#E6CCAC` | `#E6CCAC` | `#E6CCAC` | `#E6C7A2` | `#EDCD97` |
+| Inactive third-level tab (derived, P05) | `#BEA78D` | `#BAA993` | `#BCA890` | `#BEA385` | `#C0AA82` |
 | Reading paper | `#FFF8EA` | `#FFF8EA` | `#FFF8EA` | `#FCF1E0` | `#FFF8EA` |
 | Primary text | `#32251E` | `#16202A` | `#32251E` | `#32251E` | `#32251E` |
 | Secondary text | `#5C4033` | `#3D4E60` | `#5C4033` | `#5C4033` | `#5C4033` |
@@ -236,7 +247,7 @@ One folder system, four environments. Section lists come from the P03 brief; P04
 
 ## 8. Contrast verification
 
-`tests/contrast.mjs` (part of `npm test`) resolves 34 text and indicator pairings in the core and all four environments, using the WCAG 2.2 relative-luminance formula. It enforces 4.5:1 for body text and 3:1 for essential non-text indicators: 165 checks, all passing. Ratios are truncated, never rounded up. The disabled-text pairing is informational only (WCAG exempts disabled controls).
+`tests/contrast.mjs` (part of `npm test`) resolves 46 text and indicator pairings in the core and all four environments, using the WCAG 2.2 relative-luminance formula. It enforces 4.5:1 for body text and 3:1 for essential non-text indicators: 215 checks, all passing. Ratios are truncated, never rounded up. Three pairings are informational only: disabled text (WCAG exempts disabled controls) and the two nested-tab silhouettes at the end of the table. P05 added twelve pairings for the second and third folder levels.
 
 | Pairing | Min | Core | Scientific | Technical | Literary | Personal |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -257,24 +268,110 @@ One folder system, four environments. Section lists come from the P03 brief; P04
 | Focus ring on parent folder | 3 | 6.93 | 6.93 | 6.93 | 6.36 | 7.35 |
 | Focus ring on the dark shell | 3 | 5.76 | 5.47 | 5.71 | 5.76 | 5.47 |
 | Inactive tab against the shell | 3 | 5.02 | 4.80 | 5.00 | 4.70 | 5.06 |
+| Label on an active nested tab (P05) | 4.5 | 11.67 | 13.00 | 11.67 | 11.67 | 11.67 |
+| Label on an inactive nested tab (P05) | 4.5 | 7.65 | 8.61 | 7.69 | 7.65 | 7.73 |
+| Label on an active third-level tab (P05) | 4.5 | 9.58 | 10.67 | 9.58 | 9.20 | 9.71 |
+| Label on an inactive third-level tab (P05) | 4.5 | 6.41 | 7.20 | 6.44 | 6.17 | 6.56 |
+| Selection indicator on an active nested tab (P05) | 3 | 5.84 | 11.07 | 5.82 | 8.22 | 11.07 |
+| Selection indicator on an active third-level tab (P05) | 3 | 4.79 | 9.09 | 4.77 | 6.48 | 9.21 |
+| Focus ring on the third-level folder (P05) | 3 | 9.09 | 9.09 | 9.09 | 8.72 | 9.21 |
+| Focus ring on an inactive tab (P05) | 3 | 4.76 | 4.80 | 4.79 | 4.46 | 5.06 |
+| Focus ring on an inactive nested tab (P05) | 3 | 7.26 | 7.33 | 7.30 | 7.26 | 7.33 |
+| Focus ring on an inactive third-level tab (P05) | 3 | 6.08 | 6.13 | 6.11 | 5.86 | 6.22 |
 | Disabled text (informational) | — | 3.57 | 3.57 | 3.57 | 3.38 | 3.57 |
+| Inactive nested tab against the parent folder (informational, P05) | — | 1.04 | 1.05 | 1.05 | 1.14 | 1.00 |
+| Inactive third-level tab against the nested folder (informational, P05) | — | 1.82 | 1.80 | 1.81 | 1.88 | 1.77 |
 
-The tightest margin is the literary inactive-tab label, at 4.70:1. Any change to the literary parent folder or shell should rerun the test.
+The tightest margin is the literary inactive-tab label, at 4.70:1. Any change to the literary parent folder or shell should rerun the test. An inactive nested tab and the kraft folder it stands on have almost the same luminance (1.00–1.14:1). The tab is told apart by its cooler hue, its hairline edge and its shadow, and identified by its label. Paper on paper cannot reach 3:1 without darkening the tabs, so these two are recorded, not enforced (section 10, question 14).
 
 Focus is the same everywhere so it is learnable: a 3 px navy ring on paper and a honey ring on dark surfaces, 2 px offset. Checked live in a Chromium-based browser: keyboard focus shows on a link, a button and a link on the shell, and links change color and underline weight on hover.
 
 **This is not an accessibility certification.** Text over the flannel or translucent layers, real content, Safari and Firefox rendering, forced-colors and high-contrast modes, and screen readers were not assessed in P03.
 
-## 9. Components planned for P05–P09
+## 9. Physical folders (P05)
 
-Not implemented. P04 (navigation data model and hierarchical route configuration) comes first.
+Built in P05 and shown at `/_design/folders/`, a temporary study page (D-048). **Visual approval is pending the owner's review.** Components: `src/components/folders/`; styles: `src/styles/folders.css`; decisions D-043–D-047.
 
-- **Site shell and folder tabs:** physical tabs with connected silhouettes, at most three visible levels, a V-shaped indicator on the selected tab, slightly dimmed inactive tabs (`--color-folder-tab-inactive`), no breadcrumbs, no persistent sidebar, no computer-folder icons.
-- **Folder bodies and nested folders:** parent, nested and active-paper materials, with the geometry tokens in section 5.
-- **Hover previews:** immediate children only, on `--color-folder-preview`.
-- **Reading paper:** long-form prose with `.gl-prose`, code, mathematics, tables, quotes and callouts.
-- **Bearnard placement:** approved derivatives only, never full-resolution masters in `public/`.
-- **Environment selection:** from the route data, through BaseLayout's `environment` prop.
+### Construction
+
+A stack holds one to three folder levels. Each level is a row of tabs and, when one tab is selected, that folder's open body. The body holds the next level or, at the deepest level, the page on ivory paper. When no tab in the row is selected (an open parent such as `/cv/`), the row's tabs rise from behind the page itself.
+
+| Level | Folder | Selected tab | Inactive tabs stand on |
+| --- | --- | --- | --- |
+| 1 | Kraft `--color-folder-parent` | Kraft | The dark shell |
+| 2 | Parchment `--color-folder-nested` | Parchment | The kraft body |
+| 3 | Pale kraft `--color-folder-deep` | Pale kraft | The parchment body |
+| Page | Ivory paper `--color-folder-active` | — | — |
+
+### Tab silhouette
+
+- **Shape.** Each tab is card stock: a flat top with 0.5rem rounded corners and sides that slope outwards by `--folder-tab-slant` towards the folder. The card is two halves, each skewed about its bottom edge; their overlap is invisible because both share one fill. Tabs are as wide as their labels (at least `--folder-tab-min-inline-size`), so the slope is the same on every tab whatever its width.
+- **Neighbours.** Tabs overlap at their bases by `--folder-tab-overlap`; a later tab covers the one before it. Their tops stay apart.
+- **Edges.** A filter on the card draws one hairline edge and a soft shadow around the whole silhouette, never between the halves. The top edge carries a light highlight: stronger on the selected tab, faint on inactive ones.
+
+### The selected tab and its body
+
+- The selected tab has the body's material and stands in front of it (stacking: inactive tabs 1, body 2, selected tab 3, scroll hints 4; each level isolates its own stacking context).
+- It reaches `--folder-seam` (2 px) into the body, covering the body's top-edge highlight, so there is no line between tab and folder.
+- A concave fillet at each foot, tangent to the sloping side and to the body's top edge, makes the tab grow out of the folder.
+- Its shadow falls sideways onto the inactive tabs, not onto its own body.
+- It stands `--folder-tab-rise` (0.25rem) higher than its neighbours.
+- The selected state does not depend on color alone: the tab is raised, joined to the open body, and carries the V.
+
+### The V
+
+- A downward chevron below the label, pointing into the open folder. It is an inline SVG, decorative (`aria-hidden`), with no icon library or emoji.
+- 1rem × 0.5rem with a 2 px round-capped stroke in `--color-indicator-selected`, the same at every level.
+- It contrasts with the tab by 4.77–11.07:1 across levels and environments.
+
+### Inactive tabs
+
+- They use the level's material mixed 78% with the shell (`--color-folder-tab-inactive`, `-inactive-nested`, `-inactive-deep`), darkening a little towards the folder in front of them.
+- They stand lower and tuck behind the body's top edge.
+- Their labels keep full contrast (5.02:1 or more; section 8). They are not dimmed with opacity and do not look disabled.
+
+### Depth and shadows
+
+- Depth comes from stacking order, the seam, edge highlights and small warm shadows tinted with `--color-shadow`, more than from brightness.
+- The level-1 body uses `--shadow-folder`. Nested bodies use an edge highlight plus `--shadow-paper`. The page uses `--shadow-paper-raised`.
+- No gradients beyond a faint shade on inactive tabs. No glass, no bevels, no wood grain, no ageing.
+- Each level adds `--folder-nest-inset` (0.5–1rem) on each side. Three levels at 390 px leave a reading column of about 300 px.
+
+### Environments
+
+- One stylesheet serves every environment. The components never name an environment; a `data-environment` ancestor changes the materials, text colors, V color and type through tokens.
+- The test suite rejects environment selectors in `folders.css`.
+- Scientific and personal use navy shells, so their inactive tabs read cooler. Personal folders are gold, and literary ones amber kraft.
+
+### Width
+
+- At 1440 and 1280 px the twelve top-level tabs fit on one row, measured at 1,145 px.
+- A row wider than its folder scrolls sideways inside its own strip, never the page (D-047):
+  - The scrollbar is hidden, because it would sit between tabs and folder.
+  - A fade in the ground color marks an edge with more tabs beyond it.
+  - Chromium opens the row centered on its selected tab (`scroll-initial-target`).
+- CV's eight second-level tabs need about 1,200 px, more than the 80rem shell allows, so that row always scrolls (KL-20).
+- P08 owns the real small-screen and wide-row strategy.
+
+### Semantics
+
+- Tabs are plain labels until P06 makes them links. Each row is a list labelled "Sections" or "‹Parent› folders", and the selected label has `aria-current="true"`.
+- No ARIA tab roles, because these will be links between pages.
+- Keyboard focus uses the global ring (3 px navy, 2 px offset). Checked on a tab label turned into a link for the test: the ring shows and is not clipped by the scrolling row.
+
+### Remaining visual questions
+
+- Section 10, questions 13–17.
+
+### Still to come
+
+- **P06:** tabs become links to their pages, with route-driven selection.
+- **P07:** hover previews of a tab's immediate children, on `--color-folder-preview`, and an equivalent for keyboard users.
+- **P08:** the responsive navigation strategy.
+- **P09 and later:**
+  - reading paper for long-form prose (`.gl-prose`), code, mathematics, tables, quotes and callouts;
+  - Bearnard placement, with approved derivatives only and never full-resolution masters in `public/`;
+  - environment selection from the route data, through BaseLayout's `environment` prop.
 
 ## 10. Unresolved visual questions for the owner
 
@@ -290,6 +387,11 @@ Not implemented. P04 (navigation data model and hierarchical route configuration
 10. **Wordmark:** the specimen uses a text wordmark; `brand/gusmaolab-logo.svg` is an empty placeholder.
 11. **Paper grain:** none yet. Add a subtle texture to kraft only, or keep paper flat?
 12. **Ornament:** `--ornament-intensity` exists (0.25–1) but is barely used. What ornament, if any, belongs to each environment?
+13. **Folder tabs (P05):** is the slope (0.625rem over a 2.875rem tab) right, or should tabs be squarer or more chamfered? Are the fillets at the foot of the selected tab visible enough?
+14. **Inactive nested tabs (P05)** mix towards the shell, so under the navy shells (scientific, personal) they read cool gray against kraft or gold. Should they mix towards their parent folder instead (warmer, but with even less separation)?
+15. **Third-level material (P05):** pale kraft between kraft and parchment, or another tone?
+16. **Inactive labels (P05)** sit 2 px lower than the selected label, because inactive tabs stand 0.25rem lower and are a little shorter. Should all labels share one baseline instead?
+17. **Section colors on the global row (P05):** every tab takes the current page's environment. Should the twelve top-level tabs carry their own sections' colors instead?
 
 ## Legacy material
 

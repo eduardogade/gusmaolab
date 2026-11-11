@@ -1,0 +1,25 @@
+---
+/**
+ * One row of physical tabs (P05): the immediate children of one folder, or the global
+ * row of sections, in registry order. At most one tab is selected. If the row is wider
+ * than its folder it scrolls sideways on its own (src/styles/folders.css).
+ *
+ * The list is labelled but is not a navigation landmark yet: its tabs are not links
+ * until P06.
+ */
+import type { TabRow } from "../../navigation/index.ts"
+import FolderTab from "./FolderTab.astro"
+
+interface Props {
+  row: TabRow
+}
+
+const { row } = Astro.props
+const label = row.parent === null ? "Sections" : `${row.parent.label} folders`
+---
+
+<div class="gl-folder__strip">
+  <ul class="gl-folder__tabs" role="list" aria-label={label}>
+    {row.tabs.map((node) => <FolderTab node={node} selected={node.id === row.selectedId} />)}
+  </ul>
+</div>

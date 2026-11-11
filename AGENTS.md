@@ -6,7 +6,7 @@ Shared rules for every coding agent in this repository: Claude Code, Codex and o
 
 GusmaoLab is Eduardo Gade Gusmao's personal website and publishing ecosystem: computational biology, bioinformatics, research, software engineering, teaching, literature and personal interests. Scientific rigor and visual humor go together.
 
-The site is an Astro static project. The only page is a temporary design specimen (P03); the visual interface is not implemented yet. The old Pelican site is archived in `_backup/pelican-legacy/`.
+The site is an Astro static project with two temporary pages: the P03 design specimen (`/`) and the P05 folder study (`/_design/folders/`). The folder components exist; real section pages do not yet. The old Pelican site is archived in `_backup/pelican-legacy/`.
 
 ## Where things are
 
@@ -24,7 +24,7 @@ The site is an Astro static project. The only page is a temporary design specime
 
 ## Commands
 
-Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `npm run verify` (diagnostics, build, token, contrast and navigation tests, smoke test) before committing. `README.md` lists every command.
+Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `npm run verify` (diagnostics, build, token, contrast, navigation and folder tests, smoke test) before committing. `README.md` lists every command.
 
 ## Navigation
 
@@ -41,6 +41,7 @@ Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `n
 - Choose a section environment with `data-environment` (BaseLayout's `environment` prop). Change what an environment can set only through `src/design/contract.mjs` and a recorded decision.
 - Keep `tests/design-tokens.mjs` and `tests/contrast.mjs` passing. Do not lower a contrast threshold to make a color pass.
 - Never place text directly on the flannel lining. Add no transitions, animation or smooth scrolling without a decision.
+- Physical folders are `src/components/folders/` with `src/styles/folders.css`. Draw them from `siteNavigation.resolve()` rows, never a hand-built tree. Levels differ only by `data-level` and tokens; never add environment-specific folder rules (D-043–D-047).
 
 ## Invariants
 

@@ -1,0 +1,385 @@
+---
+// Temporary P05 design study of the physical folders. It is not a page of the website
+// and not production content: it exists so the owner can judge the folder geometry
+// before navigation is wired up in P06. Its tabs are labels, not links.
+//
+// Astro skips page files and folders whose names start with "_", so the /_design/
+// prefix comes from this one-value dynamic segment. The underscore keeps design studies
+// outside the navigation's namespace: no registry slug can start with "_".
+import BaseLayout from "../../layouts/BaseLayout.astro"
+import FolderStack from "../../components/folders/FolderStack.astro"
+import { createNavigation, siteNavigation } from "../../navigation/index.ts"
+import type {
+  Navigation,
+  NavigationEntry,
+  NavigationState,
+  SectionEnvironment,
+} from "../../navigation/index.ts"
+import { SECTIONS } from "../../navigation/registry.ts"
+
+export function getStaticPaths() {
+  return [{ params: { design: "_design" } }]
+}
+
+// Case C needs a third level, and none is approved yet (planning/information-
+// architecture.md, section 3). These three folders are a synthetic fixture for this
+// study only: they are not in the registry and have no pages.
+const SYNTHETIC_LEVEL_3: NavigationEntry[] = [
+  { id: "synthetic-projects", label: "Projects", slug: "synthetic-projects" },
+  { id: "synthetic-themes", label: "Themes", slug: "synthetic-themes" },
+  { id: "synthetic-datasets", label: "Datasets", slug: "synthetic-datasets" },
+]
+const syntheticNavigation = createNavigation(
+  SECTIONS.map((section) =>
+    section.id !== "cv"
+      ? section
+      : {
+          ...section,
+          children: section.children?.map((child) =>
+            child.id === "cv-research" ? { ...child, children: SYNTHETIC_LEVEL_3 } : child,
+          ),
+        },
+  ),
+)
+
+const stateAt = (navigation: Navigation, url: string): NavigationState => {
+  const result = navigation.resolve(url)
+  if (!result.found) throw new Error(`The folder study needs ${url}, which is not registered`)
+  return result.state
+}
+// "core" is the default environment: no attribute.
+const environmentOf = (state: NavigationState): SectionEnvironment | undefined =>
+  state.environment === "core" ? undefined : state.environment
+
+const home = stateAt(siteNavigation, "/")
+const research = stateAt(siteNavigation, "/cv/research/")
+const projects = stateAt(syntheticNavigation, "/cv/research/synthetic-projects/")
+const outreach = stateAt(siteNavigation, "/cv/outreach/")
+const cvOverview = stateAt(siteNavigation, "/cv/")
+const environmentCases = [
+  {
+    url: "/lab/research-areas/",
+    name: "Scientific",
+    text: "Navy shell and midnight lining, kraft and parchment folders, navy ink and an editorial serif for headings.",
+  },
+  {
+    url: "/lecture-notes/greenhouse/",
+    name: "Technical",
+    text: "Charcoal workbench shell, spruce indicator and links, gold accents, and sans-serif headings.",
+  },
+  {
+    url: "/writing/kosmos/",
+    name: "Literary",
+    text: "Amber kraft folders, warmer paper, a rust indicator and italic serif headings over serif body text.",
+  },
+  {
+    url: "/bearnards-area/powerlifting/",
+    name: "Personal",
+    text: "Bearnard's colors: a navy-fur shell, gold folders, a navy indicator and bold Clarendon headings.",
+  },
+].map((item) => ({ ...item, state: stateAt(siteNavigation, item.url) }))
+
+const selectionOf = (state: NavigationState) =>
+  state.selection.map((node) => node.label).join(" · ")
+---
+
+<BaseLayout
+  title="GusmaoLab — physical folder study (P05, temporary)"
+  description="Temporary design study for the GusmaoLab website: physical folder tabs, nested folders and their materials, awaiting the owner's review."
+>
+  <div class="study" data-study="p05-folders">
+    <header class="study-shell study-intro gl-on-dark">
+      <p class="study-overline">Design study · P05 · Temporary</p>
+      <h1>Physical Folder Geometry — P05 Visual Study</h1>
+      <p class="study-lead">
+        Paper folders with index tabs, nested up to three levels deep. This is a <strong>temporary design study</strong>,
+        not the GusmaoLab website and not production content. Visual approval is pending
+        the owner's review.
+      </p>
+      <ul class="study-notes" role="list">
+        <li>
+          Every tab, label and order comes from the P04 navigation registry, except the
+          third level in case C, which is a <strong>synthetic fixture</strong>.
+        </li>
+        <li>
+          Tabs are labels, not links: navigation arrives in P06, hover previews in P07, and
+          the full small-screen strategy in P08.
+        </li>
+        <li>
+          Rows that do not fit scroll sideways inside their folder, never the page. A fade at
+          an edge means more tabs lie beyond it.
+        </li>
+      </ul>
+    </header>
+
+    <section class="study-shell study-case" data-study-case="a" aria-labelledby="case-a">
+      <header class="case-head gl-on-dark">
+        <p class="study-overline">Case A · one level · core environment</p>
+        <h2 id="case-a">The twelve sections, Home open</h2>
+        <p>
+          The global row at full length: twelve tabs in the approved order.
+          Selection: <code>{selectionOf(home)}</code>, as resolved for <code>/</code>.
+        </p>
+      </header>
+      <FolderStack rows={home.rows}>
+        <div class="gl-prose sample">
+          <p class="sample-overline">Home · sample content</p>
+          <h3>Welcome to the archive</h3>
+          <p class="sample-lead">
+            Computational biology, teaching, writing and a navy bear in amber glasses, kept
+            in one cabinet of paper folders.
+          </p>
+          <p>
+            The selected tab and this folder are one sheet of kraft: same material, one
+            continuous edge, and a V where the tab meets the body. The other eleven tabs
+            stand a little lower, behind its top edge, and stay readable.
+          </p>
+          <p>
+            The reading surface is ivory paper inside the open folder, so long text never sits
+            on the darker card stock around it.
+          </p>
+        </div>
+      </FolderStack>
+    </section>
+
+    <section class="study-shell study-case" data-study-case="b" data-environment={environmentOf(research)} aria-labelledby="case-b">
+      <header class="case-head gl-on-dark">
+        <p class="study-overline">Case B · two levels · scientific environment</p>
+        <h2 id="case-b">CV open, Research open inside it</h2>
+        <p>
+          The CV folder's body holds a second folder with its own row of tabs.
+          Selection: <code>{selectionOf(research)}</code>, as resolved for <code>/cv/research/</code>.
+        </p>
+      </header>
+      <FolderStack rows={research.rows}>
+        <div class="gl-prose sample">
+          <p class="sample-overline">CV · Research · sample content</p>
+          <h3>Research</h3>
+          <p>
+            A parchment folder inside the kraft one. Both tab rows stay visible, so the path to
+            this page is told by the folders themselves, without a breadcrumb.
+          </p>
+          <table>
+            <thead>
+              <tr><th scope="col">Theme</th><th scope="col">Methods</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Chromatin conformation</td><td>Contact maps, polymer models</td></tr>
+              <tr><td>Gene regulation</td><td>Probabilistic models, sequence analysis</td></tr>
+              <tr><td>Methods and software</td><td>Reproducible pipelines, open tools</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </FolderStack>
+    </section>
+
+    <section class="study-shell study-case" data-study-case="c" data-environment={environmentOf(projects)} aria-labelledby="case-c">
+      <header class="case-head gl-on-dark">
+        <p class="study-overline">Case C · three levels · scientific environment</p>
+        <h2 id="case-c">CV, Research and a third folder</h2>
+        <p>
+          The deepest stack the site allows. Selection: <code>{selectionOf(projects)}</code>. <strong>The third level is a synthetic fixture</strong>:
+          Projects, Themes and Datasets are not registered folders and have no pages.
+        </p>
+      </header>
+      <FolderStack rows={projects.rows}>
+        <div class="gl-prose sample">
+          <p class="sample-overline">Synthetic fixture · sample content</p>
+          <h3>Projects</h3>
+          <p>
+            Three folders and the page, nested: kraft, parchment, a pale kraft, and ivory
+            paper. Deeper content, such as a single project, would open here, inside this
+            third folder, never as a fourth row of tabs.
+          </p>
+          <ul>
+            <li>Every level uses the same component; only its material and size change.</li>
+            <li>Each level adds a small inset, so the reading area stays wide.</li>
+          </ul>
+          <pre tabindex="0" aria-label="Python code sample"><code>{`def gc_content(sequence: str) -> float:
+    """Share of G and C bases in a DNA sequence."""
+    return sum(base in "GC" for base in sequence) / len(sequence)`}</code></pre>
+        </div>
+      </FolderStack>
+    </section>
+
+    <section class="study-shell study-case" data-study-case="d" data-environment={environmentOf(outreach)} aria-labelledby="case-d">
+      <header class="case-head gl-on-dark">
+        <p class="study-overline">Case D · long labels · scientific environment</p>
+        <h2 id="case-d">The longest labels in the registry</h2>
+        <p>
+          CV's eight folders include “Talks / Presentations”, “Mentoring / Supervision”,
+          “Awards &amp; Honors” and “Outreach / Public Engagement”, here selected. The global
+          row has “Lecture Notes” and “Bearnard's Area”. Labels are never shortened or
+          truncated.
+        </p>
+      </header>
+      <FolderStack rows={outreach.rows}>
+        <div class="gl-prose sample">
+          <p class="sample-overline">CV · Outreach / Public Engagement · sample content</p>
+          <h3>Outreach / Public Engagement</h3>
+          <p>
+            Each tab is as wide as its label. When a row is wider than its folder it scrolls on
+            its own, and the tabs keep their shape.
+          </p>
+        </div>
+      </FolderStack>
+    </section>
+
+    <section class="study-group" aria-labelledby="case-e">
+      <header class="study-shell case-head gl-on-dark">
+        <p class="study-overline">Case E · environments</p>
+        <h2 id="case-e">One folder system, four environments</h2>
+        <p>
+          The same two-level stack in each section environment. Structure and geometry are
+          identical; only materials, colors and type change. Case A shows the core
+          environment.
+        </p>
+      </header>
+      {
+        environmentCases.map((item) => (
+          <section
+            class="study-shell study-case"
+            data-study-case={`e-${item.state.environment}`}
+            data-environment={environmentOf(item.state)}
+            aria-label={`${item.name} environment`}
+          >
+            <header class="case-head gl-on-dark">
+              <p class="study-overline">
+                Case E · {item.name.toLowerCase()} · <code>{item.url}</code>
+              </p>
+              <p>{item.text}</p>
+            </header>
+            <FolderStack rows={item.state.rows}>
+              <div class="gl-prose sample">
+                <p class="sample-overline">{selectionOf(item.state)} · sample content</p>
+                <h3>{item.state.folder.label}</h3>
+                <p>
+                  A folder in the {item.name.toLowerCase()} environment: the same tabs, V,
+                  seams and shadows, in this section's materials.
+                </p>
+              </div>
+            </FolderStack>
+          </section>
+        ))
+      }
+    </section>
+
+    <section class="study-shell study-case" data-study-case="f" data-environment={environmentOf(cvOverview)} aria-labelledby="case-f">
+      <header class="case-head gl-on-dark">
+        <p class="study-overline">Case F · extra · an open parent, nothing selected</p>
+        <h2 id="case-f">CV open, none of its folders chosen yet</h2>
+        <p>
+          What P04 resolves for <code>/cv/</code>: CV's eight folders stand behind the CV
+          overview page, all inactive, with no V. Included so this state can be judged
+          before P06 builds the pages.
+        </p>
+      </header>
+      <FolderStack rows={cvOverview.rows}>
+        <div class="gl-prose sample">
+          <p class="sample-overline">CV · sample content</p>
+          <h3>Curriculum vitae</h3>
+          <p>
+            The overview page lies in front of the folders it introduces. Their tabs rise from
+            behind it, the way folders stand in an open drawer.
+          </p>
+        </div>
+      </FolderStack>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  /* Study layout only. The folders themselves are styled by src/styles/folders.css. */
+  .study {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-l);
+    max-inline-size: var(--size-shell-max);
+    margin-inline: auto;
+    padding: var(--space-gutter);
+  }
+
+  .study-group {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-s);
+  }
+
+  .study-shell {
+    padding: var(--space-shell-padding);
+    border: var(--border-width-hairline) solid var(--color-shell-border);
+    border-radius: var(--radius-shell);
+    background-color: var(--color-shell);
+    box-shadow: var(--shadow-shell);
+  }
+
+  .study-intro {
+    padding: var(--space-content-block) var(--space-content-inline);
+  }
+
+  .study-intro h1 {
+    max-inline-size: 24ch;
+    font-size: var(--font-size-h1);
+  }
+
+  .study-lead {
+    max-inline-size: var(--measure-prose);
+    margin-block-start: var(--space-s);
+    font-size: var(--font-size-lead);
+  }
+
+  .study-notes {
+    display: grid;
+    gap: var(--space-2xs);
+    max-inline-size: var(--measure-prose);
+    margin-block: var(--space-m) 0;
+    padding-inline-start: var(--space-m);
+    color: var(--color-text-on-dark-muted);
+  }
+
+  .study-overline,
+  .sample-overline {
+    font-family: var(--font-label);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: uppercase;
+  }
+
+  .study-overline {
+    margin-block-end: var(--space-3xs);
+    color: var(--color-text-on-dark-muted);
+  }
+
+  .case-head {
+    display: grid;
+    gap: var(--space-3xs);
+    padding: var(--space-2xs) var(--space-xs) var(--space-s);
+  }
+
+  .case-head h2 {
+    font-size: var(--font-size-h3);
+  }
+
+  .case-head p {
+    max-inline-size: var(--measure-wide);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-ui);
+  }
+
+  .case-head .study-overline {
+    font-size: var(--font-size-xs);
+  }
+
+  .sample-overline {
+    color: var(--color-text-muted);
+  }
+
+  .sample-lead {
+    font-size: var(--font-size-lead);
+  }
+
+  .sample table {
+    font-size: var(--font-size-sm);
+  }
+</style>

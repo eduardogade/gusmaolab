@@ -1,6 +1,6 @@
 # Information architecture
 
-Status: navigation model implemented in P04 (2026-11-10). The first and second levels are approved. **No third-level folder is approved yet**: the model supports a third level, and the final third-level site map will be settled in the content prompts.
+Status: navigation model implemented in P04 (2026-11-10). The first and second levels are approved. **No third-level folder is approved yet**: the model supports a third level, and the final third-level site map will be settled in the content prompts. P05 added the physical folder components that draw this model (section 13); tabs are not links yet (P06).
 
 Source of truth: `src/navigation/registry.ts` (data), `src/navigation/navigation.ts` (helpers) and `src/navigation/types.ts` (types). Tests: `tests/navigation.mjs` (NAV-001 to NAV-014).
 
@@ -140,6 +140,25 @@ The registry creates no pages: Astro routes come from `src/pages/` and, later, c
 2. **Content routes** (Wave III): collection entries become `ContentRoute`s at build time. They are passed to `createNavigation()` alongside the registry and generate their pages from the same list, so navigation and output cannot disagree.
 3. **Build check, active now:** the smoke test fails if `dist/` contains a page that is not a registered destination. In P04, 1 of 37 destinations has a page: `/`, the P03 specimen.
 4. **Not to do:** no catch-all route (`[...slug]`) that could swallow unknown paths or collide with collections; no server rendering; no client-side router.
+5. **Design studies (P05):** temporary pages under `/_design/`, such as the folder study at `/_design/folders/`, are the only built pages outside the registry. No slug can start with `_`, so they can never collide with a folder. The smoke test lists them explicitly (D-048).
+
+## 13. From navigation state to physical folders (P05)
+
+The folder components in `src/components/folders/` draw what `resolve()` returns; they hold no navigation data of their own (D-043).
+
+| Navigation model (P04) | Physical folders (P05) |
+| --- | --- |
+| `state.rows` | `<FolderStack rows={…}>`: one folder level per row, at most `MAX_TAB_LEVELS` |
+| `row.level` | `data-level` on the level: its material, tab size and label size |
+| `row.tabs`, in order | The row's tabs, labelled with `node.label` |
+| `row.selectedId` | The selected tab: raised, joined to the open body, with the V; `aria-current="true"` on its label |
+| `row.selectedId === null` (an open parent, such as `/cv/`) | All tabs inactive, rising from behind the page; no open body |
+| The deepest folder | Its body holds the page's content on ivory paper; a content route deeper than level 3 is shown there too |
+| `state.environment` | Set by the page (BaseLayout's `environment`, or a `data-environment` wrapper); the components never choose it |
+| `node.path` | Not used yet: tabs become links to it in P06 |
+| `preview(id)` | Not used yet: hover previews are P07 |
+
+`FolderStack` fails the build if the rows are impossible: none, more than three, out of order, or not following the selected tab. A page therefore cannot draw a fourth level or a stack that disagrees with the registry. The folder study (`/_design/folders/`) builds its stacks from `siteNavigation.resolve()`. Its third level is a synthetic fixture (Projects, Themes, Datasets under CV › Research), made with `createNavigation()`, and is not added to the registry.
 
 ## Open questions
 

@@ -2,6 +2,113 @@
 
 Newest entry first.
 
+## P05 — Physical Folder Geometry & Connected Tab System — 2026-11-10
+
+**Agent:** Claude Code. **Branch:** `development`. **Result:** technically complete; **the owner's visual approval is pending**. Nothing was pushed or deployed.
+
+### Starting state (verified)
+
+- **HEAD:** `development` at `ef5f78a` (P04). `npm run verify` passed, and every P04 deliverable was present.
+- **Other task's edits:** `development/current-state.md` and `development/implementation-log.md` had uncommitted edits, made at 19:40 by a separate Bearnard WhatsApp task (its Prompt 1/3 notes).
+  - The brief says to stop on unexplained changes, so the owner was asked. They chose to commit the notes on their own first: `cda026e`, unchanged, with no P-number because it is not a roadmap prompt.
+  - P05 then started from a clean tree, apart from the untracked `clean` file, which is still left alone.
+- **Other sessions:** none was active. The listed Claude sessions were idle, and no repository file had changed in the previous 20 minutes.
+- **Bearnard:** 352 of 352 checksums matched before work began. The WhatsApp task's derivatives sit in the gitignored `brand/bearnard/expressions2/`, untouched by P05.
+
+### Changes
+
+- **Folder components** (D-043):
+  - `src/components/folders/FolderStack.astro`
+  - `FolderLayer.astro`, which recurses with `Astro.self`
+  - `FolderTabStrip.astro`
+  - `FolderTab.astro`
+- **Folder stylesheet:** `src/styles/folders.css` (D-044, D-047).
+- **Tokens** (`src/styles/tokens.css`; D-045, D-046):
+  - revised folder geometry values;
+  - new seam, headroom, scroll-hint, line-height and indicator-stroke tokens;
+  - stacking order: inactive 1, body 2, active 3, scroll hint 4;
+  - new aliases `--color-folder-deep`, `--color-folder-tab-inactive-nested` and `--color-folder-tab-inactive-deep`.
+  - No primitive changed, and the environment contract is unchanged.
+- **Contract:** twelve new contrast pairings in `src/design/contract.mjs`.
+- **Study page:** `src/pages/[design]/folders.astro`, built at `/_design/folders/` (D-048). Its cases:
+  - A: the twelve sections, Home open;
+  - B: CV › Research;
+  - C: three levels, with a synthetic third level;
+  - D: the long labels;
+  - E: the scientific, technical, literary and personal environments;
+  - F: `/cv/`, an open parent with nothing selected.
+- **Tests:**
+  - new `tests/folders.mjs` (FOLD-001 to FOLD-010);
+  - `tests/smoke-test.mjs` expects the study, allows `/_design/` studies outside the registry, and checks that the study has no script or link;
+  - `tests/design-tokens.mjs` also checks the component files;
+  - `npm test` runs the folder tests.
+- **Records:**
+  - `planning/design-system.md`: new section 9 and questions 13–17;
+  - `planning/information-architecture.md`: new section 13;
+  - `planning/architecture.md`, `README.md`, `AGENTS.md`;
+  - the development records and `debugging/known-limitations.md` (KL-20 to KL-22).
+- **Not changed:**
+  - the P03 specimen's source, BaseLayout, `environments.css`, `global.css`, the navigation module and `astro.config.mjs`;
+  - dependencies and the lockfile;
+  - `_backup/`, `brand/` and `.github/`.
+
+### Visual review and the problems it found
+
+The study was inspected in the Claude desktop app's browser (Chromium 152) and in headless Chrome 157, with screenshots taken at 2× and magnified crops at 6–8×. It was checked at 1440, 1280, 1024, 768 and 390 px. Three defects were found and fixed:
+
+1. **A faint diagonal line through the selected tab.** The tab's highlight was an inset shadow, which outlined the hidden inner edge where the two halves overlap. It is now a 1 px top border.
+2. **A 2 px dark seam between the selected tab and its body**, appearing once rows opened at their selected tab.
+   - Cause: inactive tabs were lowered with `translate`, which made the row scroll vertically by 4 px. `scroll-initial-target` then scrolled it, lifting every selected tab.
+   - Fix: inactive tabs are now lowered with layout (a top margin and a shorter minimum height). Every row has `scrollTop` 0, and every selected tab reaches exactly 2 px into its body, at all 17 open levels in the study.
+3. **Tab feet peeking past the folder's rounded corners when a row scrolled (390 px).** The strip is now inset by the corner radius.
+
+Two refinements were also made during the review:
+
+- `scroll-initial-target` first aligned the selected tab to the start of the row, which scrolled rows unnecessarily. It now uses `scroll-snap-align: none center`.
+- Tab padding (0.75 → 0.625rem) and the scroll-hint width (1.5 → 1.25rem) were reduced, so the twelve top-level tabs fit at 1280 and 1440 px. Before that they overflowed by 11 px.
+
+### Commands run
+
+- **Inspect:**
+  - `git status`, `git diff`, `stat`;
+  - a search for files changed since P04;
+  - `ListAgents`;
+  - `shasum -a 256 -c assets/bearnard/SHA256SUMS`.
+- **Records commit:** `git commit` of the other task's two notes (`cda026e`).
+- **Build and test:** `npm run verify`, `npm run build`, `npx astro check` and `node tests/*.mjs`.
+- **Visual:**
+  - preview server `astro-preview` (port 4322);
+  - the in-app browser at 1440 and 1280 px, using JavaScript to read layout measurements;
+  - a scratch headless-Chrome script, outside the repository, for screenshots at 1440, 1280, 1024, 768 and 390 px;
+  - a pixel comparison of the specimen against the saved P04 build (Python PIL; the old build served by `python3 -m http.server` on 127.0.0.1).
+- **Focus:** in the browser and in headless Chrome, a tab label was turned into a link in the live page only, then focused with the keyboard. The ring shows and is not clipped.
+- **Negative tests:** five broken copies of the build in the scratch folder (see the acceptance matrix). Each made `tests/folders.mjs` exit 1.
+- **Format:** `npx prettier --write` on the changed `.mjs` and `.css` files only.
+
+Every Astro command ran with `ASTRO_TELEMETRY_DISABLED=1`.
+
+### Validation
+
+| Check | Result |
+| --- | --- |
+| `npm run check` | 0 errors, 0 warnings, 0 hints (24 files) |
+| `npm run build` | 2 pages: `/` (P03 specimen) and `/_design/folders/` |
+| Token checks | Pass: 24 primitives, 192 tokens; component files use semantic tokens only |
+| Contrast | 215 of 215 enforced pairings pass (43 per environment); 15 informational |
+| `tests/navigation.mjs` | 14 of 14 pass |
+| Smoke test | Pass; 5 files in `dist/`, no JavaScript |
+| `tests/folders.mjs` | 10 of 10 pass |
+| Page-wide horizontal overflow | None at 1440, 1280, 1024, 768 or 390 px |
+| P03 specimen | Pixel-identical to the P04 build at 1440 and 390 px except its contrast count (165 → 215); its CSS is now split into two files because two pages share it |
+| Bearnard | 352 of 352 checksums match |
+
+### Not done, by design
+
+- Tabs are not links: P06 adds route-driven navigation.
+- No hover previews: P07.
+- No responsive navigation redesign: P08.
+- No section pages, deployment, push, or change to `main`.
+
 ## P04 — Navigation Data Model, Hierarchy & Route Configuration — 2026-11-10
 
 **Agent:** Claude Code. **Branch:** `development`, created from `851fdbb` (the P03 commit). **Result:** completed. Nothing was pushed or deployed, and nothing visual changed.

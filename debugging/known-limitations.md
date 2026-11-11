@@ -1,6 +1,6 @@
 # Known limitations
 
-Recorded in P01 and updated in P02 and P03 (2026-11-10).
+Recorded in P01 and updated in P02, P03, P04 and P05 (2026-11-10).
 
 | ID | Limitation |
 | --- | --- |
@@ -23,3 +23,6 @@ Recorded in P01 and updated in P02 and P03 (2026-11-10).
 | KL-17 | The `prefers-contrast: more`, `forced-colors: active` and print fallbacks exist in CSS but were not checked visually. Screen readers were not tested. The contrast test covers opaque pairings only, not text over the flannel or translucent layers. |
 | KL-18 | Astro's HTML compression drops the whitespace where a line in an `.astro` template ends just before an inline element, gluing the words together. Keep such text and its inline element on one line, or add `{" "}`. |
 | KL-19 | The P03 visual review used Chromium-based browsers only: the Claude desktop app's browser (Chromium 152) and headless Chrome 157, on macOS 26.6.2. Safari and Firefox were not inspected. |
+| KL-20 | Folder rows can be wider than their folder (P05). CV's eight second-level tabs need about 1,200 px, more than the 80rem shell allows, so that row always scrolls inside its strip. The twelve top-level tabs need 1,145 px: they fit at 1280 and 1440 px in Chromium on macOS with 11–17 px to spare, but wider fallback fonts elsewhere may make that row scroll too. P08 owns the responsive strategy. |
+| KL-21 | The folder geometry relies on CSS trigonometric functions (`atan2()`, `sin()`, `cos()`), supported since Chrome 111, Safari 15.4 and Firefox 108. Without them, tabs would fall back to plain rounded rectangles, and the seam between a selected tab and its folder would show. Opening a scrolling row at its selected tab uses `scroll-initial-target`, which is in Chromium only; other browsers open the row at its start. Row scrollbars are hidden, so a mouse without horizontal scrolling must use Shift + wheel or the keyboard. |
+| KL-22 | The P05 folder review used Chromium-based browsers on macOS only: the desktop app's browser (Chromium 152) and headless Chrome 157. Safari, Firefox, Windows and Linux fonts, `forced-colors: active` (a fallback exists), screen readers and touch devices were not inspected. Focus was checked only on a tab label turned into a link for the test, because the tabs are not links until P06. |

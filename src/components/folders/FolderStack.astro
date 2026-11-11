@@ -1,0 +1,55 @@
+---
+/**
+ * The physical folder stack (P05): one to three nested folder levels, drawn from the
+ * tab rows of a resolved navigation state, with the page content in the deepest folder.
+ *
+ *   const result = siteNavigation.resolve(Astro.url.pathname)
+ *   <FolderStack rows={result.state.rows}>…page content…</FolderStack>
+ *
+ * Rows come from src/navigation (P04); this component never builds its own tree. The
+ * rows are checked at build time, so an impossible stack fails the build instead of
+ * rendering. Rendering is static: no client-side JavaScript.
+ *
+ * Choose the environment where the page is laid out (BaseLayout's `environment`, or a
+ * `data-environment` wrapper); every level then takes that environment's materials.
+ */
+import "../../styles/folders.css"
+import { MAX_TAB_LEVELS } from "../../navigation/index.ts"
+import type { TabRow } from "../../navigation/index.ts"
+import FolderLayer from "./FolderLayer.astro"
+
+interface Props {
+  rows: readonly TabRow[]
+}
+
+const { rows } = Astro.props
+
+const problems: string[] = []
+if (rows.length === 0 || rows.length > MAX_TAB_LEVELS) {
+  problems.push(`a stack has 1 to ${MAX_TAB_LEVELS} levels, not ${rows.length}`)
+}
+rows.forEach((row, i) => {
+  const where = `row ${i + 1}`
+  if (row.level !== i + 1) problems.push(`${where} is level ${row.level}`)
+  if (row.tabs.length === 0) problems.push(`${where} has no tabs`)
+  if (row.selectedId !== null && !row.tabs.some((tab) => tab.id === row.selectedId)) {
+    problems.push(`${where} selects "${row.selectedId}", which is not one of its tabs`)
+  }
+  if (i < rows.length - 1 && row.selectedId === null) {
+    problems.push(`${where} has a deeper row but no selected tab`)
+  }
+  const above = rows[i - 1]
+  if (above === undefined ? row.parent !== null : row.parent?.id !== above.selectedId) {
+    problems.push(`${where} does not belong to the tab selected above it`)
+  }
+})
+if (problems.length > 0) {
+  throw new Error(`FolderStack cannot draw these rows:\n- ${problems.join("\n- ")}`)
+}
+---
+
+<div class="gl-folders" data-folder-depth={rows.length}>
+  <FolderLayer rows={rows} index={0}>
+    <slot />
+  </FolderLayer>
+</div>

@@ -9,7 +9,11 @@ import { readTokens } from "../src/design/css-tokens.mjs"
 import { siteNavigation } from "../src/navigation/index.ts"
 
 // Pages the build is expected to produce. Extend this list as pages are added.
-const expectedPages = ["index.html"]
+const expectedPages = ["index.html", "_design/folders/index.html"]
+// Temporary design studies (P05 onwards). They live under /_design/, which no registry
+// path can reach (slugs never start with "_"), and are the only pages allowed outside
+// the navigation registry.
+const designStudies = ["/_design/folders/"]
 // Astro's bundled assets. The site ships no JavaScript, images or fonts yet, so only
 // stylesheets are expected.
 const expectedAsset = /^_astro\/[\w.-]+\.css$/
@@ -158,17 +162,39 @@ for (const { id } of ENVIRONMENTS) {
 }
 
 // 6. Route contract (P04): every built page is a registered navigation destination, so
-//    no page can exist outside the folder system. The reverse, every destination having a
-//    page, becomes a requirement once section pages are generated.
+//    no page can exist outside the folder system, except the declared design studies.
+//    The reverse, every destination having a page, becomes a requirement once section
+//    pages are generated.
 const pagePaths = files
   .filter((file) => file.endsWith(".html"))
   .map((file) => `/${file.replace(/(^|\/)index\.html$/, "$1")}`)
 for (const path of pagePaths) {
+  if (designStudies.includes(path)) continue
   check(
     siteNavigation.resolve(path).found,
     `built page ${path} is not in the navigation registry`,
   )
 }
+for (const path of designStudies) {
+  check(path.startsWith("/_design/"), `design study ${path} is not under /_design/`)
+  check(
+    !siteNavigation.resolve(path).found,
+    `design study ${path} collides with a registered destination`,
+  )
+}
+
+// 7. The P05 folder study: a temporary page, static, with no script and no links.
+const study = files.includes("_design/folders/index.html")
+  ? await readFile(join(dist, "_design/folders/index.html"), "utf8")
+  : ""
+check(/^<!doctype html>/i.test(study), "the folder study does not start with a doctype")
+check(/data-study="p05-folders"/.test(study), "missing the P05 folder study marker")
+check(
+  /temporary design study/i.test(study),
+  "the folder study lacks its temporary notice",
+)
+check(!/<script\b/i.test(study), "the folder study contains a <script> element")
+check(!/<a\s/i.test(study), "the folder study contains a link")
 const destinations = siteNavigation.pagePaths()
 const built = destinations.filter((path) => pagePaths.includes(path)).length
 

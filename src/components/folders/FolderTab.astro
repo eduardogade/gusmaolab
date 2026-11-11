@@ -1,0 +1,35 @@
+---
+/**
+ * One physical index tab (P05). It shows a navigation node's label; the selected tab
+ * also carries the V indicator and joins its folder body (src/styles/folders.css).
+ *
+ * The label is plain text for now. P06 turns it into a link to `node.path`, with
+ * `aria-current="page"` on the current page, when real section pages exist.
+ */
+import type { NavigationNode } from "../../navigation/index.ts"
+
+interface Props {
+  node: NavigationNode
+  selected?: boolean
+}
+
+const { node, selected = false } = Astro.props
+---
+
+<li class="gl-folder-tab" data-tab-id={node.id} data-selected={selected ? "" : undefined}>
+  <span class="gl-folder-tab__shape" aria-hidden="true"></span>
+  <span class="gl-folder-tab__label" aria-current={selected ? "true" : undefined}>{node.label}</span>
+  {
+    selected && (
+      <svg
+        class="gl-folder-tab__indicator"
+        viewBox="0 0 16 8"
+        preserveAspectRatio="none"
+        aria-hidden="true"
+        focusable="false"
+      >
+        <path d="M1.5 1.5 8 6.5 14.5 1.5" vector-effect="non-scaling-stroke" />
+      </svg>
+    )
+  }
+</li>

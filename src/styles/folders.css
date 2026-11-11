@@ -1,0 +1,345 @@
+/*
+ * Physical folders (P05): the folder stack, its tab rows, its tabs and its bodies.
+ * Imported by src/components/folders/FolderStack.astro, so only pages that show folders
+ * load it. Semantic tokens only; no transitions or animation.
+ *
+ * Markup, from the components in src/components/folders/:
+ *
+ *   .gl-folders                           FolderStack: one to three levels
+ *     .gl-folder[data-level="1|2|3"]      FolderLayer: one physical folder
+ *       .gl-folder__strip                 FolderTabStrip: scrolls sideways if too wide
+ *         ul.gl-folder__tabs
+ *           li.gl-folder-tab[data-selected]       FolderTab
+ *             .gl-folder-tab__shape       the card stock: two skewed halves
+ *             .gl-folder-tab__label
+ *             svg.gl-folder-tab__indicator        the V, on the selected tab only
+ *       .gl-folder__body                  the open folder, when a tab is selected; it
+ *                                         holds the next level, or the page's paper
+ *       .gl-folder__paper                 the page itself, on ivory reading paper
+ *
+ * One tab, seen from the front:
+ *
+ *              corner radius
+ *            ╭──────────────╮             top edge, with a light highlight
+ *           ╱     Label      ╲            sides slope over --folder-tab-slant
+ *          ╱        V         ╲           the V marks the selected tab
+ *     ────╯                    ╰────      fillets join the folder's top edge (selected)
+ *     ══════════════════════════════      --folder-seam: the selected tab covers the
+ *                                         body's top edge, so tab and body are one piece
+ *
+ * The card shape is two halves, each skewed about its bottom edge so one side slopes;
+ * their overlap in the middle is invisible because both use the same fill. A filter on
+ * their wrapper draws one shadow and one hairline edge around the whole silhouette.
+ *
+ * Stacking inside one level, lowest first (tokens.css):
+ *   inactive tabs (1)  <  folder body (2)  <  selected tab (3)  <  scroll hints (4)
+ * Inactive tabs tuck behind the body's top edge, the selected tab sits in front of it,
+ * and each level isolates its own stacking context, so a nested level can never rise
+ * above an ancestor's tabs.
+ */
+
+/* 1. Levels: material, ground and size --------------------------------------------- */
+
+.gl-folders {
+  min-inline-size: 0;
+}
+
+.gl-folder {
+  /* Level 1: kraft folders rising from the dark shell */
+  --_material: var(--color-folder-parent);
+  --_inactive: var(--color-folder-tab-inactive);
+  --_ground: var(--color-shell);
+  --_tab-height: var(--folder-tab-height-1);
+  --_tab-font-size: var(--font-size-tab-1);
+  --_body-shadow: var(--shadow-folder);
+
+  /* The slope of a tab's sides, from its slant and height. Recomputed on every level. */
+  --_slant-angle: atan2(var(--folder-tab-slant), var(--_tab-height));
+
+  position: relative;
+  isolation: isolate;
+}
+
+/* Level 2: parchment folders inside the kraft one */
+.gl-folder[data-level="2"] {
+  --_material: var(--color-folder-nested);
+  --_inactive: var(--color-folder-tab-inactive-nested);
+  --_ground: var(--color-folder-parent);
+  --_tab-height: var(--folder-tab-height-2);
+  --_tab-font-size: var(--font-size-tab-2);
+  --_body-shadow: var(--_nested-shadow);
+}
+
+/* Level 3: pale kraft folders inside the parchment one */
+.gl-folder[data-level="3"] {
+  --_material: var(--color-folder-deep);
+  --_inactive: var(--color-folder-tab-inactive-deep);
+  --_ground: var(--color-folder-nested);
+  --_tab-height: var(--folder-tab-height-3);
+  --_tab-font-size: var(--font-size-tab-3);
+  --_body-shadow: var(--_nested-shadow);
+}
+
+.gl-folder[data-level="2"],
+.gl-folder[data-level="3"] {
+  /* A nested folder rests on its parent: an edge highlight and a small, close shadow. */
+  --_nested-shadow:
+    inset 0 1px 0 color-mix(in srgb, var(--color-folder-edge) 70%, transparent),
+    var(--shadow-paper);
+}
+
+/* 2. The tab row ------------------------------------------------------------------- */
+
+/*
+ * The row reaches --folder-seam into the body below it. If its tabs do not fit, it
+ * scrolls sideways on its own; the page never does. The scrollbar is hidden because it
+ * would sit between the tabs and their folder; trackpads, touch, Shift + wheel and
+ * keyboard focus still scroll the row, and the hints below show that more tabs exist.
+ */
+.gl-folder__strip {
+  contain: inline-size;
+  /* Inset by the body's corner radius, so a scrolled tab never overhangs a corner. */
+  margin-inline: var(--radius-folder);
+  margin-block-end: calc(-1 * var(--folder-seam));
+  padding-block-start: var(--folder-strip-headroom);
+  overflow-x: auto;
+  overflow-y: hidden;
+  overscroll-behavior-inline: contain;
+  scrollbar-width: none;
+}
+
+.gl-folder__tabs {
+  display: flex;
+  align-items: stretch;
+  inline-size: max-content;
+  min-inline-size: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+/*
+ * Scroll hints: a fade at each end of the row, in the colour the tabs stand on. At rest
+ * each one sits in its own space beyond the first or last tab and is invisible; once the
+ * row scrolls, it sticks to the visible edge and fades the tabs passing underneath.
+ */
+.gl-folder__tabs::before,
+.gl-folder__tabs::after {
+  content: "";
+  position: sticky;
+  z-index: var(--z-folder-scroll-hint);
+  flex: none;
+  inline-size: var(--folder-scroll-hint-size);
+  margin-block-end: var(--folder-seam);
+  pointer-events: none;
+}
+
+.gl-folder__tabs::before {
+  left: 0;
+  background-image: linear-gradient(to right, var(--_ground) 20%, transparent);
+}
+
+.gl-folder__tabs::after {
+  right: 0;
+  background-image: linear-gradient(to left, var(--_ground) 20%, transparent);
+}
+
+/* 3. One tab ----------------------------------------------------------------------- */
+
+.gl-folder-tab {
+  --_fill: var(--_inactive);
+  --_tab-highlight: color-mix(in srgb, var(--color-folder-edge) 32%, transparent);
+  --_tab-shadow: drop-shadow(
+      0 0 0.5px color-mix(in srgb, var(--color-shadow) 50%, transparent)
+    )
+    drop-shadow(0 -1px 2px color-mix(in srgb, var(--color-shadow) 22%, transparent));
+
+  position: relative;
+  z-index: var(--z-folder-inactive);
+  display: grid;
+  flex: none;
+  grid-template-rows: auto var(--folder-indicator-depth);
+  row-gap: var(--folder-indicator-gap);
+  align-content: center;
+  justify-items: center;
+  min-inline-size: var(--folder-tab-min-inline-size);
+  max-inline-size: var(--folder-tab-max-inline-size);
+  /*
+   * Inactive tabs stand --folder-tab-rise lower than the selected one. This is done
+   * with layout, not a transform: a transform would let the row scroll vertically.
+   */
+  min-block-size: calc(
+    var(--_tab-height) + var(--folder-seam) - var(--folder-tab-rise)
+  );
+  margin-block-start: var(--folder-tab-rise);
+  padding-block-end: var(--folder-seam);
+  padding-inline: calc(var(--folder-tab-slant) + var(--folder-tab-padding-inline));
+  color: var(--color-folder-tab-text);
+  font-family: var(--font-label);
+  font-size: var(--_tab-font-size);
+  font-weight: var(--font-weight-tab);
+  letter-spacing: var(--letter-spacing-tab);
+  line-height: var(--folder-tab-line-height);
+  text-align: center;
+}
+
+/* Neighbours overlap at their bases; a later tab covers the one before it. */
+.gl-folder-tab + .gl-folder-tab {
+  margin-inline-start: calc(-1 * var(--folder-tab-overlap));
+}
+
+/* The selected tab is the open folder's own tab: same material, raised, in front. */
+.gl-folder-tab[data-selected] {
+  --_fill: var(--_material);
+  --_tab-highlight: color-mix(in srgb, var(--color-folder-edge) 60%, transparent);
+  --_tab-shadow: drop-shadow(
+      0 0 0.5px color-mix(in srgb, var(--color-shadow) 45%, transparent)
+    )
+    drop-shadow(0 0 4px color-mix(in srgb, var(--color-shadow) 30%, transparent));
+
+  z-index: var(--z-folder-active);
+  min-block-size: calc(var(--_tab-height) + var(--folder-seam));
+  margin-block-start: 0;
+  /*
+   * If the row scrolls, open it at the selected tab, clear of the edge fades. Browsers
+   * without scroll-initial-target open the row at its start; the end fade then shows
+   * that more tabs follow.
+   */
+  scroll-initial-target: nearest;
+  scroll-snap-align: none center;
+}
+
+.gl-folder-tab__shape {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  filter: var(--_tab-shadow);
+}
+
+.gl-folder-tab__shape::before,
+.gl-folder-tab__shape::after {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inline-size: calc(50% + var(--folder-tab-corner-radius));
+  /* A top border, not an inset shadow: an inset shadow outlines the hidden inner edge. */
+  border-block-start: var(--border-width-hairline) solid var(--_tab-highlight);
+  background-color: var(--_fill);
+  transform-origin: 50% 100%;
+}
+
+.gl-folder-tab__shape::before {
+  left: 0;
+  border-top-left-radius: var(--folder-tab-corner-radius);
+  transform: skewX(calc(-1 * var(--_slant-angle)));
+}
+
+.gl-folder-tab__shape::after {
+  right: 0;
+  border-top-right-radius: var(--folder-tab-corner-radius);
+  transform: skewX(var(--_slant-angle));
+}
+
+/* An inactive tab darkens slightly towards the folder that stands in front of it. */
+.gl-folder-tab:not([data-selected]) .gl-folder-tab__shape::before,
+.gl-folder-tab:not([data-selected]) .gl-folder-tab__shape::after {
+  background-image: linear-gradient(
+    to bottom,
+    transparent 45%,
+    color-mix(in srgb, var(--color-shadow) 9%, transparent)
+  );
+}
+
+/*
+ * The selected tab's junction with its body: a strip of the folder material over the
+ * seam, plus a concave fillet at each foot. Each fillet is a quarter-round cut-out,
+ * tangent to the sloping side and to the body's top edge.
+ */
+.gl-folder-tab[data-selected]::after {
+  --_r: var(--folder-tab-fillet-radius);
+  --_out: calc(var(--_r) * (1 - sin(var(--_slant-angle))) / cos(var(--_slant-angle)));
+  --_box: calc(var(--_r) * cos(var(--_slant-angle)));
+  --_lift: calc(var(--_r) * (1 - sin(var(--_slant-angle))));
+  --_centre: calc(-1 * var(--_r) * sin(var(--_slant-angle)));
+
+  content: "";
+  position: absolute;
+  right: calc(-1 * var(--_out));
+  bottom: 0;
+  left: calc(-1 * var(--_out));
+  block-size: calc(var(--_lift) + var(--folder-seam));
+  background:
+    radial-gradient(
+        circle var(--_r) at 0 var(--_centre),
+        transparent calc(var(--_r) - 0.5px),
+        var(--_fill) calc(var(--_r) + 0.5px)
+      )
+      left top / var(--_box) var(--_lift) no-repeat,
+    radial-gradient(
+        circle var(--_r) at 100% var(--_centre),
+        transparent calc(var(--_r) - 0.5px),
+        var(--_fill) calc(var(--_r) + 0.5px)
+      )
+      right top / var(--_box) var(--_lift) no-repeat,
+    linear-gradient(var(--_fill), var(--_fill)) left bottom / 100% var(--folder-seam)
+      no-repeat;
+  pointer-events: none;
+}
+
+.gl-folder-tab__label {
+  grid-row: 1;
+  max-inline-size: 100%;
+  text-wrap: balance;
+}
+
+/* The V: decorative, the same size on every level, pointing into the open folder. */
+.gl-folder-tab__indicator {
+  grid-row: 2;
+  inline-size: var(--folder-indicator-width);
+  block-size: var(--folder-indicator-depth);
+  overflow: visible;
+  fill: none;
+  stroke: var(--color-indicator-selected);
+  stroke-width: var(--folder-indicator-stroke);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* 4. Bodies and paper -------------------------------------------------------------- */
+
+.gl-folder__body {
+  position: relative;
+  z-index: var(--z-folder-body);
+  padding: var(--folder-nest-inset);
+  border-radius: var(--radius-folder);
+  background-color: var(--_material);
+  box-shadow: var(--_body-shadow);
+}
+
+/* The page: always ivory paper, in the deepest open folder or in front of its tabs. */
+.gl-folder__paper {
+  position: relative;
+  z-index: var(--z-folder-body);
+  padding: var(--space-content-block) var(--space-content-inline);
+  border-radius: var(--radius-paper);
+  background-color: var(--color-folder-active);
+  box-shadow: var(--shadow-paper-raised);
+  color: var(--color-text-primary);
+}
+
+/* 5. Other display modes ------------------------------------------------------------ */
+
+@media (forced-colors: active) {
+  .gl-folder-tab[data-selected] .gl-folder-tab__label {
+    text-decoration-line: underline;
+  }
+
+  .gl-folder-tab__indicator {
+    stroke: CanvasText;
+  }
+
+  .gl-folder__body,
+  .gl-folder__paper {
+    border: var(--border-width-hairline) solid CanvasText;
+  }
+}

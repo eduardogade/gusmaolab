@@ -363,6 +363,35 @@ export const CONTRAST_PAIRS = /** @type {ContrastRow[]} */ ([
     "--color-folder-tab-inactive",
     4.5,
   ],
+  // Folder levels 2 and 3 (P05): labels on nested and deep tabs, selected and inactive.
+  [
+    "tab-label-active-nested",
+    "Label on an active nested tab",
+    "--color-folder-tab-text",
+    "--color-folder-nested",
+    4.5,
+  ],
+  [
+    "tab-label-inactive-nested",
+    "Label on an inactive nested tab",
+    "--color-folder-tab-text",
+    "--color-folder-tab-inactive-nested",
+    4.5,
+  ],
+  [
+    "tab-label-active-deep",
+    "Label on an active deep tab",
+    "--color-folder-tab-text",
+    "--color-folder-deep",
+    4.5,
+  ],
+  [
+    "tab-label-inactive-deep",
+    "Label on an inactive deep tab",
+    "--color-folder-tab-text",
+    "--color-folder-tab-inactive-deep",
+    4.5,
+  ],
   [
     "text-on-shell",
     "Text on the dark shell",
@@ -437,6 +466,20 @@ export const CONTRAST_PAIRS = /** @type {ContrastRow[]} */ ([
     3,
   ],
   [
+    "indicator-on-nested-tab",
+    "Selection indicator on an active nested tab",
+    "--color-indicator-selected",
+    "--color-folder-nested",
+    3,
+  ],
+  [
+    "indicator-on-deep-tab",
+    "Selection indicator on an active deep tab",
+    "--color-indicator-selected",
+    "--color-folder-deep",
+    3,
+  ],
+  [
     "focus-on-paper",
     "Focus ring on reading paper",
     "--color-focus-ring",
@@ -458,6 +501,34 @@ export const CONTRAST_PAIRS = /** @type {ContrastRow[]} */ ([
     3,
   ],
   [
+    "focus-on-deep",
+    "Focus ring on the deep folder",
+    "--color-focus-ring",
+    "--color-folder-deep",
+    3,
+  ],
+  [
+    "focus-on-inactive-tab",
+    "Focus ring on an inactive tab",
+    "--color-focus-ring",
+    "--color-folder-tab-inactive",
+    3,
+  ],
+  [
+    "focus-on-inactive-nested-tab",
+    "Focus ring on an inactive nested tab",
+    "--color-focus-ring",
+    "--color-folder-tab-inactive-nested",
+    3,
+  ],
+  [
+    "focus-on-inactive-deep-tab",
+    "Focus ring on an inactive deep tab",
+    "--color-focus-ring",
+    "--color-folder-tab-inactive-deep",
+    3,
+  ],
+  [
     "focus-on-shell",
     "Focus ring on the dark shell",
     "--color-focus-ring-on-dark",
@@ -470,6 +541,22 @@ export const CONTRAST_PAIRS = /** @type {ContrastRow[]} */ ([
     "--color-folder-tab-inactive",
     "--color-shell",
     3,
+  ],
+  // A nested tab against the folder it stands on. Paper on paper cannot reach 3:1, and
+  // the label identifies the tab, so these are reported for information only.
+  [
+    "nested-tab-on-parent",
+    "Inactive nested tab against the parent folder (informational)",
+    "--color-folder-tab-inactive-nested",
+    "--color-folder-parent",
+    null,
+  ],
+  [
+    "deep-tab-on-nested",
+    "Inactive deep tab against the nested folder (informational)",
+    "--color-folder-tab-inactive-deep",
+    "--color-folder-nested",
+    null,
   ],
   [
     "disabled-on-paper",

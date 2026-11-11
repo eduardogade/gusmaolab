@@ -1,6 +1,6 @@
 # Architecture
 
-Status: approved direction recorded in P01. The Astro foundation was set up in P02, the design-token foundation in P03 and the navigation data model in P04 (2026-11-10). The visual interface is not implemented.
+Status: approved direction recorded in P01. The Astro foundation was set up in P02, the design-token foundation in P03, the navigation data model in P04 and the physical folder components in P05 (2026-11-10). No real section page exists yet, and the folder appearance awaits the owner's review.
 
 ## Approved direction
 
@@ -27,7 +27,8 @@ Status: approved direction recorded in P01. The Astro foundation was set up in P
 | Styles | Native CSS custom properties in `src/styles/`, imported by `BaseLayout` (D-026). No CSS framework or preprocessor. |
 | Environments | `data-environment` on `<html>` via BaseLayout's `environment` prop, or on any element (D-027) |
 | Navigation | A typed, declarative registry in `src/navigation/` (D-036–D-039) |
-| Tests | `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs` and `tests/smoke-test.mjs` (D-032, D-040) |
+| Folder components | `src/components/folders/` and `src/styles/folders.css`: static Astro components that draw P04's tab rows, with no client-side JavaScript (D-043–D-047) |
+| Tests | `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs` and `tests/folders.mjs` (D-032, D-040) |
 
 ## Navigation and Astro routes
 
@@ -44,15 +45,16 @@ They meet through a contract (`information-architecture.md`, section 12):
 4. The smoke test fails if a built page is not a registered destination.
 5. There is no catch-all route.
 
-## Repository layout after P04
+## Repository layout after P05
 
 | Path | Role |
 | --- | --- |
-| `src/pages/`, `src/layouts/` | Astro source: the temporary design specimen and one shared layout |
-| `src/styles/` | `tokens.css`, `environments.css` and `global.css` |
+| `src/pages/`, `src/layouts/` | Astro source: two temporary pages (the P03 design specimen at `/` and the P05 folder study at `/_design/folders/`, from `src/pages/[design]/folders.astro`; D-048) and one shared layout |
+| `src/components/folders/` | `FolderStack`, `FolderLayer`, `FolderTabStrip` and `FolderTab` (D-043) |
+| `src/styles/` | `tokens.css`, `environments.css` and `global.css`, loaded by BaseLayout; `folders.css`, loaded only by `FolderStack` |
 | `src/design/` | The token contract and the CSS token reader, shared by the specimen and the tests |
 | `src/navigation/` | Navigation types, registry and helpers; `index.ts` exports the compiled `siteNavigation`. Not `src/lib/`, which the root `.gitignore` would hide (KL-11). |
-| `tests/` | Token, contrast, navigation and build-output checks |
+| `tests/` | Token, contrast, navigation, build-output and folder-component checks |
 | `.claude/launch.json` | Local preview servers for the Claude desktop app (D-034) |
 | `astro.config.mjs`, `tsconfig.json` | Astro and TypeScript configuration |
 | `package.json`, `package-lock.json`, `.node-version` | npm project, lockfile and Node.js version policy |
@@ -69,7 +71,7 @@ They meet through a contract (`information-architecture.md`, section 12):
 | `_books/`, `_papers/`, `_references/`, `_reports/` | Private workspace, gitignored. Never commit. |
 | `backup/`, `releases/`, `resources/`, `viz/`, `_logo/` | Empty, untracked placeholder folders |
 
-`src/components/` and `public/` do not exist yet (D-019). The site ships no JavaScript, images or font files.
+`public/` does not exist yet (D-019); `src/components/` was created in P05. The site ships no JavaScript, images or font files.
 
 ## Deployment
 
