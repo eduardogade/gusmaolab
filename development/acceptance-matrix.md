@@ -254,7 +254,7 @@ The browser tests are run by `npm run test:browser`, not by `npm run verify` (D-
 
 ## P08 gates
 
-Checked by `npm run verify`, by `npm run test:browser` (headless Chrome 157: 12 preview and 17 responsive checks) and by screenshots of the built site at 320, 360, 390, 430, 768, 1024, 1280, 1440 and 1920 px, plus the desktop app's browser at 375 px. Chromium only; touch emulated (KL-32). **The owner has not yet reviewed the responsive screenshots (G-P08-20).**
+Checked by `npm run verify`, by `npm run test:browser` (headless Chrome 157: 12 preview and 17 responsive checks) and by screenshots of the built site at 320, 360, 390, 430, 768, 1024, 1280, 1440 and 1920 px, plus the desktop app's browser at 375 px. Chromium only; touch emulated (KL-32). **The owner reviewed the screenshots and approved the small-screen layout (G-P08-20, D-070); real devices remain untested (G-P08-21).**
 
 | ID | Gate | Status | Evidence |
 | --- | --- | --- | --- |
@@ -277,7 +277,7 @@ Checked by `npm run verify`, by `npm run test:browser` (headless Chrome 157: 12 
 | G-P08-17 | Documentation and records updated | Passed | `planning/design-system.md`, `information-architecture.md` (section 16), `architecture.md`, `development/`, `debugging/known-limitations.md`, `README.md`, `AGENTS.md` |
 | G-P08-18 | Committed locally on `development` | Passed | The P08 commit; `development` has no upstream |
 | G-P08-19 | No deployment and no push | Passed | No push or deployment command was run |
-| G-P08-20 | The owner approves the responsive appearance | **Untested** | Awaiting the owner's review of the P08 screenshots. Not marked on the owner's behalf. |
+| G-P08-20 | The owner approves the responsive appearance | Passed | The owner approved the layout after reviewing the 16 P08 screenshots (D-070). Question 22 in `planning/design-system.md` section 10 remains a refinement. |
 | G-P08-21 | Real phones and tablets | **Untested** | Pending the owner's verification on real devices (KL-32) |
 
 ### Responsive tests (P08)

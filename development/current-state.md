@@ -115,7 +115,7 @@ Built:
 - Touch: swipes scroll a row, taps open a page, previews never open, every tab at least 44 px tall.
 - Wide content scrolls inside itself; study case I shows it.
 
-**Visual approval of P08:** not yet given (G-P08-20). Real phones and tablets are untested (G-P08-21, KL-32).
+**Visual approval of P08:** the owner approved the small-screen layout (G-P08-20, D-070). Question 22 in `planning/design-system.md` section 10 remains a refinement. Real phones and tablets are still untested (G-P08-21, KL-32).
 
 ## Toolchain
 
@@ -154,7 +154,7 @@ Built:
 
 | Item | Value |
 | --- | --- |
-| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; P05 at `4771127` and `40083ce`; the Bearnard sticker task's notes at `cda026e`, `fa522dc` and `aaa32a7`; P06 at `39bc564` and its approval record `f8eead2`; P07 at `750e98f` and its approval record `28392b0`; then the P08 commit |
+| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; P05 at `4771127` and `40083ce`; the Bearnard sticker task's notes at `cda026e`, `fa522dc` and `aaa32a7`; P06 at `39bc564` and its approval record `f8eead2`; P07 at `750e98f` and its approval record `28392b0`; P08 at `5a906f1` and the approval record that follows it |
 | Milestone branches | `chore/gusmaolab-foundation-p01` (`4096691`), `chore/gusmaolab-astro-foundation-p02` (`5fab52c`), `feat/gusmaolab-design-system-p03` (`851fdbb`), all kept |
 | Recovery tag | `pre-astro-checkpoint` → `6eedf02`, local only |
 | `main` and `origin/main` | `6036137`, the same tree as the checkpoint. No `development` branch exists on `origin`. |
@@ -172,7 +172,7 @@ Unchanged since P03; P05 to P08 did not touch it. ISSUE-0003 stays open: the rec
 
 ## Completed prompts
 
-P01 to P07. P08 is technically complete; its visual approval and real-device checks are pending.
+P01 to P08. P08's real-device checks are pending.
 
 ## Blockers
 
@@ -180,8 +180,8 @@ None for P09.
 
 ## Waiting for the owner
 
-- **Review the P08 responsive screenshots**, and approve the small-screen layout or ask for changes (G-P08-20; `planning/design-system.md` section 10, question 22). If possible, try the site on a real phone and tablet (G-P08-21).
-- Optional refinements to the folders, the Overview tab and the previews, if wanted: `planning/design-system.md` section 10, questions 13–21.
+- If possible, try the site on a real phone and tablet (G-P08-21, KL-32).
+- Optional refinements to the folders, the Overview tab, the previews and small screens, if wanted: `planning/design-system.md` section 10, questions 13–22.
 - Stronger palette differences between environments (D-056) and typography consolidation (D-042), both deferred.
 - The third-level folders, when content work reaches them (`planning/information-architecture.md` section 3).
 - Whether the second-level slugs are final before first publication (D-037).

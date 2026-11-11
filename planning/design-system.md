@@ -12,7 +12,7 @@ Status: **implemented and approved.** Built in P03 (2026-11-10); in P04 the owne
 
 **P07 (2026-11-11): folder previews** (section 9, "Folder previews"). Hovering or keyboard-focusing an unopened folder with children shows a small parchment index card of its contents, hanging from its tab. The folders, tabs, V and environments are unchanged. The owner approved the previews after reviewing the screenshots (D-063); question 21 in section 10 remains a refinement.
 
-**P08 (2026-11-11): small screens** (section 9, "Width and small screens"). The folders stay physical folders at every width: rows scroll sideways and open at their selected tab, keyboard focus stays clear of the edge fades, phones get thinner shell padding and nest insets, touch screens get 44 px tabs, and wide content scrolls inside itself. From 1024 px up the layout is pixel-identical to P07; above 1440 px the shell no longer narrows. The new spacing and touch heights are provisional until the owner reviews the screenshots (D-064–D-068).
+**P08 (2026-11-11): small screens** (section 9, "Width and small screens"). The folders stay physical folders at every width: rows scroll sideways and open at their selected tab, keyboard focus stays clear of the edge fades, phones get thinner shell padding and nest insets, touch screens get 44 px tabs, and wide content scrolls inside itself. From 1024 px up the layout is pixel-identical to P07; above 1440 px the shell no longer narrows. The owner approved the small-screen layout after reviewing the screenshots (D-070); question 22 in section 10 remains a refinement.
 
 **Deferred refinements:** stronger palette differences between the environments (D-056) and typography consolidation (D-042). Neither changed in P06, P07 or P08.
 
@@ -373,7 +373,7 @@ A stack holds one to three folder levels. Each level is a row of tabs, exactly o
 
 ### Width and small screens (P08)
 
-The folders are physical folders at every width (D-064). Nothing turns into a menu, sidebar, accordion or icon row, labels are never shortened, and every level stays visible.
+The folders are physical folders at every width (D-064). **Approved by the owner (D-070).** Nothing turns into a menu, sidebar, accordion or icon row, labels are never shortened, and every level stays visible.
 
 | Width | Shell | Global row | Nesting |
 | --- | --- | --- | --- |

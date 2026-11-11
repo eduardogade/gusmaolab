@@ -4,7 +4,7 @@ Newest entry first.
 
 ## P08 — Responsive Physical-Folder Navigation & Adaptive Layout — 2026-11-11
 
-**Agent:** Claude Code. **Branch:** `development`. **Result:** technically complete; **the owner's visual approval (G-P08-20) and real-device checks (G-P08-21) are pending**. Nothing was pushed or deployed.
+**Agent:** Claude Code. **Branch:** `development`. **Result:** completed. The owner approved the small-screen layout after reviewing the screenshots (G-P08-20, D-070, recorded after the P08 commit). Real-device checks (G-P08-21) are still pending. Nothing was pushed or deployed.
 
 ### Starting state (verified)
 
@@ -53,7 +53,6 @@ Screenshots of the built site in headless Chrome 157 at device scale 3 for phone
 
 ### Not done
 
-- **Owner's review** of the responsive screenshots (G-P08-20; design-system question 22).
 - **Real devices:** no phone or tablet, Safari, Firefox or screen reader was tested; touch, coarse pointers, zoom and large text were emulated in Chromium (G-P08-21, KL-32).
 - **Deferred:** typography consolidation (D-042), stronger environment palettes (D-056) and ornamental refinements.
 - **Not started:** P09.
