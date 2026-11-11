@@ -1,6 +1,6 @@
 # Architecture
 
-Status: approved direction recorded in P01. The Astro foundation was set up in P02, the design-token foundation in P03, the navigation data model in P04 and the physical folder components in P05 (2026-11-10). No real section page exists yet, and the folder appearance awaits the owner's review.
+Status: approved direction recorded in P01. The Astro foundation was set up in P02, the design-token foundation in P03, the navigation data model in P04 and the physical folder components in P05 (2026-11-10). No real section page exists yet; the owner approved the folder appearance (D-049).
 
 ## Approved direction
 

@@ -2,7 +2,7 @@
 
 Source for [www.gusmaolab.org](https://www.gusmaolab.org), Eduardo Gade Gusmao's website and publishing ecosystem.
 
-**Status:** this repository is an [Astro](https://astro.build) 7 static site. It has two temporary pages: a design specimen of the visual foundations at `/`, and a study of the physical folder tabs at `/_design/folders/`, which awaits the owner's review. **The website itself is not implemented yet**, and nothing is deployed from here. The previous Pelican site, including its original README, is archived in [`_backup/pelican-legacy/`](_backup/pelican-legacy/).
+**Status:** this repository is an [Astro](https://astro.build) 7 static site. It has two temporary pages: a design specimen of the visual foundations at `/`, and a study of the physical folder tabs at `/_design/folders/`. **The website itself is not implemented yet**, and nothing is deployed from here. The previous Pelican site, including its original README, is archived in [`_backup/pelican-legacy/`](_backup/pelican-legacy/).
 
 ## Prerequisites
 

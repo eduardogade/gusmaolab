@@ -83,7 +83,7 @@ Statuses: **Passed**, **Failed**, **Untested**, **Not applicable**. An untested 
 
 ## P05 gates
 
-Technical completion and visual approval are separate. The technical gates below were checked by tests and by inspecting the rendered study in Chromium at 1440, 1280, 1024, 768 and 390 px. **The owner has not yet reviewed the folder appearance (G-P05-17).**
+Technical completion and visual approval are separate. The technical gates below were checked by tests and by inspecting the rendered study in Chromium at 1440, 1280, 1024, 768 and 390 px. **The owner reviewed the screenshots and approved the folder appearance (G-P05-17, D-049).**
 
 | ID | Gate | Status | Evidence |
 | --- | --- | --- | --- |
@@ -103,7 +103,7 @@ Technical completion and visual approval are separate. The technical gates below
 | G-P05-14 | Bearnard masters unchanged | Passed | 352 of 352 checksums match |
 | G-P05-15 | Documentation updated | Passed | `planning/design-system.md`, `planning/information-architecture.md`, `planning/architecture.md`, `development/`, `debugging/known-limitations.md` |
 | G-P05-16 | Committed locally on `development`, not pushed | Passed | No upstream for `development` |
-| G-P05-17 | The owner approves the physical-folder appearance | **Untested** | Pending the owner's review of the screenshots. Not marked on the owner's behalf. |
+| G-P05-17 | The owner approves the physical-folder appearance | Passed | The owner approved the folders after reviewing the 17 P05 screenshots (D-049). The questions in `planning/design-system.md` section 10 remain refinements. |
 
 ### Folder tests (`tests/folders.mjs`)
 
@@ -130,7 +130,7 @@ Each test was also run against a deliberately broken copy of the build: a missin
 | G-02 | At most three visible tab levels | R-02 | Untested on site pages. The data model (NAV-006, NAV-009, NAV-013) and the folder components (FOLD-003) enforce it. |
 | G-03 | Clicking a tab opens its destination page | Information architecture | Untested. Every node has a destination (NAV-003); no tab UI or section pages exist yet. |
 | G-04 | Hovering an expandable tab previews only its immediate children | Information architecture | Untested in the UI. The preview data is immediate children only (NAV-007). |
-| G-05 | Active tab shows a V-shaped indicator; inactive tabs stay visible | Information architecture | Untested on site pages. Shown in the P05 folder study (FOLD-005, FOLD-006); appearance awaits the owner (G-P05-17). |
+| G-05 | Active tab shows a V-shaped indicator; inactive tabs stay visible | Information architecture | Untested on site pages. Shown in the P05 folder study (FOLD-005, FOLD-006); appearance approved by the owner (G-P05-17). |
 | G-06 | No persistent sidebar, no breadcrumbs, no file-manager design | Information architecture | Untested on site pages. The P05 folder components have none. |
 | G-07 | Content deeper than level three lives in the third-level folder body | Information architecture | Untested on site pages. The model keeps the owning folder selected (NAV-009), and the components put the page in the deepest folder (FOLD-003, FOLD-009). |
 | G-08 | Shared design system across sections | R-03, R-04 | Untested. P03 built the candidate tokens and four environments, but no section page uses them yet and the owner has not reviewed them. |

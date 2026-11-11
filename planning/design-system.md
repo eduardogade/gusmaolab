@@ -2,7 +2,7 @@
 
 Status: **implemented and approved.** Built in P03 (2026-11-10); in P04 the owner reviewed the specimen screenshots and approved the visual direction and overall appearance (D-041). The questions in section 10 remain open refinements. **Deferred visual refinement: typography consolidation** (D-042): the owner would like fewer font families eventually, to be revisited once the folder layout and real pages exist. Change values through a recorded decision.
 
-**P05 (2026-11-10): the physical folders are built (section 9) and await the owner's visual review.** Their geometry values, the third folder material and the inactive-tab colors for levels 2 and 3 are provisional until then (D-044–D-047).
+**P05 (2026-11-10): the physical folders are built (section 9), and the owner approved their appearance after reviewing the screenshots (D-049).** Questions 13–17 in section 10 remain refinements, not blockers.
 
 Source files: `src/styles/tokens.css`, `src/styles/environments.css`, `src/styles/global.css`, `src/styles/folders.css` and the contract in `src/design/contract.mjs`. The specimen, the folder study and the tests read the values from those files, so this document can go stale but the pages cannot. Regenerate the contrast tables with `node tests/contrast.mjs --markdown`.
 
@@ -290,7 +290,7 @@ Focus is the same everywhere so it is learnable: a 3 px navy ring on paper and a
 
 ## 9. Physical folders (P05)
 
-Built in P05 and shown at `/_design/folders/`, a temporary study page (D-048). **Visual approval is pending the owner's review.** Components: `src/components/folders/`; styles: `src/styles/folders.css`; decisions D-043–D-047.
+Built in P05 and shown at `/_design/folders/`, a temporary study page (D-048). **Approved by the owner (D-049).** Components: `src/components/folders/`; styles: `src/styles/folders.css`; decisions D-043–D-047.
 
 ### Construction
 

@@ -53,7 +53,7 @@ A row that is too wide scrolls inside its own strip. All of this renders statica
 - hover previews and keyboard discovery (P07);
 - the responsive navigation strategy (P08).
 
-**Visual approval:** pending the owner's review of the P05 screenshots (G-P05-17).
+**Visual approval:** the owner approved the folder appearance (G-P05-17, D-049). The questions in `planning/design-system.md` section 10 remain refinements.
 
 ## Toolchain
 
@@ -105,15 +105,15 @@ Unchanged since P03; P05 did not touch it. ISSUE-0003 stays open: the recruiter-
 
 ## Completed prompts
 
-P01, P02, P03 and P04. P05 is technically complete; its visual approval is pending.
+P01, P02, P03, P04 and P05.
 
 ## Blockers
 
-None for P06. P06 can start before the owner's P05 review, but a change to the folder look would then touch both.
+None for P06.
 
 ## Waiting for the owner
 
-- **Review the P05 folder study** (`/_design/folders/`) and its screenshots. Approve the physical-folder appearance, or ask for changes (`planning/design-system.md` section 10, questions 13–17).
+- Optional refinements to the folders, if wanted: `planning/design-system.md` section 10, questions 13–17.
 - The third-level folders, when content work reaches them (`planning/information-architecture.md` section 3).
 - Whether the second-level slugs are final before first publication (D-037).
 - Update the local Node.js to the latest 26.x LTS release (KL-06).

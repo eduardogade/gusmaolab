@@ -46,12 +46,13 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 | D-040 | Test TypeScript modules under Node's native type stripping; `erasableSyntaxOnly` | Approved | 2026-11-10 |
 | D-041 | The owner approved the P03 visual direction and overall appearance | Approved by the owner (P04 brief) | 2026-11-10 |
 | D-042 | Typography consolidation: fewer font families | Deferred | 2026-11-10 |
-| D-043 | Physical folders are four Astro components and one stylesheet, drawn from P04's tab rows | Approved (structure); appearance awaits the owner | 2026-11-10 |
-| D-044 | Tab silhouette: two skewed halves, concave fillets, and a seam the selected tab covers | Provisional until the owner's visual review | 2026-11-10 |
-| D-045 | A third folder material and inactive-tab colors for levels 2 and 3; the page is always on ivory paper | Provisional until the owner's visual review | 2026-11-10 |
-| D-046 | Folder geometry token values revised for P05; new seam, headroom, scroll-hint and stacking tokens | Provisional until the owner's visual review | 2026-11-10 |
-| D-047 | Rows too wide for their folder scroll inside their own strip; the full responsive strategy is P08 | Provisional (P05 fallback) | 2026-11-10 |
+| D-043 | Physical folders are four Astro components and one stylesheet, drawn from P04's tab rows | Approved | 2026-11-10 |
+| D-044 | Tab silhouette: two skewed halves, concave fillets, and a seam the selected tab covers | Approved by the owner (D-049) | 2026-11-10 |
+| D-045 | A third folder material and inactive-tab colors for levels 2 and 3; the page is always on ivory paper | Approved by the owner (D-049) | 2026-11-10 |
+| D-046 | Folder geometry token values revised for P05; new seam, headroom, scroll-hint and stacking tokens | Approved by the owner (D-049) | 2026-11-10 |
+| D-047 | Rows too wide for their folder scroll inside their own strip; the full responsive strategy is P08 | Approved as the interim fallback; P08 decides the strategy | 2026-11-10 |
 | D-048 | Temporary design studies live under `/_design/`, outside the navigation registry | Approved | 2026-11-10 |
+| D-049 | The owner approved the P05 physical-folder appearance | Approved by the owner | 2026-11-10 |
 
 ## Details
 
@@ -142,3 +143,5 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 **D-047.** A row wider than its folder scrolls sideways inside its own strip; the page never scrolls sideways. The scrollbar is hidden, because it would sit between the tabs and their folder. Trackpads, touch, Shift + wheel and keyboard focus still scroll the row, and Chromium makes an overflowing row keyboard-focusable. A fade in the ground color, made with sticky pseudo-elements, marks each edge beyond which more tabs lie; at rest it sits in its own space and is invisible. Where `scroll-initial-target` is supported (Chromium), the row opens centered on its selected tab; elsewhere it opens at its start. The strip is inset by the folder's corner radius, so a scrolled tab never overhangs a rounded corner. Labels are never truncated; a label longer than `--folder-tab-max-inline-size` would wrap and make its row taller. CV's eight second-level labels need about 1,200 px, more than the 80rem shell allows, so that row always scrolls (KL-20). P08 owns the real responsive strategy; P05 adds no menu, sidebar or icon substitute.
 
 **D-048.** The P05 folder study is built at `/_design/folders/` by `src/pages/[design]/folders.astro`, a one-value dynamic segment, because Astro skips page files and folders whose names start with `_`. No registry slug can start with `_`, so studies can never collide with a navigation path. The smoke test lists the studies, the only built pages allowed outside the registry, and checks that each one is under `/_design/` and resolves to no folder. Like the P03 specimen, a study is temporary and leaves when the real pages exist. With two pages, Astro now bundles the shared stylesheets separately. As a result, the P03 specimen links two stylesheets instead of one. Its only visible change is its contrast count, 165 → 215, which it reads from the contract (pixel-compared at 1440 and 390 px).
+
+**D-049.** The owner reviewed the 17 P05 screenshots of the folder study and approved the physical-folder appearance. D-043–D-046 move to Approved; D-047 stays the interim fallback until P08 decides the responsive strategy. Gate G-P05-17 passes. The P05 questions in `planning/design-system.md` section 10 (13–17) remain refinements, not blockers. Typography consolidation stays deferred (D-042).

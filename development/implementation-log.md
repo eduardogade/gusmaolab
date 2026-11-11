@@ -4,7 +4,7 @@ Newest entry first.
 
 ## P05 — Physical Folder Geometry & Connected Tab System — 2026-11-10
 
-**Agent:** Claude Code. **Branch:** `development`. **Result:** technically complete; **the owner's visual approval is pending**. Nothing was pushed or deployed.
+**Agent:** Claude Code. **Branch:** `development`. **Result:** completed. The owner approved the folder appearance after reviewing the screenshots (D-049, recorded after the P05 commit). Nothing was pushed or deployed.
 
 ### Starting state (verified)
 
