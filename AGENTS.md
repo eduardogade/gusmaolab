@@ -6,7 +6,7 @@ Shared rules for every coding agent in this repository: Claude Code, Codex and o
 
 GusmaoLab is Eduardo Gade Gusmao's personal website and publishing ecosystem: computational biology, bioinformatics, research, software engineering, teaching, literature and personal interests. Scientific rigor and visual humor go together.
 
-The site is an Astro static project. Every registered folder has a page generated from the navigation registry (P06), with temporary development content only, and unopened folders preview their contents on hover and keyboard focus (P07); two temporary design studies live under `/_design/` (the P03 tokens specimen and the P05 folder study). The old Pelican site is archived in `_backup/pelican-legacy/`.
+The site is an Astro static project. Every registered folder has a page generated from the navigation registry (P06), with temporary development content only, unopened folders preview their contents on hover and keyboard focus (P07), and the folders adapt to every screen size (P08); two temporary design studies live under `/_design/` (the P03 tokens specimen and the P05 folder study). The old Pelican site is archived in `_backup/pelican-legacy/`.
 
 ## Where things are
 
@@ -34,7 +34,7 @@ Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `n
 - Folder pages come from one route file per tab level (`src/pages/index.astro`, `[section]/`, `[section]/[folder]/`, `[section]/[folder]/[subfolder]/`), each listing `siteNavigation.folderStaticPaths(level)`, and wrap their content in `FolderPage` (`src/layouts/`), which draws the folders from the page's own URL (D-053, D-054).
 - An open folder with children always shows its row with a selected tab: its Overview, a display tab linking to the parent's own URL. Overview is never a registry node and never has a URL of its own (D-050, D-051).
 - No catch-all route, server rendering or client-side router. Keep `tests/navigation.mjs` and `tests/routes.mjs` passing.
-- Folder previews (P07) show an unopened folder's Overview and immediate children, from `row.previews`; never an open folder's, never deeper. The only client-side script is `src/scripts/folder-previews.ts`: it shows and hides previews and never changes the URL, history or selection. Navigation must keep working without it (D-058–D-060). Keep `tests/previews.mjs` and `tests/previews-browser.mjs` passing.
+- Folder previews (P07) show an unopened folder's Overview and immediate children, from `row.previews`; never an open folder's, never deeper. The only client-side scripts are `src/scripts/folder-previews.ts` (previews) and `src/scripts/folder-rows.ts` (scrolling rows to the selected or focused tab); neither changes the URL, history, focus or selection, and navigation must keep working without them (D-058–D-060, D-066). Keep `tests/previews.mjs`, `tests/responsive.mjs` and `npm run test:browser` passing.
 - Code under `src/navigation/` also runs directly in Node.js: use erasable TypeScript only, `import type` for types, and `.ts` extensions on relative imports (D-040).
 
 ## Styling
@@ -44,6 +44,7 @@ Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `n
 - Choose a section environment with `data-environment` (BaseLayout's `environment` prop). Change what an environment can set only through `src/design/contract.mjs` and a recorded decision.
 - Keep `tests/design-tokens.mjs` and `tests/contrast.mjs` passing. Do not lower a contrast threshold to make a color pass.
 - Never place text directly on the flannel lining. Add no transitions, animation or smooth scrolling without a decision.
+- On small screens the folders stay folders: rows scroll sideways inside their folders, never the page, and no menu, sidebar or icon row replaces them (D-064). Check layout changes at 320, 390, 768, 1024, 1280 and 1440 px.
 - Physical folders are `src/components/folders/` with `src/styles/folders.css`. Draw them from a `siteNavigation.resolve()` state (`<FolderStack state={…}>`), never a hand-built tree. Levels differ only by `data-level` and tokens; never add environment-specific folder rules (D-043–D-047).
 
 ## Invariants

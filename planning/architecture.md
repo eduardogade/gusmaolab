@@ -1,6 +1,6 @@
 # Architecture
 
-Status: approved direction recorded in P01. The Astro foundation was set up in P02, the design-token foundation in P03, the navigation data model in P04 and the physical folder components in P05 (2026-11-10). P06 (2026-11-11) connected them: every registered folder has a generated page inside the folders, with temporary content. The owner approved the folder appearance (D-049) and the P06 navigation (D-057). P07 (2026-11-11) added previews of an unopened folder's contents, the site's first client-side script (D-058–D-062), which the owner approved (D-063).
+Status: approved direction recorded in P01. The Astro foundation was set up in P02, the design-token foundation in P03, the navigation data model in P04 and the physical folder components in P05 (2026-11-10). P06 (2026-11-11) connected them: every registered folder has a generated page inside the folders, with temporary content. The owner approved the folder appearance (D-049) and the P06 navigation (D-057). P07 (2026-11-11) added previews of an unopened folder's contents, the site's first client-side script (D-058–D-062), which the owner approved (D-063). P08 (2026-11-11) made the folders work on every screen size, with CSS and a second small module (D-064–D-069).
 
 ## Approved direction
 
@@ -28,9 +28,9 @@ Status: approved direction recorded in P01. The Astro foundation was set up in P
 | Environments | `data-environment` on `<html>` via BaseLayout's `environment` prop, or on any element (D-027) |
 | Navigation | A typed, declarative registry in `src/navigation/` (D-036–D-039), with Overview display tabs (D-050–D-052) |
 | Folder components | `src/components/folders/` and `src/styles/folders.css`: static Astro components that draw a navigation state as linked folder tabs (D-043–D-047, D-054), with server-rendered folder previews (D-058, D-059) |
-| Client-side script | One module, `src/scripts/folder-previews.ts`, inlined once per page with folders: it shows and hides the previews and nothing else (D-060) |
+| Client-side script | Two small modules, bundled and inlined by Astro as one `<script type="module">` per page with folders (3.8 KB): `src/scripts/folder-previews.ts` shows and hides the previews (D-060); `src/scripts/folder-rows.ts` opens rows at their selected tab where the browser cannot and keeps keyboard focus clear of the row edges (D-066) |
 | Pages | One route file per tab level, generated from the registry; `FolderPage` layout (D-053) |
-| Tests | `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs` and `tests/previews.mjs` (D-032, D-040). `npm run test:browser` runs `tests/previews-browser.mjs` in a local headless Chrome (D-062). |
+| Tests | `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs` and `tests/previews.mjs` (D-032, D-040). `npm run test:browser` runs `tests/previews-browser.mjs` and `tests/responsive-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs` (D-062, D-069). `tests/responsive.mjs` is part of `npm test`. |
 
 ## Navigation and Astro routes
 
@@ -76,22 +76,31 @@ src/scripts/folder-previews.ts ────────┘ showPopover() / hideP
 - **State separation.** The URL decides what is open, at build time. Which preview is showing, and why (pointer, focus, Escape), lives in the module's variables and disappears with the page: never in the URL, history, storage or the navigation model.
 - **No-JavaScript fallback.** Without the script, or without the Popover API, the previews stay hidden (`display: none` in the stylesheet as well as the browser's popover rule), every tab is still a link, and every destination in a preview is a tab on its folder's own page.
 - **Positioning and clipping.** Rows scroll sideways inside `overflow-x: auto` strips, and each folder level is an isolated stacking context. A popover is drawn in the top layer, outside both, so the script only sets its position: under its tab's visible part, inside the viewport, scrolling internally when long. It measures only when a preview opens and on scroll or resize while one is open.
-- **Size.** 2.75 KB minified, inlined by Astro as one `<script type="module">` per page with folders, so it needs no request of its own. The P03 specimen has none.
+- **Size.** 2.75 KB minified (3.8 KB with P08's row module), inlined by Astro as one `<script type="module">` per page with folders, so it needs no request of its own. The P03 specimen has none.
 - **Tests.** `tests/previews.mjs` checks the model and the built markup; `tests/previews-browser.mjs` checks pointer, keyboard, touch, no-JavaScript and positioning in headless Chrome (`npm run test:browser`).
 
-## Repository layout after P07
+## Responsive layout and the row script (P08)
+
+The folders adapt with CSS: fluid spacing tokens, rows that scroll inside their folders, a coarse-pointer media query, and containment of wide content (D-064–D-068). JavaScript only helps with scrolling, and nothing depends on it:
+
+- **Route state stays in the HTML.** Which tab is selected is decided by the URL at build time and written into the page (`data-selected`). `folder-rows.ts` reads that attribute; it never reads the URL, computes a selection, navigates or touches history.
+- **Scroll position is not state.** Revealing the selected tab sets a row's `scrollLeft` once, as the page opens, and only in browsers without `scroll-initial-target` (Chromium does it natively, before the first paint). Keeping focus clear of the edges nudges a row after the browser's own focus scroll. Nothing is stored, and the page itself never scrolls.
+- **Previews in scrolling rows.** P07's popovers live in the top layer, outside every row's `overflow-x: auto`. While one is open, a scroll listener (capture phase, so it hears the rows) repositions it in the next frame, and it closes if its tab scrolls out of sight (D-059). P08 tested this and changed nothing in it.
+- **Fallback.** Without JavaScript, rows still scroll natively and every tab is a link; Chromium still opens rows at their selected tab, other browsers at their start.
+
+## Repository layout after P08
 
 | Path | Role |
 | --- | --- |
 | `src/pages/` | Route files: Home (`index.astro`) and one generated route per tab level (`[section]/…`, D-053); the two temporary design studies in `[design]/` (`tokens.astro` at `/_design/tokens/`, `folders.astro` at `/_design/folders/`; D-048, D-055) |
 | `src/layouts/` | `BaseLayout` (document, styles, environment) and `FolderPage` (a page inside the folders; D-053, D-054) |
 | `src/components/folders/` | `FolderStack`, `FolderLayer`, `FolderTabStrip`, `FolderTab` and `FolderPreview` (D-043, D-059) |
-| `src/scripts/` | `folder-previews.ts`: the folder previews' client-side module (D-060). Not `src/lib/`, which the root `.gitignore` would hide. |
+| `src/scripts/` | `folder-previews.ts` (D-060) and `folder-rows.ts` (D-066): the folders' client-side modules. Not `src/lib/`, which the root `.gitignore` would hide. |
 | `src/components/scaffold/` | `ScaffoldContent`: the temporary development content of the folder pages until the content prompts |
 | `src/styles/` | `tokens.css`, `environments.css` and `global.css`, loaded by BaseLayout; `folders.css`, loaded only by `FolderStack` |
 | `src/design/` | The token contract and the CSS token reader, shared by the specimen and the tests |
 | `src/navigation/` | Navigation types, registry and helpers; `index.ts` exports the compiled `siteNavigation`. Not `src/lib/`, which the root `.gitignore` would hide (KL-11). |
-| `tests/` | Token, contrast, navigation, build-output, folder-component, route and preview checks; `html-tree.mjs` is their shared HTML reader; `previews-browser.mjs` drives headless Chrome |
+| `tests/` | Token, contrast, navigation, build-output, folder-component, route and preview checks; `html-tree.mjs` is their shared HTML reader; `browser-harness.mjs` drives headless Chrome for `previews-browser.mjs` and `responsive-browser.mjs` |
 | `.claude/launch.json` | Local preview servers for the Claude desktop app (D-034) |
 | `astro.config.mjs`, `tsconfig.json` | Astro and TypeScript configuration |
 | `package.json`, `package-lock.json`, `.node-version` | npm project, lockfile and Node.js version policy |
@@ -108,7 +117,7 @@ src/scripts/folder-previews.ts ────────┘ showPopover() / hideP
 | `_books/`, `_papers/`, `_references/`, `_reports/` | Private workspace, gitignored. Never commit. |
 | `backup/`, `releases/`, `resources/`, `viz/`, `_logo/` | Empty, untracked placeholder folders |
 
-`public/` does not exist yet (D-019); `src/components/` was created in P05. The site ships no images or font files, and one inlined script (P07). P07 builds 39 pages: 37 folder pages and 2 design studies.
+`public/` does not exist yet (D-019); `src/components/` was created in P05. The site ships no images or font files, and one inlined script (P07, extended in P08). It builds 39 pages: 37 folder pages and 2 design studies.
 
 ## Deployment
 

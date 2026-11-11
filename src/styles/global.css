@@ -289,6 +289,17 @@ body {
 
 /* 9. Utilities ----------------------------------------------------------------------- */
 
+/*
+ * A region that scrolls sideways inside its column instead of widening the page: wrap a
+ * wide table, figure or formula in it (P08). Give it tabindex="0", role="region" and an
+ * aria-label, so keyboard users can scroll it and screen readers can name it.
+ */
+.gl-scroll-x {
+  max-inline-size: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+}
+
 .gl-visually-hidden {
   position: absolute;
   overflow: hidden;

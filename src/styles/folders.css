@@ -94,6 +94,17 @@
     var(--shadow-paper);
 }
 
+/*
+ * A coarse pointer (a finger) gets level-1 tab heights on every level, so even an
+ * inactive nested tab offers a 44 px target (P08). Labels keep their level's size.
+ */
+@media (pointer: coarse) {
+  .gl-folder[data-level="2"],
+  .gl-folder[data-level="3"] {
+    --_tab-height: var(--folder-tab-height-1);
+  }
+}
+
 /* 2. The tab row ------------------------------------------------------------------- */
 
 /*
@@ -112,6 +123,14 @@
   overflow-y: hidden;
   overscroll-behavior-inline: contain;
   scrollbar-width: none;
+  /*
+   * A tab scrolled into view (keyboard focus, or the selected tab when the row opens)
+   * stops clear of the edge fades, focus ring included, so a fade never covers either
+   * (P08). Browsers scroll the focused link, so the ring's width counts too.
+   */
+  scroll-padding-inline: calc(
+    var(--folder-scroll-hint-size) + var(--focus-ring-width) + var(--focus-ring-offset)
+  );
 }
 
 .gl-folder__tabs {
@@ -339,15 +358,21 @@ a.gl-folder-tab__label::before {
   box-shadow: var(--_body-shadow);
 }
 
-/* The page: always ivory paper, in the deepest open folder or in front of its tabs. */
+/*
+ * The page: always ivory paper, in the deepest open folder or in front of its tabs.
+ * Long words and addresses wrap. Code, formulas and .gl-scroll-x regions scroll inside
+ * themselves; anything else too wide scrolls the paper sideways, never the page (P08).
+ */
 .gl-folder__paper {
   position: relative;
   z-index: var(--z-folder-body);
+  overflow-x: auto;
   padding: var(--space-content-block) var(--space-content-inline);
   border-radius: var(--radius-paper);
   background-color: var(--color-folder-active);
   box-shadow: var(--shadow-paper-raised);
   color: var(--color-text-primary);
+  overflow-wrap: break-word;
 }
 
 /* 5. Folder previews (P07) --------------------------------------------------------- */

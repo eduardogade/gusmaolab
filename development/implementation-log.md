@@ -2,6 +2,62 @@
 
 Newest entry first.
 
+## P08 — Responsive Physical-Folder Navigation & Adaptive Layout — 2026-11-11
+
+**Agent:** Claude Code. **Branch:** `development`. **Result:** technically complete; **the owner's visual approval (G-P08-20) and real-device checks (G-P08-21) are pending**. Nothing was pushed or deployed.
+
+### Starting state (verified)
+
+- **HEAD:** `development` at `28392b0` (P07 and its approval record). Working tree clean apart from the untracked `clean` file, which was left alone.
+- **Baseline:** `npm run verify` passed (0 errors, warnings and hints) and `npm run test:browser` passed 12 of 12, before any change. P07 previews, P06 Overview selection and P05 geometry were intact.
+- **Other activity:** only this session's preview server on port 4322; no other repository file changed.
+
+### Measurements before any change (Chromium)
+
+- No page scrolled sideways at any width, and Chromium already opened every row at its selected tab (`scroll-initial-target`). Without that property, as in other browsers, rows would open at their start and hide Bearnard's Area, CV › Research or Writing › Kosmos on a phone.
+- **Defect:** the gutter kept growing above 1440 px inside the fixed 80rem page, so the shell narrowed (1200 px at 1920) and the global row overflowed by 3 px with an edge fade.
+- **Weakness:** folder chrome took 36% of a 320 px screen with three levels (a 206 px reading column; 222 px for two levels).
+- Chromium's focus scrolling ignores scroll padding: a focused tab could stop under an edge fade, or 2 px past the row's edge.
+
+### Changes
+
+- **Tokens** (D-065): `--space-gutter` stops at 1.9rem (its 1440 px value); `--space-shell-padding` and `--folder-nest-inset` take the smaller of P05's curve and a steeper one meeting it at 1024 px, down to 0.25rem.
+- **Folders** (`folders.css`; D-066–D-068): row `scroll-padding-inline` of a fade plus a focus ring; nested tabs at level-1 height under a coarse pointer; the paper wraps long words and scrolls sideways as a last resort.
+- **Global** (`global.css`): the `.gl-scroll-x` region.
+- **Script** (D-066): new `src/scripts/folder-rows.ts`, bundled with the preview module by `FolderStack`: opens rows at their selected tab where `scroll-initial-target` is missing, and keeps keyboard focus clear of the fades.
+- **Study:** case I, wide content in three synthetic levels, and updated notes.
+- **Tests** (D-069): new `tests/browser-harness.mjs` (extracted from the P07 browser tests, with a switch that removes `scroll-initial-target`), `tests/responsive.mjs` (8 checks, in `npm test`) and `tests/responsive-browser.mjs` (17 checks, in `npm run test:browser`). PREV-011's sweep now waits out the switch delay; `tests/design-tokens.mjs` scans the new script.
+- **Records:** planning (design system section 9 and question 22, information architecture section 16, architecture), decisions D-064–D-069 and D-047's status, acceptance matrix, current state, roadmap, known limitations KL-20, KL-21, KL-30 and KL-31–KL-33, `README.md` and `AGENTS.md`.
+
+### Visual review
+
+Screenshots of the built site in headless Chrome 157 at device scale 3 for phones, 2 for tablets and desktop, each at its real viewport size (in the scratchpad, sent to the owner): Home at 390 and 320; CV Overview at 390; CV › Research at 360 and with touch at 390; Bearnard's Area › Powerlifting at 390, as opened and after scrolling both rows back by hand; the synthetic three levels at 320; wide content in three levels at 390; Lecture Notes and Writing at 768; keyboard focus on an off-screen tab at 390; Writing's preview at 1024; CV › Research at 1440; CV at 1920. The desktop app's browser showed the same at its 375 px mobile preset. At 1440 px the page matches its P07 screenshot inside the shell to within 1/255 on 727 pixels.
+
+### Commands run
+
+| Command | Result |
+| --- | --- |
+| `npm run verify` | Exit 0: `astro check` 0 errors, warnings and hints; 39 pages; every suite, including previews 11/11 and responsive 8/8 |
+| `npm run test:browser` | 12 of 12 preview and 17 of 17 responsive checks in headless Chrome 157 |
+| Negative checks (ten source mutations, rebuilt and reverted) | Each failed its test (acceptance matrix) |
+| `npx prettier --check` on the changed code | Clean |
+| `git diff --check` | Clean |
+
+### Problems encountered
+
+- **A wrong first diagnosis.** PREV-011 failed at 390 px after the inset change, and I first took it for stale hit-testing after a script scroll. A pointer-event log showed the real cause: the test's two-step pointer path now crossed Lecture Notes, whose preview opened first, and Writing's took over only after P07's 90 ms switch delay, longer than the test waited. The behaviour was right; the test now waits out the delay.
+- **Simulating a browser without `scroll-initial-target`.** Injecting a style that switched it off did not stop Chromium's native opening, so the first fallback run proved nothing. The test server now serves the stylesheets without the property, which showed the rows opening at their start without the script and at their selected tab with it.
+- **Focus under the fades.** Scroll padding alone did not keep focused tabs clear, because Chromium's focus scrolling ignores it; the row script corrects the position after the browser's own scroll (KL-33).
+- **Headless focus wraps around.** With no browser toolbar, Tab goes from the last tab back to Home, so the keyboard test first counted the global row twice; it now stops at the first repeat.
+- **A blind test.** Removing the paper's word wrapping passed at first, because P03's rules already wrap headings, paragraphs and list items. Study case I gained a definition term, which only the paper's rule wraps, and the test now catches it.
+
+### Not done
+
+- **Owner's review** of the responsive screenshots (G-P08-20; design-system question 22).
+- **Real devices:** no phone or tablet, Safari, Firefox or screen reader was tested; touch, coarse pointers, zoom and large text were emulated in Chromium (G-P08-21, KL-32).
+- **Deferred:** typography consolidation (D-042), stronger environment palettes (D-056) and ornamental refinements.
+- **Not started:** P09.
+
 ## P07 — Immediate-Child Hover Previews & Keyboard-Accessible Folder Discovery — 2026-11-11
 
 **Agent:** Claude Code. **Branch:** `development`. **Result:** completed. The owner approved the folder previews after reviewing the screenshots (G-P07-19, D-063, recorded after the P07 commit). Nothing was pushed or deployed.

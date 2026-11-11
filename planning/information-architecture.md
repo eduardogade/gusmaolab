@@ -1,6 +1,6 @@
 # Information architecture
 
-Status: navigation model implemented in P04 (2026-11-10). The first and second levels are approved. **No third-level folder is approved yet**: the model supports a third level, and the final third-level site map will be settled in the content prompts. P05 added the physical folder components that draw this model (section 13). P06 (2026-11-11) made the tabs links, generated a page for every folder from the registry, and added the Overview tab (section 14). P07 added temporary previews of an unopened folder's contents (section 15).
+Status: navigation model implemented in P04 (2026-11-10). The first and second levels are approved. **No third-level folder is approved yet**: the model supports a third level, and the final third-level site map will be settled in the content prompts. P05 added the physical folder components that draw this model (section 13). P06 (2026-11-11) made the tabs links, generated a page for every folder from the registry, and added the Overview tab (section 14). P07 added temporary previews of an unopened folder's contents (section 15). P08 made the same folders work on every screen size (section 16).
 
 Source of truth: `src/navigation/registry.ts` (data), `src/navigation/navigation.ts` (helpers) and `src/navigation/types.ts` (types). Tests: `tests/navigation.mjs` (NAV-001 to NAV-021, NAV-025), `tests/routes.mjs` (NAV-022, NAV-023, NAV-026 to NAV-032) and, for the previews, `tests/previews.mjs` and `tests/previews-browser.mjs` (PREV-001 to PREV-015). NAV-024, Back and Forward, is checked in a browser.
 
@@ -262,10 +262,29 @@ A previewed folder never looks open: it gets no V, no body and no row of tabs. O
 2. Previews are data built beside the selection, never from it: a folder previewed from any page shows the same items.
 3. A preview item is a real destination; following it is ordinary navigation, after which the folders follow the new URL.
 
+## 16. Navigation on small screens (P08)
+
+The navigation is the same on every screen: the same rows, tabs, Overview, selection, previews and links. Only the layout adapts (D-064).
+
+- **Rows scroll sideways.** A row wider than its folder scrolls inside the folder; the page never does. Every tab stays in the registry's order with its full label, and every row of an open folder stays visible: on a phone `/cv/research/` still shows the global row with CV selected and CV's row with Research selected.
+- **The selected tab is revealed.** Each row opens with its selected tab in view: Home, CV, Writing or Bearnard's Area on the global row, and the selected child below it. A tab already in view is not moved. Selection still comes only from the URL; revealing it moves a row, never the page, focus or the URL (D-066).
+- **Parents and Overview.** Unchanged: a parent's page selects its Overview, which leads its row, and Overview links to the parent's own URL.
+- **Three levels on a phone.** All three rows stay, each revealing its selected tab; nest insets shrink to 4 px, so the deepest paper keeps about three quarters of a 320 px screen. Deeper pages still open in the third folder's body, never as a fourth row.
+- **Touch.** A tap on a tab opens its page (CV → `/cv/`, Research → `/cv/research/`, Overview → its parent's URL); a horizontal swipe scrolls the row without opening anything; previews never open from touch. Under a coarse pointer every tab is at least 44 px tall.
+- **Keyboard.** Tab moves through the tabs in order, row by row; a focused tab scrolls into view clear of the edge fades, with its focus ring visible; Enter follows it; previews open, are traversed and close with Escape as in P07. There is no arrow-key model and no roving tabindex: these are links between pages.
+- **Without JavaScript.** Rows still scroll by touch, trackpad and Shift + wheel, and every tab is still a link. Chromium still opens rows at their selected tab; other browsers open them at their start.
+
+| Page on a 390 px phone | Global row | Second row |
+| --- | --- | --- |
+| `/` | Home, in view at the start | — |
+| `/cv/` | CV, centred | Overview, in view at the start |
+| `/cv/research/` | CV, centred | Research, centred |
+| `/bearnards-area/powerlifting/` | Bearnard's Area, at the end | Powerlifting, centred |
+
 ## Open questions
 
 - The third-level folders (section 3).
-- If the responsive strategy (P08) ever hides a selected folder's row on small screens, whether that folder's tab should then preview its contents. P07 never previews an open folder.
+- P08 never hides a selected folder's row, so an open folder still never needs a preview. If a later design ever does hide one, whether its tab should then preview its contents needs deciding.
 - How legacy URLs map to the new ones, and whether redirects are needed. The legacy site used `/{slug}/` for pages and `/blog/{slug}/` for posts (`_backup/pelican-legacy/pelicanconf.py`); `/blog/` posts fit the new Blog folder.
 - Whether the slugs in sections 1–2 are final before first publication.
 - Whether `astro.config.mjs` should enforce `trailingSlash: "always"`, now that section pages exist. Links use the trailing slash; the static host serves both forms.

@@ -252,6 +252,71 @@ The browser tests are run by `npm run test:browser`, not by `npm run verify` (D-
 
 `FolderStack` failed the build for a preview of an open folder and for a preview out of order.
 
+## P08 gates
+
+Checked by `npm run verify`, by `npm run test:browser` (headless Chrome 157: 12 preview and 17 responsive checks) and by screenshots of the built site at 320, 360, 390, 430, 768, 1024, 1280, 1440 and 1920 px, plus the desktop app's browser at 375 px. Chromium only; touch emulated (KL-32). **The owner has not yet reviewed the responsive screenshots (G-P08-20).**
+
+| ID | Gate | Status | Evidence |
+| --- | --- | --- | --- |
+| G-P08-01 | Physical tabs stay recognizable at every tested width | Passed (Chromium) | Screenshots 320–1920 px; RESP-002 (labels whole), RESP-013 (one layout in every environment) |
+| G-P08-02 | Every global tab is reachable on narrow screens | Passed (Chromium) | RESP-002 at 320, 390, 768 and 1024 px: all twelve, in order, hit-testable |
+| G-P08-03 | Second- and third-level tabs stay reachable | Passed (Chromium) | RESP-004, RESP-005, RESP-011 (Tab reaches Outreach) |
+| G-P08-04 | Selected tabs are revealed | Passed (Chromium) | RESP-003, RESP-004, RESP-005: natively and with the script standing in, at 320–768 px, every section and twelve second-level pages; a tab already in view is not moved; the page never scrolls |
+| G-P08-05 | Overview selection works | Passed | RESP-006 (built pages and 390 px) |
+| G-P08-06 | The three-level hierarchy is preserved | Passed | RESP-005, RESP-008: three rows on a phone, never a fourth |
+| G-P08-07 | The content body stays readable | Passed (Chromium) | RESP-005: the deepest paper keeps at least 72% of the width at 320 and 390 px (238 and 304 px for three levels) |
+| G-P08-08 | No unintended page-wide horizontal overflow | Passed (Chromium) | RESP-001: ten widths, ten pages including both studies |
+| G-P08-09 | P07 previews still work | Passed (Chromium) | PREV-005 to PREV-014 all pass; RESP-009 (previews follow a scrolling row or close), RESP-012 (keyboard previews at 390 px) |
+| G-P08-10 | Touch keeps direct navigation | Passed (emulated touch) | RESP-010: a swipe scrolls the row without navigating or previewing, one tap opens CV, every tab at least 44 px tall; PREV-012 |
+| G-P08-11 | Keyboard users reach off-screen tabs | Passed (Chromium) | RESP-011: Tab reaches every tab in order at 320 and 390 px; Enter opens Bearnard's Area from off-screen |
+| G-P08-12 | Focus indicators stay visible | Passed (Chromium) | RESP-011: every focused tab and its 3 px ring clear of the fades and the row's top edge |
+| G-P08-13 | Wide tables and code are contained | Passed (Chromium) | RESP-014 at 320, 390 and 768 px: code, table region and formula scroll inside themselves, long words wrap, figure scales; a bare wide table scrolls the paper, not the page |
+| G-P08-14 | The responsive implementation works across environments | Passed | RESP-013 (built and at 320 and 768 px); RESP-004 case D in the personal environment |
+| G-P08-15 | Desktop appearance consistent with the approved design | Passed (Chromium) | RESP-015: shell, paper, heading and row positions at 1024, 1280 and 1440 px identical to P07's; 1440 px screenshot differs from P07's by 1/255 on 727 pixels (rasterisation) |
+| G-P08-16 | Automated and browser verification passes | Passed | `npm run verify`; `npm run test:browser` 29 of 29; `git diff --check` |
+| G-P08-17 | Documentation and records updated | Passed | `planning/design-system.md`, `information-architecture.md` (section 16), `architecture.md`, `development/`, `debugging/known-limitations.md`, `README.md`, `AGENTS.md` |
+| G-P08-18 | Committed locally on `development` | Passed | The P08 commit; `development` has no upstream |
+| G-P08-19 | No deployment and no push | Passed | No push or deployment command was run |
+| G-P08-20 | The owner approves the responsive appearance | **Untested** | Awaiting the owner's review of the P08 screenshots. Not marked on the owner's behalf. |
+| G-P08-21 | Real phones and tablets | **Untested** | Pending the owner's verification on real devices (KL-32) |
+
+### Responsive tests (P08)
+
+| Test | Where | Result |
+| --- | --- | --- |
+| RESP-001 No page-wide overflow | Browser | Pass in Chromium |
+| RESP-002 Global strip overflow | Browser | Pass in Chromium |
+| RESP-003 Selected top-level visibility | Browser (native and script) | Pass in Chromium |
+| RESP-004 Selected child visibility | Browser (native and script) | Pass in Chromium |
+| RESP-005 Third-level visibility (synthetic fixture) | Browser (native and script) | Pass in Chromium |
+| RESP-006 Overview preservation | `tests/responsive.mjs`; browser | Pass |
+| RESP-007 Link preservation | `tests/responsive.mjs`; browser | Pass |
+| RESP-008 No unwanted extra layers | `tests/responsive.mjs`; browser | Pass |
+| RESP-009 Preview positioning in scrolling rows | Browser | Pass in Chromium |
+| RESP-010 Touch behavior | Browser (emulated touch) | Pass in Chromium |
+| RESP-011 Keyboard reachability | Browser | Pass in Chromium |
+| RESP-012 Focus visibility | Browser (RESP-011's ring checks; keyboard previews) | Pass in Chromium |
+| RESP-013 Environment consistency | `tests/responsive.mjs`; browser | Pass |
+| RESP-014 Content overflow containment | `tests/responsive.mjs`; browser | Pass |
+| RESP-015 Desktop regression | `tests/responsive.mjs`; browser | Pass |
+| RESP-016 No-JavaScript navigation | `tests/responsive.mjs`; browser | Pass |
+| RESP-017 Reduced motion, zoom and large text | `tests/responsive.mjs`; browser (200% text at 390 px; 640 and 320 px for 1280 px at 200% and 400% zoom) | Pass in Chromium |
+
+Real-device checks are not part of this table: none were run (G-P08-21). PREV-011's browser test now waits for the switch delay after hovering, because P08's narrower phone insets put another folder on the test pointer's path; the behaviour itself is P07's.
+
+**Negative checks.** Each was applied to the source, rebuilt and tested, then reverted:
+
+- no scroll padding: RESP-003, RESP-004 and RESP-011 failed;
+- the gutter growing to 2.5rem again: RESP-015 failed;
+- no last-resort paper scrolling: RESP-014 failed;
+- no opening reveal in the script: RESP-003, RESP-004 and RESP-005 failed;
+- no focus correction: RESP-011 failed;
+- P05's nest insets on phones: RESP-005 failed;
+- no coarse-pointer tab heights: RESP-010 failed;
+- no word wrapping on the paper: RESP-014 failed (once the sample gained a definition term, which P03's rules do not wrap);
+- no `.gl-scroll-x` scrolling: RESP-014 failed;
+- a shell padding that departs from P05's curve at 1024 px: RESP-015 failed.
+
 ## Future gates
 
 | ID | Gate | Source | Status |

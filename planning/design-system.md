@@ -12,7 +12,9 @@ Status: **implemented and approved.** Built in P03 (2026-11-10); in P04 the owne
 
 **P07 (2026-11-11): folder previews** (section 9, "Folder previews"). Hovering or keyboard-focusing an unopened folder with children shows a small parchment index card of its contents, hanging from its tab. The folders, tabs, V and environments are unchanged. The owner approved the previews after reviewing the screenshots (D-063); question 21 in section 10 remains a refinement.
 
-**Deferred refinements:** stronger palette differences between the environments (D-056) and typography consolidation (D-042). Neither changed in P06 or P07.
+**P08 (2026-11-11): small screens** (section 9, "Width and small screens"). The folders stay physical folders at every width: rows scroll sideways and open at their selected tab, keyboard focus stays clear of the edge fades, phones get thinner shell padding and nest insets, touch screens get 44 px tabs, and wide content scrolls inside itself. From 1024 px up the layout is pixel-identical to P07; above 1440 px the shell no longer narrows. The new spacing and touch heights are provisional until the owner reviews the screenshots (D-064–D-068).
+
+**Deferred refinements:** stronger palette differences between the environments (D-056) and typography consolidation (D-042). Neither changed in P06, P07 or P08.
 
 Source files: `src/styles/tokens.css`, `src/styles/environments.css`, `src/styles/global.css`, `src/styles/folders.css` and the contract in `src/design/contract.mjs`. The specimen, the folder study and the tests read the values from those files, so this document can go stale but the pages cannot. Regenerate the contrast tables with `node tests/contrast.mjs --markdown`.
 
@@ -161,7 +163,7 @@ Every size includes a rem term, so text still grows with browser zoom. Radiohead
 ## 5. Space and geometry
 
 - Spacing scale: `--space-3xs` 0.25rem, `2xs` 0.5, `xs` 0.75, `s` 1, `m` 1.5, `l` 2, `xl` 3, `2xl` 4, `3xl` 6.
-- Fluid rhythm: `--space-gutter` (visible flannel around the shell, 8–40 px), `--space-shell-padding`, `--space-content-inline`, `--space-content-block`.
+- Fluid rhythm: `--space-gutter` (visible flannel around the shell, 8–30.4 px; it stops growing at 1440 px since P08, so the shell never narrows on a wider screen), `--space-shell-padding` (4–18 px: P03's curve from 1024 px up, a steeper one below, P08), `--space-content-inline`, `--space-content-block`.
 - Sizes: `--size-shell-max` 80rem; reading width as above.
 - Borders: hairline 1 px, thin 2 px, thick 3 px. Folder borders are translucent bark, so one value works on kraft, parchment and ivory.
 - Radii: paper 3 px, control 5 px, card 6 px, folder 10 px, shell 18 px.
@@ -179,7 +181,7 @@ Every size includes a rem term, so text still grows with browser zoom. Radiohead
 | `--folder-tab-line-height` | 1.2 (new) |
 | `--folder-tab-inactive-mix`, `-hover-mix` | 78%, 90% (share of folder material against the shell) |
 | `--folder-indicator-width`, `-depth`, `-gap`, `-stroke` | 1rem, 0.5rem, 0.375rem, 2px (stroke new) |
-| `--folder-nest-inset`, `--folder-layer-offset` | 0.5–1rem, 0.375rem |
+| `--folder-nest-inset`, `--folder-layer-offset` | 0.25–1rem (P08; 0.5–1rem in P05), 0.375rem. The inset follows P05's curve from 1024 px up and a steeper one below, reaching 0.25rem on phones. |
 | `--folder-seam` | 2px (new): how far a selected tab reaches into its body |
 | `--folder-strip-headroom` | 0.5rem (new): room above a row for the raised tab and its shadow |
 | `--folder-scroll-hint-size` | 1.25rem (new): the fade at the edge of a scrolling row |
@@ -369,15 +371,37 @@ A stack holds one to three folder levels. Each level is a row of tabs, exactly o
 - The test suite rejects environment selectors in `folders.css`.
 - Scientific and personal use navy shells, so their inactive tabs read cooler. Personal folders are gold, and literary ones amber kraft.
 
-### Width
+### Width and small screens (P08)
 
-- At 1440 and 1280 px the twelve top-level tabs fit on one row, measured at 1,145 px.
-- A row wider than its folder scrolls sideways inside its own strip, never the page (D-047):
-  - The scrollbar is hidden, because it would sit between tabs and folder.
-  - A fade in the ground color marks an edge with more tabs beyond it.
-  - Chromium opens the row centered on its selected tab (`scroll-initial-target`).
-- CV's eight second-level tabs need about 1,200 px, more than the 80rem shell allows, so that row always scrolls (KL-20).
-- P08 owns the real small-screen and wide-row strategy.
+The folders are physical folders at every width (D-064). Nothing turns into a menu, sidebar, accordion or icon row, labels are never shortened, and every level stays visible.
+
+| Width | Shell | Global row | Nesting |
+| --- | --- | --- | --- |
+| 1440 px and wider | 1219 px, centred on the flannel (unchanged from 1440 px up since P08) | Fits | P05 insets (1rem) |
+| 1280 px | 1226 px | Fits | P05 insets |
+| 1024 px | 980 px | Scrolls (215 px more) | P05 insets (15 px) |
+| 768 px | 734 px | Scrolls | About 11 px |
+| 320–430 px | The screen less an 8–10 px band of flannel on each side | Scrolls | 4 px; shell padding 4 px |
+
+- **Rows that do not fit scroll sideways inside their folder**, never the page:
+  - The scrollbar stays hidden, because it would sit between tabs and folder.
+  - A fade in the ground color marks an edge beyond which more tabs lie, and the next tab shows cut off at the edge. Neither appears when the row fits.
+  - Touch swipes, trackpads, Shift + wheel and keyboard focus scroll a row; nothing hijacks vertical scrolling, and there are no scroll buttons (question 22).
+- **The selected tab is in view when the page opens.** Chromium opens each row with its selected tab in the middle (`scroll-initial-target`); other browsers get the same from `src/scripts/folder-rows.ts`, only when the tab would otherwise be hidden (D-066). On `/bearnards-area/powerlifting/` at 390 px, both Bearnard's Area and Powerlifting are in view at once.
+- **Keyboard focus stays clear of the fades.** Each row's `scroll-padding-inline` is a fade plus a focus ring (25 px); the script moves a row the few pixels the browser leaves, so a focused tab and its ring are never under a fade (D-066).
+- **Phones get room to read.** Shell padding and nest insets shrink below 1024 px, down to 4 px each on phones (D-065). Three levels at 320 px leave a 238 px reading column (206 px before P08); two levels at 390 px leave 312 px (285 px). The paper keeps its padding, and the selected tabs, V, seams and shadows are unchanged.
+- **Touch targets.** Under a coarse pointer, nested tabs take the level-1 height, so every tab is at least 44 px tall (D-067). Mouse users see the P05 heights.
+- **Vertical space.** Thinner insets also bring the content up: on `/cv/` at 390 px the page heading starts at 222 px instead of 236 px. No folder level is ever dropped to save height.
+- **Previews** (P07) are unchanged: they open on hover and keyboard focus at every width, stay inside the screen, follow their tab when its row scrolls, and close if it scrolls out of sight. Touch never opens them.
+- **CV's row.** Its nine tabs need about 1,300 px, so it scrolls at every width, opening at the selected tab (KL-20). "Outreach / Public Engagement" wraps to two lines inside its 16rem tab and is wider than the clear middle of a 320 px row; its label still shows whole when selected.
+
+### Wide content in the folders (P08)
+
+- Text reflows to the paper's width. Long words and addresses wrap: headings, paragraphs and list items since P03, everything else on the paper since P08.
+- Code blocks and display formulas scroll inside themselves (P03). Images fit their column.
+- Wide tables and figures go in a `.gl-scroll-x` region (`tabindex="0"`, `role="region"`, a name), which scrolls inside its column; tables keep their size rather than shrink.
+- Anything still too wide scrolls the paper sideways, never the page (D-068).
+- Study case I shows all of it in the deepest synthetic folder.
 
 ### Links and semantics (P06)
 
@@ -406,13 +430,13 @@ A preview is a glimpse into an unopened folder, not another open folder (D-058, 
 
 ### Remaining visual questions
 
-- Section 10, questions 13–18, 20 and 21.
+- Section 10, questions 13–18 and 20–22.
 
 ### Still to come
 
 - **P06 (done):** tabs became links to their pages, with route-driven selection and the Overview tab.
 - **P07 (done):** previews of an unopened folder's immediate contents, on hover and keyboard focus (below).
-- **P08:** the responsive navigation strategy.
+- **P08 (done):** the folders on every screen size (above).
 - **P09 and later:**
   - reading paper for long-form prose (`.gl-prose`), code, mathematics, tables, quotes and callouts;
   - Bearnard placement, with approved derivatives only and never full-resolution masters in `public/`;
@@ -441,6 +465,7 @@ A preview is a glimpse into an unopened folder, not another open folder (D-058, 
 19. **Stronger environments (deferred, D-056):** the owner would like the environments to differ more in palette. To be designed in a later prompt, with the contrast tests.
 20. **Hover (P06):** an inactive tab lightens 12 points towards the folder material when hovered. Too subtle, or right?
 21. **Folder previews (P07):** a parchment index card with a honey top edge, hanging from its tab, with a small title and a compact list. Is it distinct enough from the folders without feeling like a generic menu? Should it carry a paper-grain or ruled-card detail, or the hovered folder's own section color?
+22. **Small screens (P08):** rows scroll sideways with a fade and a glimpse of the next tab, and no buttons. Is that discoverable enough, or should a row show small "more" arrows or previous/next buttons? Are 4 px insets on phones enough to read three levels as nested folders? Should the flannel band on phones be thinner, or gone?
 
 ## Legacy material
 

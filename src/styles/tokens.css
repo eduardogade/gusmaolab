@@ -211,9 +211,17 @@
   --space-2xl: 4rem;
   --space-3xl: 6rem;
 
-  /* Fluid page rhythm */
-  --space-gutter: clamp(0.5rem, 0.1rem + 2vw, 2.5rem);
-  --space-shell-padding: clamp(0.5rem, 0.3rem + 0.9vw, 1.125rem);
+  /*
+   * Fluid page rhythm. The gutter stops growing at 1440 px (P08), so the shell never
+   * narrows on a wider screen. Below 1024 px the shell padding follows a steeper line
+   * down to 0.25rem on phones (P08); from 1024 px up it is P03's curve.
+   */
+  --space-gutter: clamp(0.5rem, 0.1rem + 2vw, 1.9rem);
+  --space-shell-padding: clamp(
+    0.25rem,
+    min(0.3rem + 0.9vw, 1.58vw - 0.135rem),
+    1.125rem
+  );
   --space-content-inline: clamp(1rem, 0.5rem + 2.2vw, 3rem);
   --space-content-block: clamp(1.5rem, 0.9rem + 2.6vw, 3.5rem);
 
@@ -261,7 +269,8 @@
   --folder-indicator-depth: 0.5rem;
   --folder-indicator-gap: 0.375rem;
   --folder-indicator-stroke: 2px;
-  --folder-nest-inset: clamp(0.5rem, 0.3rem + 1vw, 1rem);
+  /* P05's curve from 1024 px up; a steeper one below it, down to 0.25rem on phones (P08). */
+  --folder-nest-inset: clamp(0.25rem, min(0.3rem + 1vw, 1.741vw - 0.174rem), 1rem);
   --folder-layer-offset: 0.375rem;
   /* How far a selected tab reaches into its body, hiding the body's top edge. */
   --folder-seam: 2px;

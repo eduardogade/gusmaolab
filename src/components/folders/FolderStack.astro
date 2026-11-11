@@ -14,6 +14,8 @@
  * Unopened folders with children carry hidden previews of their contents (P07). One small
  * module, src/scripts/folder-previews.ts, shows them on hover and keyboard focus; it
  * never changes the URL, the selection or the V. Without it the previews stay hidden.
+ * src/scripts/folder-rows.ts opens each scrolling row at its selected tab in browsers
+ * without `scroll-initial-target` (P08); Chromium does that natively.
  *
  * Site pages draw their tabs as links (FolderPage, P06). Design studies pass
  * `links={false}`: their states are pictures, and some of their tabs have no page.
@@ -101,6 +103,9 @@ if (problems.length > 0) {
 </div>
 
 <script>
-  // The folder previews (P07). Astro bundles this once per page, however many stacks it has.
+  // Astro bundles these into one module, once per page, however many stacks it has.
+  // Rows open at their selected tab where the browser cannot do it itself (P08).
+  import "../../scripts/folder-rows.ts"
+  // The folder previews (P07).
   import "../../scripts/folder-previews.ts"
 </script>

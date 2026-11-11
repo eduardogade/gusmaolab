@@ -1,367 +1,49 @@
 // Browser tests for the folder previews (P07): PREV-005 and PREV-008 to PREV-014, which
 // cover the brief's interaction cases A to I. The markup and model tests in
 // tests/previews.mjs cannot show that pointer, keyboard and touch behave; these drive a
-// real, headless Chromium.
+// real, headless Chromium through tests/browser-harness.mjs.
 //
-// No dependency: Node's http module serves dist/, and Node's WebSocket speaks the Chrome
-// DevTools protocol. Run `npm run build`, then `npm run test:browser`. Set CHROME_PATH if
-// Chrome or Chromium is not in its usual place. If no browser starts, every test is
+// Run `npm run build`, then `npm run test:browser`. If no browser starts, every test is
 // reported NOT RUN and the exit code is 2: an untested check is never reported as passed.
-//
 // Chromium only. Safari, Firefox, real touch devices and screen readers are not covered.
-import { spawn } from "node:child_process"
-import { existsSync } from "node:fs"
-import { mkdtemp, readFile, rm } from "node:fs/promises"
-import { createServer } from "node:http"
-import { tmpdir } from "node:os"
-import { extname, join, normalize } from "node:path"
-import process from "node:process"
-import { fileURLToPath } from "node:url"
+import { json, sleep, startBrowser } from "./browser-harness.mjs"
 
 const CLOSE_WAIT = 260 // ms: longer than the script's 120 ms close delay
 const SWITCH_WAIT = 200 // ms: longer than its 90 ms switch delay
 const EDGE = 8 // px: the room the script keeps from the viewport's edges
-const IDS = [
-  "PREV-005",
-  "PREV-008",
-  "PREV-009",
-  "PREV-010",
-  "PREV-011",
-  "PREV-012",
-  "PREV-013",
-  "PREV-014",
-]
 
-function notRun(reason) {
-  for (const id of IDS) console.log(`NOT RUN ${id}`)
-  console.error(
-    `NOT RUN: ${reason}. These checks need manual verification in a browser.`,
-  )
-  process.exit(2)
-}
-
-// --- A static server for dist/ -------------------------------------------------------------
-
-const dist = fileURLToPath(new URL("../dist/", import.meta.url))
-if (!existsSync(join(dist, "index.html")))
-  notRun("dist/ is not built; run `npm run build`")
-const TYPES = {
-  ".html": "text/html; charset=utf-8",
-  ".css": "text/css; charset=utf-8",
-  ".js": "text/javascript; charset=utf-8",
-}
-const server = createServer(async (request, response) => {
-  let path = decodeURIComponent(new URL(request.url, "http://localhost").pathname)
-  if (path.endsWith("/")) path += "index.html"
-  const file = normalize(join(dist, path))
-  if (!file.startsWith(dist)) return response.writeHead(403).end()
-  try {
-    const body = await readFile(file)
-    response.writeHead(200, {
-      "content-type": TYPES[extname(file)] ?? "application/octet-stream",
-    })
-    response.end(body)
-  } catch {
-    response.writeHead(404, { "content-type": "text/plain" }).end("Not found")
-  }
-})
-await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve))
-const origin = `http://127.0.0.1:${server.address().port}`
-
-// --- Headless Chrome over the DevTools protocol -------------------------------------------
-
-const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
-const chromePath = [
-  process.env.CHROME_PATH,
-  "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
-  "/Applications/Chromium.app/Contents/MacOS/Chromium",
-  "/usr/bin/google-chrome",
-  "/usr/bin/chromium",
-  "/usr/bin/chromium-browser",
-].find((path) => path && existsSync(path))
-if (!chromePath) {
-  server.close()
-  notRun("no Chrome or Chromium found; set CHROME_PATH")
-}
-const profile = await mkdtemp(join(tmpdir(), "gusmaolab-chrome-"))
-const chrome = spawn(
-  chromePath,
-  [
-    "--headless=new",
-    "--remote-debugging-port=0",
-    `--user-data-dir=${profile}`,
-    "--no-first-run",
-    "--no-default-browser-check",
-    "--disable-extensions",
-    "--hide-scrollbars",
-    "about:blank",
+const {
+  send,
+  nextEvent,
+  js,
+  viewport,
+  setViewport,
+  moveTo,
+  click,
+  press,
+  goto,
+  waitForPath,
+  state,
+  resetLog,
+  away,
+  tabPoint,
+  panelOf,
+  test,
+  finish,
+} = await startBrowser({
+  ids: [
+    "PREV-005",
+    "PREV-008",
+    "PREV-009",
+    "PREV-010",
+    "PREV-011",
+    "PREV-012",
+    "PREV-013",
+    "PREV-014",
   ],
-  { stdio: "ignore" },
-)
-
-async function shutdown() {
-  try {
-    socket?.close()
-  } catch {}
-  chrome.kill()
-  server.close()
-  await sleep(200)
-  // Only the temporary profile this run created.
-  await rm(profile, { recursive: true, force: true }).catch(() => {})
-}
-const deadline = setTimeout(async () => {
-  console.error("FAIL: the browser tests took longer than 180 s")
-  await shutdown()
-  process.exit(1)
-}, 180_000)
-
-let socket
-let port
-for (let i = 0; i < 100 && !port; i++) {
-  const text = await readFile(join(profile, "DevToolsActivePort"), "utf8").catch(
-    () => "",
-  )
-  port = Number(text.split("\n")[0]) || undefined
-  if (!port) await sleep(100)
-}
-let target
-for (let i = 0; port && i < 50 && !target; i++) {
-  const list = await fetch(`http://127.0.0.1:${port}/json/list`)
-    .then((r) => r.json())
-    .catch(() => [])
-  target = list.find((t) => t.type === "page")
-  if (!target) await sleep(100)
-}
-if (!target) {
-  await shutdown()
-  notRun(`Chrome at ${chromePath} did not start`)
-}
-
-socket = new WebSocket(target.webSocketDebuggerUrl)
-await new Promise((resolve, reject) => {
-  socket.addEventListener("open", resolve, { once: true })
-  socket.addEventListener("error", reject, { once: true })
 })
-let nextId = 0
-const pending = new Map()
-const listeners = new Map()
-socket.addEventListener("message", (event) => {
-  const message = JSON.parse(event.data)
-  if (message.id !== undefined && pending.has(message.id)) {
-    const { resolve, reject } = pending.get(message.id)
-    pending.delete(message.id)
-    if (message.error) reject(new Error(`${message.error.message}`))
-    else resolve(message.result)
-  } else if (message.method) {
-    for (const listener of listeners.get(message.method) ?? []) listener(message.params)
-  }
-})
-const send = (method, params = {}) =>
-  new Promise((resolve, reject) => {
-    const id = ++nextId
-    pending.set(id, { resolve, reject })
-    socket.send(JSON.stringify({ id, method, params }))
-  })
-const nextEvent = (method, timeout = 10_000) =>
-  new Promise((resolve, reject) => {
-    const set = listeners.get(method) ?? new Set()
-    listeners.set(method, set)
-    const done = (params) => {
-      set.delete(done)
-      clearTimeout(timer)
-      resolve(params)
-    }
-    const timer = setTimeout(() => {
-      set.delete(done)
-      reject(new Error(`no ${method} within ${timeout} ms`))
-    }, timeout)
-    set.add(done)
-  })
 
-// Every page records each preview opening and closing, synchronously, in order.
-const PROBE = `
-  window.__probe = { log: [] };
-  document.addEventListener("beforetoggle", (event) => {
-    const el = event.target;
-    if (el instanceof Element && el.classList.contains("gl-folder-preview")) {
-      window.__probe.log.push({ of: el.dataset.previewOf, state: event.newState });
-    }
-  }, true);
-`
-await send("Page.enable")
-await send("Runtime.enable")
-await send("Page.addScriptToEvaluateOnNewDocument", { source: PROBE })
-
-async function js(expression) {
-  const { result, exceptionDetails } = await send("Runtime.evaluate", {
-    expression,
-    returnByValue: true,
-    awaitPromise: true,
-  })
-  if (exceptionDetails) {
-    throw new Error(exceptionDetails.exception?.description ?? exceptionDetails.text)
-  }
-  return result.value
-}
-
-let viewport = { width: 1440, height: 900 }
-async function setViewport(width, height = 900, mobile = false) {
-  viewport = { width, height }
-  await send("Emulation.setDeviceMetricsOverride", {
-    width,
-    height,
-    deviceScaleFactor: 1,
-    mobile,
-  })
-}
-
-let mouse = { x: 2, y: 2 }
-async function moveTo(x, y, steps = 1, pause = 0) {
-  const from = mouse
-  for (let i = 1; i <= steps; i++) {
-    await send("Input.dispatchMouseEvent", {
-      type: "mouseMoved",
-      x: from.x + ((x - from.x) * i) / steps,
-      y: from.y + ((y - from.y) * i) / steps,
-    })
-    if (pause) await sleep(pause)
-  }
-  mouse = { x, y }
-}
-async function click(x, y) {
-  await moveTo(x, y)
-  for (const type of ["mousePressed", "mouseReleased"]) {
-    await send("Input.dispatchMouseEvent", {
-      type,
-      x,
-      y,
-      button: "left",
-      clickCount: 1,
-    })
-  }
-}
-const KEYS = {
-  Tab: { windowsVirtualKeyCode: 9, code: "Tab", key: "Tab" },
-  Escape: { windowsVirtualKeyCode: 27, code: "Escape", key: "Escape" },
-  Enter: { windowsVirtualKeyCode: 13, code: "Enter", key: "Enter", text: "\r" },
-}
-async function press(name, { shift = false } = {}) {
-  const key = KEYS[name]
-  const modifiers = shift ? 8 : 0
-  await send("Input.dispatchKeyEvent", {
-    type: key.text ? "keyDown" : "rawKeyDown",
-    modifiers,
-    ...key,
-  })
-  await send("Input.dispatchKeyEvent", { type: "keyUp", modifiers, ...key })
-  await sleep(40)
-}
-
-// Park the pointer on the flannel first, so the new page never loads under a hover.
-async function goto(path) {
-  await moveTo(2, 2)
-  const loaded = nextEvent("Page.loadEventFired")
-  await send("Page.navigate", { url: `${origin}${path}` })
-  await loaded
-  await sleep(60)
-}
-async function waitForPath(path, timeout = 5000) {
-  const start = Date.now()
-  while (Date.now() - start < timeout) {
-    const at = await js(
-      `document.readyState === "complete" ? location.pathname : ""`,
-    ).catch(() => "")
-    if (at === path) {
-      await sleep(80)
-      return true
-    }
-    await sleep(50)
-  }
-  return false
-}
-
-// The page's folder state, as a visitor would see it.
-const STATE = `(() => {
-  const active = document.activeElement;
-  const panel = active?.closest?.(".gl-folder-preview");
-  const tab = active?.closest?.(".gl-folder-tab");
-  return {
-    path: location.pathname + location.search + location.hash,
-    history: history.length,
-    environment: document.documentElement.dataset.environment ?? "core",
-    selected: [...document.querySelectorAll(".gl-folder-tab[data-selected]")].map((t) => t.dataset.tabId),
-    current: [...document.querySelectorAll('[aria-current="page"]')].map((a) => a.closest(".gl-folder-tab")?.dataset.tabId),
-    vs: [...document.querySelectorAll(".gl-folder-tab__indicator")].map((v) => {
-      const r = v.getBoundingClientRect();
-      return [v.closest(".gl-folder-tab").dataset.tabId, Math.round(r.x), Math.round(r.y), Math.round(r.width)];
-    }),
-    scroll: [Math.round(scrollX), Math.round(scrollY)],
-    open: [...document.querySelectorAll(".gl-folder-preview")].filter((p) => p.matches(":popover-open")).map((p) => p.dataset.previewOf),
-    overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-    active: panel ? "preview:" + panel.dataset.previewOf + ":" + active.textContent.trim() : tab ? "tab:" + tab.dataset.tabId : active?.tagName ?? "",
-    focusVisible: active?.matches?.(":focus-visible") ?? false,
-    log: window.__probe?.log ?? [],
-  };
-})()`
-const state = () => js(STATE)
-const resetLog = () => js(`window.__probe.log = []`)
-
-// Where to point at a tab: the middle of the part its scrolling row lets through.
-const tabPoint = (scope, id) =>
-  js(`(() => {
-    const tab = document.querySelector(${JSON.stringify(`${scope} .gl-folder-tab[data-tab-id="${id}"]`)});
-    if (!tab) return null;
-    const r = tab.getBoundingClientRect();
-    const s = tab.closest(".gl-folder__strip").getBoundingClientRect();
-    const left = Math.max(r.left, s.left), right = Math.min(r.right, s.right);
-    return { x: (left + right) / 2, y: r.top + r.height / 2, top: r.top, bottom: r.bottom, left, right };
-  })()`)
-const panelOf = (scope, id) =>
-  js(`(() => {
-    const panel = document.querySelector(${JSON.stringify(`${scope} .gl-folder-preview[data-preview-of="${id}"]`)});
-    if (!panel || !panel.matches(":popover-open")) return null;
-    const r = panel.getBoundingClientRect();
-    const links = [...panel.querySelectorAll(".gl-folder-preview__link")];
-    const hits = links.map((link) => {
-      const b = link.getBoundingClientRect();
-      const x = b.left + b.width / 2, y = b.top + b.height / 2;
-      const inView = y > r.top && y < r.bottom;
-      return !inView || panel.contains(document.elementFromPoint(x, y));
-    });
-    return {
-      left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height,
-      placement: panel.dataset.placement,
-      scrolls: panel.scrollHeight > panel.clientHeight + 1,
-      overflowY: getComputedStyle(panel).overflowY,
-      items: links.map((link) => [link.textContent.trim(), link.getAttribute("href")]),
-      ids: links.map((link) => link.parentElement.dataset.tabId),
-      wholeLabels: links.every((link) => link.scrollWidth <= link.clientWidth + 1),
-      visible: hits.every(Boolean),
-      covered: links.map((link) => {
-        const b = link.getBoundingClientRect();
-        return Math.round(b.bottom);
-      }),
-    };
-  })()`)
-
-// --- Harness ------------------------------------------------------------------------------
-
-const results = []
-async function test(id, title, body) {
-  const failures = []
-  const check = (ok, message) => ok || failures.push(message)
-  try {
-    await body(check)
-  } catch (error) {
-    failures.push(error.stack ?? error.message)
-  }
-  results.push({ id, title, failures })
-  console.log(`${failures.length === 0 ? "PASS" : "FAIL"} ${id} ${title}`)
-  for (const message of failures.slice(0, 10)) console.log(`  - ${message}`)
-}
-const json = (value) => JSON.stringify(value)
 const PAGE = ".gl-folders"
-const away = () => moveTo(2, 2, 3)
 const opened = (log) => log.filter((e) => e.state === "open").map((e) => e.of)
 const maxOpen = (log) => {
   let open = 0
@@ -855,7 +537,9 @@ await test(
           const before = await state()
           const tab = await tabPoint(PAGE, id)
           await moveTo(tab.x, tab.y, 2)
-          await sleep(60)
+          // The way in may cross another folder, whose preview then gives way after the
+          // switch delay (P08: the narrower phone insets put Lecture Notes on that path).
+          await sleep(SWITCH_WAIT)
           const panel = await panelOf(PAGE, id)
           const now = await state()
           const where = `${width} px ${path} ${id}`
@@ -1092,16 +776,4 @@ await test(
 
 // --- Report -------------------------------------------------------------------------------
 
-clearTimeout(deadline)
-const { Browser: browser = "Chromium" } = await fetch(
-  `http://127.0.0.1:${port}/json/version`,
-)
-  .then((r) => r.json())
-  .catch(() => ({}))
-await shutdown()
-const failed = results.filter((r) => r.failures.length > 0)
-if (failed.length > 0) {
-  console.error(`FAIL: ${failed.length} of ${results.length} browser checks failed`)
-  process.exit(1)
-}
-console.log(`PASS: ${results.length} browser checks in ${browser}`)
+await finish()

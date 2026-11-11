@@ -4,7 +4,8 @@
 // Its tabs are labels, not links: each case is a picture of one navigation state, and
 // the synthetic third level has no pages. P06 updated case F to the Overview rule
 // (D-050) and added case G. P07 added case H, a preview of a second-level folder; every
-// unopened folder with children in every case shows its preview on hover.
+// unopened folder with children in every case shows its preview on hover. P08 added case
+// I: wide content in the deepest folder, for the responsive checks.
 //
 // Astro skips page files and folders whose names start with "_", so the /_design/
 // prefix comes from this one-value dynamic segment. The underscore keeps design studies
@@ -340,6 +341,74 @@ const selectionOf = (state: NavigationState) =>
         </div>
       </FolderStack>
     </section>
+
+    <section class="study-shell study-case" data-study-case="i" data-environment={environmentOf(projects)} aria-labelledby="case-i">
+      <header class="case-head gl-on-dark">
+        <p class="study-overline">Case I · wide content in three levels · scientific environment</p>
+        <h2 id="case-i">Code, tables, formulas and long words in the deepest folder</h2>
+        <p>
+          Selection: <code>{selectionOf(projects)}</code>, the synthetic fixture of case C. <strong>Sample content for layout testing only.</strong> Each wide element
+          scrolls inside itself; the page never scrolls sideways (P08).
+        </p>
+      </header>
+      <FolderStack state={projects} links={false}>
+        <div class="gl-prose sample" data-overflow-sample>
+          <p class="sample-overline">Synthetic fixture · layout sample</p>
+          <h3>Contact-probability decay along chromosomesofunusuallylongcompoundwordlength</h3>
+          <p>
+            A sample paragraph: in a polymer model of chromatin, the probability that two loci touch falls with
+            their genomic distance. Text like this must reflow to any width without leaving the paper.
+          </p>
+          <pre tabindex="0" aria-label="Wide code sample"><code>{`contact_probability = lambda distance, exponent=1.08, scale=1.0e-3: scale * distance ** (-exponent)  # a deliberately long line`}</code></pre>
+          <div class="gl-scroll-x" tabindex="0" role="region" aria-label="Wide sample table">
+            <table>
+              <thead>
+                <tr>
+                  {["Sample", "Reads", "Mapped", "Duplicates", "Contacts", "Cis", "Trans", "Resolution"].map((h) => <th scope="col">{h}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {["A", "B", "C"].map((name, i) => (
+                  <tr>
+                    <td>Sample {name}</td>
+                    {[1_200_000 + i, 1_100_000 + i, 90_000 + i, 800_000 + i, 600_000 + i, 200_000 + i].map((n) => <td>{n.toLocaleString("en")}</td>)}
+                    <td>5&nbsp;kb</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <math display="block" aria-label="A wide sample formula">
+            <mrow>
+              <mi>P</mi><mo>(</mo><mi>s</mi><mo>)</mo><mo>=</mo>
+              <mi>A</mi><msup><mi>s</mi><mrow><mo>−</mo><mi>α</mi></mrow></msup>
+              <mo>+</mo><mi>B</mi><msup><mi>s</mi><mrow><mo>−</mo><mi>β</mi></mrow></msup>
+              <mo>+</mo><mi>C</mi><msup><mi>e</mi><mrow><mo>−</mo><mi>s</mi><mo>/</mo><mi>λ</mi></mrow></msup>
+              <mo>+</mo><mi>D</mi><mi>log</mi><mo>(</mo><mn>1</mn><mo>+</mo><mi>s</mi><mo>/</mo><msub><mi>s</mi><mn>0</mn></msub><mo>)</mo>
+              <mo>+</mo><mi>E</mi><msup><mi>s</mi><mrow><mo>−</mo><mn>2</mn></mrow></msup>
+            </mrow>
+          </math>
+          <figure>
+            <svg class="sample-figure" viewBox="0 0 600 160" role="img" aria-label="A sample curve that falls steeply, then slowly">
+              <path d="M10 10 C 80 120, 200 140, 590 150" fill="none" stroke="currentColor" stroke-width="3" />
+              <path d="M10 150 H 590 M10 10 V 150" fill="none" stroke="currentColor" stroke-width="1" />
+            </svg>
+            <figcaption>A sample figure: it scales to the width of the paper.</figcaption>
+          </figure>
+          <ul>
+            <li>A sample list item.</li>
+            <li>An address that must wrap: https://www.gusmaolab.org/lecture-notes/the-greenhouse/an-unusually-long-address-for-layout-testing/</li>
+          </ul>
+          <dl>
+            <dt>Source: https://www.gusmaolab.org/lab/resources/an-equally-long-address-in-a-definition-term/</dt>
+            <dd>A sample definition. Terms are not wrapped by the typography rules, so the paper wraps them.</dd>
+          </dl>
+          <blockquote>
+            <p>A sample quotation, set in the editorial face, as essays and lecture notes will use it.</p>
+          </blockquote>
+        </div>
+      </FolderStack>
+    </section>
   </div>
 </BaseLayout>
 
@@ -435,6 +504,18 @@ const selectionOf = (state: NavigationState) =>
   }
 
   .sample table {
+    font-size: var(--font-size-sm);
+  }
+
+  .sample-figure {
+    inline-size: 100%;
+    block-size: auto;
+    color: var(--color-text-secondary);
+  }
+
+  .sample figcaption {
+    margin-block-start: var(--space-2xs);
+    color: var(--color-text-muted);
     font-size: var(--font-size-sm);
   }
 </style>

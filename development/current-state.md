@@ -1,6 +1,6 @@
 # Current state
 
-Last updated: P07, 2026-11-11. Verified facts only.
+Last updated: P08, 2026-11-11. Verified facts only.
 
 ## Framework
 
@@ -10,7 +10,7 @@ Last updated: P07, 2026-11-11. Verified facts only.
   - **2 temporary design studies**, not part of the website:
     - the **P03 tokens specimen** at `/_design/tokens/` (`src/pages/[design]/tokens.astro`; it was `/` until P06);
     - the **P05 folder study** at `/_design/folders/` (`src/pages/[design]/folders.astro`).
-- **Not implemented:** real section content, the responsive navigation strategy, the homepage composition, Bearnard rendering and a designed 404 page.
+- **Not implemented:** real section content, the homepage composition, Bearnard rendering and a designed 404 page.
 - The archived Pelican site in `_backup/pelican-legacy/` is not built.
 - Nothing has been deployed, and no deployment workflow is active.
 
@@ -37,7 +37,7 @@ Every one of the 37 registered destinations has a page (P06). The content-route 
 | Components: `FolderStack`, `FolderLayer`, `FolderTabStrip`, `FolderTab`, and `FolderPreview` since P07 | `src/components/folders/` |
 | Styles: tab silhouette, seam, fillets, V, materials, scrolling rows | `src/styles/folders.css` |
 | Description and open visual questions | `planning/design-system.md` sections 9 and 10 |
-| Study page: cases A–H (case F updated and case G added in P06; case H, a second-level preview, added in P07) | `/_design/folders/` |
+| Study page: cases A–I (case F updated and case G added in P06; case H, a second-level preview, added in P07; case I, wide content in three levels, added in P08) | `/_design/folders/` |
 
 Built: one to three nested folder levels drawn from P04's `state.rows`. Each level has:
 
@@ -48,7 +48,7 @@ Built: one to three nested folder levels drawn from P04's `state.rows`. Each lev
 
 A row that is too wide scrolls inside its own strip. All of this renders statically.
 
-Tabs became links in P06, and previews arrived in P07 (below). **Still to come:** the responsive navigation strategy (P08).
+Tabs became links in P06, previews arrived in P07, and P08 made the folders work on every screen size (below).
 
 **Visual approval:** the owner approved the folder appearance (G-P05-17, D-049). The questions in `planning/design-system.md` section 10 remain refinements.
 
@@ -96,6 +96,27 @@ Built:
 
 **Visual approval of P07:** the owner approved the folder previews (G-P07-19, D-063). Question 21 in `planning/design-system.md` section 10 remains a refinement.
 
+## Small screens (P08)
+
+| Item | Where |
+| --- | --- |
+| Spacing curves: the gutter stops at 1440 px; shell padding and nest insets shrink below 1024 px | `src/styles/tokens.css` |
+| Rows: scroll padding clear of the fades; nested tabs 44 px under a coarse pointer; the paper contains wide content | `src/styles/folders.css` |
+| `.gl-scroll-x` regions for wide tables and figures | `src/styles/global.css` |
+| Rows open at their selected tab where the browser cannot; focus kept clear of the fades | `src/scripts/folder-rows.ts` |
+| Rules | `planning/design-system.md` section 9; `planning/information-architecture.md` section 16; D-064–D-069 |
+
+Built:
+
+- The folders stay physical folders at every width from 320 to 2560 px; rows scroll sideways inside their folders and the page never does.
+- Each row opens with its selected tab in view (Chromium natively; other browsers through the script), and keyboard focus stays clear of the edge fades.
+- From 1024 px up the layout is pixel-identical to P07; above 1440 px the shell no longer narrows, so the global row fits.
+- Phones: 4 px shell padding and nest insets; three levels at 320 px leave a 238 px reading column.
+- Touch: swipes scroll a row, taps open a page, previews never open, every tab at least 44 px tall.
+- Wide content scrolls inside itself; study case I shows it.
+
+**Visual approval of P08:** not yet given (G-P08-20). Real phones and tablets are untested (G-P08-21, KL-32).
+
 ## Toolchain
 
 | Item | Value |
@@ -111,32 +132,33 @@ Built:
 
 ## npm scripts
 
-`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs` and `tests/previews.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs` in a local headless Chrome, separately from `verify` (D-062).
+`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs` and `tests/responsive.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs` and `tests/responsive-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
 
 ## Build status
 
 `npm run verify` passes:
 
-- `astro check`: 0 errors, 0 warnings, 0 hints across 36 files.
-- Build: 39 pages. `dist/` holds them and three stylesheets, 752,130 bytes in all (KL-30). No script file: the 38 pages with folders each inline the one preview module; the P03 specimen has no script.
+- `astro check`: 0 errors, 0 warnings, 0 hints across 40 files.
+- Build: 39 pages. `dist/` holds them and three stylesheets, 811,331 bytes in all (KL-30). No script file: the 38 pages with folders each inline one module (3.8 KB: previews and rows); the P03 specimen has no script.
 - Token checks and contrast checks pass (245 of 245 enforced pairings; 260 in all).
 - Navigation: 22 of 22 model tests pass (NAV-001 to NAV-021, NAV-025).
 - Smoke test passes. The built pages are exactly the 37 registered destinations and the 2 declared `/_design/` studies.
 - Folders: 10 of 10 tests pass (FOLD-001 to FOLD-010).
 - Routes: 9 of 9 tests pass (NAV-022, NAV-023, NAV-026 to NAV-032). NAV-024 passed in the browser.
 - Previews: 11 of 11 checks pass without a browser (PREV-001 to PREV-007, and the markup of PREV-004, PREV-013, PREV-014 and PREV-015).
+- Responsive: 8 of 8 checks pass without a browser (RESP-006 to RESP-008 and RESP-013 to RESP-017).
 
-`npm run test:browser` passes separately: 12 of 12 browser checks in headless Chrome 157 (PREV-005 and PREV-008 to PREV-014, cases A to I).
+`npm run test:browser` passes separately in headless Chrome 157: 12 of 12 preview checks (PREV-005, PREV-008 to PREV-014) and 17 of 17 responsive checks (RESP-001 to RESP-017).
 
 ## Repository
 
 | Item | Value |
 | --- | --- |
-| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; P05 at `4771127` and `40083ce`; the Bearnard sticker task's notes at `cda026e`, `fa522dc` and `aaa32a7`; P06 at `39bc564` and its approval record `f8eead2`; P07 at `750e98f` and the approval record that follows it |
+| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; P05 at `4771127` and `40083ce`; the Bearnard sticker task's notes at `cda026e`, `fa522dc` and `aaa32a7`; P06 at `39bc564` and its approval record `f8eead2`; P07 at `750e98f` and its approval record `28392b0`; then the P08 commit |
 | Milestone branches | `chore/gusmaolab-foundation-p01` (`4096691`), `chore/gusmaolab-astro-foundation-p02` (`5fab52c`), `feat/gusmaolab-design-system-p03` (`851fdbb`), all kept |
 | Recovery tag | `pre-astro-checkpoint` → `6eedf02`, local only |
 | `main` and `origin/main` | `6036137`, the same tree as the checkpoint. No `development` branch exists on `origin`. |
-| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, public. Nothing was pushed in P01–P07. |
+| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, public. Nothing was pushed in P01–P08. |
 | Untracked | `clean`, a byte-identical copy of `clean.sh` that appeared at 18:01 on 2026-11-10. Claude Code did not create it, and left it alone at the owner's instruction. |
 
 ## Assets
@@ -146,18 +168,19 @@ Built:
 
 ## Legacy archive
 
-Unchanged since P03; P05, P06 and P07 did not touch it. ISSUE-0003 stays open: the recruiter-era files in the public history, and a possible third file.
+Unchanged since P03; P05 to P08 did not touch it. ISSUE-0003 stays open: the recruiter-era files in the public history, and a possible third file.
 
 ## Completed prompts
 
-P01, P02, P03, P04, P05, P06 and P07.
+P01 to P07. P08 is technically complete; its visual approval and real-device checks are pending.
 
 ## Blockers
 
-None for P08.
+None for P09.
 
 ## Waiting for the owner
 
+- **Review the P08 responsive screenshots**, and approve the small-screen layout or ask for changes (G-P08-20; `planning/design-system.md` section 10, question 22). If possible, try the site on a real phone and tablet (G-P08-21).
 - Optional refinements to the folders, the Overview tab and the previews, if wanted: `planning/design-system.md` section 10, questions 13–21.
 - Stronger palette differences between environments (D-056) and typography consolidation (D-042), both deferred.
 - The third-level folders, when content work reaches them (`planning/information-architecture.md` section 3).

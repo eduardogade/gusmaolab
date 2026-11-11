@@ -22,6 +22,7 @@ const componentFiles = [
   "src/components/folders/FolderTab.astro",
   "src/components/folders/FolderPreview.astro",
   "src/scripts/folder-previews.ts",
+  "src/scripts/folder-rows.ts",
   "src/components/scaffold/ScaffoldContent.astro",
   "src/layouts/FolderPage.astro",
   "src/pages/index.astro",
