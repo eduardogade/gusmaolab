@@ -14,6 +14,8 @@ Status: **implemented and approved.** Built in P03 (2026-11-10); in P04 the owne
 
 **P08 (2026-11-11): small screens** (section 9, "Width and small screens"). The folders stay physical folders at every width: rows scroll sideways and open at their selected tab, keyboard focus stays clear of the edge fades, phones get thinner shell padding and nest insets, touch screens get 44 px tabs, and wide content scrolls inside itself. From 1024 px up the layout is pixel-identical to P07; above 1440 px the shell no longer narrows. The owner approved the small-screen layout after reviewing the screenshots (D-070); question 22 in section 10 remains a refinement.
 
+**P09 (2026-11-11): continuity.** Folder pages cross-fade for 140 ms when the visitor changes folder, instead of cutting in one frame (D-071, ISSUE-0004). It is the site's only motion; reduced motion turns it off.
+
 **Deferred refinements:** stronger palette differences between the environments (D-056) and typography consolidation (D-042). Neither changed in P06, P07 or P08.
 
 Source files: `src/styles/tokens.css`, `src/styles/environments.css`, `src/styles/global.css`, `src/styles/folders.css` and the contract in `src/design/contract.mjs`. The specimen, the folder study and the tests read the values from those files, so this document can go stale but the pages cannot. Regenerate the contrast tables with `node tests/contrast.mjs --markdown`.

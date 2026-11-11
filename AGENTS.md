@@ -43,7 +43,7 @@ Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `n
 - Components use semantic tokens (`--color-*`, `--font-*`, `--space-*` …), never `--palette-*` primitives or raw colors.
 - Choose a section environment with `data-environment` (BaseLayout's `environment` prop). Change what an environment can set only through `src/design/contract.mjs` and a recorded decision.
 - Keep `tests/design-tokens.mjs` and `tests/contrast.mjs` passing. Do not lower a contrast threshold to make a color pass.
-- Never place text directly on the flannel lining. Add no transitions, animation or smooth scrolling without a decision.
+- Never place text directly on the flannel lining. Add no transitions, animation or smooth scrolling without a decision. The only motion is the 140 ms cross-fade between folder pages (`src/styles/view-transitions.css`, D-071), off under reduced motion; never add a client router for it.
 - On small screens the folders stay folders: rows scroll sideways inside their folders, never the page, and no menu, sidebar or icon row replaces them (D-064). Check layout changes at 320, 390, 768, 1024, 1280 and 1440 px.
 - Physical folders are `src/components/folders/` with `src/styles/folders.css`. Draw them from a `siteNavigation.resolve()` state (`<FolderStack state={…}>`), never a hand-built tree. Levels differ only by `data-level` and tokens; never add environment-specific folder rules (D-043–D-047).
 

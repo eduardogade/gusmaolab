@@ -162,6 +162,13 @@ export async function startBrowser({ ids, timeout = 180_000 }) {
       pending.set(id, { resolve, reject })
       socket.send(JSON.stringify({ id, method, params }))
     })
+  // Every occurrence of a protocol event, until the returned function is called (P09).
+  const on = (method, listener) => {
+    const set = listeners.get(method) ?? new Set()
+    listeners.set(method, set)
+    set.add(listener)
+    return () => set.delete(listener)
+  }
   const nextEvent = (method, timeout = 10_000) =>
     new Promise((resolve, reject) => {
       const set = listeners.get(method) ?? new Set()
@@ -273,6 +280,15 @@ export async function startBrowser({ ids, timeout = 180_000 }) {
         `document.readyState === "complete" ? location.pathname : ""`,
       ).catch(() => "")
       if (at === path) {
+        // A cross-document view transition (P09) takes input away from the page while it
+        // plays, so arrival means the page is shown and its transition, if any, is over.
+        for (let i = 0; i < 40; i++) {
+          const playing = await js(
+            `document.getAnimations().some((a) => a.effect?.pseudoElement?.startsWith("::view-transition"))`,
+          ).catch(() => false)
+          if (!playing) break
+          await sleep(25)
+        }
         await sleep(80)
         return true
       }
@@ -383,6 +399,7 @@ export async function startBrowser({ ids, timeout = 180_000 }) {
   return {
     serve,
     send,
+    on,
     nextEvent,
     js,
     viewport,

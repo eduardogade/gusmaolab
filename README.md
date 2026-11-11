@@ -19,7 +19,7 @@ Source for [www.gusmaolab.org](https://www.gusmaolab.org), Eduardo Gade Gusmao's
 | `npm run build` | Build the static site into `dist/` |
 | `npm run preview` | Serve the built `dist/` locally (port 4321 by default) |
 | `npm test` | Check the design tokens, color contrast and navigation model, then smoke-test the built output, the folder components, the generated pages, the folder previews' markup and the responsive rules (run `npm run build` first) |
-| `npm run test:browser` | Check the folder previews and the responsive layout (pointer, keyboard, touch, scrolling rows, widths from 320 to 2560 px) in a local headless Chrome (run `npm run build` first; set `CHROME_PATH` if Chrome is elsewhere). Not part of `verify`. |
+| `npm run test:browser` | Check the folder previews, the responsive layout (pointer, keyboard, touch, scrolling rows, widths from 320 to 2560 px) and the cross-fade between pages in a local headless Chrome (run `npm run build` first; set `CHROME_PATH` if Chrome is elsewhere). Not part of `verify`. |
 | `npm run verify` | Run `check`, `build` and `test` in one go |
 | `node tests/contrast.mjs --markdown` | Print every contrast ratio as Markdown tables |
 

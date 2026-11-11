@@ -317,6 +317,39 @@ Real-device checks are not part of this table: none were run (G-P08-21). PREV-01
 - no `.gl-scroll-x` scrolling: RESP-014 failed;
 - a shell padding that departs from P05's curve at 1024 px: RESP-015 failed.
 
+## P09 gates
+
+P09 has three separate gates. Navigation continuity (Gate A) is checked by `npm run verify`, `npm run test:browser` and frame-by-frame recordings in headless and visible Chrome 157. Smoothness is the owner's judgement on real screens; ISSUE-0004 stays open until then.
+
+### Gate A — Navigation continuity
+
+| ID | Gate | Status | Evidence |
+| --- | --- | --- | --- |
+| G-P09-A1 | The blinking is diagnosed | Passed | ISSUE-0004: no blank frame; a one-frame hard cut of the whole viewport, with environment colours and (on phones) row positions changing at once; production and dev alike |
+| G-P09-A2 | A native, nonintrusive remedy is implemented | Passed | D-071: a 140 ms cross-document view transition on folder pages only; largest change between two frames 2.5–4.8 (was 17–28) in a visible window |
+| G-P09-A3 | Ordinary link navigation, no client-side router | Passed | TRANS-B04, NAV-031, TRANS-007 (no JavaScript) |
+| G-P09-A4 | Reduced motion gets no animation | Passed | TRANS-B02, TRANS-008 |
+| G-P09-A5 | P07 previews and P08 rows still work | Passed | PREV and RESP suites pass with the transition on; TRANS-009, TRANS-010 |
+| G-P09-A6 | The owner confirms the blink has meaningfully improved on real desktop and mobile browsers | **Untested** | Pending the owner's retest (ISSUE-0004). Not marked on the owner's behalf. |
+
+### Navigation-continuity tests (P09)
+
+| Test | Where | Result |
+| --- | --- | --- |
+| TRANS-001 No blank frame | Browser, frame by frame, plain navigation | Pass in Chromium; with the transition, 0 white frames in 52 visible-window runs (recorded by hand; KL-35 for headless) |
+| TRANS-002 Production behaviour | Browser (production build); dev compared by hand | Pass |
+| TRANS-003 Same environment | Browser | Pass |
+| TRANS-004 Cross environment | Browser | Pass |
+| TRANS-005 Back/Forward | Browser | Pass |
+| TRANS-006 Direct URL and reload | Browser | Pass |
+| TRANS-007 No JavaScript | Browser | Pass |
+| TRANS-008 Reduced motion | `tests/transitions.mjs`; browser | Pass |
+| TRANS-009 Previews | Browser; PREV suite | Pass |
+| TRANS-010 Responsive selection | Browser; RESP suite | Pass |
+| TRANS-011 No route regression | Browser (all 37 pages) | Pass |
+| TRANS-012 Stability | Browser | Pass |
+| TRANS-B01 to TRANS-B04 Declarations and scope | `tests/transitions.mjs` | Pass |
+
 ## Future gates
 
 | ID | Gate | Source | Status |

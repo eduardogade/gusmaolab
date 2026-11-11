@@ -2,6 +2,27 @@
 
 Newest entry first.
 
+## P09 — Navigation Continuity, Environmental Refinement & Bearnard Integration Foundations — 2026-11-11
+
+**Agent:** Claude Code. **Branch:** `development`. **Result:** in progress; recorded part by part, in the order of the brief's priorities.
+
+### Starting state (verified)
+
+- **HEAD:** `development` at `ca0dc82` (P08 and its approval record). Working tree clean apart from the untracked `clean` file, left alone.
+- **Baseline:** `npm run verify` passed (0 errors, warnings and hints); `npm run test:browser` passed 12 of 12 preview and 17 of 17 responsive checks.
+- **Other activity:** an `astro dev` server started outside this session was running on port 4321 (PID 73580). Astro 7 allows one dev server per project, so P09 used it read-only for the dev-mode comparison and did not stop it. No repository file had changed since the P08 approval commit.
+
+### Part A — Navigation continuity
+
+- **Diagnosis** (ISSUE-0004): frame-by-frame traces and screencasts of eight scenarios, production preview and dev server, headless and visible Chrome 157, at 1440 px and 390 px. No blank or unstyled frame anywhere; every navigation was a three-frame hard cut, the whole viewport changing in one frame (mean colour change 26.5–27.6 between sections, 17.1 within CV on a phone).
+- **Fix** (D-071): `src/styles/view-transitions.css`, imported by `FolderPage`: native cross-document view transitions, a 140 ms cross-fade of the root (group, old and new), off under reduced motion; no `view-transition-name`, no client router, no new script. Afterwards: 2.5–4.8 per frame over about 18 frames, no white frame in 52 visible-window runs.
+- **Found on the way:**
+  - In headless Chrome about 1 cross-fade in 4 to 10 began from a blank white snapshot. A magenta backdrop test showed the white is the snapshot itself, not the canvas behind it. It never happened in a visible window (KL-35).
+  - While a fade plays, clicks go to the page root: the P07 browser tests, which clicked 80 ms after arriving, timed out. The harness now waits for any transition to finish (KL-34).
+  - After Back from the back-forward cache, Chrome replayed a stale pointer position once the fade ended and reopened a preview: previews now wait for real pointer movement (D-072).
+- **Tests:** `tests/transitions.mjs` (TRANS-B01 to TRANS-B04, in `npm test`) and `tests/transitions-browser.mjs` (TRANS-001 to TRANS-012, in `npm run test:browser`), with a small PNG reader for frame checks and an `on()` event hook in the harness.
+- **Recordings:** CV → Writing at 1440 px and CV → Research at 390 px, before and after, slowed five times, sent to the owner.
+
 ## P08 — Responsive Physical-Folder Navigation & Adaptive Layout — 2026-11-11
 
 **Agent:** Claude Code. **Branch:** `development`. **Result:** completed. The owner approved the small-screen layout after reviewing the screenshots (G-P08-20, D-070, recorded after the P08 commit). Real-device checks (G-P08-21) are still pending. Nothing was pushed or deployed.

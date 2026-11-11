@@ -1,0 +1,42 @@
+/*
+ * Navigation continuity (P09): a short cross-fade between folder pages, instead of a
+ * hard cut.
+ *
+ * Every folder link is an ordinary link to a real page, and stays one. Before P09 the
+ * browser held the old page until the new one was ready, then replaced the whole
+ * viewport in a single frame: when the section changed, the flannel, shell and folders
+ * all switched colour at once, and on a phone the rows of tabs jumped to their new
+ * selected tab. That one-frame swap was the "blink" (debugging/investigations,
+ * ISSUE-0004).
+ *
+ * The browser's own cross-document view transitions now cross-fade the old page into
+ * the new one. Regions that are the same on both pages (the flannel within a section,
+ * the shell, the folder frame) stay still, because a cross-fade of identical pixels is
+ * invisible; only what differs fades. Nothing slides, zooms or persists between pages,
+ * and no script is involved: browsers without these transitions keep the plain
+ * navigation, and visitors who ask for reduced motion get it too.
+ *
+ * Imported by src/layouts/FolderPage.astro only, so only the site's folder pages opt in.
+ * Both pages of a navigation must opt in, so the design studies never animate.
+ */
+
+@view-transition {
+  navigation: auto;
+}
+
+/*
+ * One short fade of the whole page; the browser's default lasts 250 ms. The root's group
+ * gets the same duration, so the transition ends when the fade does.
+ */
+::view-transition-group(root),
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 140ms;
+  animation-timing-function: ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  @view-transition {
+    navigation: none;
+  }
+}

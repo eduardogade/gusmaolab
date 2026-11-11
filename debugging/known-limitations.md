@@ -1,6 +1,6 @@
 # Known limitations
 
-Recorded in P01 and updated in P02, P03, P04 and P05 (2026-11-10), and in P06, P07 and P08 (2026-11-11).
+Recorded in P01 and updated in P02, P03, P04 and P05 (2026-11-10), and in P06, P07, P08 and P09 (2026-11-11).
 
 | ID | Limitation |
 | --- | --- |
@@ -37,3 +37,6 @@ Recorded in P01 and updated in P02, P03, P04 and P05 (2026-11-10), and in P06, P
 | KL-31 | Since P08 the paper scrolls sideways (`overflow-x: auto`) as a last resort for content too wide for it (D-068). That makes it a scroll container: a future `position: sticky` element inside the paper, such as a table of contents, would stick within the paper rather than the window. Revisit if one is added. |
 | KL-32 | The P08 review used Chromium only: headless Chrome 157 (`npm run test:browser` and screenshots at 320, 360, 390, 430, 768, 1024, 1280, 1440, 1920 and 2560 px) and the desktop app's browser at its 375 px mobile preset. Touch, coarse pointers, zoom and large text were emulated. **Real phones and tablets, Safari (including iOS), Firefox and screen readers were not tested and await the owner's verification.** The script that opens rows in browsers without `scroll-initial-target` was tested in Chromium with that property removed, not in Safari or Firefox themselves. |
 | KL-33 | Browsers scroll a focused tab into its row but ignore the row's scroll padding, so without JavaScript a focused tab, or its focus ring, can stop under an edge fade (in Chromium, up to 2 px past the edge). The tab is still focused and usable; `folder-rows.ts` corrects the position when JavaScript runs (D-066). |
+| KL-34 | While the 140 ms cross-fade between folder pages plays (P09), the browser sends input to the page root, so a click or tap in that moment is ignored. Visitors rarely act that fast; reduced motion has no fade and no such moment. |
+| KL-35 | In headless Chrome 157, about 1 cross-fade in 4 to 10 starts from a blank white snapshot of the old page, which then fades out: a flash. It never happened in 52 runs in a visible Chrome window (dev and production, 390 and 1440 px), so it looks like a headless capture defect; the automated tests therefore check the fade's timing and setup, not its pixels. A physical Android phone, Safari and Firefox were not tested (ISSUE-0004). |
+| KL-36 | The folders' one module (previews and rows) is inlined in every page with folders only while it stays under Vite's 4,096-byte inlining limit; after P09 it is 4,095 bytes. The next change to either script will make Astro emit it as a cached file instead, which the smoke test and NAV-031 will flag, so that change needs a decision: accept the file (one more request, smaller pages) or keep the code under the limit. |

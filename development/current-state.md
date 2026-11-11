@@ -1,6 +1,6 @@
 # Current state
 
-Last updated: P08, 2026-11-11. Verified facts only.
+Last updated: P09, 2026-11-11. Verified facts only.
 
 ## Framework
 
@@ -117,6 +117,16 @@ Built:
 
 **Visual approval of P08:** the owner approved the small-screen layout (G-P08-20, D-070). Question 22 in `planning/design-system.md` section 10 remains a refinement. Real phones and tablets are still untested (G-P08-21, KL-32).
 
+## Navigation continuity (P09)
+
+| Item | Where |
+| --- | --- |
+| A 140 ms cross-document fade between folder pages; off under reduced motion | `src/styles/view-transitions.css`, imported by `src/layouts/FolderPage.astro` |
+| Hover previews wait for real pointer movement after a page appears | `src/scripts/folder-previews.ts` |
+| Diagnosis and status | `debugging/investigations/ISSUE-0004.md` (open: awaiting the owner's retest); D-071, D-072 |
+
+Navigation is still ordinary: real pages, real URLs, no client router. The reported blink was a one-frame hard cut, not a blank frame; the fade replaces it where the browser supports cross-document view transitions (Chromium; Safari 18.2+).
+
 ## Toolchain
 
 | Item | Value |
@@ -132,14 +142,14 @@ Built:
 
 ## npm scripts
 
-`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs` and `tests/responsive.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs` and `tests/responsive-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
+`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs`, `tests/responsive.mjs` and `tests/transitions.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs`, `tests/responsive-browser.mjs` and `tests/transitions-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
 
 ## Build status
 
 `npm run verify` passes:
 
 - `astro check`: 0 errors, 0 warnings, 0 hints across 40 files.
-- Build: 39 pages. `dist/` holds them and three stylesheets, 811,331 bytes in all (KL-30). No script file: the 38 pages with folders each inline one module (3.8 KB: previews and rows); the P03 specimen has no script.
+- Build: 39 pages. `dist/` holds them and three stylesheets, 811,331 bytes in all (KL-30). No script file: the 38 pages with folders each inline one module (4.1 KB: previews and rows; at Vite's inlining limit, KL-36); the P03 specimen has no script.
 - Token checks and contrast checks pass (245 of 245 enforced pairings; 260 in all).
 - Navigation: 22 of 22 model tests pass (NAV-001 to NAV-021, NAV-025).
 - Smoke test passes. The built pages are exactly the 37 registered destinations and the 2 declared `/_design/` studies.
@@ -147,8 +157,9 @@ Built:
 - Routes: 9 of 9 tests pass (NAV-022, NAV-023, NAV-026 to NAV-032). NAV-024 passed in the browser.
 - Previews: 11 of 11 checks pass without a browser (PREV-001 to PREV-007, and the markup of PREV-004, PREV-013, PREV-014 and PREV-015).
 - Responsive: 8 of 8 checks pass without a browser (RESP-006 to RESP-008 and RESP-013 to RESP-017).
+- Transitions: 4 of 4 checks pass without a browser (TRANS-B01 to TRANS-B04).
 
-`npm run test:browser` passes separately in headless Chrome 157: 12 of 12 preview checks (PREV-005, PREV-008 to PREV-014) and 17 of 17 responsive checks (RESP-001 to RESP-017).
+`npm run test:browser` passes separately in headless Chrome 157: 12 of 12 preview checks (PREV-005, PREV-008 to PREV-014), 17 of 17 responsive checks (RESP-001 to RESP-017) and 12 of 12 navigation-continuity checks (TRANS-001 to TRANS-012).
 
 ## Repository
 
@@ -172,14 +183,15 @@ Unchanged since P03; P05 to P08 did not touch it. ISSUE-0003 stays open: the rec
 
 ## Completed prompts
 
-P01 to P08. P08's real-device checks are pending.
+P01 to P08. P08's real-device checks are pending. P09 is in progress.
 
 ## Blockers
 
-None for P09.
+None.
 
 ## Waiting for the owner
 
+- **Retest folder navigation** on a real desktop and Android phone in Chrome, and say whether the blink has meaningfully improved (G-P09-A6, ISSUE-0004).
 - If possible, try the site on a real phone and tablet (G-P08-21, KL-32).
 - Optional refinements to the folders, the Overview tab, the previews and small screens, if wanted: `planning/design-system.md` section 10, questions 13–22.
 - Stronger palette differences between environments (D-056) and typography consolidation (D-042), both deferred.

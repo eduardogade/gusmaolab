@@ -57,6 +57,16 @@ let frame = 0
 
 const isTouch = (event: PointerEvent): boolean => event.pointerType === "touch"
 
+/**
+ * Where the pointer was when this page appeared (P09), until it really moves. When a page
+ * loads, or comes back from the back-forward cache, browsers replay a pointer event at
+ * the last known cursor position, which can be stale: after Back, it is where the tab
+ * that left the page was clicked. A preview must not open under a pointer that has not
+ * moved since the page appeared, so hover opens nothing until the pointer leaves that
+ * position. Keyboard focus is unaffected.
+ */
+let stillAt: { x: number; y: number } | null | undefined = undefined
+
 /** Clears a dismissal once nothing holds the tab any more. */
 function settle(entry: Entry): void {
   if (!entry.pointer && !entry.focus) entry.dismissed = false
@@ -88,7 +98,7 @@ function hide(entry: Entry): void {
   clearTimeout(closeTimer)
   cancelAnimationFrame(frame)
   shown = null
-  removeEventListener("scroll", reposition, { capture: true })
+  removeEventListener("scroll", reposition, true)
   removeEventListener("resize", reposition)
   try {
     entry.panel.hidePopover()
@@ -117,8 +127,7 @@ function place(entry: Entry): void {
   // The part of the tab that its scrolling row lets through.
   const left = Math.max(box.left, row.left)
   const right = Math.min(box.right, row.right)
-  const viewWidth = document.documentElement.clientWidth
-  const viewHeight = document.documentElement.clientHeight
+  const { clientWidth: viewWidth, clientHeight: viewHeight } = document.documentElement
   const outOfSight = right - left < 1 || box.bottom < 0 || box.top > viewHeight
   if (outOfSight && !panel.contains(document.activeElement)) {
     hide(entry)
@@ -158,6 +167,7 @@ function watch(entry: Entry): void {
   tab.addEventListener("pointerenter", (event) => {
     if (isTouch(event)) return
     entry.pointer = true
+    if (stillAt !== null) return
     if (shown === entry) {
       clearTimeout(closeTimer)
       return
@@ -202,7 +212,7 @@ function watch(entry: Entry): void {
 }
 
 function start(): void {
-  if (typeof HTMLElement.prototype.showPopover !== "function") return
+  if (!("showPopover" in HTMLElement.prototype)) return
   for (const tab of document.querySelectorAll<HTMLElement>(
     ".gl-folder-tab[data-preview]",
   )) {
@@ -224,6 +234,23 @@ function start(): void {
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape" && shown !== null) close(shown)
+  })
+  // The first pointer position after the page appears is where the pointer already was;
+  // the first different one is a real movement. Then the tab under it, if any, may open.
+  document.addEventListener("pointermove", (event) => {
+    if (stillAt === null || isTouch(event)) return
+    if (stillAt === undefined) {
+      stillAt = { x: event.clientX, y: event.clientY }
+      return
+    }
+    if (event.clientX === stillAt.x && event.clientY === stillAt.y) return
+    stillAt = null
+    const under = entries.find((entry) => entry.pointer && !entry.dismissed)
+    if (under !== undefined && shown === null) show(under)
+  })
+  // A page restored by Back starts again: the pointer must move before hover opens.
+  addEventListener("pageshow", (event) => {
+    if (event.persisted) stillAt = undefined
   })
   // Leaving the page closes the preview, so a page restored by Back starts closed.
   addEventListener("pagehide", () => {

@@ -33,8 +33,7 @@ function clearance(row: HTMLElement): { start: number; end: number } {
 }
 
 function revealSelectedTabs(): void {
-  if (typeof CSS !== "undefined" && CSS.supports("scroll-initial-target", "nearest"))
-    return
+  if (CSS.supports("scroll-initial-target", "nearest")) return
   for (const row of document.querySelectorAll<HTMLElement>(".gl-folder__strip")) {
     if (row.scrollWidth <= row.clientWidth) continue
     const tab = row.querySelector<HTMLElement>(".gl-folder-tab[data-selected]")
