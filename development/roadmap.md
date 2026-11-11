@@ -5,7 +5,7 @@ Status: provisional. The six-wave structure is approved. Individual tasks are no
 | Wave | Prompts | Status |
 | --- | --- | --- |
 | I — Foundations | P01–P04 | Completed 2026-11-10 |
-| II — Physical Folders & Visual Identity | P05–P09 | In progress: P05 and P06 completed; P07 next |
+| II — Physical Folders & Visual Identity | P05–P09 | In progress: P05 and P06 completed; P07 technically complete, visual approval pending; P08 next |
 | III — Publishing & Content | P10–P14 | Not started |
 | IV — Website Composition | P15–P18 | Not started |
 | V — Advanced Features | P19–P21 | Not started |
@@ -19,8 +19,8 @@ Status: provisional. The six-wave structure is approved. Individual tasks are no
 - **P04** — Navigation Data Model, Hierarchy & Route Configuration (completed)
 - **P05** — Physical Folder Geometry & Connected Tab System (completed; the owner approved the folder appearance)
 - **P06** — Route-Driven Physical Folder Navigation & Overview Tabs (completed; the owner approved the navigation and Overview tabs)
-- **P07** — Immediate-Child Hover Previews & Keyboard-Accessible Folder Discovery (next)
-- **P08** — the complete responsive folder-navigation strategy (named in the P05 brief; title not yet supplied)
+- **P07** — Immediate-Child Hover Previews & Keyboard-Accessible Folder Discovery (technically complete; the owner's visual approval is pending)
+- **P08** — Responsive Physical-Folder Navigation & Adaptive Layout (next)
 - P09–P24 — titles not yet supplied
 
 Since P04, ordinary prompts run on the persistent `development` branch (D-035).

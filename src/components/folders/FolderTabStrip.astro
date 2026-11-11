@@ -33,6 +33,7 @@ const Strip = links ? "nav" : "div"
           selected={tab.id === row.selectedId}
           current={tab.id === currentTabId}
           link={links}
+          preview={row.previews.get(tab.id)}
         />
       ))
     }

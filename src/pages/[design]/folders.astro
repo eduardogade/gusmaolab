@@ -3,7 +3,8 @@
 // and not production content: it exists so the owner can judge the folder geometry.
 // Its tabs are labels, not links: each case is a picture of one navigation state, and
 // the synthetic third level has no pages. P06 updated case F to the Overview rule
-// (D-050) and added case G.
+// (D-050) and added case G. P07 added case H, a preview of a second-level folder; every
+// unopened folder with children in every case shows its preview on hover.
 //
 // Astro skips page files and folders whose names start with "_", so the /_design/
 // prefix comes from this one-value dynamic segment. The underscore keeps design studies
@@ -59,6 +60,7 @@ const projects = stateAt(syntheticNavigation, "/cv/research/synthetic-projects/"
 const outreach = stateAt(siteNavigation, "/cv/outreach/")
 const cvOverview = stateAt(siteNavigation, "/cv/")
 const researchOverview = stateAt(syntheticNavigation, "/cv/research/")
+const syntheticCv = stateAt(syntheticNavigation, "/cv/")
 const environmentCases = [
   {
     url: "/lab/research-areas/",
@@ -105,15 +107,16 @@ const selectionOf = (state: NavigationState) =>
       <ul class="study-notes" role="list">
         <li>
           Every tab, label and order comes from the P04 navigation registry, except the
-          third level in cases C and G, which is a <strong>synthetic fixture</strong>.
+          third level in cases C, G and H, which is a <strong>synthetic fixture</strong>.
         </li>
         <li>
           An open folder always has a selected tab in its row of children: its Overview
           when the folder's own page is open (P06).
         </li>
         <li>
-          Tabs here are labels; on the site's pages they are links (P06). Hover previews
-          arrive in P07, and the full small-screen strategy in P08.
+          Tabs here are labels; on the site's pages they are links (P06). Hover an unopened
+          folder that has folders inside it to see its preview (P07); here the previews are
+          pictures too, and their items are not links. The full small-screen strategy is P08.
         </li>
         <li>
           Rows that do not fit scroll sideways inside their folder, never the page. A fade at
@@ -311,6 +314,28 @@ const selectionOf = (state: NavigationState) =>
           <p>
             The same rule at the third level: Research's own page opens in its folder, behind
             an Overview tab, and Projects, Themes and Datasets stand beside it.
+          </p>
+        </div>
+      </FolderStack>
+    </section>
+
+    <section class="study-shell study-case" data-study-case="h" data-environment={environmentOf(syntheticCv)} aria-labelledby="case-h">
+      <header class="case-head gl-on-dark">
+        <p class="study-overline">Case H · a second-level preview · scientific environment</p>
+        <h2 id="case-h">CV open; hover Research to preview it</h2>
+        <p>
+          Selection: <code>{selectionOf(syntheticCv)}</code>. Here Research has folders of its own, from <strong>the synthetic fixture</strong> of case C, so hovering its
+          tab shows a preview of Research's Overview, Projects, Themes and Datasets: one level, never deeper. CV, which is open, shows no preview: its folders are
+          already the row below it. The selection and the V do not move.
+        </p>
+      </header>
+      <FolderStack state={syntheticCv} links={false}>
+        <div class="gl-prose sample">
+          <p class="sample-overline">Synthetic fixture · sample content</p>
+          <h3>Curriculum vitae</h3>
+          <p>
+            A preview is a slip of paper hanging from its tab, not a folder: it has no tab,
+            no V and no body, and it closes when the pointer leaves.
           </p>
         </div>
       </FolderStack>

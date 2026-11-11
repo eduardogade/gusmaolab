@@ -1,8 +1,10 @@
 /**
- * Types for the GusmaoLab navigation model (P04), with the display tabs added in P06.
+ * Types for the GusmaoLab navigation model (P04), with the display tabs added in P06 and
+ * the folder previews added in P07.
  *
  * The model is data only. It holds no colors or styles (environments are semantic names
- * resolved by src/styles/environments.css) and no transient pointer or keyboard state.
+ * resolved by src/styles/environments.css) and no transient pointer or keyboard state:
+ * whether a preview is showing belongs to the page's script, never to the model (P07).
  */
 
 /** Section environments. "core" is the default: no `data-environment` attribute. */
@@ -88,6 +90,20 @@ export interface OverviewTab {
 /** One tab as drawn in a row. */
 export type DisplayTab = NodeTab | OverviewTab
 
+/**
+ * A temporary preview of an unopened folder's contents (P07): what its own row of tabs
+ * would show if it were opened. Built with the page; showing it changes nothing else.
+ */
+export interface TabPreview {
+  /** The folder previewed: an unselected tab of the row, with children. */
+  readonly folder: NavigationNode
+  /**
+   * Its Overview, then its immediate children in registry order: the same display tabs,
+   * in the same order, as the row that opens below it on its own page. Never deeper.
+   */
+  readonly tabs: readonly DisplayTab[]
+}
+
 /** One visible row of tabs. */
 export interface TabRow {
   readonly level: TabLevel
@@ -97,6 +113,12 @@ export interface TabRow {
   readonly tabs: readonly DisplayTab[]
   /** The tab with the V indicator. Every row has one: there is no unselected row (D-050). */
   readonly selectedId: string
+  /**
+   * Previews by tab ID (P07): one for each unselected folder tab that has children. The
+   * selected tab has none, because its children are already the row below it; leaves and
+   * Overview tabs have none, because there is nothing inside them to show.
+   */
+  readonly previews: ReadonlyMap<string, TabPreview>
 }
 
 /** What the folder body displays. */
@@ -138,13 +160,3 @@ export type NavigationResolution =
       /** The deepest registered folder containing the path, for a future 404 page. */
       readonly context: NavigationNode | null
     }
-
-/**
- * Transient tab interaction, owned by the tab components (P07) and never stored in the
- * registry. Selection comes from the URL; hover and focus only choose which immediate
- * children to preview.
- */
-export interface TabInteraction {
-  readonly hoveredId: string | null
-  readonly focusedId: string | null
-}

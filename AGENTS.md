@@ -6,7 +6,7 @@ Shared rules for every coding agent in this repository: Claude Code, Codex and o
 
 GusmaoLab is Eduardo Gade Gusmao's personal website and publishing ecosystem: computational biology, bioinformatics, research, software engineering, teaching, literature and personal interests. Scientific rigor and visual humor go together.
 
-The site is an Astro static project. Every registered folder has a page generated from the navigation registry (P06), with temporary development content only; two temporary design studies live under `/_design/` (the P03 tokens specimen and the P05 folder study). The old Pelican site is archived in `_backup/pelican-legacy/`.
+The site is an Astro static project. Every registered folder has a page generated from the navigation registry (P06), with temporary development content only, and unopened folders preview their contents on hover and keyboard focus (P07); two temporary design studies live under `/_design/` (the P03 tokens specimen and the P05 folder study). The old Pelican site is archived in `_backup/pelican-legacy/`.
 
 ## Where things are
 
@@ -24,7 +24,7 @@ The site is an Astro static project. Every registered folder has a page generate
 
 ## Commands
 
-Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `npm run verify` (diagnostics, build, token, contrast, navigation and folder tests, smoke test) before committing. `README.md` lists every command.
+Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `npm run verify` (diagnostics, build, token, contrast, navigation, folder, route and preview tests, smoke test) before committing. After changing the folders' interaction, also run `npm run test:browser` (headless Chrome). `README.md` lists every command.
 
 ## Navigation
 
@@ -34,6 +34,7 @@ Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `n
 - Folder pages come from one route file per tab level (`src/pages/index.astro`, `[section]/`, `[section]/[folder]/`, `[section]/[folder]/[subfolder]/`), each listing `siteNavigation.folderStaticPaths(level)`, and wrap their content in `FolderPage` (`src/layouts/`), which draws the folders from the page's own URL (D-053, D-054).
 - An open folder with children always shows its row with a selected tab: its Overview, a display tab linking to the parent's own URL. Overview is never a registry node and never has a URL of its own (D-050, D-051).
 - No catch-all route, server rendering or client-side router. Keep `tests/navigation.mjs` and `tests/routes.mjs` passing.
+- Folder previews (P07) show an unopened folder's Overview and immediate children, from `row.previews`; never an open folder's, never deeper. The only client-side script is `src/scripts/folder-previews.ts`: it shows and hides previews and never changes the URL, history or selection. Navigation must keep working without it (D-058–D-060). Keep `tests/previews.mjs` and `tests/previews-browser.mjs` passing.
 - Code under `src/navigation/` also runs directly in Node.js: use erasable TypeScript only, `import type` for types, and `.ts` extensions on relative imports (D-040).
 
 ## Styling

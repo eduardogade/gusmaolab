@@ -294,13 +294,18 @@ test("FOLD-007", "One component structure in every environment", (check) => {
       })
       .filter(Boolean)
       .join(" ")
-  // Every tab on the page is built the same way: the card, the label, and the V if selected.
+  // Every tab on the page is built the same way: the card, the label, and the V if
+  // selected, or the preview of its contents (P07) if it is an unopened parent.
   const tabShapes = new Set(
     all.filter(hasClass("gl-folder-tab")).map((tab) =>
       childrenOf(tab, () => true)
-        .map((el) => classes(el).find((c) => c.startsWith("gl-folder-tab__")))
+        .map((el) =>
+          classes(el).find(
+            (c) => c.startsWith("gl-folder-tab__") || c === "gl-folder-preview",
+          ),
+        )
         .join(" ")
-        .replace(" gl-folder-tab__indicator", ""),
+        .replace(/ gl-folder-(tab__indicator|preview)$/, ""),
     ),
   )
   check(tabShapes.size === 1, `tabs are built in ${tabShapes.size} different ways`)

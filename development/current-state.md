@@ -1,16 +1,16 @@
 # Current state
 
-Last updated: P06, 2026-11-11. Verified facts only.
+Last updated: P07, 2026-11-11. Verified facts only.
 
 ## Framework
 
 - **Astro 7.4.8**, static output. The repository root is the Astro project.
 - **39 pages:**
-  - **37 folder pages**, one for every registered folder, generated from the navigation registry (P06). Each shows the physical folders with working tab links and **temporary development content only**.
+  - **37 folder pages**, one for every registered folder, generated from the navigation registry (P06). Each shows the physical folders with working tab links, folder previews (P07) and **temporary development content only**.
   - **2 temporary design studies**, not part of the website:
     - the **P03 tokens specimen** at `/_design/tokens/` (`src/pages/[design]/tokens.astro`; it was `/` until P06);
     - the **P05 folder study** at `/_design/folders/` (`src/pages/[design]/folders.astro`).
-- **Not implemented:** real section content, hover previews, keyboard folder discovery, the responsive navigation strategy, the homepage composition, Bearnard rendering and a designed 404 page.
+- **Not implemented:** real section content, the responsive navigation strategy, the homepage composition, Bearnard rendering and a designed 404 page.
 - The archived Pelican site in `_backup/pelican-legacy/` is not built.
 - Nothing has been deployed, and no deployment workflow is active.
 
@@ -34,10 +34,10 @@ Every one of the 37 registered destinations has a page (P06). The content-route 
 
 | Item | Where |
 | --- | --- |
-| Components: `FolderStack`, `FolderLayer`, `FolderTabStrip`, `FolderTab` | `src/components/folders/` |
+| Components: `FolderStack`, `FolderLayer`, `FolderTabStrip`, `FolderTab`, and `FolderPreview` since P07 | `src/components/folders/` |
 | Styles: tab silhouette, seam, fillets, V, materials, scrolling rows | `src/styles/folders.css` |
 | Description and open visual questions | `planning/design-system.md` sections 9 and 10 |
-| Study page: cases A–G (case F updated and case G added in P06) | `/_design/folders/` |
+| Study page: cases A–H (case F updated and case G added in P06; case H, a second-level preview, added in P07) | `/_design/folders/` |
 
 Built: one to three nested folder levels drawn from P04's `state.rows`. Each level has:
 
@@ -46,9 +46,9 @@ Built: one to three nested folder levels drawn from P04's `state.rows`. Each lev
 - the page on ivory paper in the deepest folder;
 - the same structure in every environment.
 
-A row that is too wide scrolls inside its own strip. All of this renders statically, with no client-side JavaScript.
+A row that is too wide scrolls inside its own strip. All of this renders statically.
 
-Tabs became links in P06 (below). **Still to come:** hover previews and keyboard discovery (P07), and the responsive navigation strategy (P08).
+Tabs became links in P06, and previews arrived in P07 (below). **Still to come:** the responsive navigation strategy (P08).
 
 **Visual approval:** the owner approved the folder appearance (G-P05-17, D-049). The questions in `planning/design-system.md` section 10 remain refinements.
 
@@ -70,11 +70,31 @@ Built:
 - Each row is a labelled `nav`.
 - Each section's environment is applied.
 - Inactive tabs give hover feedback.
-- No client-side JavaScript; links, Back, Forward and reload work as on any static site (checked in Chromium).
+- Navigation needs no JavaScript; links, Back, Forward and reload work as on any static site (checked in Chromium). P07's preview script is the only script.
 - Unknown URLs have no page.
 - Case F of the folder study now shows Overview selected, and case G shows a third-level Overview (synthetic fixture).
 
 **Visual approval of P06:** the owner approved the navigation and Overview tabs (G-P06-20, D-057). Questions 18 and 20 in `planning/design-system.md` section 10 remain refinements.
+
+## Folder previews (P07)
+
+| Item | Where |
+| --- | --- |
+| Preview data: `TabRow.previews`, built from the P06 display tabs | `src/navigation/types.ts`, `navigation.ts` |
+| Preview markup: an index card after each eligible tab's link, a `popover="manual"` | `src/components/folders/FolderPreview.astro`, `FolderTab.astro` |
+| The only client-side script: shows, hides and places previews (2.75 KB, inlined) | `src/scripts/folder-previews.ts` |
+| Styles | `src/styles/folders.css` section 5 |
+| Rules | `planning/information-architecture.md` section 15; `planning/design-system.md` section 9; D-058–D-062 |
+
+Built:
+
+- Hovering (mouse or pen) or keyboard-focusing an unopened folder with children shows its Overview and immediate children on a parchment card hanging from its tab. Open folders, leaves and Overview tabs show none.
+- Preview links are real destinations. Hovering changes no URL, history, selection, V or environment.
+- One preview at a time; 120 ms close delay and 90 ms switch delay against flicker; Escape closes and returns focus; touch is ignored, so a tap navigates.
+- Cards live in the top layer: never clipped by a scrolling row, kept 8 px inside the viewport, scrolling inside themselves when long.
+- Without JavaScript or the Popover API, no previews and the same plain links.
+
+**Visual approval of P07:** not yet given (G-P07-19).
 
 ## Toolchain
 
@@ -91,29 +111,32 @@ Built:
 
 ## npm scripts
 
-`dev`, `build`, `preview`, `check`, `test`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs` and `tests/routes.mjs`.
+`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs` and `tests/previews.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs` in a local headless Chrome, separately from `verify` (D-062).
 
 ## Build status
 
 `npm run verify` passes:
 
-- `astro check`: 0 errors, 0 warnings, 0 hints across 32 files.
-- Build: 39 pages. `dist/` holds them and three stylesheets, 381,438 bytes in all; no JavaScript.
-- Token checks and contrast checks pass (225 of 225 enforced pairings).
+- `astro check`: 0 errors, 0 warnings, 0 hints across 36 files.
+- Build: 39 pages. `dist/` holds them and three stylesheets, 752,130 bytes in all (KL-30). No script file: the 38 pages with folders each inline the one preview module; the P03 specimen has no script.
+- Token checks and contrast checks pass (245 of 245 enforced pairings; 260 in all).
 - Navigation: 22 of 22 model tests pass (NAV-001 to NAV-021, NAV-025).
 - Smoke test passes. The built pages are exactly the 37 registered destinations and the 2 declared `/_design/` studies.
 - Folders: 10 of 10 tests pass (FOLD-001 to FOLD-010).
 - Routes: 9 of 9 tests pass (NAV-022, NAV-023, NAV-026 to NAV-032). NAV-024 passed in the browser.
+- Previews: 11 of 11 checks pass without a browser (PREV-001 to PREV-007, and the markup of PREV-004, PREV-013, PREV-014 and PREV-015).
+
+`npm run test:browser` passes separately: 12 of 12 browser checks in headless Chrome 157 (PREV-005 and PREV-008 to PREV-014, cases A to I).
 
 ## Repository
 
 | Item | Value |
 | --- | --- |
-| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; P05 at `4771127` and `40083ce`; the Bearnard sticker task's notes at `cda026e`, `fa522dc` and `aaa32a7`; P06 at `39bc564` and the approval record that follows it |
+| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; P05 at `4771127` and `40083ce`; the Bearnard sticker task's notes at `cda026e`, `fa522dc` and `aaa32a7`; P06 at `39bc564` and its approval record `f8eead2`; then the P07 commit |
 | Milestone branches | `chore/gusmaolab-foundation-p01` (`4096691`), `chore/gusmaolab-astro-foundation-p02` (`5fab52c`), `feat/gusmaolab-design-system-p03` (`851fdbb`), all kept |
 | Recovery tag | `pre-astro-checkpoint` → `6eedf02`, local only |
 | `main` and `origin/main` | `6036137`, the same tree as the checkpoint. No `development` branch exists on `origin`. |
-| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, public. Nothing was pushed in P01–P06. |
+| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, public. Nothing was pushed in P01–P07. |
 | Untracked | `clean`, a byte-identical copy of `clean.sh` that appeared at 18:01 on 2026-11-10. Claude Code did not create it, and left it alone at the owner's instruction. |
 
 ## Assets
@@ -123,18 +146,19 @@ Built:
 
 ## Legacy archive
 
-Unchanged since P03; P05 and P06 did not touch it. ISSUE-0003 stays open: the recruiter-era files in the public history, and a possible third file.
+Unchanged since P03; P05, P06 and P07 did not touch it. ISSUE-0003 stays open: the recruiter-era files in the public history, and a possible third file.
 
 ## Completed prompts
 
-P01, P02, P03, P04, P05 and P06.
+P01, P02, P03, P04, P05 and P06. P07 is technically complete; its visual approval is pending.
 
 ## Blockers
 
-None for P07.
+None for P08.
 
 ## Waiting for the owner
 
+- **Review the P07 folder previews** and their screenshots, and approve the preview's appearance or ask for changes (G-P07-19; `planning/design-system.md` section 10, question 21).
 - Optional refinements to the folders and the Overview tab, if wanted: `planning/design-system.md` section 10, questions 13–20.
 - Stronger palette differences between environments (D-056) and typography consolidation (D-042), both deferred.
 - The third-level folders, when content work reaches them (`planning/information-architecture.md` section 3).

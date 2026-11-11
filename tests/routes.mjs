@@ -60,7 +60,11 @@ for (const path of siteNavigation.pagePaths()) {
     state: siteNavigation.resolve(path).state,
   })
 }
-const study = parse(await readFile(fileOf("/_design/folders/"), "utf8"))
+const studyHtml = new Map()
+for (const path of STUDIES) {
+  studyHtml.set(path, await readFile(fileOf(path), "utf8").catch(() => ""))
+}
+const study = parse(studyHtml.get("/_design/folders/"))
 
 // Source files, to prove what the site does not contain.
 const srcDir = fileURLToPath(new URL("src/", repo))
@@ -406,9 +410,13 @@ test("NAV-030", "Folder pages keep the approved folder construction", (check) =>
   for (const [path, { tree }] of pages) {
     for (const tab of elements(tree).filter(hasClass("gl-folder-tab"))) {
       const parts = childrenOf(tab, () => true).map((el) =>
-        classes(el).find((c) => c.startsWith("gl-folder-tab__")),
+        classes(el).find(
+          (c) => c.startsWith("gl-folder-tab__") || c === "gl-folder-preview",
+        ),
       )
       const want = ["gl-folder-tab__shape", "gl-folder-tab__label"]
+      // P07: an unopened folder with children also holds its preview, after its link.
+      if ("data-preview" in tab.attrs) want.push("gl-folder-preview")
       if ("data-selected" in tab.attrs) want.push("gl-folder-tab__indicator")
       check(
         json(parts) === json(want),
@@ -427,15 +435,42 @@ test("NAV-030", "Folder pages keep the approved folder construction", (check) =>
   }
 })
 
-test("NAV-031", "Plain links, no client-side JavaScript", (check) => {
-  check(!files.some((file) => /\.(m?js|cjs)$/.test(file)), "dist/ ships JavaScript")
+// P06 shipped no JavaScript at all. P07 adds one small module, the folder previews
+// (D-060): navigation itself still needs none. Every tab is a plain link, and the only
+// script on a page is that module, inlined once by Astro from FolderStack.
+test("NAV-031", "Plain links; navigation needs no JavaScript", (check) => {
+  check(!files.some((file) => /\.(m?js|cjs)$/.test(file)), "dist/ ships a script file")
   for (const path of builtPaths) {
-    const html = path.startsWith("/_design/") ? "" : (pages.get(path)?.html ?? "")
-    check(!/<script\b/i.test(html), `${path} contains a <script> element`)
+    const html = pages.get(path)?.html ?? studyHtml.get(path) ?? ""
+    check(html !== "", `${path} could not be read`)
+    const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
+    // The P03 specimen has no folders, so no script; every page with folders has one.
+    const expected = path === "/_design/tokens/" ? 0 : 1
+    check(
+      scripts.length === expected,
+      `${path} has ${scripts.length} <script> elements`,
+    )
+    check(
+      scripts.every(
+        ([, attrs, body]) =>
+          attrs.trim() === 'type="module"' && /showPopover/.test(body),
+      ),
+      `${path} has a script other than the folder previews`,
+    )
     check(!/\son[a-z]+=/i.test(html), `${path} has an inline event handler`)
   }
   for (const [file, text] of sources) {
-    check(!/<script\b/i.test(text), `src/${file} contains a <script> element`)
+    const allowed = file === "components/folders/FolderStack.astro"
+    check(
+      allowed || !/<script\b/i.test(text),
+      `src/${file} contains a <script> element`,
+    )
+    check(
+      !/\b(history\.(push|replace)State|location\.(assign|replace|href\s*=)|navigation\.navigate)\b/.test(
+        text,
+      ),
+      `src/${file} changes the URL from a script`,
+    )
     check(
       !/astro:transitions|ClientRouter|ViewTransitions|\bclient:(load|idle|visible|media|only)\b/.test(
         text,

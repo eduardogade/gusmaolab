@@ -409,6 +409,35 @@ export const CONTRAST_PAIRS = /** @type {ContrastRow[]} */ ([
     "--color-folder-tab-hover-deep",
     4.5,
   ],
+  // Folder previews (P07): the index card of an unopened folder's contents.
+  [
+    "preview-item",
+    "Item in a folder preview",
+    "--color-folder-tab-text",
+    "--color-folder-preview",
+    4.5,
+  ],
+  [
+    "preview-item-hover",
+    "Hovered item in a folder preview",
+    "--color-folder-tab-text",
+    "--color-state-hover",
+    4.5,
+  ],
+  [
+    "preview-title",
+    "Title of a folder preview",
+    "--color-text-muted",
+    "--color-folder-preview",
+    4.5,
+  ],
+  [
+    "focus-on-preview",
+    "Focus ring on a folder preview",
+    "--color-focus-ring",
+    "--color-folder-preview",
+    3,
+  ],
   [
     "text-on-shell",
     "Text on the dark shell",

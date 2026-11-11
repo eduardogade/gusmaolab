@@ -1,7 +1,8 @@
 /**
  * Pure helpers for the GusmaoLab navigation model (P04): path normalization, registry
  * validation, compilation, URL-to-folder-state resolution and hover-preview data. P06
- * added the Overview display tabs and the static-path lists for the section pages.
+ * added the Overview display tabs and the static-path lists for the section pages; P07
+ * added each row's folder previews, built from the same display tabs.
  *
  * Nothing here touches the DOM, holds UI state or creates routes. It runs both inside
  * Astro and directly under Node.js (native type stripping), so it uses erasable
@@ -19,6 +20,7 @@ import type {
   OverviewTab,
   SectionEnvironment,
   TabLevel,
+  TabPreview,
   TabRow,
 } from "./types.ts"
 
@@ -285,7 +287,10 @@ export interface Navigation {
   node(id: string): NavigationNode
   /** The node and its ancestors, from the global row down to the node itself. */
   lineage(id: string): readonly NavigationNode[]
-  /** Hover-preview data: immediate children only, in declared order. Empty for a leaf. */
+  /**
+   * A folder's immediate children, in declared order; empty for a leaf (P04). The drawn
+   * previews (P07) are `TabRow.previews`, which add the folder's Overview in front.
+   */
   preview(id: string): readonly NavigationNode[]
   /** The folder state for a path or URL, or `found: false` for an unknown page. */
   resolve(pathOrUrl: string): NavigationResolution
@@ -405,6 +410,25 @@ export function createNavigation(
     const children = node(id).children.map((n) => nodeTabs.get(n.id) as NodeTab)
     childTabs.set(id, Object.freeze([overview, ...children]))
   }
+  // A folder's preview is exactly the row that would open below it (P07): the same
+  // frozen display tabs, so the preview and the opened folder can never disagree.
+  const folderPreviews = new Map<string, TabPreview>()
+  for (const [id, tabs] of childTabs) {
+    folderPreviews.set(id, Object.freeze({ folder: node(id), tabs }))
+  }
+
+  type RowWithoutPreviews = Omit<TabRow, "previews">
+  // Only unselected folders with children get a preview. The selected tab's children
+  // are already the row below it, and a leaf or an Overview has nothing inside it.
+  const withPreviews = (row: RowWithoutPreviews): TabRow => {
+    const previews = new Map<string, TabPreview>()
+    for (const tab of row.tabs) {
+      if (tab.kind !== "folder" || tab.id === row.selectedId) continue
+      const preview = folderPreviews.get(tab.id)
+      if (preview !== undefined) previews.set(tab.id, preview)
+    }
+    return Object.freeze({ ...row, previews })
+  }
 
   const stateFor = (
     path: string,
@@ -412,7 +436,7 @@ export function createNavigation(
     folder: NavigationNode,
   ): NavigationState => {
     const selection = lineage(folder.id)
-    const rows: TabRow[] = [
+    const rows: RowWithoutPreviews[] = [
       { level: 1, parent: null, tabs: topTabs, selectedId: selection[0].id },
     ]
     for (let i = 1; i < selection.length; i++) {
@@ -441,7 +465,7 @@ export function createNavigation(
       page,
       folder,
       selection,
-      rows: Object.freeze(rows.map((row) => Object.freeze(row))),
+      rows: Object.freeze(rows.map(withPreviews)),
       currentTabId: page.kind === "folder" ? deepest.selectedId : null,
       environment: folder.environment,
     })

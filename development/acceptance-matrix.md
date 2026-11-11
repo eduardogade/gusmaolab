@@ -189,6 +189,69 @@ NAV-003 and NAV-006 (P04) were updated: they expected an open parent's row to ha
 
 `FolderStack` failed the build for an unselected row, an Overview out of place, and a row below an Overview.
 
+## P07 gates
+
+Checked by `npm run verify`, by `npm run test:browser` (headless Chrome 157) and by screenshots of the built site at 1440, 1280, 1024, 768 and 390 px. Chromium only (KL-28). **The owner has not yet reviewed the preview's appearance (G-P07-19).**
+
+| ID | Gate | Status | Evidence |
+| --- | --- | --- | --- |
+| G-P07-01 | Hovering an unopened folder with children reveals its immediate children | Passed | PREV-001; PREV-005 (case A), PREV-010 in the browser |
+| G-P07-02 | Overview comes first and links to the parent's canonical URL | Passed | PREV-002, PREV-007; the browser reads `Overview of Writing` → `/writing/` |
+| G-P07-03 | Leaves produce no preview | Passed | PREV-003; hovering Contact, Home and About opens nothing (cases D) |
+| G-P07-04 | Open folders produce no redundant preview | Passed | PREV-004 (model and pages); hovering CV, Overview and Teaching on `/cv/` opens nothing (case E) |
+| G-P07-05 | Only one preview at a time | Passed | PREV-010: at most one open across four switches; PREV-008 by keyboard |
+| G-P07-06 | Previews never change the current page | Passed | PREV-005: URL, history length, selection, `aria-current`, V, environment and scroll unchanged during and after a preview |
+| G-P07-07 | The V stays on the open folders | Passed | PREV-014 at 1440 and 768 px; no V in any preview (markup) |
+| G-P07-08 | Preview links open real destinations | Passed | PREV-013 (markup: every link has a page); case B: Kosmos Series opens `/writing/kosmos/` with Writing › Kosmos Series selected, and Back restores `/cv/research/` with nothing open |
+| G-P07-09 | Keyboard users can discover, traverse and dismiss previews | Passed (Chromium) | PREV-008: focus opens without moving focus, Tab reaches the links, Shift+Tab returns, Escape closes and returns focus, Enter navigates, no trap |
+| G-P07-10 | Escape works without immediately reopening | Passed (Chromium) | PREV-008: closed after Escape, still closed 260 ms later, reopened only after focus left and returned |
+| G-P07-11 | Touch keeps one-tap navigation | Passed (emulated touch) | PREV-012: the first tap clicks Writing's link and opens no preview; one tap navigates; Kosmos Series is one tap away in the row |
+| G-P07-12 | Positioning avoids clipping and page overflow | Passed (Chromium) | PREV-011 at five widths on three pages, every eligible tab: inside the viewport, under its tab, every item hit-testable, labels whole, no sideways page scroll; case I (last tab of a scrolled row at 768 px) |
+| G-P07-13 | Moving into the preview does not flicker | Passed (Chromium) | PREV-009: one open and one close in the log for a pixel-by-pixel move in, a 50 ms slip off the card, and a neighbour crossed on the way |
+| G-P07-14 | Folder styling consistent with P05 and P06 | Passed | NAV-030, FOLD-001 to FOLD-010; a closed page matches its P06 screenshot inside the folder shell to within 1/255 on 727 pixels (rasterisation) |
+| G-P07-15 | Core navigation works without JavaScript | Passed | PREV-013 in the browser with scripts disabled: tabs navigate, Back works, no preview shows; NAV-031 |
+| G-P07-16 | Automated and browser checks pass | Passed | `npm run verify`; `npm run test:browser` 12 of 12; `git diff --check` |
+| G-P07-17 | Documentation and records updated | Passed | `planning/information-architecture.md` (section 15), `design-system.md`, `architecture.md`, `development/`, `debugging/known-limitations.md`, `README.md`, `AGENTS.md` |
+| G-P07-18 | Committed locally on `development`, not pushed | Passed | The P07 commit; `development` has no upstream |
+| G-P07-19 | The owner approves the preview's appearance | **Untested** | Awaiting the owner's review of the P07 screenshots. Not marked on the owner's behalf. |
+
+### Preview tests (P07)
+
+| Test | Where | Result |
+| --- | --- | --- |
+| PREV-001 Immediate descendants | `tests/previews.mjs` | Pass |
+| PREV-002 Overview destination | `tests/previews.mjs` | Pass |
+| PREV-003 Leaf behavior | `tests/previews.mjs` | Pass |
+| PREV-004 Active folder behavior | `tests/previews.mjs` (model and built pages); browser, cases D and E | Pass |
+| PREV-005 No selection mutation | `tests/previews.mjs` (model); `tests/previews-browser.mjs` (cases A and B) | Pass |
+| PREV-006 No recursive previews | `tests/previews.mjs` | Pass |
+| PREV-007 Correct ordering | `tests/previews.mjs` | Pass |
+| PREV-008 Keyboard accessibility | `tests/previews-browser.mjs` (case G) | Pass in Chromium |
+| PREV-009 Pointer transition | `tests/previews-browser.mjs` | Pass in Chromium |
+| PREV-010 Switch preview | `tests/previews-browser.mjs` | Pass in Chromium |
+| PREV-011 Viewport positioning | `tests/previews-browser.mjs` (cases C, F, I and the five-width sweep) | Pass in Chromium |
+| PREV-012 Coarse pointer | `tests/previews-browser.mjs` (case H, emulated touch) | Pass in Chromium |
+| PREV-013 No JavaScript navigation | `tests/previews.mjs` (markup); `tests/previews-browser.mjs` (scripts disabled) | Pass |
+| PREV-014 Active indicator | `tests/previews.mjs` (markup); `tests/previews-browser.mjs` | Pass |
+| PREV-015 Semantic integrity | `tests/previews.mjs` | Pass |
+
+The browser tests are run by `npm run test:browser`, not by `npm run verify` (D-062). Updated P06 tests: NAV-030 and FOLD-007 allow a preview after an unopened parent's link; NAV-031 now proves that navigation needs no JavaScript and that the preview module is the only script; the smoke test allows that one inlined module on pages with folders.
+
+**Negative checks.** Each was applied to the source, rebuilt and tested, then reverted:
+
+- no close and switch delays: PREV-009 and PREV-010 failed;
+- no Escape handler: PREV-008 failed;
+- previews opening on touch: PREV-012 failed;
+- no viewport clamp: PREV-011 failed;
+- no focus return on Escape: PREV-008 failed;
+- two previews allowed at once: PREV-010 failed;
+- the preview inside the tab's link: PREV-015 and NAV-030 failed;
+- previews visible without the script: PREV-013 failed;
+- `role="menu"` on the list: PREV-015 failed;
+- the title announced with the list name: PREV-015 failed.
+
+`FolderStack` failed the build for a preview of an open folder and for a preview out of order.
+
 ## Future gates
 
 | ID | Gate | Source | Status |
@@ -196,7 +259,7 @@ NAV-003 and NAV-006 (P04) were updated: they expected an open parent's row to ha
 | G-01 | Reproducible static build | P02 | **Passed** in P02: a clean `npm ci` and `npm run verify` in an empty copy rebuilt an identical `index.html` |
 | G-02 | At most three visible tab levels | R-02 | **Passed** in P06 on the site's pages (NAV-025, NAV-032; `FolderStack` rejects a fourth row). No third-level folder is registered yet, so site pages show at most two. |
 | G-03 | Clicking a tab opens its destination page | Information architecture | **Passed** in P06: NAV-022, and clicking through the pages in the browser |
-| G-04 | Hovering an expandable tab previews only its immediate children | Information architecture | Untested in the UI. The preview data is immediate children only (NAV-007). |
+| G-04 | Hovering an expandable tab previews only its immediate children | Information architecture | **Passed** in P07 in Chromium (PREV-001, PREV-006, PREV-011); keyboard focus does the same (PREV-008). Appearance awaits the owner (G-P07-19). |
 | G-05 | Active tab shows a V-shaped indicator; inactive tabs stay visible | Information architecture | **Passed** in P06 on the site's pages (NAV-028, NAV-030); appearance approved in P05 (G-P05-17) and on the P06 pages (G-P06-20) |
 | G-06 | No persistent sidebar, no breadcrumbs, no file-manager design | Information architecture | **Passed** in P06 on the site's pages: they hold only rows of folder tabs and the content (NAV-028 counts the landmarks); the temporary content repeats no trail of folders |
 | G-07 | Content deeper than level three lives in the third-level folder body | Information architecture | Untested on site pages: no content route exists yet. The model keeps the owning folder selected (NAV-009, NAV-025), and `FolderPage` puts any page in its folder's body. |

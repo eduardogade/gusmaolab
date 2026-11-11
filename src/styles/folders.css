@@ -1,7 +1,8 @@
 /*
  * Physical folders (P05): the folder stack, its tab rows, its tabs and its bodies.
  * Imported by src/components/folders/FolderStack.astro, so only pages that show folders
- * load it. Semantic tokens only; no transitions or animation. P06 made the tabs links.
+ * load it. Semantic tokens only; no transitions or animation. P06 made the tabs links;
+ * P07 added the folder previews (section 5).
  *
  * Markup, from the components in src/components/folders/:
  *
@@ -12,6 +13,8 @@
  *           li.gl-folder-tab[data-selected]       FolderTab; one selected per row
  *             .gl-folder-tab__shape       the card stock: two skewed halves
  *             a.gl-folder-tab__label      the link; the whole tab is its click target
+ *             .gl-folder-preview          FolderPreview: an unopened folder's contents,
+ *                                         a popover shown by src/scripts/folder-previews.ts
  *             svg.gl-folder-tab__indicator        the V, on the selected tab only
  *       .gl-folder__body                  the selected tab's open folder: it holds the
  *                                         next level, or the page's paper
@@ -347,7 +350,104 @@ a.gl-folder-tab__label::before {
   color: var(--color-text-primary);
 }
 
-/* 5. Other display modes ------------------------------------------------------------ */
+/* 5. Folder previews (P07) --------------------------------------------------------- */
+
+/*
+ * A small index card of an unopened folder's contents: its Overview, then its immediate
+ * children. It is not a folder, so it has no tab, no V and no folder body; it is a slip
+ * of parchment hanging from the foot of its tab, with a honey top edge.
+ *
+ * It is a popover in the top layer, so no scrolling row, folder or stacking context can
+ * clip or cover it, and it takes no space in the page. src/scripts/folder-previews.ts
+ * places it from its tab's position: --_x and --_y, its minimum width (the tab's), and
+ * the room left in the viewport, inside which a long list scrolls instead of being cut.
+ */
+.gl-folder-preview {
+  --_x: 0px;
+  --_y: 0px;
+  --_min-inline-size: 0px;
+  --_max-inline-size: 100vw;
+  --_max-block-size: none;
+
+  position: fixed;
+  inset: auto;
+  top: var(--_y);
+  left: var(--_x);
+  display: none;
+  box-sizing: border-box;
+  inline-size: max-content;
+  min-inline-size: var(--_min-inline-size);
+  /* As wide as the longest label, which wraps no sooner than a tab's label would. */
+  max-inline-size: min(
+    calc(var(--folder-tab-max-inline-size) + 2 * var(--space-s)),
+    var(--_max-inline-size)
+  );
+  max-block-size: var(--_max-block-size);
+  margin: 0;
+  padding: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border: var(--border-width-hairline) solid var(--color-folder-border);
+  border-block-start: var(--border-width-thin) solid var(--color-accent);
+  border-radius: 0 0 var(--radius-card) var(--radius-card);
+  background-color: var(--color-folder-preview);
+  box-shadow: var(--shadow-paper-raised);
+  color: var(--color-folder-tab-text);
+  font-family: var(--font-label);
+  font-size: var(--font-size-tab-preview);
+  font-weight: var(--font-weight-medium);
+  letter-spacing: var(--letter-spacing-ui);
+  line-height: var(--line-height-ui);
+  text-align: start;
+}
+
+.gl-folder-preview:popover-open {
+  display: block;
+}
+
+/* Above its tab, when the viewport has no room below it. */
+.gl-folder-preview[data-placement="above"] {
+  border-block-start-width: var(--border-width-hairline);
+  border-block-end: var(--border-width-thin) solid var(--color-accent);
+  border-radius: var(--radius-card) var(--radius-card) 0 0;
+}
+
+.gl-folder-preview__title {
+  margin: 0;
+  padding: var(--space-2xs) var(--space-s) 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+}
+
+/* Inset enough that a focused item's ring never meets the card's scrolling edge. */
+.gl-folder-preview__list {
+  margin: 0;
+  padding: var(--space-3xs) var(--space-2xs) var(--space-2xs);
+  list-style: none;
+}
+
+.gl-folder-preview__link {
+  display: block;
+  padding: var(--space-3xs) var(--space-2xs);
+  border-radius: var(--radius-control);
+  color: inherit;
+  text-decoration-line: none;
+}
+
+a.gl-folder-preview__link:hover {
+  background-color: var(--color-state-hover);
+  text-decoration-line: underline;
+}
+
+/* While its preview is open, the tab keeps its hover look. The V stays where it was. */
+.gl-folder-tab:not([data-selected]):has(> .gl-folder-preview:popover-open) {
+  --_fill: var(--_hover);
+}
+
+/* 6. Other display modes ------------------------------------------------------------ */
 
 @media (forced-colors: active) {
   .gl-folder-tab[data-selected] .gl-folder-tab__label {

@@ -15,8 +15,9 @@ const designStudies = ["/_design/tokens/", "/_design/folders/"]
 const fileOf = (path) => `${path.slice(1)}index.html`
 // Pages the build must produce (P06): every registered destination, and the studies.
 const expectedPages = [...siteNavigation.pagePaths(), ...designStudies].map(fileOf)
-// Astro's bundled assets. The site ships no JavaScript, images or fonts yet, so only
-// stylesheets are expected.
+// Astro's bundled assets. The site ships no images or fonts yet, so only stylesheets are
+// expected. Its one script, the folder previews (P07), is inlined in the pages that show
+// folders, so it is no file of its own.
 const expectedAsset = /^_astro\/[\w.-]+\.css$/
 const specimenFile = fileOf("/_design/tokens/")
 const studyFile = fileOf("/_design/folders/")
@@ -75,7 +76,8 @@ for (const file of files) {
 // A generous ceiling, not an exact size: it catches accidental artwork or bundles.
 check(totalBytes < 1_000_000, `dist/ holds ${totalBytes} bytes, more than expected`)
 
-// 3. Every page: document basics and no JavaScript. Then the temporary P03 specimen.
+// 3. Every page: document basics, and no script except the folder previews (P07), once,
+//    on pages with folders. Then the temporary P03 specimen.
 const htmlFiles = files.filter((file) => file.endsWith(".html"))
 for (const file of htmlFiles) {
   const page = await readFile(join(dist, file), "utf8")
@@ -96,7 +98,14 @@ for (const file of htmlFiles) {
     `${file}'s title does not name GusmaoLab`,
   )
   check((page.match(/<main[\s>]/g) ?? []).length === 1, `${file} needs one <main>`)
-  check(!/<script\b/i.test(page), `${file} contains a <script> element`)
+  const scripts = page.match(/<script\b[^>]*>/gi) ?? []
+  const folders = /class="gl-folders"/.test(page)
+  check(
+    folders
+      ? scripts.length === 1 && scripts[0] === '<script type="module">'
+      : scripts.length === 0,
+    `${file} has ${scripts.length} <script> element(s); expected ${folders ? 1 : 0}`,
+  )
 }
 const html = files.includes(specimenFile)
   ? await readFile(join(dist, specimenFile), "utf8")
@@ -195,7 +204,8 @@ for (const path of designStudies) {
   )
 }
 
-// 7. The P05 folder study: a temporary page, static, with no script and no links.
+// 7. The P05 folder study: a temporary page with no links. Its only script is the folder
+//    previews (P07), checked above.
 const study = files.includes(studyFile)
   ? await readFile(join(dist, studyFile), "utf8")
   : ""

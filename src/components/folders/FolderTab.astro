@@ -8,8 +8,12 @@
  * every other selected tab is an open folder that contains the page, with
  * `aria-current="true"`. An Overview tab adds its parent's name for assistive technology:
  * "Overview of CV". Design studies draw labels without links.
+ *
+ * An unopened folder with children also carries its preview (P07): a hidden index card of
+ * its contents, after the link, never inside it. The tab's link is unchanged by it.
  */
-import type { DisplayTab } from "../../navigation/index.ts"
+import type { DisplayTab, TabPreview } from "../../navigation/index.ts"
+import FolderPreview from "./FolderPreview.astro"
 
 interface Props {
   tab: DisplayTab
@@ -18,9 +22,11 @@ interface Props {
   current?: boolean
   /** Draw the label as a link to the tab's page. False only in design studies. */
   link?: boolean
+  /** The folder's contents, for an unselected folder with children (P07). */
+  preview?: TabPreview
 }
 
-const { tab, selected = false, current = false, link = true } = Astro.props
+const { tab, selected = false, current = false, link = true, preview } = Astro.props
 const Label = link ? "a" : "span"
 const ariaCurrent = link && current ? "page" : selected ? "true" : undefined
 ---
@@ -30,9 +36,11 @@ const ariaCurrent = link && current ? "page" : selected ? "true" : undefined
   data-tab-id={tab.id}
   data-tab-kind={tab.kind}
   data-selected={selected ? "" : undefined}
+  data-preview={preview ? "" : undefined}
 >
   <span class="gl-folder-tab__shape" aria-hidden="true"></span>
   <Label class="gl-folder-tab__label" href={link ? tab.href : undefined} aria-current={ariaCurrent}>{tab.label}{tab.kind === "overview" && <span class="gl-visually-hidden"> of {tab.parent.label}</span>}</Label>
+  {preview && <FolderPreview preview={preview} link={link} />}
   {
     selected && (
       <svg

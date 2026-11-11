@@ -10,7 +10,9 @@ Status: **implemented and approved.** Built in P03 (2026-11-10); in P04 the owne
 - links;
 - hover feedback on inactive tabs.
 
-**Deferred refinements:** stronger palette differences between the environments (D-056) and typography consolidation (D-042). Neither changed in P06.
+**P07 (2026-11-11): folder previews** (section 9, "Folder previews"). Hovering or keyboard-focusing an unopened folder with children shows a small parchment index card of its contents, hanging from its tab. The folders, tabs, V and environments are unchanged. The card's look is provisional until the owner reviews it (D-061).
+
+**Deferred refinements:** stronger palette differences between the environments (D-056) and typography consolidation (D-042). Neither changed in P06 or P07.
 
 Source files: `src/styles/tokens.css`, `src/styles/environments.css`, `src/styles/global.css`, `src/styles/folders.css` and the contract in `src/design/contract.mjs`. The specimen, the folder study and the tests read the values from those files, so this document can go stale but the pages cannot. Regenerate the contrast tables with `node tests/contrast.mjs --markdown`.
 
@@ -255,7 +257,7 @@ One folder system, four environments. Section lists come from the P03 brief; P04
 
 ## 8. Contrast verification
 
-`tests/contrast.mjs` (part of `npm test`) resolves 48 text and indicator pairings in the core and all four environments, using the WCAG 2.2 relative-luminance formula. It enforces 4.5:1 for body text and 3:1 for essential non-text indicators: 225 checks, all passing. Ratios are truncated, never rounded up. Three pairings are informational only: disabled text (WCAG exempts disabled controls) and the two nested-tab silhouettes at the end of the table. P05 added twelve pairings for the second and third folder levels, and P06 two for hovered tabs on those levels.
+`tests/contrast.mjs` (part of `npm test`) resolves 52 text and indicator pairings in the core and all four environments, using the WCAG 2.2 relative-luminance formula. It enforces 4.5:1 for body text and 3:1 for essential non-text indicators: 245 checks, all passing. Ratios are truncated, never rounded up. Three pairings are informational only: disabled text (WCAG exempts disabled controls) and the two nested-tab silhouettes at the end of the table. P05 added twelve pairings for the second and third folder levels, P06 two for hovered tabs on those levels, and P07 four for the folder previews.
 
 | Pairing | Min | Core | Scientific | Technical | Literary | Personal |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -283,6 +285,10 @@ One folder system, four environments. Section lists come from the P03 brief; P04
 | Label on an inactive third-level tab (P05) | 4.5 | 6.41 | 7.20 | 6.44 | 6.17 | 6.56 |
 | Label on a hovered nested tab (P06) | 4.5 | 9.73 | 10.89 | 9.72 | 9.73 | 9.77 |
 | Label on a hovered third-level tab (P06) | 4.5 | 8.03 | 8.98 | 8.07 | 7.75 | 8.18 |
+| Item in a folder preview (P07) | 4.5 | 11.67 | 13.00 | 11.67 | 11.67 | 11.67 |
+| Hovered item in a folder preview (P07) | 4.5 | 12.11 | 13.49 | 12.66 | 11.54 | 12.16 |
+| Title of a folder preview (P07) | 4.5 | 5.37 | 4.84 | 5.37 | 5.37 | 5.37 |
+| Focus ring on a folder preview (P07) | 3 | 11.07 | 11.07 | 11.07 | 11.07 | 11.07 |
 | Selection indicator on an active nested tab (P05) | 3 | 5.84 | 11.07 | 5.82 | 8.22 | 11.07 |
 | Selection indicator on an active third-level tab (P05) | 3 | 4.79 | 9.09 | 4.77 | 6.48 | 9.21 |
 | Focus ring on the third-level folder (P05) | 3 | 9.09 | 9.09 | 9.09 | 8.72 | 9.21 |
@@ -380,18 +386,32 @@ A stack holds one to three folder levels. Each level is a row of tabs, exactly o
 - **Current page.** The tab that stands for the page has `aria-current="page"`: Overview on a parent's page, or the folder's own tab on a leaf. The other selected tabs are open folders containing the page, with `aria-current="true"`. The V stays decorative.
 - **Overview's accessible name.** It reads "Overview of CV", from visually hidden text after the visible label.
 - **No ARIA tab roles.** These are links between pages.
-- **Hover.** An inactive tab's card lightens to `--color-folder-tab-hover` (level 1), `--color-folder-tab-hover-nested` or `--color-folder-tab-hover-deep`: the level's material mixed 90% with the shell. There is no transition and no other change. Labels on hovered tabs reach 5.73:1 or more. Hover previews of children are P07.
+- **Hover.** An inactive tab's card lightens to `--color-folder-tab-hover` (level 1), `--color-folder-tab-hover-nested` or `--color-folder-tab-hover-deep`: the level's material mixed 90% with the shell. There is no transition and no other change. Labels on hovered tabs reach 5.73:1 or more. Hover also previews an unopened folder's children (P07, below).
 - **Focus.** Keyboard focus uses the global ring (3 px navy, 2 px offset) around the label. Checked on real tab links in P06: the ring shows and the scrolling row does not clip it.
 - **Design studies.** Studies draw tabs as labels, without links. Each case is a picture of one state.
 
+### Folder previews (P07)
+
+A preview is a glimpse into an unopened folder, not another open folder (D-058, D-061). Shown at `/_design/folders/` (every case; case H previews a second-level folder) and on every site page.
+
+- **Material.** A small index card of parchment, `--color-folder-preview`, with a hairline `--color-folder-border` edge, a 2 px top edge in the environment's `--color-accent` (honey, gold or eye green), `--shadow-paper-raised` and `--radius-card` lower corners. It has no tab, no V and no folder body, so it never reads as a fourth folder.
+- **Content.** A small upper-case title in `--color-text-muted` (the folder's name), then the folder's Overview and its children as a compact vertical list in `--font-size-tab-preview` at medium weight, in the tab text color. Labels are never cut: the card is as wide as its longest label, up to a tab's maximum label width plus padding, and wraps no sooner than a tab would.
+- **Anchoring.** It hangs from the foot of its tab, left-aligned with the part of the tab its row lets through, and at least as wide as that part. It never covers its own tab. Near the viewport's right edge it shifts left to stay 8 px inside; when there is more room above than below, it opens above the tab with its accent edge at the bottom. A list longer than the room left scrolls inside the card.
+- **Stacking.** The card is a popover in the top layer, above every folder level and outside every scrolling row, so nothing clips it and it takes no space in the page: no layout shift, and the page never scrolls sideways. `--z-folder-preview` stays reserved and unused.
+- **The tab.** While its card is open, the tab keeps its hover color (`--color-folder-tab-hover…`). The V stays on the open folders and never moves or doubles.
+- **Environment.** The card takes the current page's environment, like everything else on it: hovering Writing from a CV page does not turn anything literary.
+- **Hover and focus.** A hovered item takes `--color-state-hover` and an underline. Focus uses the global ring (3 px navy, 2 px offset); the card's inner padding keeps it clear of the card's edge.
+- **Motion.** None: no transition or animation, so nothing to reduce for `prefers-reduced-motion`.
+- **Contrast.** Item 11.54:1 or more, title 4.84:1 or more, focus ring 11.07:1 (section 8).
+
 ### Remaining visual questions
 
-- Section 10, questions 13–17.
+- Section 10, questions 13–18, 20 and 21.
 
 ### Still to come
 
 - **P06 (done):** tabs became links to their pages, with route-driven selection and the Overview tab.
-- **P07:** hover previews of a tab's immediate children, on `--color-folder-preview`, and an equivalent for keyboard users.
+- **P07 (done):** previews of an unopened folder's immediate contents, on hover and keyboard focus (below).
 - **P08:** the responsive navigation strategy.
 - **P09 and later:**
   - reading paper for long-form prose (`.gl-prose`), code, mathematics, tables, quotes and callouts;
@@ -420,6 +440,7 @@ A stack holds one to three folder levels. Each level is a row of tabs, exactly o
 18. **Overview (P06):** it looks exactly like the other tabs. Should it be told apart, for example by a slightly narrower card, a different weight, or a section-specific label?
 19. **Stronger environments (deferred, D-056):** the owner would like the environments to differ more in palette. To be designed in a later prompt, with the contrast tests.
 20. **Hover (P06):** an inactive tab lightens 12 points towards the folder material when hovered. Too subtle, or right?
+21. **Folder previews (P07):** a parchment index card with a honey top edge, hanging from its tab, with a small title and a compact list. Is it distinct enough from the folders without feeling like a generic menu? Should it carry a paper-grain or ruled-card detail, or the hovered folder's own section color?
 
 ## Legacy material
 

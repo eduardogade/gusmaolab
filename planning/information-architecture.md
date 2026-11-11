@@ -1,8 +1,8 @@
 # Information architecture
 
-Status: navigation model implemented in P04 (2026-11-10). The first and second levels are approved. **No third-level folder is approved yet**: the model supports a third level, and the final third-level site map will be settled in the content prompts. P05 added the physical folder components that draw this model (section 13). P06 (2026-11-11) made the tabs links, generated a page for every folder from the registry, and added the Overview tab (section 14).
+Status: navigation model implemented in P04 (2026-11-10). The first and second levels are approved. **No third-level folder is approved yet**: the model supports a third level, and the final third-level site map will be settled in the content prompts. P05 added the physical folder components that draw this model (section 13). P06 (2026-11-11) made the tabs links, generated a page for every folder from the registry, and added the Overview tab (section 14). P07 added temporary previews of an unopened folder's contents (section 15).
 
-Source of truth: `src/navigation/registry.ts` (data), `src/navigation/navigation.ts` (helpers) and `src/navigation/types.ts` (types). Tests: `tests/navigation.mjs` (NAV-001 to NAV-021, NAV-025) and `tests/routes.mjs` (NAV-022, NAV-023, NAV-026 to NAV-032). NAV-024, Back and Forward, is checked in a browser.
+Source of truth: `src/navigation/registry.ts` (data), `src/navigation/navigation.ts` (helpers) and `src/navigation/types.ts` (types). Tests: `tests/navigation.mjs` (NAV-001 to NAV-021, NAV-025), `tests/routes.mjs` (NAV-022, NAV-023, NAV-026 to NAV-032) and, for the previews, `tests/previews.mjs` and `tests/previews-browser.mjs` (PREV-001 to PREV-015). NAV-024, Back and Forward, is checked in a browser.
 
 ## 1. Top-level sections (approved)
 
@@ -89,7 +89,7 @@ Registry paths are never typed by hand: a tab's path is its parent's path plus i
 | `page` | What the folder body displays: a folder page, or a content route |
 | `folder` | The folder whose body shows the page |
 | `selection` | The selected tab per level, global row first (at most three) |
-| `rows` | Rows to draw: each with its level, parent, display tabs in order (a child row starts with its parent's Overview), and the `selectedId` carrying the V indicator. Every row has one (P06). |
+| `rows` | Rows to draw: each with its level, parent, display tabs in order (a child row starts with its parent's Overview), and the `selectedId` carrying the V indicator. Every row has one (P06). Each row also has `previews`: the contents of its unselected folders that have children (P07, section 15). |
 | `currentTabId` | The tab that stands for the page itself, which gets `aria-current="page"`; `null` on a content page |
 | `environment` | The folder's semantic environment |
 
@@ -128,7 +128,7 @@ Only registered routes resolve. A registered article never makes its siblings va
 
 `siteNavigation.preview(id)` returns a tab's immediate children, in declared order. Grandchildren never appear, and a leaf returns an empty list. Hovering only previews; it never navigates or changes the selection.
 
-The registry stores no interaction state. Selection comes from the URL. Pointer hover and keyboard focus are transient state owned by the tab components (P07), described by the `TabInteraction` type. Keyboard users will need an equivalent way to discover children; P07 decides how.
+The registry stores no interaction state. Selection comes from the URL. Since P07 the drawn previews are `TabRow.previews`, which add the folder's Overview in front of these children (section 15); whether a preview is showing is transient state that lives only in the page's script, never in the model (D-058).
 
 ## 11. Environment inheritance
 
@@ -167,7 +167,7 @@ The folder components in `src/components/folders/` draw what `resolve()` returns
 | `tab.href` | The tab's link (P06); an Overview's is its parent's path |
 | The deepest folder | Its body holds the page's content on ivory paper, in `<main>`; a content route deeper than level 3 is shown there too |
 | `state.environment` | Set by `FolderPage` through BaseLayout's `environment`, or by a `data-environment` wrapper in a study; the components never choose it |
-| `preview(id)` | Not used yet: hover previews are P07 |
+| `row.previews` | Each unselected folder with children carries its preview after its link: a hidden index card of its Overview and children, shown on hover and keyboard focus (P07, section 15) |
 
 `FolderStack` fails the build if the rows are impossible: none, more than three, out of order, not following the selected tab, a row without a valid selection, an Overview out of place, or a row below an Overview. A page therefore cannot draw a fourth level, an unselected row, or a stack that disagrees with the registry. The folder study (`/_design/folders/`) builds its stacks from `siteNavigation.resolve()`. Its third level is a synthetic fixture (Projects, Themes, Datasets under CV › Research), made with `createNavigation()`, and is not added to the registry.
 
@@ -220,10 +220,52 @@ Selected tabs above the current page are the open folders that contain it: they 
 
 Every folder page uses `FolderPage` (`src/layouts/FolderPage.astro`). It resolves the page's own URL, sets the environment, and draws the folders around the page's content, so no page builds its own rows. Until the content prompts, the content is `ScaffoldContent`: a labelled development placeholder that names the folder and invents nothing.
 
+## 15. Folder previews (P07)
+
+### Open and previewed folders
+
+| | An **open** folder | A **previewed** folder |
+| --- | --- | --- |
+| Comes from | The page's URL, at build time | Pointer hover or keyboard focus, in the page |
+| Looks like | A raised tab with the V, joined to its body, with its row of children below | An index card of its contents hanging from its tab; the tab keeps its hover color |
+| Changes | The URL, the selection, `aria-current`, the environment | Nothing: no URL, history entry, selection, V or environment change |
+| Lasts | As long as the page | Until the pointer and focus leave it, Escape, another preview or navigation |
+
+A previewed folder never looks open: it gets no V, no body and no row of tabs. Only one preview is visible at a time (D-058).
+
+### What a preview holds
+
+- **Immediate children only.** A folder's Overview, then its registered children in registry order: exactly the row that opens below it on its own page, built from the same display tabs (PREV-001, PREV-007). Never grandchildren, articles or other content routes, and never an inferred folder from a URL prefix.
+- **Overview** links to the folder's own canonical path, like the Overview tab (D-051): there is no `/overview/` URL.
+- **No recursion.** An item is a plain link; hovering it opens nothing. Its own contents appear in its row once its page is open (PREV-006).
+
+| Hover over | Preview |
+| --- | --- |
+| CV, from another section | Overview, Teaching, Research, Publications, Talks / Presentations, Mentoring / Supervision, Awards & Honors, Service, Outreach / Public Engagement |
+| Lecture Notes | Overview, Bearnard's Trail, The Greenhouse, Berries, Timber Logs |
+| Writing, from `/cv/research/` | Overview, Months' Original, Kosmos Series, Book Club; CV and Research stay selected |
+| A second-level folder with registered children | Its Overview and its third-level folders (none are approved; the synthetic fixture in case H of the folder study shows it) |
+| Kosmos Series, or any folder without children | None |
+| About, Contact or any other leaf | None; normal hover feedback only |
+| An open folder, such as CV on `/cv/` | None: its children are already the row below it |
+
+### Interaction
+
+- **Pointer:** a mouse or pen over an eligible tab opens its preview; moving into the card keeps it open; leaving both closes it after 120 ms. Moving to another eligible tab switches after 90 ms (D-060).
+- **Keyboard:** Tab to an eligible tab's link opens its preview without moving focus. The next Tab reaches its links, then the next tab. Enter follows a link. Escape closes it, returning focus to the tab if it was inside, and it stays closed until focus leaves the tab. Focus is never trapped.
+- **Touch:** ignored. A tap opens the tab's page, whose row shows its children: every destination stays one tap away without a preview.
+- **Without JavaScript** or without the Popover API, previews never show and every link works as before (PREV-013).
+
+### Selection invariants
+
+1. The URL alone decides the open folders, `aria-current` and the environment. Preview code never reads or writes them.
+2. Previews are data built beside the selection, never from it: a folder previewed from any page shows the same items.
+3. A preview item is a real destination; following it is ordinary navigation, after which the folders follow the new URL.
+
 ## Open questions
 
 - The third-level folders (section 3).
-- How tab previews work on touch screens and with the keyboard, where there is no hover (P07).
+- If the responsive strategy (P08) ever hides a selected folder's row on small screens, whether that folder's tab should then preview its contents. P07 never previews an open folder.
 - How legacy URLs map to the new ones, and whether redirects are needed. The legacy site used `/{slug}/` for pages and `/blog/{slug}/` for posts (`_backup/pelican-legacy/pelicanconf.py`); `/blog/` posts fit the new Blog folder.
 - Whether the slugs in sections 1–2 are final before first publication.
 - Whether `astro.config.mjs` should enforce `trailingSlash: "always"`, now that section pages exist. Links use the trailing slash; the static host serves both forms.

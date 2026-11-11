@@ -1,0 +1,40 @@
+---
+/**
+ * A temporary preview of an unopened folder's contents (P07): a small index card listing
+ * the folder's Overview, then its immediate children, exactly as its own row of tabs
+ * would show them. Never deeper: a child's own children are not listed, and an item never
+ * opens another preview.
+ *
+ * It is built with the page, inside its folder's tab and right after the tab's link, so
+ * keyboard focus reaches its links straight after the tab. It is a popover and stays
+ * hidden until src/scripts/folder-previews.ts shows it in the top layer, where no
+ * scrolling row or folder can clip it. Without that script it never shows, and every
+ * destination is still a link on its folder's own page.
+ *
+ * Its items are ordinary links (spans in design studies). The visible title repeats the
+ * tab's label for sighted readers; assistive technology hears the list's name instead.
+ */
+import type { TabPreview } from "../../navigation/index.ts"
+
+interface Props {
+  preview: TabPreview
+  /** Draw the items as links. False only in design studies. */
+  link: boolean
+}
+
+const { preview, link } = Astro.props
+const Item = link ? "a" : "span"
+---
+
+<div class="gl-folder-preview" popover="manual" data-preview-of={preview.folder.id}>
+  <p class="gl-folder-preview__title" aria-hidden="true">{preview.folder.label}</p>
+  <ul class="gl-folder-preview__list" role="list" aria-label={`${preview.folder.label} folders`}>
+    {
+      preview.tabs.map((tab) => (
+        <li class="gl-folder-preview__item" data-tab-id={tab.id} data-tab-kind={tab.kind}>
+          <Item class="gl-folder-preview__link" href={link ? tab.href : undefined}>{tab.label}{tab.kind === "overview" && <span class="gl-visually-hidden"> of {tab.parent.label}</span>}</Item>
+        </li>
+      ))
+    }
+  </ul>
+</div>
