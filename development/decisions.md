@@ -60,6 +60,7 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 | D-054 | Tabs are links: `aria-current="page"` on the page's own tab, `"true"` on open folders above it; each row is a labelled `nav`; `<main>` is inside the deepest folder | Approved | 2026-11-11 |
 | D-055 | The P03 specimen moves to `/_design/tokens/`; `/` becomes the Home folder page | Approved (P06 brief) | 2026-11-11 |
 | D-056 | Stronger palette differences between section environments | Deferred | 2026-11-11 |
+| D-057 | The owner approved the P06 navigation and Overview tabs | Approved by the owner | 2026-11-11 |
 
 ## Details
 
@@ -197,3 +198,5 @@ Normal hover feedback was added: an inactive tab link's card lightens to `--colo
 **D-055.** P06 needs the real Home page at `/`. The P03 specimen moved to `src/pages/[design]/tokens.astro`, built at `/_design/tokens/` beside the folder study (D-048), with only its import paths, a comment and a `getStaticPaths()` changed. It was moved with `git mv`, but Home reuses `src/pages/index.astro` in the same commit, so Git records the specimen as a 98% copy of that file (visible with `git diff -B -M`), not as a rename. A pixel comparison with the P05 build at 1440 and 390 px differs only in the contrast count it reads from the contract (215 → 225). Its stylesheet differs only by the two new hover aliases, which it does not use. `/` is now the Home folder page with temporary content, which links to both studies. No Bearnard composition, nucleus, clocks or booking was added. Whether the `/_design/` studies are excluded from a published build is for the deployment decision (D-005).
 
 **D-056.** The owner would like the section environments to differ more strongly in palette. P06 changes no palette value; the environment tokens stay as approved in D-041 and D-049. Recorded as a deferred design refinement, alongside typography consolidation (D-042).
+
+**D-057.** The owner reviewed the 20 P06 screenshots and approved the P06 navigation and Overview tabs: the generated folder pages, the Overview tab and its selection, the links and the hover feedback. Gate G-P06-20 passes. D-050–D-055 are unchanged. The P06 questions in `planning/design-system.md` section 10 (18 and 20) remain refinements, not blockers. Stronger environment palettes (D-056) and typography consolidation (D-042) stay deferred.

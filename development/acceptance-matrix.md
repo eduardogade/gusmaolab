@@ -124,7 +124,7 @@ Each test was also run against a deliberately broken copy of the build: a missin
 
 ## P06 gates
 
-Checked by `npm run verify` and by navigating the built site in Chromium at 1440, 1280, 768 and 390 px (the desktop app's browser and headless Chrome 157). **The owner has not yet reviewed P06 (G-P06-20).**
+Checked by `npm run verify` and by navigating the built site in Chromium at 1440, 1280, 768 and 390 px (the desktop app's browser and headless Chrome 157). **The owner reviewed the screenshots and approved P06 (G-P06-20, D-057).**
 
 | ID | Gate | Status | Evidence |
 | --- | --- | --- | --- |
@@ -147,7 +147,7 @@ Checked by `npm run verify` and by navigating the built site in Chromium at 1440
 | G-P06-17 | Documentation updated | Passed | `planning/information-architecture.md`, `architecture.md`, `design-system.md`, `development/`, `debugging/known-limitations.md`, `README.md`, `AGENTS.md` |
 | G-P06-18 | Committed locally on `development` | Passed | The P06 commit; `development` has no upstream |
 | G-P06-19 | No deployment and no push | Passed | No push or deployment command was run |
-| G-P06-20 | The owner approves the P06 navigation and Overview appearance | **Untested** | Awaiting the owner's review of the P06 screenshots |
+| G-P06-20 | The owner approves the P06 navigation and Overview appearance | Passed | The owner approved P06 after reviewing the 20 P06 screenshots (D-057). Questions 18 and 20 in `planning/design-system.md` section 10 remain refinements. |
 
 ### Navigation and route tests (P06)
 
@@ -197,7 +197,7 @@ NAV-003 and NAV-006 (P04) were updated: they expected an open parent's row to ha
 | G-02 | At most three visible tab levels | R-02 | **Passed** in P06 on the site's pages (NAV-025, NAV-032; `FolderStack` rejects a fourth row). No third-level folder is registered yet, so site pages show at most two. |
 | G-03 | Clicking a tab opens its destination page | Information architecture | **Passed** in P06: NAV-022, and clicking through the pages in the browser |
 | G-04 | Hovering an expandable tab previews only its immediate children | Information architecture | Untested in the UI. The preview data is immediate children only (NAV-007). |
-| G-05 | Active tab shows a V-shaped indicator; inactive tabs stay visible | Information architecture | **Passed** in P06 on the site's pages (NAV-028, NAV-030); appearance approved in P05 (G-P05-17); the P06 pages await the owner's review (G-P06-20) |
+| G-05 | Active tab shows a V-shaped indicator; inactive tabs stay visible | Information architecture | **Passed** in P06 on the site's pages (NAV-028, NAV-030); appearance approved in P05 (G-P05-17) and on the P06 pages (G-P06-20) |
 | G-06 | No persistent sidebar, no breadcrumbs, no file-manager design | Information architecture | **Passed** in P06 on the site's pages: they hold only rows of folder tabs and the content (NAV-028 counts the landmarks); the temporary content repeats no trail of folders |
 | G-07 | Content deeper than level three lives in the third-level folder body | Information architecture | Untested on site pages: no content route exists yet. The model keeps the owning folder selected (NAV-009, NAV-025), and `FolderPage` puts any page in its folder's body. |
 | G-08 | Shared design system across sections | R-03, R-04 | **Passed** in P06 (technical): every page uses the shared tokens and its section's environment (NAV-027). Stronger environment differences are deferred (D-056). |

@@ -74,9 +74,7 @@ Built:
 - Unknown URLs have no page.
 - Case F of the folder study now shows Overview selected, and case G shows a third-level Overview (synthetic fixture).
 
-**Visual approval of P06:** not yet given (G-P06-20).
-
-
+**Visual approval of P06:** the owner approved the navigation and Overview tabs (G-P06-20, D-057). Questions 18 and 20 in `planning/design-system.md` section 10 remain refinements.
 
 ## Toolchain
 
@@ -111,7 +109,7 @@ Built:
 
 | Item | Value |
 | --- | --- |
-| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; P05 at `4771127` and `40083ce`; the Bearnard sticker task's notes at `cda026e`, `fa522dc` and `aaa32a7`; then the P06 commit |
+| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; P05 at `4771127` and `40083ce`; the Bearnard sticker task's notes at `cda026e`, `fa522dc` and `aaa32a7`; P06 at `39bc564` and the approval record that follows it |
 | Milestone branches | `chore/gusmaolab-foundation-p01` (`4096691`), `chore/gusmaolab-astro-foundation-p02` (`5fab52c`), `feat/gusmaolab-design-system-p03` (`851fdbb`), all kept |
 | Recovery tag | `pre-astro-checkpoint` → `6eedf02`, local only |
 | `main` and `origin/main` | `6036137`, the same tree as the checkpoint. No `development` branch exists on `origin`. |
@@ -137,7 +135,7 @@ None for P07.
 
 ## Waiting for the owner
 
-- Review of the P06 navigation and Overview tabs (G-P06-20), and the refinements in `planning/design-system.md` section 10, questions 13–20.
+- Optional refinements to the folders and the Overview tab, if wanted: `planning/design-system.md` section 10, questions 13–20.
 - Stronger palette differences between environments (D-056) and typography consolidation (D-042), both deferred.
 - The third-level folders, when content work reaches them (`planning/information-architecture.md` section 3).
 - Whether the second-level slugs are final before first publication (D-037).

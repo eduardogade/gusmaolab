@@ -4,7 +4,7 @@ Status: **implemented and approved.** Built in P03 (2026-11-10); in P04 the owne
 
 **P05 (2026-11-10): the physical folders are built (section 9), and the owner approved their appearance after reviewing the screenshots (D-049).** Questions 13–17 in section 10 remain refinements, not blockers.
 
-**P06 (2026-11-11): the folders are the site's navigation.** Their geometry and materials are unchanged. What P06 added:
+**P06 (2026-11-11): the folders are the site's navigation, and the owner approved P06 after reviewing the screenshots (D-057).** Their geometry and materials are unchanged. What P06 added:
 
 - the Overview tab, selected by default when a folder with children is open (section 9, D-050, D-051);
 - links;

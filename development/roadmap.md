@@ -18,7 +18,7 @@ Status: provisional. The six-wave structure is approved. Individual tasks are no
 - **P03** — GusmaoLab Design Tokens, Palette Architecture & Visual Foundations (completed; the owner approved the overall appearance)
 - **P04** — Navigation Data Model, Hierarchy & Route Configuration (completed)
 - **P05** — Physical Folder Geometry & Connected Tab System (completed; the owner approved the folder appearance)
-- **P06** — Route-Driven Physical Folder Navigation & Overview Tabs (completed; awaiting the owner's visual review)
+- **P06** — Route-Driven Physical Folder Navigation & Overview Tabs (completed; the owner approved the navigation and Overview tabs)
 - **P07** — Immediate-Child Hover Previews & Keyboard-Accessible Folder Discovery (next)
 - **P08** — the complete responsive folder-navigation strategy (named in the P05 brief; title not yet supplied)
 - P09–P24 — titles not yet supplied

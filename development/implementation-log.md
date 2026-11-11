@@ -367,7 +367,7 @@ ADB diagnostic found no devices. No app installation or real WhatsApp import was
 
 ## P06 — Route-Driven Physical Folder Navigation & Overview Tabs — 2026-11-11
 
-**Agent:** Claude Code. **Branch:** `development`. **Result:** completed technically; the owner's visual review is pending (G-P06-20). Nothing was pushed or deployed.
+**Agent:** Claude Code. **Branch:** `development`. **Result:** completed. The owner approved the navigation and Overview tabs after reviewing the screenshots (G-P06-20, D-057, recorded after the P06 commit). Nothing was pushed or deployed.
 
 ### Starting state (verified)
 
@@ -486,7 +486,6 @@ Served by `astro-preview` (port 4322). Checked in the Claude desktop app's brows
 
 ### Not done
 
-- **Owner's review:** the P06 screenshots await the owner's review (G-P06-20).
 - **Browsers:** Safari, Firefox, touch devices, `forced-colors` and screen readers were not tested (KL-26).
 - **Left to later prompts:**
   - a designed 404 page (KL-24);
