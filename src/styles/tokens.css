@@ -325,6 +325,17 @@
     var(--color-folder-parent) var(--folder-tab-hover-mix),
     var(--color-shell)
   );
+  /* Hovered inactive tabs on levels 2 and 3 (P06), by the same rule as level 1. */
+  --color-folder-tab-hover-nested: color-mix(
+    in srgb,
+    var(--color-folder-nested) var(--folder-tab-hover-mix),
+    var(--color-shell)
+  );
+  --color-folder-tab-hover-deep: color-mix(
+    in srgb,
+    var(--color-folder-deep) var(--folder-tab-hover-mix),
+    var(--color-shell)
+  );
   --color-folder-tab-text: var(--color-text-primary);
   --color-folder-preview: var(--color-folder-nested);
   --color-state-hover: color-mix(

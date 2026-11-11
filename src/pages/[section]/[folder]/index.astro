@@ -1,0 +1,15 @@
+---
+// Level-2 folder pages, such as /cv/research/, generated from the navigation registry
+// (P06, D-053). Only registered paths are built.
+import FolderPage from "../../../layouts/FolderPage.astro"
+import ScaffoldContent from "../../../components/scaffold/ScaffoldContent.astro"
+import { siteNavigation } from "../../../navigation/index.ts"
+
+export function getStaticPaths() {
+  return siteNavigation.folderStaticPaths(2)
+}
+---
+
+<FolderPage>
+  <ScaffoldContent path={Astro.url.pathname} />
+</FolderPage>

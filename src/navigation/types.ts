@@ -1,5 +1,5 @@
 /**
- * Types for the GusmaoLab navigation model (P04).
+ * Types for the GusmaoLab navigation model (P04), with the display tabs added in P06.
  *
  * The model is data only. It holds no colors or styles (environments are semantic names
  * resolved by src/styles/environments.css) and no transient pointer or keyboard state.
@@ -59,14 +59,44 @@ export interface NavigationNode {
   readonly children: readonly NavigationNode[]
 }
 
+/** A registered folder, drawn as a tab. */
+export interface NodeTab {
+  readonly kind: "folder"
+  /** The node's ID. */
+  readonly id: string
+  readonly label: string
+  /** The node's canonical path. */
+  readonly href: string
+  readonly node: NavigationNode
+}
+
+/**
+ * The Overview tab (P06): an open parent's own page, drawn first in its children's row.
+ * It is a presentation of the parent, not a registry node: it links to the parent's own
+ * canonical path, adds no URL and no page, and never has an Overview of its own.
+ */
+export interface OverviewTab {
+  readonly kind: "overview"
+  /** `overview:<parent ID>`. The colon keeps it apart from every node ID. */
+  readonly id: string
+  readonly label: string
+  /** The parent's canonical path. */
+  readonly href: string
+  readonly parent: NavigationNode
+}
+
+/** One tab as drawn in a row. */
+export type DisplayTab = NodeTab | OverviewTab
+
 /** One visible row of tabs. */
 export interface TabRow {
   readonly level: TabLevel
   /** The open folder whose children form this row; null for the global row. */
   readonly parent: NavigationNode | null
-  readonly tabs: readonly NavigationNode[]
-  /** The tab with the V indicator in this row, or null when the row is open but unselected. */
-  readonly selectedId: string | null
+  /** In display order. A child row starts with its parent's Overview tab. */
+  readonly tabs: readonly DisplayTab[]
+  /** The tab with the V indicator. Every row has one: there is no unselected row (D-050). */
+  readonly selectedId: string
 }
 
 /** What the folder body displays. */
@@ -80,10 +110,22 @@ export interface NavigationState {
   readonly page: NavigationPage
   /** The folder whose body shows the page: the page's own node, or a content route's owner. */
   readonly folder: NavigationNode
-  /** The selected tab per level, from the global row down. Never more than three. */
+  /**
+   * The open folders, from the global row down to `folder`: registry nodes only, never an
+   * Overview tab. Never more than three.
+   */
   readonly selection: readonly NavigationNode[]
-  /** Tab rows to draw, from the global row down. Never more than three. */
+  /**
+   * Tab rows to draw, from the global row down. Never more than three. When `folder` has
+   * children, the last row is theirs, with its Overview tab selected.
+   */
   readonly rows: readonly TabRow[]
+  /**
+   * The tab that stands for this page, which carries `aria-current="page"`: the last row's
+   * selected tab on a folder page (the Overview tab, when the folder has children). Null on
+   * a content page, whose selected tabs are all folders that contain it.
+   */
+  readonly currentTabId: string | null
   readonly environment: SectionEnvironment
 }
 

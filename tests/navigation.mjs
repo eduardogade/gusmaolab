@@ -1,5 +1,7 @@
-// Navigation model tests (P04): NAV-001 to NAV-014. Pure functions only; no build needed.
-// Node.js 26 imports the TypeScript modules directly (native type stripping).
+// Navigation model tests: NAV-001 to NAV-014 (P04), and the model's share of the P06 tests,
+// NAV-015 to NAV-021 and NAV-025. Pure functions only; no build needed. The P06 tests of
+// the built pages are in tests/routes.mjs. Node.js 26 imports the TypeScript modules
+// directly (native type stripping).
 //
 // Third-level folders and content routes below are SYNTHETIC FIXTURES, labeled as such.
 // They test what the model supports; they are not approved site content.
@@ -9,8 +11,11 @@ import {
   ENVIRONMENT_IDS,
   MAX_TAB_LEVELS,
   NavigationConfigError,
+  OVERVIEW_LABEL,
+  ROUTE_PARAMS,
   createNavigation,
   normalizePath,
+  overviewTabId,
   validateNavigation,
 } from "../src/navigation/navigation.ts"
 import { CONTENT_ROUTES, SECTIONS } from "../src/navigation/registry.ts"
@@ -39,6 +44,7 @@ const SYNTHETIC_THIRD_LEVEL = {
 const fixtureSections = addChild(SECTIONS, "cv-research", SYNTHETIC_THIRD_LEVEL)
 const fixtureRoutes = [
   { path: "/lecture-notes/berries/synthetic-article/", owner: "lecture-notes-berries" },
+  { path: "/lecture-notes/synthetic-note/", owner: "lecture-notes" },
   { path: "/blog/2026/11/10/synthetic-post/", owner: "blog" },
   {
     path: "/cv/research/synthetic-projects/synthetic-paper/",
@@ -113,12 +119,12 @@ test("NAV-003", "Parent destinations", () => {
       `${parent.path} opens ${parent.id} itself`,
     )
   }
-  // CV opens its overview page, with its children available but none selected.
+  // CV opens its own page: its row of children opens, led by its selected Overview (P06).
   const cv = stateOf(site, "/cv/")
   assert.equal(cv.page.node.id, "cv")
   assert.equal(cv.rows.length, 2)
-  assert.equal(cv.rows[1].selectedId, null)
-  assert.deepEqual(ids(cv.rows[1].tabs), ids(site.preview("cv")))
+  assert.equal(cv.rows[1].selectedId, overviewTabId("cv"))
+  assert.deepEqual(ids(cv.rows[1].tabs.slice(1)), ids(site.preview("cv")))
 })
 
 test("NAV-004", "Home selection", () => {
@@ -156,10 +162,10 @@ test("NAV-006", "Three-level selection (synthetic fixture)", () => {
       [3, "synthetic-projects"],
     ],
   )
-  // Opening Research shows its third-level row with nothing selected.
+  // Opening Research shows its third-level row, with its Overview selected (P06).
   const research = stateOf(fixture, "/cv/research/")
   assert.equal(research.rows.length, 3)
-  assert.equal(research.rows[2].selectedId, null)
+  assert.equal(research.rows[2].selectedId, overviewTabId("cv-research"))
 })
 
 test("NAV-007", "Immediate children", () => {
@@ -425,6 +431,155 @@ test("NAV-014", "Content independence", () => {
   assert.equal(reordered.sections[0].id, "bearnards-area")
   for (const node of site.nodes.values())
     assert.equal(reordered.node(node.id).path, node.path)
+})
+
+// --- P06: Overview tabs and route-driven selection -----------------------------------------
+
+const selectedIds = (state) => state.rows.map((row) => row.selectedId)
+const statesOf = (navigation) =>
+  navigation.pagePaths().map((path) => [path, stateOf(navigation, path)])
+const parents = [...site.nodes.values()].filter((node) => node.children.length > 0)
+
+test("NAV-015", "Parent Overview", () => {
+  const cv = stateOf(site, "/cv/")
+  assert.deepEqual(ids(cv.selection), ["cv"], "the registry selection stays CV")
+  assert.deepEqual(selectedIds(cv), ["cv", "overview:cv"])
+  const [overview] = cv.rows[1].tabs
+  assert.equal(overview.kind, "overview")
+  assert.equal(overview.label, OVERVIEW_LABEL)
+  assert.equal(OVERVIEW_LABEL, "Overview")
+  assert.equal(overview.parent.id, "cv")
+  assert.equal(cv.currentTabId, "overview:cv", "Overview stands for the CV page")
+  // The same for every parent, in every environment.
+  for (const parent of parents) {
+    const state = stateOf(site, parent.path)
+    const last = state.rows.at(-1)
+    assert.equal(last.parent?.id, parent.id, parent.path)
+    assert.equal(last.selectedId, overviewTabId(parent.id), parent.path)
+    assert.equal(
+      last.tabs[0].id,
+      overviewTabId(parent.id),
+      `${parent.path}: Overview first`,
+    )
+    assert.deepEqual(ids(last.tabs.slice(1)), ids(parent.children), "children in order")
+    assert.equal(state.currentTabId, overviewTabId(parent.id))
+  }
+})
+
+test("NAV-016", "Overview URL identity", () => {
+  for (const [path, state] of [...statesOf(site), ...statesOf(fixture)]) {
+    for (const tab of state.rows.flatMap((row) => row.tabs)) {
+      if (tab.kind !== "overview") continue
+      assert.equal(tab.href, tab.parent.path, `${path}: ${tab.id} links to its parent`)
+      assert.ok(!tab.href.includes("overview"), `${path}: ${tab.href}`)
+    }
+  }
+  assert.equal(stateOf(site, "/cv/").rows[1].tabs[0].href, "/cv/")
+  assert.equal(site.resolve("/cv/overview/").found, false, "no /overview/ page")
+  assert.ok(!site.pagePaths().some((path) => path.includes("overview")))
+})
+
+test("NAV-017", "No duplicate registry nodes", () => {
+  assert.deepEqual(validateNavigation(SECTIONS, CONTENT_ROUTES), [])
+  assert.equal(site.nodes.size, 37, "12 + 25 folders, unchanged by P06")
+  assert.equal(site.pagePaths().length, 37)
+  assert.equal(new Set(site.pagePaths()).size, 37, "no duplicate page paths")
+  for (const node of site.nodes.values()) assert.ok(!node.id.startsWith("overview"))
+  // An Overview ID can never be a node ID: the registry rejects it.
+  assert.ok(
+    validateNavigation([{ id: overviewTabId("cv"), label: "x", slug: "x" }]).some(
+      (issue) => /needs an id/.test(issue),
+    ),
+  )
+  // Every tab drawn on any page links to a registered folder page; Overview adds none.
+  const hrefs = new Set()
+  const overviews = new Set()
+  for (const [, state] of statesOf(site)) {
+    for (const tab of state.rows.flatMap((row) => row.tabs)) {
+      hrefs.add(tab.href)
+      if (tab.kind === "overview") overviews.add(tab.id)
+      else assert.equal(tab.node, site.node(tab.id))
+    }
+  }
+  for (const href of hrefs) assert.ok(site.pagePaths().includes(href), href)
+  assert.equal(overviews.size, parents.length, "one Overview per parent")
+})
+
+test("NAV-018", "Child selection", () => {
+  const state = stateOf(site, "/cv/research/")
+  assert.deepEqual(selectedIds(state), ["cv", "cv-research"])
+  assert.equal(state.rows[1].tabs[0].id, "overview:cv", "Overview leads CV's row")
+  assert.equal(state.currentTabId, "cv-research")
+  assert.equal(state.rows.length, 2, "Research has no folders: no third row")
+})
+
+test("NAV-019", "Parent with third-level children (synthetic fixture)", () => {
+  const research = stateOf(fixture, "/cv/research/")
+  assert.deepEqual(selectedIds(research), ["cv", "cv-research", "overview:cv-research"])
+  assert.deepEqual(ids(research.rows[2].tabs), [
+    "overview:cv-research",
+    "synthetic-projects",
+  ])
+  assert.equal(research.currentTabId, "overview:cv-research")
+  const projects = stateOf(fixture, "/cv/research/synthetic-projects/")
+  assert.deepEqual(selectedIds(projects), ["cv", "cv-research", "synthetic-projects"])
+  assert.equal(projects.rows[2].tabs[0].id, "overview:cv-research")
+  assert.equal(projects.currentTabId, "synthetic-projects")
+})
+
+test("NAV-020", "No unnecessary child layer", () => {
+  for (const navigation of [site, fixture]) {
+    for (const node of navigation.nodes.values()) {
+      if (node.children.length > 0) continue
+      const state = stateOf(navigation, node.path)
+      assert.equal(state.rows.length, node.level, `${node.path}: no Overview-only row`)
+      assert.equal(state.currentTabId, node.id, `${node.path} is its own tab`)
+      assert.ok(state.rows.every((row) => row.parent?.id !== node.id))
+    }
+  }
+  assert.equal(stateOf(site, "/about/").rows.length, 1)
+  assert.equal(stateOf(site, "/").rows.length, 1)
+})
+
+test("NAV-021", "No unselected subfolder rows", () => {
+  for (const [path, state] of [...statesOf(site), ...statesOf(fixture)]) {
+    state.rows.forEach((row, i) => {
+      const chosen = row.tabs.filter((tab) => tab.id === row.selectedId)
+      assert.equal(chosen.length, 1, `${path} row ${i + 1} has one selected tab`)
+      if (i > 0) {
+        assert.equal(
+          row.tabs[0].id,
+          overviewTabId(row.parent.id),
+          `${path} row ${i + 1}`,
+        )
+        assert.equal(row.parent.id, state.rows[i - 1].selectedId)
+      }
+    })
+    assert.equal(
+      state.currentTabId === null,
+      state.page.kind === "content",
+      `${path}: only a content page has no tab of its own`,
+    )
+  }
+})
+
+test("NAV-025", "Maximum depth (synthetic fixture)", () => {
+  for (const [path, state] of statesOf(fixture)) {
+    assert.ok(
+      state.rows.length <= MAX_TAB_LEVELS,
+      `${path} has ${state.rows.length} rows`,
+    )
+  }
+  const deep = stateOf(fixture, "/cv/research/synthetic-projects/synthetic-paper/")
+  assert.deepEqual(selectedIds(deep), ["cv", "cv-research", "synthetic-projects"])
+  assert.equal(deep.currentTabId, null, "the article is not a tab")
+  // A page owned by a parent with folders opens in the parent's Overview, as its ancestor.
+  const note = stateOf(fixture, "/lecture-notes/synthetic-note/")
+  assert.deepEqual(selectedIds(note), ["lecture-notes", "overview:lecture-notes"])
+  assert.equal(note.currentTabId, null)
+  // Each tab level has its own route parameters, and there are only three.
+  assert.deepEqual(ROUTE_PARAMS, ["section", "folder", "subfolder"])
+  assert.equal(ROUTE_PARAMS.length, MAX_TAB_LEVELS)
 })
 
 // --- Report -------------------------------------------------------------------------------

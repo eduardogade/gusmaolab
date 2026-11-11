@@ -4,15 +4,21 @@
 import "../styles/tokens.css"
 import "../styles/environments.css"
 import "../styles/global.css"
+import type { SectionEnvironment } from "../navigation/index.ts"
 
 interface Props {
   title: string
   description?: string
   /** Section environment from src/styles/environments.css. Omit for the core environment. */
-  environment?: "scientific" | "technical" | "literary" | "personal"
+  environment?: Exclude<SectionEnvironment, "core">
+  /**
+   * Wrap the page in `<main>`. Folder pages pass false and place `<main>` inside the
+   * deepest folder, after the rows of tabs (FolderPage, P06).
+   */
+  main?: boolean
 }
 
-const { title, description, environment } = Astro.props
+const { title, description, environment, main = true } = Astro.props
 ---
 
 <!doctype html>
@@ -24,8 +30,14 @@ const { title, description, environment } = Astro.props
     <title>{title}</title>
   </head>
   <body class="gl-flannel">
-    <main>
-      <slot />
-    </main>
+    {
+      main ? (
+        <main>
+          <slot />
+        </main>
+      ) : (
+        <slot />
+      )
+    }
   </body>
 </html>

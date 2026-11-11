@@ -1,6 +1,6 @@
 # Architecture
 
-Status: approved direction recorded in P01. The Astro foundation was set up in P02, the design-token foundation in P03, the navigation data model in P04 and the physical folder components in P05 (2026-11-10). No real section page exists yet; the owner approved the folder appearance (D-049).
+Status: approved direction recorded in P01. The Astro foundation was set up in P02, the design-token foundation in P03, the navigation data model in P04 and the physical folder components in P05 (2026-11-10). P06 (2026-11-11) connected them: every registered folder has a generated page inside the folders, with temporary content. The owner approved the folder appearance (D-049).
 
 ## Approved direction
 
@@ -26,35 +26,50 @@ Status: approved direction recorded in P01. The Astro foundation was set up in P
 | Diagnostics | `astro check`, using `@astrojs/check` 0.9.12 and TypeScript 6.0.3 |
 | Styles | Native CSS custom properties in `src/styles/`, imported by `BaseLayout` (D-026). No CSS framework or preprocessor. |
 | Environments | `data-environment` on `<html>` via BaseLayout's `environment` prop, or on any element (D-027) |
-| Navigation | A typed, declarative registry in `src/navigation/` (D-036–D-039) |
-| Folder components | `src/components/folders/` and `src/styles/folders.css`: static Astro components that draw P04's tab rows, with no client-side JavaScript (D-043–D-047) |
-| Tests | `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs` and `tests/folders.mjs` (D-032, D-040) |
+| Navigation | A typed, declarative registry in `src/navigation/` (D-036–D-039), with Overview display tabs (D-050–D-052) |
+| Folder components | `src/components/folders/` and `src/styles/folders.css`: static Astro components that draw a navigation state as linked folder tabs, with no client-side JavaScript (D-043–D-047, D-054) |
+| Pages | One route file per tab level, generated from the registry; `FolderPage` layout (D-053) |
+| Tests | `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs` and `tests/routes.mjs` (D-032, D-040) |
 
 ## Navigation and Astro routes
 
-Two systems, kept separate:
+Two systems, kept separate, and one layout that joins them:
 
-- **Navigation** (`src/navigation/`) decides which folder tabs exist, their order, URLs and environments, and which folder each URL selects. It is pure data and functions, evaluated at build time, with no client-side router and no server.
-- **Routing** stays Astro's: files in `src/pages/` and, later, content collections produce the pages. The registry creates no pages by itself.
+- **Navigation** (`src/navigation/`) decides which folder tabs exist, their order, URLs and environments, and what each URL shows: which tabs are selected in which rows, where the Overview tabs are, and which tab stands for the page. It is pure data and functions, evaluated at build time, with no client-side router and no server.
+- **Routing** stays Astro's: files in `src/pages/` and, later, content collections produce the pages. The registry creates no pages by itself; the route files ask it which pages to build.
+- **Folders** (`src/components/folders/`, P05) draw one resolved navigation state. They hold no navigation data of their own.
+- **`FolderPage`** (`src/layouts/FolderPage.astro`, P06) is the join. It resolves the page's own URL (`Astro.url.pathname`), passes the environment to `BaseLayout`, and draws `FolderStack` with the page's content in `<main>` inside the deepest folder. A page provides only its content.
 
-They meet through a contract (`information-architecture.md`, section 12):
+```text
+registry.ts ──► createNavigation() ──► siteNavigation
+                                        │  folderStaticPaths(level)   resolve(url)
+                                        ▼                              ▼
+src/pages/ route file per level ──► FolderPage ──► BaseLayout (environment)
+          (which pages exist)          │
+                                        └► FolderStack ► FolderLayer ► FolderTabStrip ► FolderTab
+                                               └ page content (slot) in <main> on the deepest folder's paper
+```
 
-1. A page component calls `siteNavigation.resolve(Astro.url.pathname)` at build time. It renders the returned tab rows and passes `state.environment` to BaseLayout, setting no attribute for `core`.
-2. Section pages are generated from the registry's nodes, never from a hand-maintained list.
-3. Content routes are built from collections, registered with an owning folder, and generate their pages from the same list.
-4. The smoke test fails if a built page is not a registered destination.
-5. There is no catch-all route.
+The contract (`information-architecture.md`, sections 12 and 14):
 
-## Repository layout after P05
+1. Folder pages are generated from the registry by `src/pages/index.astro`, `[section]/index.astro`, `[section]/[folder]/index.astro` and `[section]/[folder]/[subfolder]/index.astro`, each listing `siteNavigation.folderStaticPaths(level)` (D-053). They are never maintained by hand per section.
+2. Content routes (Wave III) are built from collections, registered with an owning folder, and generate their pages from the same list. They live under static segments, which outrank the dynamic folder routes, and render through `FolderPage`, so their content opens in the owner's body.
+3. The smoke test fails if a built page is not a registered destination or declared study, or if a destination has no page.
+4. There is no catch-all route, no server rendering, no client-side router and no hydration: tabs are plain links, and Back, Forward and reload work as on any static site.
+5. Temporary design studies live under `/_design/` (D-048, D-055). Whether they are excluded from a published build is part of the deployment decision (D-005).
+
+## Repository layout after P06
 
 | Path | Role |
 | --- | --- |
-| `src/pages/`, `src/layouts/` | Astro source: two temporary pages (the P03 design specimen at `/` and the P05 folder study at `/_design/folders/`, from `src/pages/[design]/folders.astro`; D-048) and one shared layout |
+| `src/pages/` | Route files: Home (`index.astro`) and one generated route per tab level (`[section]/…`, D-053); the two temporary design studies in `[design]/` (`tokens.astro` at `/_design/tokens/`, `folders.astro` at `/_design/folders/`; D-048, D-055) |
+| `src/layouts/` | `BaseLayout` (document, styles, environment) and `FolderPage` (a page inside the folders; D-053, D-054) |
 | `src/components/folders/` | `FolderStack`, `FolderLayer`, `FolderTabStrip` and `FolderTab` (D-043) |
+| `src/components/scaffold/` | `ScaffoldContent`: the temporary development content of the folder pages until the content prompts |
 | `src/styles/` | `tokens.css`, `environments.css` and `global.css`, loaded by BaseLayout; `folders.css`, loaded only by `FolderStack` |
 | `src/design/` | The token contract and the CSS token reader, shared by the specimen and the tests |
 | `src/navigation/` | Navigation types, registry and helpers; `index.ts` exports the compiled `siteNavigation`. Not `src/lib/`, which the root `.gitignore` would hide (KL-11). |
-| `tests/` | Token, contrast, navigation, build-output and folder-component checks |
+| `tests/` | Token, contrast, navigation, build-output, folder-component and route checks; `html-tree.mjs` is their shared HTML reader |
 | `.claude/launch.json` | Local preview servers for the Claude desktop app (D-034) |
 | `astro.config.mjs`, `tsconfig.json` | Astro and TypeScript configuration |
 | `package.json`, `package-lock.json`, `.node-version` | npm project, lockfile and Node.js version policy |
@@ -71,7 +86,7 @@ They meet through a contract (`information-architecture.md`, section 12):
 | `_books/`, `_papers/`, `_references/`, `_reports/` | Private workspace, gitignored. Never commit. |
 | `backup/`, `releases/`, `resources/`, `viz/`, `_logo/` | Empty, untracked placeholder folders |
 
-`public/` does not exist yet (D-019); `src/components/` was created in P05. The site ships no JavaScript, images or font files.
+`public/` does not exist yet (D-019); `src/components/` was created in P05. The site ships no JavaScript, images or font files. P06 built 39 pages: 37 folder pages and 2 design studies.
 
 ## Deployment
 

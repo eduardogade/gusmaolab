@@ -1,25 +1,40 @@
 ---
 /**
- * One row of physical tabs (P05): the immediate children of one folder, or the global
- * row of sections, in registry order. At most one tab is selected. If the row is wider
- * than its folder it scrolls sideways on its own (src/styles/folders.css).
+ * One row of physical tabs (P05): the global row of sections, or one open folder's
+ * children led by its Overview tab, in registry order. Exactly one tab is selected. If the
+ * row is wider than its folder it scrolls sideways on its own (src/styles/folders.css).
  *
- * The list is labelled but is not a navigation landmark yet: its tabs are not links
- * until P06.
+ * On site pages the row is a navigation landmark named after its folder: "Sections",
+ * "CV folders" (P06). Design studies draw a plain labelled list, because their tabs are
+ * not links.
  */
 import type { TabRow } from "../../navigation/index.ts"
 import FolderTab from "./FolderTab.astro"
 
 interface Props {
   row: TabRow
+  /** Draw the tabs as links. */
+  links: boolean
+  /** The tab that stands for the page being shown, if it is in this row. */
+  currentTabId: string | null
 }
 
-const { row } = Astro.props
+const { row, links, currentTabId } = Astro.props
 const label = row.parent === null ? "Sections" : `${row.parent.label} folders`
+const Strip = links ? "nav" : "div"
 ---
 
-<div class="gl-folder__strip">
-  <ul class="gl-folder__tabs" role="list" aria-label={label}>
-    {row.tabs.map((node) => <FolderTab node={node} selected={node.id === row.selectedId} />)}
+<Strip class="gl-folder__strip" aria-label={links ? label : undefined}>
+  <ul class="gl-folder__tabs" role="list" aria-label={links ? undefined : label}>
+    {
+      row.tabs.map((tab) => (
+        <FolderTab
+          tab={tab}
+          selected={tab.id === row.selectedId}
+          current={tab.id === currentTabId}
+          link={links}
+        />
+      ))
+    }
   </ul>
-</div>
+</Strip>

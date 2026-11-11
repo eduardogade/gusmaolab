@@ -8,15 +8,18 @@ import { ENVIRONMENTS } from "../src/design/contract.mjs"
 import { readTokens } from "../src/design/css-tokens.mjs"
 import { siteNavigation } from "../src/navigation/index.ts"
 
-// Pages the build is expected to produce. Extend this list as pages are added.
-const expectedPages = ["index.html", "_design/folders/index.html"]
-// Temporary design studies (P05 onwards). They live under /_design/, which no registry
-// path can reach (slugs never start with "_"), and are the only pages allowed outside
-// the navigation registry.
-const designStudies = ["/_design/folders/"]
+// Temporary design studies. They live under /_design/, which no registry path can reach
+// (slugs never start with "_"), and are the only pages allowed outside the navigation
+// registry: the P03 specimen (moved from / in P06) and the P05 folder study.
+const designStudies = ["/_design/tokens/", "/_design/folders/"]
+const fileOf = (path) => `${path.slice(1)}index.html`
+// Pages the build must produce (P06): every registered destination, and the studies.
+const expectedPages = [...siteNavigation.pagePaths(), ...designStudies].map(fileOf)
 // Astro's bundled assets. The site ships no JavaScript, images or fonts yet, so only
 // stylesheets are expected.
 const expectedAsset = /^_astro\/[\w.-]+\.css$/
+const specimenFile = fileOf("/_design/tokens/")
+const studyFile = fileOf("/_design/folders/")
 
 const repo = new URL("../", import.meta.url)
 const dist = fileURLToPath(new URL("dist/", repo))
@@ -70,27 +73,34 @@ for (const file of files) {
   )
 }
 // A generous ceiling, not an exact size: it catches accidental artwork or bundles.
-check(totalBytes < 400_000, `dist/ holds ${totalBytes} bytes, more than expected`)
+check(totalBytes < 1_000_000, `dist/ holds ${totalBytes} bytes, more than expected`)
 
-// 3. The page: document basics, no JavaScript, and the temporary specimen.
-const html = files.includes("index.html")
-  ? await readFile(join(dist, "index.html"), "utf8")
+// 3. Every page: document basics and no JavaScript. Then the temporary P03 specimen.
+const htmlFiles = files.filter((file) => file.endsWith(".html"))
+for (const file of htmlFiles) {
+  const page = await readFile(join(dist, file), "utf8")
+  check(/^<!doctype html>/i.test(page), `${file} does not start with a doctype`)
+  check(/<html lang="en"[\s>]/.test(page), `${file} lacks <html lang="en">`)
+  check(
+    /<meta charset="utf-8"\s*\/?>/i.test(page),
+    `${file} lacks a charset declaration`,
+  )
+  check(
+    /<meta name="viewport" content="width=device-width, initial-scale=1"\s*\/?>/.test(
+      page,
+    ),
+    `${file} lacks a viewport declaration`,
+  )
+  check(
+    /<title>[^<]*GusmaoLab[^<]*<\/title>/.test(page),
+    `${file}'s title does not name GusmaoLab`,
+  )
+  check((page.match(/<main[\s>]/g) ?? []).length === 1, `${file} needs one <main>`)
+  check(!/<script\b/i.test(page), `${file} contains a <script> element`)
+}
+const html = files.includes(specimenFile)
+  ? await readFile(join(dist, specimenFile), "utf8")
   : ""
-check(/^<!doctype html>/i.test(html), "index.html does not start with a doctype")
-check(/<html lang="en"[\s>]/.test(html), 'missing <html lang="en">')
-check(/<meta charset="utf-8"\s*\/?>/i.test(html), "missing charset declaration")
-check(
-  /<meta name="viewport" content="width=device-width, initial-scale=1"\s*\/?>/.test(
-    html,
-  ),
-  "missing viewport declaration",
-)
-check(
-  /<title>[^<]*GusmaoLab[^<]*<\/title>/.test(html),
-  "page title does not name GusmaoLab",
-)
-check(/<main[\s>][\s\S]*<\/main>/.test(html), "missing <main> element")
-check(!/<script\b/i.test(html), "index.html contains a <script> element")
 check(/data-specimen="p03"/.test(html), "missing the P03 specimen marker")
 check(/temporary design study/i.test(html), "missing the temporary design study notice")
 for (const id of [
@@ -161,19 +171,21 @@ for (const { id } of ENVIRONMENTS) {
   )
 }
 
-// 6. Route contract (P04): every built page is a registered navigation destination, so
-//    no page can exist outside the folder system, except the declared design studies.
-//    The reverse, every destination having a page, becomes a requirement once section
-//    pages are generated.
-const pagePaths = files
-  .filter((file) => file.endsWith(".html"))
-  .map((file) => `/${file.replace(/(^|\/)index\.html$/, "$1")}`)
+// 6. Route contract (P04, P06): the built pages are exactly the registered destinations
+//    plus the declared design studies. No page exists outside the folder system, and
+//    every destination has its page.
+const pagePaths = htmlFiles.map(
+  (file) => `/${file.replace(/(^|\/)index\.html$/, "$1")}`,
+)
 for (const path of pagePaths) {
   if (designStudies.includes(path)) continue
   check(
     siteNavigation.resolve(path).found,
     `built page ${path} is not in the navigation registry`,
   )
+}
+for (const path of siteNavigation.pagePaths()) {
+  check(pagePaths.includes(path), `registered destination ${path} has no built page`)
 }
 for (const path of designStudies) {
   check(path.startsWith("/_design/"), `design study ${path} is not under /_design/`)
@@ -184,16 +196,14 @@ for (const path of designStudies) {
 }
 
 // 7. The P05 folder study: a temporary page, static, with no script and no links.
-const study = files.includes("_design/folders/index.html")
-  ? await readFile(join(dist, "_design/folders/index.html"), "utf8")
+const study = files.includes(studyFile)
+  ? await readFile(join(dist, studyFile), "utf8")
   : ""
-check(/^<!doctype html>/i.test(study), "the folder study does not start with a doctype")
 check(/data-study="p05-folders"/.test(study), "missing the P05 folder study marker")
 check(
   /temporary design study/i.test(study),
   "the folder study lacks its temporary notice",
 )
-check(!/<script\b/i.test(study), "the folder study contains a <script> element")
 check(!/<a\s/i.test(study), "the folder study contains a link")
 const destinations = siteNavigation.pagePaths()
 const built = destinations.filter((path) => pagePaths.includes(path)).length
@@ -206,5 +216,5 @@ console.log(
   `PASS: dist/ holds ${files.length} file(s), ${totalBytes} bytes: ${files.join(", ")}`,
 )
 console.log(
-  `INFO: ${built} of ${destinations.length} registered destinations have a built page so far`,
+  `INFO: ${built} of ${destinations.length} registered destinations have a built page`,
 )

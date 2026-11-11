@@ -363,3 +363,136 @@ Built `brand/bearnard/expressions2/android/dist/BearnardStickers-debug.apk`: one
 Executed asset conversion/validation and 5 Python tests; Gradle `:app:assembleDebug :app:testDebugUnitTest :app:lintDebug` succeeded with 7 Android tests passing and lint reporting no issues. APK inspection via aapt/apksigner and ZIP-byte comparison passed: correct identity, signed package, 7 packs, 204 WebPs, 7 tray icons, no runtime permissions. All 682 protected input files retain their hashes. SDK/build caches/debug signing stay local under android and ignored. README, upstream notes and build report are complete. APK SHA-256: `c4cad5af8b6e368d6409a9c611a1bfb2ab773606abbc7ef33731788ce8e7ff89`.
 
 ADB diagnostic found no devices. No app installation or real WhatsApp import was attempted; real-device confirmation, cross-app permission behavior and Samsung/TalkBack UI review remain pending. This milestone does not claim those tests passed. No site source change or site-wide build was needed; ignored brand artifacts were not force-added, and the unrelated `clean` file was preserved.
+
+
+## P06 — Route-Driven Physical Folder Navigation & Overview Tabs — 2026-11-11
+
+**Agent:** Claude Code. **Branch:** `development`. **Result:** completed technically; the owner's visual review is pending (G-P06-20). Nothing was pushed or deployed.
+
+### Starting state (verified)
+
+- **HEAD:** `development` at `40083ce` (the P05 approval records), with P04 and P05 complete. `npm run verify` passed on that state.
+- **Other task's edits, before starting:** `development/current-state.md` and `development/implementation-log.md` held notes appended at 05:14 by a separate Bearnard sticker task (Prompt 2/3). As the owner chose for the same case in P05, they were committed unchanged on their own: `fa522dc`. **P06 started from `fa522dc`**, with only the untracked `clean` file left alone.
+- **Other task's edits, during P06:** at 05:30 the same task (Prompt 3/3) appended notes to the same two files, while P06 was in progress.
+  - Before touching those files, P06 checked for activity: no other repository file had changed in the previous 15 minutes, no build of that task was running, and its notes describe a finished final prompt.
+  - The notes were then committed unchanged on their own: `aaa32a7`, limited to those two paths, so none of P06's work went in.
+  - P06's records were written after that.
+- **Other sessions:** the listed Claude sessions were idle. An `astro dev` server started by someone else 1.5 hours earlier was running on port 4321; it was left alone.
+- **Bearnard:** 352 of 352 checksums matched.
+
+### Changes
+
+- **Navigation model** (`src/navigation/`; D-050–D-053):
+  - display tabs (`NodeTab`, `OverviewTab`, `DisplayTab`);
+  - every row now has a selected tab, and a child row starts with its parent's Overview;
+  - `state.currentTabId`;
+  - `OVERVIEW_LABEL`, `overviewTabId()`, `ROUTE_PARAMS` and `folderStaticPaths(level)`.
+  - The registry itself is unchanged.
+- **Folder components** (D-054):
+  - `FolderStack` takes the whole state, takes a `links` option, and validates the new rules;
+  - `FolderLayer` lost the unselected branch;
+  - `FolderTabStrip` draws a labelled `nav`;
+  - `FolderTab` draws a link with `aria-current="page"` or `"true"`, and "Overview of ‹parent›".
+- **Styles:**
+  - `folders.css`: the link reset, a stretched click target, and hover fills;
+  - `tokens.css`: two hover aliases;
+  - `contract.mjs`: two contrast pairings.
+- **Pages** (D-053, D-055):
+  - `src/layouts/FolderPage.astro` and `src/components/scaffold/ScaffoldContent.astro`;
+  - route files `src/pages/index.astro` (Home), `[section]/index.astro`, `[section]/[folder]/index.astro` and `[section]/[folder]/[subfolder]/index.astro`;
+  - the P03 specimen moved with `git mv` to `src/pages/[design]/tokens.astro`. Because Home reuses `src/pages/index.astro`, Git records it as a 98% copy rather than a rename (D-055);
+  - `BaseLayout` gained a `main` prop.
+- **Folder study:** stacks drawn from the state, without links; case F rewritten (Overview selected); case G added (the synthetic third-level Overview); case D labelled a stress test.
+- **Tests:**
+  - `tests/navigation.mjs`: NAV-015 to NAV-021 and NAV-025; NAV-003 and NAV-006 updated;
+  - new `tests/routes.mjs`: NAV-022, NAV-023 and NAV-026 to NAV-032;
+  - new `tests/html-tree.mjs`, the HTML reader, moved out of `tests/folders.mjs`;
+  - `tests/smoke-test.mjs`: every destination must have a page, every page gets the document checks, the specimen checks moved to `/_design/tokens/`, and the size ceiling is now 1 MB;
+  - `tests/folders.mjs`: the new specimen path, Overview tabs and case G;
+  - `tests/design-tokens.mjs`: the new files;
+  - `npm test` runs the route tests.
+- **Records:**
+  - `planning/information-architecture.md`: sections 5, 7, 12, 13 and new section 14;
+  - `planning/architecture.md` and `planning/design-system.md`: status, section 8 and section 9, questions 18–20;
+  - `development/` records and D-050 to D-056;
+  - `debugging/known-limitations.md`: KL-20 updated, KL-23 to KL-26 added;
+  - `README.md` and `AGENTS.md`.
+- **Not changed:**
+  - the registry's folders, labels, order and slugs;
+  - palette primitives, environments and typography;
+  - the folder geometry tokens and the tab silhouette;
+  - `astro.config.mjs`;
+  - dependencies and the lockfile;
+  - `_backup/`, `brand/` and `.github/`.
+
+### Problems met
+
+- **Astro and frozen objects.** The first build failed with "Cannot add property keyed, object is not extensible": Astro annotates the objects `getStaticPaths()` returns, and `folderStaticPaths()` had frozen them. It now returns fresh objects on every call.
+- **Overview missing from a child row.** A first version put Overview only in the row of the folder whose own page was open. On `/cv/research/`, CV's row then had no Overview. The brief's example B shows Overview leading the row whichever child is selected, so every child row now starts with it (NAV-018, NAV-021).
+- **Breadcrumbs.** A planned overline repeating the open folders ("CV · Research") above the page heading would have been a breadcrumb. The temporary content uses a neutral "Development scaffolding" overline instead.
+- **Rounding.** The lowest hovered-label contrast truncates to 5.73:1, not 5.74:1 as first written; the records were corrected (ratios are truncated, never rounded up).
+
+### Browser review
+
+Served by `astro-preview` (port 4322). Checked in the Claude desktop app's browser and in headless Chrome 157 (scratch scripts outside the repository), at 1440, 1280, 768 and 390 px:
+
+- **Scenarios:** every scenario of the brief passed, with the selection read from the page after each step.
+  - Home; CV opens with Overview selected; Research is selected; back to CV with Overview selected again.
+  - Direct loads of Lab › Research Areas, Lecture Notes › The Greenhouse and Writing › Kosmos Series.
+  - About (a leaf: one row).
+  - Back and Forward twice.
+  - A reload of `/bearnards-area/powerlifting/` (navigation type `reload`; Cmd+R in the pane did not reload, so `location.reload()` was used).
+  - Unknown URLs: `/cv/this-page-does-not-exist/`, `/cv/overview/`, `/cv/research/projects/` and `/lecture-notes/berries/some-article/` answer 404. `/CV/` answers 200 locally because macOS ignores case (KL-23).
+  - The synthetic three-level cases C and G in the study.
+- **Measurements:**
+  - Every selected tab reaches exactly 2 px into its body on every page measured, at all four widths, and at all 21 open levels of the study.
+  - No row scrolls vertically, and the page never scrolls sideways.
+  - CV's row, now 1,299 px wide, scrolls inside its strip (KL-20).
+  - The reading column at 390 px is 285 px.
+- **Hover and focus:** a hovered inactive tab lightens, with no other change. Tabbing to Teaching shows the navy ring around its label, unclipped. Chrome's accessibility tree names the Overview link "Overview of CV" and the rows "Sections" and "CV folders".
+- **Specimen:** a pixel comparison of `/_design/tokens/` with P05's `/` at 1440 and 390 px differs only in the contrast sentence (215 → 225).
+- **Screenshots:** 20 PNGs, sent to the owner for review (not in the repository).
+
+### Commands run
+
+- **Inspect:**
+  - `git status`, `git diff`, `git log`, `stat`, `ps`, `find -newermt`, `ListAgents`;
+  - `git check-ignore -v` on every new path;
+  - `shasum -a 256 -c assets/bearnard/SHA256SUMS` (352 OK).
+- **Records commits:** `fa522dc` and `aaa32a7`, the other task's notes.
+- **Build and test:**
+  - `npm run verify` (exit 0), `npx astro check`, `npx astro build` and `node tests/*.mjs`;
+  - negative runs of the route tests on broken copies of `dist/`, outside the repository;
+  - three build failures of `FolderStack` on deliberately impossible states, in a scratch copy of `src/`.
+- **Visual:**
+  - `preview_start astro-preview` and the in-app browser;
+  - headless Chrome over the DevTools protocol;
+  - Python PIL for the pixel comparison, with the P05 build served by `python3 -m http.server` on 127.0.0.1.
+
+### Validation
+
+| Check | Result |
+| --- | --- |
+| `npm run check` | 0 errors, 0 warnings, 0 hints (32 files) |
+| `npm run build` | 39 pages |
+| Tokens / contrast | Pass / 225 of 225 enforced |
+| Navigation (model) | 22 of 22 |
+| Smoke | Pass: 37 of 37 destinations built, 2 studies, no other page, no JavaScript |
+| Folders | 10 of 10 |
+| Routes | 9 of 9 |
+| NAV-024 (browser) | Pass in Chromium |
+| `git diff --check` | Clean |
+| Bearnard checksums | 352 of 352 |
+
+### Not done
+
+- **Owner's review:** the P06 screenshots await the owner's review (G-P06-20).
+- **Browsers:** Safari, Firefox, touch devices, `forced-colors` and screen readers were not tested (KL-26).
+- **Left to later prompts:**
+  - a designed 404 page (KL-24);
+  - a skip link (KL-25);
+  - hover previews and keyboard discovery (P07);
+  - the responsive strategy (P08);
+  - real content (P10–P17).
+- **Deferred:** palette differentiation (D-056) and typography consolidation (D-042).
+- **Not started:** P07.

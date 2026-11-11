@@ -6,7 +6,7 @@ Shared rules for every coding agent in this repository: Claude Code, Codex and o
 
 GusmaoLab is Eduardo Gade Gusmao's personal website and publishing ecosystem: computational biology, bioinformatics, research, software engineering, teaching, literature and personal interests. Scientific rigor and visual humor go together.
 
-The site is an Astro static project with two temporary pages: the P03 design specimen (`/`) and the P05 folder study (`/_design/folders/`). The folder components exist; real section pages do not yet. The old Pelican site is archived in `_backup/pelican-legacy/`.
+The site is an Astro static project. Every registered folder has a page generated from the navigation registry (P06), with temporary development content only; two temporary design studies live under `/_design/` (the P03 tokens specimen and the P05 folder study). The old Pelican site is archived in `_backup/pelican-legacy/`.
 
 ## Where things are
 
@@ -31,7 +31,9 @@ Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `n
 - `src/navigation/registry.ts` is the only place that declares tabs, labels, URLs, order and environments (`planning/information-architecture.md`). Components read `siteNavigation` from `src/navigation/index.ts`; they never hardcode labels or URLs.
 - At most three visible tab levels. Deeper pages are content routes registered with an owning folder, never extra tabs. No breadcrumbs, sidebars, dropdown trees or computer-folder icons.
 - Do not add third-level folders that the owner has not approved. Mark test-only data as synthetic.
-- No catch-all route, server rendering or client-side router. Keep `tests/navigation.mjs` passing.
+- Folder pages come from one route file per tab level (`src/pages/index.astro`, `[section]/`, `[section]/[folder]/`, `[section]/[folder]/[subfolder]/`), each listing `siteNavigation.folderStaticPaths(level)`, and wrap their content in `FolderPage` (`src/layouts/`), which draws the folders from the page's own URL (D-053, D-054).
+- An open folder with children always shows its row with a selected tab: its Overview, a display tab linking to the parent's own URL. Overview is never a registry node and never has a URL of its own (D-050, D-051).
+- No catch-all route, server rendering or client-side router. Keep `tests/navigation.mjs` and `tests/routes.mjs` passing.
 - Code under `src/navigation/` also runs directly in Node.js: use erasable TypeScript only, `import type` for types, and `.ts` extensions on relative imports (D-040).
 
 ## Styling
@@ -41,7 +43,7 @@ Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `n
 - Choose a section environment with `data-environment` (BaseLayout's `environment` prop). Change what an environment can set only through `src/design/contract.mjs` and a recorded decision.
 - Keep `tests/design-tokens.mjs` and `tests/contrast.mjs` passing. Do not lower a contrast threshold to make a color pass.
 - Never place text directly on the flannel lining. Add no transitions, animation or smooth scrolling without a decision.
-- Physical folders are `src/components/folders/` with `src/styles/folders.css`. Draw them from `siteNavigation.resolve()` rows, never a hand-built tree. Levels differ only by `data-level` and tokens; never add environment-specific folder rules (D-043–D-047).
+- Physical folders are `src/components/folders/` with `src/styles/folders.css`. Draw them from a `siteNavigation.resolve()` state (`<FolderStack state={…}>`), never a hand-built tree. Levels differ only by `data-level` and tokens; never add environment-specific folder rules (D-043–D-047).
 
 ## Invariants
 

@@ -1,6 +1,7 @@
 /**
  * Pure helpers for the GusmaoLab navigation model (P04): path normalization, registry
- * validation, compilation, URL-to-folder-state resolution and hover-preview data.
+ * validation, compilation, URL-to-folder-state resolution and hover-preview data. P06
+ * added the Overview display tabs and the static-path lists for the section pages.
  *
  * Nothing here touches the DOM, holds UI state or creates routes. It runs both inside
  * Astro and directly under Node.js (native type stripping), so it uses erasable
@@ -8,11 +9,14 @@
  */
 import type {
   ContentRoute,
+  DisplayTab,
   NavigationEntry,
   NavigationNode,
   NavigationPage,
   NavigationResolution,
   NavigationState,
+  NodeTab,
+  OverviewTab,
   SectionEnvironment,
   TabLevel,
   TabRow,
@@ -29,6 +33,21 @@ export const ENVIRONMENT_IDS: readonly SectionEnvironment[] = [
 
 /** Visible physical-folder tab levels, counting the global row. Content may go deeper. */
 export const MAX_TAB_LEVELS = 3
+
+/** The label of every Overview tab (D-051). */
+export const OVERVIEW_LABEL = "Overview"
+
+/**
+ * The display ID of a parent's Overview tab. Node IDs are kebab-case, so the colon means
+ * an Overview ID can never equal, or be mistaken for, a node ID.
+ */
+export const overviewTabId = (parentId: string): string => `overview:${parentId}`
+
+/**
+ * Route parameter names for the section pages, by tab level: `src/pages/[section]/`,
+ * `[section]/[folder]/` and `[section]/[folder]/[subfolder]/` (D-053).
+ */
+export const ROUTE_PARAMS = ["section", "folder", "subfolder"] as const
 
 const ID_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 const SEGMENT_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
@@ -272,6 +291,17 @@ export interface Navigation {
   resolve(pathOrUrl: string): NavigationResolution
   /** Every registered page path, folders first, for route generation and build checks. */
   pagePaths(): readonly string[]
+  /**
+   * `getStaticPaths()` entries for the folder pages of one tab level, in registry order:
+   * the path's segments as `ROUTE_PARAMS`. Home, whose path is `/`, has its own page file
+   * and is never listed. Each call returns new objects, which Astro may annotate.
+   */
+  folderStaticPaths(level: TabLevel): FolderStaticPath[]
+}
+
+/** One `getStaticPaths()` entry for a folder page. */
+export interface FolderStaticPath {
+  params: Record<string, string>
 }
 
 const tabLevel = (level: number): TabLevel => {
@@ -340,6 +370,42 @@ export function createNavigation(
     return Object.freeze(chain)
   }
 
+  // Display tabs, made once per node and per parent: rows share them.
+  const nodeTabs = new Map<string, NodeTab>()
+  for (const n of nodes.values()) {
+    nodeTabs.set(
+      n.id,
+      Object.freeze({
+        kind: "folder",
+        id: n.id,
+        label: n.label,
+        href: n.path,
+        node: n,
+      }),
+    )
+  }
+  const overviewTabs = new Map<string, OverviewTab>()
+  for (const n of nodes.values()) {
+    if (n.children.length === 0) continue
+    overviewTabs.set(
+      n.id,
+      Object.freeze({
+        kind: "overview",
+        id: overviewTabId(n.id),
+        label: OVERVIEW_LABEL,
+        href: n.path,
+        parent: n,
+      }),
+    )
+  }
+  const topTabs = Object.freeze(top.map((n) => nodeTabs.get(n.id) as NodeTab))
+  // A parent's row of children always starts with the parent's own Overview tab.
+  const childTabs = new Map<string, readonly DisplayTab[]>()
+  for (const [id, overview] of overviewTabs) {
+    const children = node(id).children.map((n) => nodeTabs.get(n.id) as NodeTab)
+    childTabs.set(id, Object.freeze([overview, ...children]))
+  }
+
   const stateFor = (
     path: string,
     page: NavigationPage,
@@ -347,35 +413,52 @@ export function createNavigation(
   ): NavigationState => {
     const selection = lineage(folder.id)
     const rows: TabRow[] = [
-      { level: 1, parent: null, tabs: top, selectedId: selection[0].id },
+      { level: 1, parent: null, tabs: topTabs, selectedId: selection[0].id },
     ]
     for (let i = 1; i < selection.length; i++) {
       const parent = selection[i - 1]
       rows.push({
         level: tabLevel(i + 1),
         parent,
-        tabs: parent.children,
+        tabs: childTabs.get(parent.id) ?? [],
         selectedId: selection[i].id,
       })
     }
-    // An open folder with children shows their row, with nothing selected yet.
-    if (folder.children.length > 0) {
+    // An open folder with children always shows their row, with a selected tab: its
+    // Overview, which stands for the folder's own page (D-050, D-051). A leaf adds no row.
+    const overview = overviewTabs.get(folder.id)
+    if (overview !== undefined) {
       rows.push({
         level: tabLevel(folder.level + 1),
         parent: folder,
-        tabs: folder.children,
-        selectedId: null,
+        tabs: childTabs.get(folder.id) ?? [],
+        selectedId: overview.id,
       })
     }
+    const deepest = rows[rows.length - 1]
     return Object.freeze({
       path,
       page,
       folder,
       selection,
       rows: Object.freeze(rows.map((row) => Object.freeze(row))),
+      currentTabId: page.kind === "folder" ? deepest.selectedId : null,
       environment: folder.environment,
     })
   }
+
+  // Fresh, unfrozen objects on every call: Astro annotates what getStaticPaths() returns.
+  const folderStaticPaths = (level: TabLevel): FolderStaticPath[] =>
+    [...nodes.values()]
+      .filter((n) => n.level === level && n.path !== "/")
+      .map((n) => {
+        const segments = n.path.slice(1, -1).split("/")
+        return {
+          params: Object.fromEntries(
+            segments.map((segment, i) => [ROUTE_PARAMS[i], segment]),
+          ),
+        }
+      })
 
   const resolve = (pathOrUrl: string): NavigationResolution => {
     const path = normalizePath(pathOrUrl)
@@ -415,5 +498,6 @@ export function createNavigation(
     preview: (id: string) => node(id).children,
     resolve,
     pagePaths: () => Object.freeze([...byPath.keys(), ...routes.keys()]),
+    folderStaticPaths,
   })
 }

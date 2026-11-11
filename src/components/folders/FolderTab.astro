@@ -1,24 +1,38 @@
 ---
 /**
- * One physical index tab (P05). It shows a navigation node's label; the selected tab
- * also carries the V indicator and joins its folder body (src/styles/folders.css).
+ * One physical index tab (P05). It shows a display tab's label; the selected tab also
+ * carries the V indicator and joins its folder body (src/styles/folders.css).
  *
- * The label is plain text for now. P06 turns it into a link to `node.path`, with
- * `aria-current="page"` on the current page, when real section pages exist.
+ * On site pages the label is a link to the tab's page (P06), and the whole tab is its
+ * click target. The tab that stands for the page being shown has `aria-current="page"`;
+ * every other selected tab is an open folder that contains the page, with
+ * `aria-current="true"`. An Overview tab adds its parent's name for assistive technology:
+ * "Overview of CV". Design studies draw labels without links.
  */
-import type { NavigationNode } from "../../navigation/index.ts"
+import type { DisplayTab } from "../../navigation/index.ts"
 
 interface Props {
-  node: NavigationNode
+  tab: DisplayTab
   selected?: boolean
+  /** This tab stands for the page being shown. */
+  current?: boolean
+  /** Draw the label as a link to the tab's page. False only in design studies. */
+  link?: boolean
 }
 
-const { node, selected = false } = Astro.props
+const { tab, selected = false, current = false, link = true } = Astro.props
+const Label = link ? "a" : "span"
+const ariaCurrent = link && current ? "page" : selected ? "true" : undefined
 ---
 
-<li class="gl-folder-tab" data-tab-id={node.id} data-selected={selected ? "" : undefined}>
+<li
+  class="gl-folder-tab"
+  data-tab-id={tab.id}
+  data-tab-kind={tab.kind}
+  data-selected={selected ? "" : undefined}
+>
   <span class="gl-folder-tab__shape" aria-hidden="true"></span>
-  <span class="gl-folder-tab__label" aria-current={selected ? "true" : undefined}>{node.label}</span>
+  <Label class="gl-folder-tab__label" href={link ? tab.href : undefined} aria-current={ariaCurrent}>{tab.label}{tab.kind === "overview" && <span class="gl-visually-hidden"> of {tab.parent.label}</span>}</Label>
   {
     selected && (
       <svg

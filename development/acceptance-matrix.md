@@ -122,18 +122,85 @@ Technical completion and visual approval are separate. The technical gates below
 
 Each test was also run against a deliberately broken copy of the build: a missing selection, a V on an inactive tab, a fourth level, an environment rule in `folders.css`, and folder styles reaching the specimen. Each copy failed with exit code 1.
 
+## P06 gates
+
+Checked by `npm run verify` and by navigating the built site in Chromium at 1440, 1280, 768 and 390 px (the desktop app's browser and headless Chrome 157). **The owner has not yet reviewed P06 (G-P06-20).**
+
+| ID | Gate | Status | Evidence |
+| --- | --- | --- | --- |
+| G-P06-01 | Real Astro pages use the P05 folder components | Passed | 37 folder pages built through `FolderPage`; NAV-023, NAV-030 |
+| G-P06-02 | Selection is driven by the URL | Passed | NAV-018, NAV-023; direct loads and a reload in the browser |
+| G-P06-03 | Every open parent with children has a selected tab in its row | Passed | NAV-021, FOLD-004; `FolderStack` fails the build for an unselected row (checked on a broken copy) |
+| G-P06-04 | Overview is the default selection on a parent's page | Passed | NAV-015, NAV-019 (synthetic third level), NAV-029 |
+| G-P06-05 | Overview links to the parent's existing URL | Passed | NAV-016, NAV-022: `/cv/`, never `/cv/overview/` |
+| G-P06-06 | No duplicate canonical navigation nodes | Passed | NAV-017: 37 nodes, 37 paths, 37 pages |
+| G-P06-07 | Parent and child pages navigate correctly | Passed | NAV-022; in the browser: Home → CV → Research → CV, each by clicking a tab |
+| G-P06-08 | Open ancestors stay visibly identifiable | Passed (technical) | Every open folder's tab is raised, joined and has a V (screenshots); `aria-current="true"` (NAV-028) |
+| G-P06-09 | The V marks every selected tab, and only those | Passed | NAV-028, FOLD-005 |
+| G-P06-10 | Never more than three rows of tabs | Passed | NAV-025, NAV-032 (no level-4 route); `FolderStack` rejects a fourth row and a row below an Overview |
+| G-P06-11 | Deep content ownership is still supported | Passed (model) | NAV-009, NAV-025. No content route exists yet, so no deep page was built. |
+| G-P06-12 | Normal browser navigation works | Passed (Chromium only) | NAV-024 in the browser: links, Back, Forward and reload restore the URL and selection; NAV-031: no JavaScript (KL-26) |
+| G-P06-13 | Unknown routes are not accepted | Passed | NAV-026; the preview server answers 404 for `/cv/this-page-does-not-exist/`, `/cv/overview/` and others (`/CV/`: KL-23) |
+| G-P06-14 | Environments are preserved | Passed | NAV-027; screenshots of core, scientific, technical, literary and personal pages |
+| G-P06-15 | The approved P03 and P05 designs are intact | Passed | The specimen at `/_design/tokens/` differs from P05's `/` only in its contrast count (pixel comparison at 1440 and 390 px). FOLD-001 to FOLD-010 pass. Every selected tab reaches exactly 2 px into its body on the pages measured at all four widths and at all 21 open levels of the study. |
+| G-P06-16 | Tests and the production build pass | Passed | `npm run verify`; `git diff --check` |
+| G-P06-17 | Documentation updated | Passed | `planning/information-architecture.md`, `architecture.md`, `design-system.md`, `development/`, `debugging/known-limitations.md`, `README.md`, `AGENTS.md` |
+| G-P06-18 | Committed locally on `development` | Passed | The P06 commit; `development` has no upstream |
+| G-P06-19 | No deployment and no push | Passed | No push or deployment command was run |
+| G-P06-20 | The owner approves the P06 navigation and Overview appearance | **Untested** | Awaiting the owner's review of the P06 screenshots |
+
+### Navigation and route tests (P06)
+
+| Test | Where | Result |
+| --- | --- | --- |
+| NAV-015 Parent Overview | `tests/navigation.mjs` | Pass |
+| NAV-016 Overview URL identity | `tests/navigation.mjs` | Pass |
+| NAV-017 No duplicate registry nodes | `tests/navigation.mjs` | Pass |
+| NAV-018 Child selection | `tests/navigation.mjs` | Pass |
+| NAV-019 Parent with third-level children (synthetic fixture) | `tests/navigation.mjs` | Pass |
+| NAV-020 No unnecessary child layer | `tests/navigation.mjs` | Pass |
+| NAV-021 No unselected subfolder rows | `tests/navigation.mjs` | Pass |
+| NAV-022 Parent tabs open their own overview page | `tests/routes.mjs` | Pass |
+| NAV-023 Each page's own URL rebuilds its folders | `tests/routes.mjs` | Pass |
+| NAV-024 Browser navigation: links, Back, Forward, reload | Browser (manual) | Pass in Chromium only (KL-26) |
+| NAV-025 Maximum depth (synthetic fixture) | `tests/navigation.mjs` | Pass |
+| NAV-026 Unknown paths have no page | `tests/routes.mjs` | Pass |
+| NAV-027 Every page has its section's environment | `tests/routes.mjs` | Pass |
+| NAV-028 One current page, labelled rows, content in main | `tests/routes.mjs` | Pass |
+| NAV-029 Case F shows Overview selected | `tests/routes.mjs` | Pass |
+| NAV-030 Folder pages keep the approved folder construction | `tests/routes.mjs` | Pass |
+| NAV-031 Plain links, no client-side JavaScript | `tests/routes.mjs` | Pass |
+| NAV-032 Every approved route is a static page | `tests/routes.mjs` | Pass |
+
+NAV-003 and NAV-006 (P04) were updated: they expected an open parent's row to have nothing selected, which D-050 replaced.
+
+**Negative checks.** Each route test was also run against a deliberately broken copy of the build, and each copy failed with exit code 1:
+
+- `aria-current="page"` removed;
+- an Overview pointing to `/cv/overview/`;
+- an extra `/cv/overview/` page;
+- case F's Overview unselected;
+- the wrong environment on `/writing/`;
+- a missing `/lab/people/` page;
+- a `<script>` added to a page;
+- a tab missing its card;
+- a `[...slug]` route file;
+- a second `aria-current="page"` on an ancestor.
+
+`FolderStack` failed the build for an unselected row, an Overview out of place, and a row below an Overview.
+
 ## Future gates
 
 | ID | Gate | Source | Status |
 | --- | --- | --- | --- |
 | G-01 | Reproducible static build | P02 | **Passed** in P02: a clean `npm ci` and `npm run verify` in an empty copy rebuilt an identical `index.html` |
-| G-02 | At most three visible tab levels | R-02 | Untested on site pages. The data model (NAV-006, NAV-009, NAV-013) and the folder components (FOLD-003) enforce it. |
-| G-03 | Clicking a tab opens its destination page | Information architecture | Untested. Every node has a destination (NAV-003); no tab UI or section pages exist yet. |
+| G-02 | At most three visible tab levels | R-02 | **Passed** in P06 on the site's pages (NAV-025, NAV-032; `FolderStack` rejects a fourth row). No third-level folder is registered yet, so site pages show at most two. |
+| G-03 | Clicking a tab opens its destination page | Information architecture | **Passed** in P06: NAV-022, and clicking through the pages in the browser |
 | G-04 | Hovering an expandable tab previews only its immediate children | Information architecture | Untested in the UI. The preview data is immediate children only (NAV-007). |
-| G-05 | Active tab shows a V-shaped indicator; inactive tabs stay visible | Information architecture | Untested on site pages. Shown in the P05 folder study (FOLD-005, FOLD-006); appearance approved by the owner (G-P05-17). |
-| G-06 | No persistent sidebar, no breadcrumbs, no file-manager design | Information architecture | Untested on site pages. The P05 folder components have none. |
-| G-07 | Content deeper than level three lives in the third-level folder body | Information architecture | Untested on site pages. The model keeps the owning folder selected (NAV-009), and the components put the page in the deepest folder (FOLD-003, FOLD-009). |
-| G-08 | Shared design system across sections | R-03, R-04 | Untested. P03 built the candidate tokens and four environments, but no section page uses them yet and the owner has not reviewed them. |
+| G-05 | Active tab shows a V-shaped indicator; inactive tabs stay visible | Information architecture | **Passed** in P06 on the site's pages (NAV-028, NAV-030); appearance approved in P05 (G-P05-17); the P06 pages await the owner's review (G-P06-20) |
+| G-06 | No persistent sidebar, no breadcrumbs, no file-manager design | Information architecture | **Passed** in P06 on the site's pages: they hold only rows of folder tabs and the content (NAV-028 counts the landmarks); the temporary content repeats no trail of folders |
+| G-07 | Content deeper than level three lives in the third-level folder body | Information architecture | Untested on site pages: no content route exists yet. The model keeps the owning folder selected (NAV-009, NAV-025), and `FolderPage` puts any page in its folder's body. |
+| G-08 | Shared design system across sections | R-03, R-04 | **Passed** in P06 (technical): every page uses the shared tokens and its section's environment (NAV-027). Stronger environment differences are deferred (D-056). |
 | G-09 | Only Bearnard v1.3 and approved variants appear; no full-resolution masters in the public directory | R-05 | Untested |
 | G-10 | Eight independent editorial collections | R-06 | Untested |
 | G-11 | Canonical records reused across pages | R-07 | Untested |

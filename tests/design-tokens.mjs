@@ -12,13 +12,17 @@ import {
 import { readTokens, references, stripComments } from "../src/design/css-tokens.mjs"
 
 const read = (path) => readFile(new URL(`../${path}`, import.meta.url), "utf8")
-// Files that style components (P05). Like global.css, they use semantic tokens only.
+// Files that style components and pages (P05, P06). Like global.css, they use semantic
+// tokens only.
 const componentFiles = [
   "src/styles/folders.css",
   "src/components/folders/FolderStack.astro",
   "src/components/folders/FolderLayer.astro",
   "src/components/folders/FolderTabStrip.astro",
   "src/components/folders/FolderTab.astro",
+  "src/components/scaffold/ScaffoldContent.astro",
+  "src/layouts/FolderPage.astro",
+  "src/pages/index.astro",
   "src/pages/[design]/folders.astro",
 ]
 const sources = {
@@ -26,7 +30,7 @@ const sources = {
   "src/styles/environments.css": await read("src/styles/environments.css"),
   "src/styles/global.css": await read("src/styles/global.css"),
   "src/layouts/BaseLayout.astro": await read("src/layouts/BaseLayout.astro"),
-  "src/pages/index.astro": await read("src/pages/index.astro"),
+  "src/pages/[design]/tokens.astro": await read("src/pages/[design]/tokens.astro"),
 }
 for (const file of componentFiles) sources[file] = await read(file)
 const tokensCss = sources["src/styles/tokens.css"]

@@ -4,6 +4,14 @@ Status: **implemented and approved.** Built in P03 (2026-11-10); in P04 the owne
 
 **P05 (2026-11-10): the physical folders are built (section 9), and the owner approved their appearance after reviewing the screenshots (D-049).** Questions 13–17 in section 10 remain refinements, not blockers.
 
+**P06 (2026-11-11): the folders are the site's navigation.** Their geometry and materials are unchanged. What P06 added:
+
+- the Overview tab, selected by default when a folder with children is open (section 9, D-050, D-051);
+- links;
+- hover feedback on inactive tabs.
+
+**Deferred refinements:** stronger palette differences between the environments (D-056) and typography consolidation (D-042). Neither changed in P06.
+
 Source files: `src/styles/tokens.css`, `src/styles/environments.css`, `src/styles/global.css`, `src/styles/folders.css` and the contract in `src/design/contract.mjs`. The specimen, the folder study and the tests read the values from those files, so this document can go stale but the pages cannot. Regenerate the contrast tables with `node tests/contrast.mjs --markdown`.
 
 ## 1. Aesthetic direction (approved)
@@ -247,7 +255,7 @@ One folder system, four environments. Section lists come from the P03 brief; P04
 
 ## 8. Contrast verification
 
-`tests/contrast.mjs` (part of `npm test`) resolves 46 text and indicator pairings in the core and all four environments, using the WCAG 2.2 relative-luminance formula. It enforces 4.5:1 for body text and 3:1 for essential non-text indicators: 215 checks, all passing. Ratios are truncated, never rounded up. Three pairings are informational only: disabled text (WCAG exempts disabled controls) and the two nested-tab silhouettes at the end of the table. P05 added twelve pairings for the second and third folder levels.
+`tests/contrast.mjs` (part of `npm test`) resolves 48 text and indicator pairings in the core and all four environments, using the WCAG 2.2 relative-luminance formula. It enforces 4.5:1 for body text and 3:1 for essential non-text indicators: 225 checks, all passing. Ratios are truncated, never rounded up. Three pairings are informational only: disabled text (WCAG exempts disabled controls) and the two nested-tab silhouettes at the end of the table. P05 added twelve pairings for the second and third folder levels, and P06 two for hovered tabs on those levels.
 
 | Pairing | Min | Core | Scientific | Technical | Literary | Personal |
 | --- | ---: | ---: | ---: | ---: | ---: | ---: |
@@ -260,6 +268,7 @@ One folder system, four environments. Section lists come from the P03 brief; P04
 | Links on nested folder | 4.5 | 4.95 | 4.95 | 5.82 | 5.84 | 4.95 |
 | Primary text on parent folder | 4.5 | 7.30 | 8.13 | 7.30 | 6.71 | 7.75 |
 | Label on an inactive tab | 4.5 | 5.02 | 5.64 | 5.05 | 4.70 | 5.33 |
+| Label on a hovered tab (P06) | 4.5 | 6.21 | 6.94 | 6.20 | 5.73 | 6.60 |
 | Text on the dark shell | 4.5 | 11.67 | 11.07 | 11.57 | 11.67 | 11.07 |
 | Muted text on the dark shell | 4.5 | 7.30 | 6.93 | 7.24 | 7.30 | 6.93 |
 | Links on the dark shell | 4.5 | 5.94 | 5.64 | 7.68 | 5.76 | 5.64 |
@@ -272,6 +281,8 @@ One folder system, four environments. Section lists come from the P03 brief; P04
 | Label on an inactive nested tab (P05) | 4.5 | 7.65 | 8.61 | 7.69 | 7.65 | 7.73 |
 | Label on an active third-level tab (P05) | 4.5 | 9.58 | 10.67 | 9.58 | 9.20 | 9.71 |
 | Label on an inactive third-level tab (P05) | 4.5 | 6.41 | 7.20 | 6.44 | 6.17 | 6.56 |
+| Label on a hovered nested tab (P06) | 4.5 | 9.73 | 10.89 | 9.72 | 9.73 | 9.77 |
+| Label on a hovered third-level tab (P06) | 4.5 | 8.03 | 8.98 | 8.07 | 7.75 | 8.18 |
 | Selection indicator on an active nested tab (P05) | 3 | 5.84 | 11.07 | 5.82 | 8.22 | 11.07 |
 | Selection indicator on an active third-level tab (P05) | 3 | 4.79 | 9.09 | 4.77 | 6.48 | 9.21 |
 | Focus ring on the third-level folder (P05) | 3 | 9.09 | 9.09 | 9.09 | 8.72 | 9.21 |
@@ -294,7 +305,7 @@ Built in P05 and shown at `/_design/folders/`, a temporary study page (D-048). *
 
 ### Construction
 
-A stack holds one to three folder levels. Each level is a row of tabs and, when one tab is selected, that folder's open body. The body holds the next level or, at the deepest level, the page on ivory paper. When no tab in the row is selected (an open parent such as `/cv/`), the row's tabs rise from behind the page itself.
+A stack holds one to three folder levels. Each level is a row of tabs, exactly one of them selected, and the selected folder's open body. The body holds the next level or, at the deepest level, the page on ivory paper. Since P06 no row is ever left unselected: an open parent such as `/cv/` selects its Overview tab (below). P05's state, a row of tabs rising from behind the page with none selected, was rejected by the owner and no longer exists.
 
 | Level | Folder | Selected tab | Inactive tabs stand on |
 | --- | --- | --- | --- |
@@ -323,6 +334,15 @@ A stack holds one to three folder levels. Each level is a row of tabs and, when 
 - A downward chevron below the label, pointing into the open folder. It is an inline SVG, decorative (`aria-hidden`), with no icon library or emoji.
 - 1rem × 0.5rem with a 2 px round-capped stroke in `--color-indicator-selected`, the same at every level.
 - It contrasts with the tab by 4.77–11.07:1 across levels and environments.
+
+### The Overview tab (P06)
+
+- **Default selection.** When a folder with children is open, its row of children starts with **Overview**, which stands for the folder's own page. On `/cv/` the CV tab is selected on the global row and Overview is selected in CV's row: CV's page opens inside CV's folder, like any other folder's page.
+- **Same construction.** Overview is drawn exactly like every other tab: the same card, slope, fillets, seam, V and materials, and the same inactive look when another child is selected. Nothing distinguishes it but its place and its label.
+- **Always first.** It leads the row whichever child is selected, followed by the children in registry order.
+- **Only where needed.** A folder without children adds no row, so there is never a row holding only an Overview.
+- **One level only.** An Overview never opens a further row.
+- **Label.** The label is "Overview" everywhere. A section-specific label or treatment would be a later decision.
 
 ### Inactive tabs
 
@@ -353,11 +373,16 @@ A stack holds one to three folder levels. Each level is a row of tabs and, when 
 - CV's eight second-level tabs need about 1,200 px, more than the 80rem shell allows, so that row always scrolls (KL-20).
 - P08 owns the real small-screen and wide-row strategy.
 
-### Semantics
+### Links and semantics (P06)
 
-- Tabs are plain labels until P06 makes them links. Each row is a list labelled "Sections" or "‹Parent› folders", and the selected label has `aria-current="true"`.
-- No ARIA tab roles, because these will be links between pages.
-- Keyboard focus uses the global ring (3 px navy, 2 px offset). Checked on a tab label turned into a link for the test: the ring shows and is not clipped by the scrolling row.
+- **Links.** On site pages every tab is a link to its page. The whole card is the click target: a stretched pseudo-element of the link covers the tab. Labels keep the tab text color, with no underline.
+- **Landmarks.** Each row is a navigation landmark named "Sections" or "‹Parent› folders". The page's content is `<main>`, on the paper inside the deepest folder, after every row.
+- **Current page.** The tab that stands for the page has `aria-current="page"`: Overview on a parent's page, or the folder's own tab on a leaf. The other selected tabs are open folders containing the page, with `aria-current="true"`. The V stays decorative.
+- **Overview's accessible name.** It reads "Overview of CV", from visually hidden text after the visible label.
+- **No ARIA tab roles.** These are links between pages.
+- **Hover.** An inactive tab's card lightens to `--color-folder-tab-hover` (level 1), `--color-folder-tab-hover-nested` or `--color-folder-tab-hover-deep`: the level's material mixed 90% with the shell. There is no transition and no other change. Labels on hovered tabs reach 5.73:1 or more. Hover previews of children are P07.
+- **Focus.** Keyboard focus uses the global ring (3 px navy, 2 px offset) around the label. Checked on real tab links in P06: the ring shows and the scrolling row does not clip it.
+- **Design studies.** Studies draw tabs as labels, without links. Each case is a picture of one state.
 
 ### Remaining visual questions
 
@@ -365,7 +390,7 @@ A stack holds one to three folder levels. Each level is a row of tabs and, when 
 
 ### Still to come
 
-- **P06:** tabs become links to their pages, with route-driven selection.
+- **P06 (done):** tabs became links to their pages, with route-driven selection and the Overview tab.
 - **P07:** hover previews of a tab's immediate children, on `--color-folder-preview`, and an equivalent for keyboard users.
 - **P08:** the responsive navigation strategy.
 - **P09 and later:**
@@ -392,6 +417,9 @@ A stack holds one to three folder levels. Each level is a row of tabs and, when 
 15. **Third-level material (P05):** pale kraft between kraft and parchment, or another tone?
 16. **Inactive labels (P05)** sit 2 px lower than the selected label, because inactive tabs stand 0.25rem lower and are a little shorter. Should all labels share one baseline instead?
 17. **Section colors on the global row (P05):** every tab takes the current page's environment. Should the twelve top-level tabs carry their own sections' colors instead?
+18. **Overview (P06):** it looks exactly like the other tabs. Should it be told apart, for example by a slightly narrower card, a different weight, or a section-specific label?
+19. **Stronger environments (deferred, D-056):** the owner would like the environments to differ more in palette. To be designed in a later prompt, with the contrast tests.
+20. **Hover (P06):** an inactive tab lightens 12 points towards the folder material when hovered. Too subtle, or right?
 
 ## Legacy material
 

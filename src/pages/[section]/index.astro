@@ -1,0 +1,16 @@
+---
+// Level-1 folder pages, such as /about/ and /cv/, generated from the navigation registry
+// (P06, D-053). Only registered paths are built; any other first segment has no page.
+// Home is src/pages/index.astro.
+import FolderPage from "../../layouts/FolderPage.astro"
+import ScaffoldContent from "../../components/scaffold/ScaffoldContent.astro"
+import { siteNavigation } from "../../navigation/index.ts"
+
+export function getStaticPaths() {
+  return siteNavigation.folderStaticPaths(1)
+}
+---
+
+<FolderPage>
+  <ScaffoldContent path={Astro.url.pathname} />
+</FolderPage>

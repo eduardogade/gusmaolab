@@ -1,0 +1,16 @@
+---
+// Level-3 folder pages, generated from the navigation registry (P06, D-053). The registry
+// has no approved third-level folder yet, so this builds no page; registering one is
+// enough to build it. There is never a level-4 route: deeper pages are content routes.
+import FolderPage from "../../../../layouts/FolderPage.astro"
+import ScaffoldContent from "../../../../components/scaffold/ScaffoldContent.astro"
+import { siteNavigation } from "../../../../navigation/index.ts"
+
+export function getStaticPaths() {
+  return siteNavigation.folderStaticPaths(3)
+}
+---
+
+<FolderPage>
+  <ScaffoldContent path={Astro.url.pathname} />
+</FolderPage>

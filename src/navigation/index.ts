@@ -12,10 +12,13 @@ export {
   ENVIRONMENT_IDS,
   MAX_TAB_LEVELS,
   NavigationConfigError,
+  OVERVIEW_LABEL,
+  ROUTE_PARAMS,
   createNavigation,
   isCanonicalPath,
   normalizePath,
+  overviewTabId,
   validateNavigation,
 } from "./navigation.ts"
-export type { Navigation } from "./navigation.ts"
+export type { FolderStaticPath, Navigation } from "./navigation.ts"
 export type * from "./types.ts"

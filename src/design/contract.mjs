@@ -1,6 +1,6 @@
 /**
  * The GusmaoLab design-token contract (P03 candidate, awaiting the owner's review).
- * Shared by the design specimen (src/pages/index.astro) and the tests in tests/.
+ * Shared by the design specimen (src/pages/[design]/tokens.astro) and the tests in tests/.
  */
 
 /**
@@ -102,6 +102,8 @@ export const REQUIRED_TOKENS = {
     "--color-folder-tab-active",
     "--color-folder-tab-inactive",
     "--color-folder-tab-hover",
+    "--color-folder-tab-hover-nested",
+    "--color-folder-tab-hover-deep",
     "--color-folder-tab-text",
     "--color-folder-preview",
     "--color-folder-border",
@@ -390,6 +392,21 @@ export const CONTRAST_PAIRS = /** @type {ContrastRow[]} */ ([
     "Label on an inactive deep tab",
     "--color-folder-tab-text",
     "--color-folder-tab-inactive-deep",
+    4.5,
+  ],
+  // Hovered tab links on levels 2 and 3 (P06).
+  [
+    "tab-label-hover-nested",
+    "Label on a hovered nested tab",
+    "--color-folder-tab-text",
+    "--color-folder-tab-hover-nested",
+    4.5,
+  ],
+  [
+    "tab-label-hover-deep",
+    "Label on a hovered deep tab",
+    "--color-folder-tab-text",
+    "--color-folder-tab-hover-deep",
     4.5,
   ],
   [

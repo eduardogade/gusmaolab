@@ -1,12 +1,11 @@
 ---
 /**
- * One physical folder level (P05): its row of tabs, and then either
+ * One physical folder level (P05): its row of tabs, then the open body of the selected
+ * tab's folder. The body holds the next level (this component renders itself again, one
+ * level deeper) or, at the deepest level, the page on ivory paper.
  *
- * - the open folder's body, when a tab is selected. The body holds the next level
- *   (this component renders itself again, one level deeper) or, at the deepest level,
- *   the page on ivory paper; or
- * - the page itself, when no tab in the row is selected yet (an open parent such as
- *   /cv/). The tabs then rise from behind the page.
+ * Every row has a selected tab (D-050): an open parent selects its Overview, so no row
+ * of tabs stands behind the page unselected.
  *
  * The same markup serves every level; only `data-level` changes the material and size.
  * FolderStack validates the rows before this component sees them.
@@ -18,33 +17,28 @@ interface Props {
   rows: readonly TabRow[]
   /** Which row this layer draws; 0 is the global row. */
   index: number
+  links: boolean
+  currentTabId: string | null
 }
 
-const { rows, index } = Astro.props
+const { rows, index, links, currentTabId } = Astro.props
 const row = rows[index]
-const open = row.selectedId !== null
 const deeper = index + 1 < rows.length
 ---
 
-<div class="gl-folder" data-level={row.level} data-open={open ? "" : undefined}>
-  <FolderTabStrip row={row} />
-  {
-    open ? (
-      <div class="gl-folder__body">
-        {deeper ? (
-          <Astro.self rows={rows} index={index + 1}>
-            <slot />
-          </Astro.self>
-        ) : (
-          <div class="gl-folder__paper">
-            <slot />
-          </div>
-        )}
-      </div>
-    ) : (
-      <div class="gl-folder__paper">
-        <slot />
-      </div>
-    )
-  }
+<div class="gl-folder" data-level={row.level}>
+  <FolderTabStrip row={row} links={links} currentTabId={currentTabId} />
+  <div class="gl-folder__body">
+    {
+      deeper ? (
+        <Astro.self rows={rows} index={index + 1} links={links} currentTabId={currentTabId}>
+          <slot />
+        </Astro.self>
+      ) : (
+        <div class="gl-folder__paper">
+          <slot />
+        </div>
+      )
+    }
+  </div>
 </div>

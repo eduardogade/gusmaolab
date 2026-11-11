@@ -1,12 +1,25 @@
 // Physical-folder component tests (P05): FOLD-001 to FOLD-010. They read the built
-// folder study (dist/_design/folders/) and the P03 specimen, so run `npm run build`
-// first, or `npm run verify`.
+// folder study (dist/_design/folders/) and the P03 specimen (dist/_design/tokens/ since
+// P06), so run `npm run build` first, or `npm run verify`. P06 brought the Overview tab:
+// every row now has exactly one selected tab.
 //
 // They prove structure: levels, nesting, selection, the V, labels, environments and the
 // content slot. They cannot prove that the page looks like paper folders; that needs the
 // visual review recorded in development/acceptance-matrix.md.
 import { readFile } from "node:fs/promises"
 import { MAX_TAB_LEVELS, siteNavigation } from "../src/navigation/index.ts"
+import {
+  childrenOf,
+  classes,
+  elements,
+  hasClass,
+  labelOf,
+  layersOf,
+  parse,
+  selectedOf,
+  tabsOf,
+  textOf,
+} from "./html-tree.mjs"
 
 const repo = new URL("../", import.meta.url)
 const read = (path) => readFile(new URL(path, repo), "utf8")
@@ -14,7 +27,7 @@ const read = (path) => readFile(new URL(path, repo), "utf8")
 let studyHtml, specimenHtml
 try {
   studyHtml = await read("dist/_design/folders/index.html")
-  specimenHtml = await read("dist/index.html")
+  specimenHtml = await read("dist/_design/tokens/index.html")
 } catch {
   console.error("FAIL: the built pages are missing. Run `npm run build` first.")
   process.exit(1)
@@ -27,73 +40,6 @@ const specimenCss = (
   await Promise.all(specimenSheets.map((href) => read(`dist/${href}`)))
 ).join("\n")
 
-// A minimal HTML tree builder for Astro's well-formed output: elements, attributes and
-// text. Enough to walk the folder markup; not a general HTML parser.
-const VOID = new Set([
-  "area",
-  "br",
-  "col",
-  "embed",
-  "hr",
-  "img",
-  "input",
-  "link",
-  "meta",
-  "source",
-  "wbr",
-])
-function parse(html) {
-  const root = { tag: "#root", attrs: {}, children: [], parent: null }
-  let node = root
-  const pattern =
-    /<!--[\s\S]*?-->|<!doctype[^>]*>|<\/([a-zA-Z][\w-]*)\s*>|<([a-zA-Z][\w-]*)((?:\s+[^\s=>/]+(?:="[^"]*")?)*)\s*(\/?)>|([^<]+)/gi
-  for (const match of html.matchAll(pattern)) {
-    const [, closing, opening, rawAttrs, selfClosing, text] = match
-    if (closing) {
-      for (let n = node; n !== root; n = n.parent) {
-        if (n.tag === closing.toLowerCase()) {
-          node = n.parent
-          break
-        }
-      }
-    } else if (opening) {
-      const attrs = {}
-      for (const [, name, value] of rawAttrs.matchAll(/([^\s=>/]+)(?:="([^"]*)")?/g)) {
-        attrs[name] = value ?? ""
-      }
-      const element = { tag: opening.toLowerCase(), attrs, children: [], parent: node }
-      node.children.push(element)
-      if (!selfClosing && !VOID.has(element.tag)) node = element
-    } else if (text !== undefined) {
-      node.children.push({ tag: "#text", text, parent: node })
-    }
-  }
-  return root
-}
-const elements = (root) => {
-  const all = []
-  const walk = (n) => {
-    for (const child of n.children ?? []) {
-      if (child.tag === "#text") continue
-      all.push(child)
-      walk(child)
-    }
-  }
-  walk(root)
-  return all
-}
-const classes = (el) => (el.attrs?.class ?? "").split(/\s+/)
-const hasClass = (name) => (el) => classes(el).includes(name)
-const childrenOf = (el, test) => el.children.filter((c) => c.tag !== "#text" && test(c))
-const decode = (s) =>
-  s
-    .replace(/&#39;/g, "'")
-    .replace(/&quot;/g, '"')
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&amp;/g, "&")
-const textOf = (el) =>
-  el.tag === "#text" ? decode(el.text) : (el.children ?? []).map(textOf).join("")
 const study = parse(studyHtml)
 const all = elements(study)
 const cases = new Map(
@@ -101,23 +47,6 @@ const cases = new Map(
     .filter((el) => "data-study-case" in el.attrs)
     .map((el) => [el.attrs["data-study-case"], el]),
 )
-
-// The rendered folder levels of one case, outermost first.
-function layersOf(caseElement) {
-  const stacks = elements(caseElement).filter(hasClass("gl-folders"))
-  if (stacks.length !== 1)
-    throw new Error(`expected one folder stack, found ${stacks.length}`)
-  const layers = elements(stacks[0]).filter(hasClass("gl-folder"))
-  return { stack: stacks[0], layers }
-}
-const tabsOf = (layer) => {
-  const strip = childrenOf(layer, hasClass("gl-folder__strip"))[0]
-  return elements(strip).filter(hasClass("gl-folder-tab"))
-}
-const labelOf = (tab) =>
-  textOf(elements(tab).find(hasClass("gl-folder-tab__label"))).trim()
-const selectedOf = (layer) =>
-  tabsOf(layer).filter((tab) => "data-selected" in tab.attrs)
 
 // The navigation state each real-registry case was built from.
 const expectedUrls = {
@@ -183,8 +112,9 @@ test("FOLD-002", "Two-level rendering", (check) => {
   )
   const cvChildren = siteNavigation.node("cv").children.map((node) => node.label)
   check(
-    JSON.stringify(tabsOf(inner).map(labelOf)) === JSON.stringify(cvChildren),
-    "level 2 does not show CV's folders in order",
+    JSON.stringify(tabsOf(inner).map(labelOf)) ===
+      JSON.stringify(["Overview", ...cvChildren]),
+    "level 2 does not show CV's Overview and folders in order",
   )
 })
 
@@ -223,8 +153,10 @@ test("FOLD-003", "Three-level rendering, never a fourth", (check) => {
     .filter(hasClass("gl-folders"))
     .map((el) => Number(el.attrs["data-folder-depth"]))
   check(Math.max(...depths) <= MAX_TAB_LEVELS, "a stack is deeper than three levels")
+  // Research's Overview, then the synthetic folders.
+  const [first, ...rest] = tabsOf(layers[2]).map((tab) => tab.attrs["data-tab-id"])
   check(
-    tabsOf(layers[2]).every((tab) => tab.attrs["data-tab-id"].startsWith("synthetic-")),
+    first === "overview:cv-research" && rest.every((id) => id.startsWith("synthetic-")),
     "case C's third level is not the synthetic fixture",
   )
   check(
@@ -233,15 +165,14 @@ test("FOLD-003", "Three-level rendering, never a fourth", (check) => {
   )
 })
 
-test("FOLD-004", "Exactly one selected tab per open level", (check) => {
+test("FOLD-004", "Exactly one selected tab per level", (check) => {
   for (const [id, caseElement] of cases) {
     if (!elements(caseElement).some(hasClass("gl-folders"))) continue
     const { layers } = layersOf(caseElement)
     for (const layer of layers) {
       const selected = selectedOf(layer)
-      const open = "data-open" in layer.attrs
       check(
-        selected.length === (open ? 1 : 0),
+        selected.length === 1,
         `case ${id} level ${layer.attrs["data-level"]} has ${selected.length} selected tabs`,
       )
     }
@@ -249,21 +180,28 @@ test("FOLD-004", "Exactly one selected tab per open level", (check) => {
       const ids = layers.flatMap((layer) =>
         selectedOf(layer).map((tab) => tab.attrs["data-tab-id"]),
       )
-      const expected = stateOf(id).selection.map((node) => node.id)
+      const expected = stateOf(id).rows.map((row) => row.selectedId)
       check(
         JSON.stringify(ids) === JSON.stringify(expected),
         `case ${id} selects [${ids.join(", ")}], the registry resolves [${expected.join(", ")}]`,
       )
     }
   }
-  const synthetic = layersOf(cases.get("c")).layers.flatMap((layer) =>
-    selectedOf(layer).map((tab) => tab.attrs["data-tab-id"]),
-  )
-  check(
-    JSON.stringify(synthetic) ===
-      JSON.stringify(["cv", "cv-research", "synthetic-projects"]),
-    `case c selects [${synthetic.join(", ")}]`,
-  )
+  const selectedIn = (id) =>
+    layersOf(cases.get(id)).layers.flatMap((layer) =>
+      selectedOf(layer).map((tab) => tab.attrs["data-tab-id"]),
+    )
+  for (const [id, expected] of [
+    ["c", ["cv", "cv-research", "synthetic-projects"]],
+    ["g", ["cv", "cv-research", "overview:cv-research"]],
+  ]) {
+    check(
+      JSON.stringify(selectedIn(id)) === JSON.stringify(expected),
+      `case ${id} selects [${selectedIn(id).join(", ")}]`,
+    )
+  }
+  // The study's tabs are labels, not links: each selected label is marked "true", and
+  // none claims to be this page.
   const current = all.filter((el) => "aria-current" in el.attrs)
   const selected = all.filter((el) => "data-selected" in el.attrs)
   check(
@@ -273,9 +211,11 @@ test("FOLD-004", "Exactly one selected tab per open level", (check) => {
   check(
     current.every(
       (el) =>
-        hasClass("gl-folder-tab__label")(el) && "data-selected" in el.parent.attrs,
+        hasClass("gl-folder-tab__label")(el) &&
+        el.attrs["aria-current"] === "true" &&
+        "data-selected" in el.parent.attrs,
     ),
-    "aria-current is on something other than a selected tab's label",
+    "aria-current is on something other than a selected tab's label, or says page",
   )
   check(
     !/role="(tab|tablist|tabpanel)"/.test(studyHtml),

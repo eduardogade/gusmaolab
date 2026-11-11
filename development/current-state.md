@@ -1,14 +1,16 @@
 # Current state
 
-Last updated: P05, 2026-11-10. Verified facts only.
+Last updated: P06, 2026-11-11. Verified facts only.
 
 ## Framework
 
 - **Astro 7.4.8**, static output. The repository root is the Astro project.
-- Two temporary pages, neither part of the website:
-  - the **P03 design specimen** at `/` (`src/pages/index.astro`);
-  - the **P05 folder study** at `/_design/folders/` (`src/pages/[design]/folders.astro`).
-- **Section pages, working navigation, hover previews and Bearnard rendering are not implemented.**
+- **39 pages:**
+  - **37 folder pages**, one for every registered folder, generated from the navigation registry (P06). Each shows the physical folders with working tab links and **temporary development content only**.
+  - **2 temporary design studies**, not part of the website:
+    - the **P03 tokens specimen** at `/_design/tokens/` (`src/pages/[design]/tokens.astro`; it was `/` until P06);
+    - the **P05 folder study** at `/_design/folders/` (`src/pages/[design]/folders.astro`).
+- **Not implemented:** real section content, hover previews, keyboard folder discovery, the responsive navigation strategy, the homepage composition, Bearnard rendering and a designed 404 page.
 - The archived Pelican site in `_backup/pelican-legacy/` is not built.
 - Nothing has been deployed, and no deployment workflow is active.
 
@@ -26,7 +28,7 @@ The owner approved the visual direction and overall appearance (D-041). Tokens a
 | Compiled site navigation (`siteNavigation`) | `src/navigation/index.ts` |
 | Rules and site map | `planning/information-architecture.md` |
 
-The P05 folder components draw its tab rows; no section page uses it yet (P06). Of the 37 registered destinations, only `/` has a page (the specimen). The content-route list is empty until content collections exist.
+Every one of the 37 registered destinations has a page (P06). The content-route list is empty until content collections exist.
 
 ## Physical folders (P05)
 
@@ -35,7 +37,7 @@ The P05 folder components draw its tab rows; no section page uses it yet (P06). 
 | Components: `FolderStack`, `FolderLayer`, `FolderTabStrip`, `FolderTab` | `src/components/folders/` |
 | Styles: tab silhouette, seam, fillets, V, materials, scrolling rows | `src/styles/folders.css` |
 | Description and open visual questions | `planning/design-system.md` sections 9 and 10 |
-| Study page: cases A–F | `/_design/folders/` |
+| Study page: cases A–G (case F updated and case G added in P06) | `/_design/folders/` |
 
 Built: one to three nested folder levels drawn from P04's `state.rows`. Each level has:
 
@@ -46,14 +48,35 @@ Built: one to three nested folder levels drawn from P04's `state.rows`. Each lev
 
 A row that is too wide scrolls inside its own strip. All of this renders statically, with no client-side JavaScript.
 
-**Not built:**
-
-- tabs as links (labels only until P06);
-- route-driven section pages (P06);
-- hover previews and keyboard discovery (P07);
-- the responsive navigation strategy (P08).
+Tabs became links in P06 (below). **Still to come:** hover previews and keyboard discovery (P07), and the responsive navigation strategy (P08).
 
 **Visual approval:** the owner approved the folder appearance (G-P05-17, D-049). The questions in `planning/design-system.md` section 10 remain refinements.
+
+## Folder navigation (P06)
+
+| Item | Where |
+| --- | --- |
+| Overview display tabs, `currentTabId`, `folderStaticPaths()` | `src/navigation/types.ts`, `navigation.ts` |
+| Page layout: resolves the URL, sets the environment, draws the folders, `<main>` in the deepest folder | `src/layouts/FolderPage.astro` |
+| Route files, one per tab level | `src/pages/index.astro`, `src/pages/[section]/…` |
+| Temporary page content | `src/components/scaffold/ScaffoldContent.astro` |
+| Rules | `planning/information-architecture.md` sections 12 and 14; D-050–D-056 |
+
+Built:
+
+- Every tab is a link.
+- An open folder with children always shows its row with a selected tab: its **Overview** on its own page.
+- The page's own tab carries `aria-current="page"`, and the open folders above it `aria-current="true"`.
+- Each row is a labelled `nav`.
+- Each section's environment is applied.
+- Inactive tabs give hover feedback.
+- No client-side JavaScript; links, Back, Forward and reload work as on any static site (checked in Chromium).
+- Unknown URLs have no page.
+- Case F of the folder study now shows Overview selected, and case G shows a third-level Overview (synthetic fixture).
+
+**Visual approval of P06:** not yet given (G-P06-20).
+
+
 
 ## Toolchain
 
@@ -70,28 +93,29 @@ A row that is too wide scrolls inside its own strip. All of this renders statica
 
 ## npm scripts
 
-`dev`, `build`, `preview`, `check`, `test`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs` and `tests/folders.mjs`.
+`dev`, `build`, `preview`, `check`, `test`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs` and `tests/routes.mjs`.
 
 ## Build status
 
 `npm run verify` passes:
 
-- `astro check`: 0 errors, 0 warnings, 0 hints across 24 files.
-- Build: 2 pages. `dist/` holds them and three stylesheets; no JavaScript.
-- Token checks and contrast checks pass (215 of 215 enforced pairings).
-- Navigation: 14 of 14 tests pass (NAV-001 to NAV-014).
-- Smoke test passes. Every built page is a registered destination, except the declared `/_design/` study.
+- `astro check`: 0 errors, 0 warnings, 0 hints across 32 files.
+- Build: 39 pages. `dist/` holds them and three stylesheets, 381,438 bytes in all; no JavaScript.
+- Token checks and contrast checks pass (225 of 225 enforced pairings).
+- Navigation: 22 of 22 model tests pass (NAV-001 to NAV-021, NAV-025).
+- Smoke test passes. The built pages are exactly the 37 registered destinations and the 2 declared `/_design/` studies.
 - Folders: 10 of 10 tests pass (FOLD-001 to FOLD-010).
+- Routes: 9 of 9 tests pass (NAV-022, NAV-023, NAV-026 to NAV-032). NAV-024 passed in the browser.
 
 ## Repository
 
 | Item | Value |
 | --- | --- |
-| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; the other task's records note at `cda026e`; then the P05 commit |
+| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; P05 at `4771127` and `40083ce`; the Bearnard sticker task's notes at `cda026e`, `fa522dc` and `aaa32a7`; then the P06 commit |
 | Milestone branches | `chore/gusmaolab-foundation-p01` (`4096691`), `chore/gusmaolab-astro-foundation-p02` (`5fab52c`), `feat/gusmaolab-design-system-p03` (`851fdbb`), all kept |
 | Recovery tag | `pre-astro-checkpoint` → `6eedf02`, local only |
 | `main` and `origin/main` | `6036137`, the same tree as the checkpoint. No `development` branch exists on `origin`. |
-| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, public. Nothing was pushed in P01–P05. |
+| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, public. Nothing was pushed in P01–P06. |
 | Untracked | `clean`, a byte-identical copy of `clean.sh` that appeared at 18:01 on 2026-11-10. Claude Code did not create it, and left it alone at the owner's instruction. |
 
 ## Assets
@@ -101,19 +125,20 @@ A row that is too wide scrolls inside its own strip. All of this renders statica
 
 ## Legacy archive
 
-Unchanged since P03; P05 did not touch it. ISSUE-0003 stays open: the recruiter-era files in the public history, and a possible third file.
+Unchanged since P03; P05 and P06 did not touch it. ISSUE-0003 stays open: the recruiter-era files in the public history, and a possible third file.
 
 ## Completed prompts
 
-P01, P02, P03, P04 and P05.
+P01, P02, P03, P04, P05 and P06.
 
 ## Blockers
 
-None for P06.
+None for P07.
 
 ## Waiting for the owner
 
-- Optional refinements to the folders, if wanted: `planning/design-system.md` section 10, questions 13–17.
+- Review of the P06 navigation and Overview tabs (G-P06-20), and the refinements in `planning/design-system.md` section 10, questions 13–20.
+- Stronger palette differences between environments (D-056) and typography consolidation (D-042), both deferred.
 - The third-level folders, when content work reaches them (`planning/information-architecture.md` section 3).
 - Whether the second-level slugs are final before first publication (D-037).
 - Update the local Node.js to the latest 26.x LTS release (KL-06).

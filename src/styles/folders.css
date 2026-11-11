@@ -1,21 +1,21 @@
 /*
  * Physical folders (P05): the folder stack, its tab rows, its tabs and its bodies.
  * Imported by src/components/folders/FolderStack.astro, so only pages that show folders
- * load it. Semantic tokens only; no transitions or animation.
+ * load it. Semantic tokens only; no transitions or animation. P06 made the tabs links.
  *
  * Markup, from the components in src/components/folders/:
  *
  *   .gl-folders                           FolderStack: one to three levels
  *     .gl-folder[data-level="1|2|3"]      FolderLayer: one physical folder
- *       .gl-folder__strip                 FolderTabStrip: scrolls sideways if too wide
- *         ul.gl-folder__tabs
- *           li.gl-folder-tab[data-selected]       FolderTab
+ *       nav.gl-folder__strip              FolderTabStrip: scrolls sideways if too wide
+ *         ul.gl-folder__tabs              (a div in design studies, without links)
+ *           li.gl-folder-tab[data-selected]       FolderTab; one selected per row
  *             .gl-folder-tab__shape       the card stock: two skewed halves
- *             .gl-folder-tab__label
+ *             a.gl-folder-tab__label      the link; the whole tab is its click target
  *             svg.gl-folder-tab__indicator        the V, on the selected tab only
- *       .gl-folder__body                  the open folder, when a tab is selected; it
- *                                         holds the next level, or the page's paper
- *       .gl-folder__paper                 the page itself, on ivory reading paper
+ *       .gl-folder__body                  the selected tab's open folder: it holds the
+ *                                         next level, or the page's paper
+ *         .gl-folder__paper               the page itself, on ivory reading paper
  *
  * One tab, seen from the front:
  *
@@ -48,6 +48,7 @@
   /* Level 1: kraft folders rising from the dark shell */
   --_material: var(--color-folder-parent);
   --_inactive: var(--color-folder-tab-inactive);
+  --_hover: var(--color-folder-tab-hover);
   --_ground: var(--color-shell);
   --_tab-height: var(--folder-tab-height-1);
   --_tab-font-size: var(--font-size-tab-1);
@@ -64,6 +65,7 @@
 .gl-folder[data-level="2"] {
   --_material: var(--color-folder-nested);
   --_inactive: var(--color-folder-tab-inactive-nested);
+  --_hover: var(--color-folder-tab-hover-nested);
   --_ground: var(--color-folder-parent);
   --_tab-height: var(--folder-tab-height-2);
   --_tab-font-size: var(--font-size-tab-2);
@@ -74,6 +76,7 @@
 .gl-folder[data-level="3"] {
   --_material: var(--color-folder-deep);
   --_inactive: var(--color-folder-tab-inactive-deep);
+  --_hover: var(--color-folder-tab-hover-deep);
   --_ground: var(--color-folder-nested);
   --_tab-height: var(--folder-tab-height-3);
   --_tab-font-size: var(--font-size-tab-3);
@@ -289,7 +292,24 @@
 .gl-folder-tab__label {
   grid-row: 1;
   max-inline-size: 100%;
+  color: inherit;
+  text-decoration-line: none;
   text-wrap: balance;
+}
+
+/*
+ * The link covers the whole tab, so the card is the click target, not only its label.
+ * The focus ring stays on the label, inside the row, where the strip cannot clip it.
+ */
+a.gl-folder-tab__label::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+/* Normal hover feedback on an inactive tab link: its card lightens towards the folder. */
+.gl-folder-tab:not([data-selected]):has(> a.gl-folder-tab__label:hover) {
+  --_fill: var(--_hover);
 }
 
 /* The V: decorative, the same size on every level, pointing into the open folder. */

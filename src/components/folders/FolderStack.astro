@@ -1,28 +1,34 @@
 ---
 /**
- * The physical folder stack (P05): one to three nested folder levels, drawn from the
- * tab rows of a resolved navigation state, with the page content in the deepest folder.
+ * The physical folder stack (P05): one to three nested folder levels, drawn from a
+ * resolved navigation state, with the page content in the deepest folder.
  *
  *   const result = siteNavigation.resolve(Astro.url.pathname)
- *   <FolderStack rows={result.state.rows}>…page content…</FolderStack>
+ *   <FolderStack state={result.state}>…page content…</FolderStack>
  *
- * Rows come from src/navigation (P04); this component never builds its own tree. The
- * rows are checked at build time, so an impossible stack fails the build instead of
- * rendering. Rendering is static: no client-side JavaScript.
+ * The state comes from src/navigation (P04, P06); this component never builds its own
+ * tree. The rows are checked at build time, so an impossible stack fails the build
+ * instead of rendering. Rendering is static: no client-side JavaScript.
+ *
+ * Site pages draw their tabs as links (FolderPage, P06). Design studies pass
+ * `links={false}`: their states are pictures, and some of their tabs have no page.
  *
  * Choose the environment where the page is laid out (BaseLayout's `environment`, or a
  * `data-environment` wrapper); every level then takes that environment's materials.
  */
 import "../../styles/folders.css"
 import { MAX_TAB_LEVELS } from "../../navigation/index.ts"
-import type { TabRow } from "../../navigation/index.ts"
+import type { NavigationState } from "../../navigation/index.ts"
 import FolderLayer from "./FolderLayer.astro"
 
 interface Props {
-  rows: readonly TabRow[]
+  state: NavigationState
+  /** Draw the tabs as links to their pages. Default: true. */
+  links?: boolean
 }
 
-const { rows } = Astro.props
+const { state, links = true } = Astro.props
+const { rows, currentTabId } = state
 
 const problems: string[] = []
 if (rows.length === 0 || rows.length > MAX_TAB_LEVELS) {
@@ -30,26 +36,42 @@ if (rows.length === 0 || rows.length > MAX_TAB_LEVELS) {
 }
 rows.forEach((row, i) => {
   const where = `row ${i + 1}`
+  const ids = row.tabs.map((tab) => tab.id)
   if (row.level !== i + 1) problems.push(`${where} is level ${row.level}`)
   if (row.tabs.length === 0) problems.push(`${where} has no tabs`)
-  if (row.selectedId !== null && !row.tabs.some((tab) => tab.id === row.selectedId)) {
+  if (new Set(ids).size !== ids.length) problems.push(`${where} repeats a tab`)
+  const selected = row.tabs.find((tab) => tab.id === row.selectedId)
+  if (selected === undefined) {
     problems.push(`${where} selects "${row.selectedId}", which is not one of its tabs`)
   }
-  if (i < rows.length - 1 && row.selectedId === null) {
-    problems.push(`${where} has a deeper row but no selected tab`)
-  }
+  // A child row starts with its parent's Overview, and only there (D-050, D-051).
+  row.tabs.forEach((tab, t) => {
+    const leads = row.parent !== null && t === 0
+    const isOverview =
+      tab.kind === "overview" && tab.parent.id === row.parent?.id && tab.href === tab.parent.path
+    if (leads !== isOverview) {
+      problems.push(`${where} has "${tab.id}" where ${leads ? "its Overview" : "a folder"} belongs`)
+    }
+  })
   const above = rows[i - 1]
   if (above === undefined ? row.parent !== null : row.parent?.id !== above.selectedId) {
     problems.push(`${where} does not belong to the tab selected above it`)
   }
+  // An Overview tab is the parent's own page: nothing opens below it.
+  if (i < rows.length - 1 && selected?.kind !== "folder") {
+    problems.push(`${where} has a deeper row below a tab that is not a folder`)
+  }
 })
+if (currentTabId !== null && currentTabId !== rows[rows.length - 1]?.selectedId) {
+  problems.push(`the current page "${currentTabId}" is not the deepest selected tab`)
+}
 if (problems.length > 0) {
   throw new Error(`FolderStack cannot draw these rows:\n- ${problems.join("\n- ")}`)
 }
 ---
 
 <div class="gl-folders" data-folder-depth={rows.length}>
-  <FolderLayer rows={rows} index={0}>
+  <FolderLayer rows={rows} index={0} links={links} currentTabId={currentTabId}>
     <slot />
   </FolderLayer>
 </div>
