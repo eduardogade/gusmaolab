@@ -6,7 +6,7 @@ Shared rules for every coding agent in this repository: Claude Code, Codex and o
 
 GusmaoLab is Eduardo Gade Gusmao's personal website and publishing ecosystem: computational biology, bioinformatics, research, software engineering, teaching, literature and personal interests. Scientific rigor and visual humor go together.
 
-The site is an Astro static project. Every registered folder has a page generated from the navigation registry (P06), with temporary development content only, unopened folders preview their contents on hover and keyboard focus (P07), and the folders adapt to every screen size (P08); two temporary design studies live under `/_design/` (the P03 tokens specimen and the P05 folder study). The old Pelican site is archived in `_backup/pelican-legacy/`.
+The site is an Astro static project. Every registered folder has a page generated from the navigation registry (P06), with temporary development content only, unopened folders preview their contents on hover and keyboard focus (P07), and the folders adapt to every screen size (P08); temporary design studies live under `/_design/` (the P03 tokens specimen, the P05 folder study and the P09 Bearnard study). The old Pelican site is archived in `_backup/pelican-legacy/`.
 
 ## Where things are
 
@@ -58,6 +58,7 @@ Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `n
 - `brand/bearnard/bearnard_v1.3.png` is the canonical master. Masters are immutable: never edit, rename, crop, resize, convert, recompress or overwrite them.
 - Never run optimization, formatting or cleanup tools over `brand/bearnard/`.
 - Generate derivatives into separate folders. Never put full-resolution masters in the site's public directory.
+- The site shows Bearnard only through `src/illustrations/bearnard.ts` and `<BearnardIllustration>`, from the committed derivatives in `public/illustrations/bearnard/` (D-073). Make derivatives only with `scripts/bearnard_derivatives.py`, only from approved masters, and never assign an illustration to a role without the owner. Keep `tests/bearnard.mjs` passing.
 - Experimental and unclassified images stay that way until the owner approves them (`assets/bearnard/inventory.csv`).
 - `brand/bearnard/` is gitignored on purpose. Do not force-add it.
 

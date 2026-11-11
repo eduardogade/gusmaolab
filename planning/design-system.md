@@ -16,6 +16,8 @@ Status: **implemented and approved.** Built in P03 (2026-11-10); in P04 the owne
 
 **P09 (2026-11-11): continuity.** Folder pages cross-fade for 140 ms when the visitor changes folder, instead of cutting in one frame (D-071, ISSUE-0004). It is the site's only motion; reduced motion turns it off.
 
+**P09 (2026-11-11): Bearnard foundations** (section 11). A registry of approved illustrations, one component and the first web derivatives of the v1.3 master exist (D-073). No site page shows Bearnard yet, and no role has an illustration assigned: both await the owner.
+
 **Deferred refinements:** stronger palette differences between the environments (D-056) and typography consolidation (D-042). Neither changed in P06, P07 or P08.
 
 Source files: `src/styles/tokens.css`, `src/styles/environments.css`, `src/styles/global.css`, `src/styles/folders.css` and the contract in `src/design/contract.mjs`. The specimen, the folder study and the tests read the values from those files, so this document can go stale but the pages cannot. Regenerate the contrast tables with `node tests/contrast.mjs --markdown`.
@@ -439,9 +441,10 @@ A preview is a glimpse into an unopened folder, not another open folder (D-058, 
 - **P06 (done):** tabs became links to their pages, with route-driven selection and the Overview tab.
 - **P07 (done):** previews of an unopened folder's immediate contents, on hover and keyboard focus (below).
 - **P08 (done):** the folders on every screen size (above).
-- **P09 and later:**
+- **P09 (done):** the Bearnard illustration registry, component and first derivatives (section 11). Placing him on real pages comes with the pages.
+- **P10 and later:**
   - reading paper for long-form prose (`.gl-prose`), code, mathematics, tables, quotes and callouts;
-  - Bearnard placement, with approved derivatives only and never full-resolution masters in `public/`;
+  - Bearnard on real pages, by role, with approved derivatives only and never full-resolution masters in `public/`;
   - environment selection from the route data, through BaseLayout's `environment` prop.
 
 ## 10. Unresolved visual questions for the owner
@@ -468,6 +471,51 @@ A preview is a glimpse into an unopened folder, not another open folder (D-058, 
 20. **Hover (P06):** an inactive tab lightens 12 points towards the folder material when hovered. Too subtle, or right?
 21. **Folder previews (P07):** a parchment index card with a honey top edge, hanging from its tab, with a small title and a compact list. Is it distinct enough from the folders without feeling like a generic menu? Should it carry a paper-grain or ruled-card detail, or the hovered folder's own section color?
 22. **Small screens (P08):** rows scroll sideways with a fade and a glimpse of the next tab, and no buttons. Is that discoverable enough, or should a row show small "more" arrows or previous/next buttons? Are 4 px insets on phones enough to read three levels as nested folders? Should the flannel band on phones be thinner, or gone?
+23. **Bearnard roles (P09):** nine places may show Bearnard (section 11), and none has an illustration yet. Should the v1.3 portrait stand in for any of them, for example the Home welcome, until role-specific poses are approved? Which of the 204 expression candidates, if any, should be approved for which role?
+
+## 11. Bearnard illustrations (P09)
+
+Bearnard is the GusmaoLab mascot and belongs in every section, scientific and technical ones included (R-05). His canonical identity is the v1.3 master. The site shows only web derivatives of approved masters, through one registry and one component (D-073; `planning/architecture.md`, "Bearnard illustrations").
+
+### What is registered
+
+| ID | Master | Category | Files | Roles |
+| --- | --- | --- | --- | --- |
+| `bearnard-v1.3-portrait` | `brand/bearnard/bearnard_v1.3.png` (892 × 1763) | canonical-master | WebP, 320 × 632 (54,626 bytes) and 640 × 1265 (187,394 bytes), transparent | none assigned |
+
+Alt text: "Bearnard, a cheerful dark-furred bear in tortoiseshell glasses, a plaid flannel shirt over a DNA T-shirt and jeans, smiling with a steaming mug in his paw."
+
+### Roles
+
+A role is a place in the site that may show Bearnard. An illustration is assigned to a role only when the owner approves that pairing; until then the role is empty and pages render their fallback.
+
+| Role | Meant for | Illustration |
+| --- | --- | --- |
+| `home-welcome` | The Home page greeting | None approved yet |
+| `research` | Research and laboratory pages | None approved yet |
+| `teaching` | Lecture notes and teaching pages | None approved yet |
+| `reading` | The Book Club and reading lists | None approved yet |
+| `writing` | Writing and the literary collections | None approved yet |
+| `technical-explaining` | Technical explanations and tutorials | None approved yet |
+| `under-construction` | Pages whose content is not written yet | None approved yet |
+| `not-found` | The 404 page | None approved yet |
+| `booking` | The scheduling page | None approved yet |
+
+### Using the component
+
+```astro
+<BearnardIllustration role="not-found" />
+<BearnardIllustration variant="bearnard-v1.3-portrait" sizes="(min-width: 64rem) 9rem, 30vw" />
+<BearnardIllustration role="booking"><p slot="fallback">…</p></BearnardIllustration>
+<BearnardIllustration variant="bearnard-v1.3-portrait" decorative />
+```
+
+- The image fills its container's width and keeps its aspect ratio: size the container, not the image, and pass `sizes` to match. It is never cropped, stretched, recoloured or flipped.
+- It stands on folder paper or a shell, never directly on the flannel lining, like text.
+- It is informative by default. Pass `decorative` only when the text beside it already says everything the picture does.
+- At most 320 CSS px wide on a high-density screen with the current files (640 px); a wider placement needs a wider derivative.
+- It loads lazily unless `loading="eager"` is passed, for an illustration at the top of a page.
+- No animation, no hover effect, no speech bubbles in CSS: expression comes from approved artwork.
 
 ## Legacy material
 

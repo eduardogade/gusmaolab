@@ -25,7 +25,9 @@ import {
 
 const repo = new URL("../", import.meta.url)
 const dist = fileURLToPath(new URL("dist/", repo))
-const STUDIES = ["/_design/tokens/", "/_design/folders/"]
+const STUDIES = ["/_design/tokens/", "/_design/folders/", "/_design/bearnard/"]
+// Studies that show folders, and so carry the folders' one script.
+const STUDIES_WITH_FOLDERS = ["/_design/folders/"]
 const fileOf = (path) => join(dist, `${path.slice(1)}index.html`)
 
 async function listFiles(dir) {
@@ -445,7 +447,8 @@ test("NAV-031", "Plain links; navigation needs no JavaScript", (check) => {
     check(html !== "", `${path} could not be read`)
     const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
     // The P03 specimen has no folders, so no script; every page with folders has one.
-    const expected = path === "/_design/tokens/" ? 0 : 1
+    const expected =
+      path.startsWith("/_design/") && !STUDIES_WITH_FOLDERS.includes(path) ? 0 : 1
     check(
       scripts.length === expected,
       `${path} has ${scripts.length} <script> elements`,
@@ -523,6 +526,7 @@ test("NAV-032", "Every approved route is a static page", (check) => {
   check(
     json(routeFiles) ===
       json([
+        "[design]/bearnard.astro",
         "[design]/folders.astro",
         "[design]/tokens.astro",
         "[section]/[folder]/[subfolder]/index.astro",

@@ -1,0 +1,205 @@
+---
+// Temporary P09 design study: the Bearnard illustration registry and component. Not a
+// page of the website: it proves the foundation before later prompts place Bearnard on
+// real pages. It shows only approved web derivatives, never a master.
+import BaseLayout from "../../layouts/BaseLayout.astro"
+import BearnardIllustration from "../../components/bearnard/BearnardIllustration.astro"
+import { ILLUSTRATIONS, ILLUSTRATION_ROLES } from "../../illustrations/bearnard.ts"
+
+export function getStaticPaths() {
+  return [{ params: { design: "_design" } }]
+}
+
+const [portrait] = ILLUSTRATIONS
+---
+
+<BaseLayout
+  title="GusmaoLab — Bearnard illustrations (P09, temporary)"
+  description="Temporary design study for the GusmaoLab website: the Bearnard illustration registry and its component."
+>
+  <div class="study" data-study="p09-bearnard">
+    <header class="shell intro gl-on-dark">
+      <p class="overline">Design study · P09 · Temporary</p>
+      <h1>Bearnard Illustrations — Registry Study</h1>
+      <p class="lead">
+        A <strong>temporary design study</strong>, not a page of the website. Bearnard appears here only through
+        the illustration registry and its component, from a web derivative of an approved master.
+      </p>
+    </header>
+
+    <section class="shell" aria-labelledby="portrait">
+      <div class="paper sheet">
+        <div class="pair">
+          <div class="text gl-prose">
+            <p class="sample-overline">Canonical identity · v1.3</p>
+            <h2 id="portrait">Bearnard, as approved</h2>
+            <p>
+              The only illustration approved for display so far is the canonical v1.3 portrait. The site serves two
+              WebP derivatives of it, {portrait.files.map((f) => `${f.width} × ${f.height}`).join(" and ")} pixels, and
+              the browser picks one for the screen. The master itself is never served.
+            </p>
+            <p>
+              Its places on the site (the roles below) are not assigned yet: that is the owner's decision. Until then,
+              pages choose it by its ID, as this study does.
+            </p>
+          </div>
+          <figure class="figure">
+            <BearnardIllustration variant="bearnard-v1.3-portrait" loading="eager" />
+            <figcaption>Informative: its description is its alt text.</figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="shell" aria-labelledby="registry">
+      <div class="paper">
+        <h2 id="registry">The registry</h2>
+        <div class="gl-scroll-x" tabindex="0" role="region" aria-label="Bearnard illustration registry">
+          <table>
+            <thead>
+              <tr><th scope="col">ID</th><th scope="col">Master (not served)</th><th scope="col">Class</th><th scope="col">Roles</th><th scope="col">Web files</th></tr>
+            </thead>
+            <tbody>
+              {
+                ILLUSTRATIONS.map((illustration) => (
+                  <tr data-illustration-row={illustration.id}>
+                    <td><code>{illustration.id}</code></td>
+                    <td><code>{illustration.master.split("/").at(-1)}</code></td>
+                    <td>{illustration.category}</td>
+                    <td>{illustration.roles.length > 0 ? illustration.roles.join(", ") : "none assigned yet"}</td>
+                    <td>{illustration.files.map((f) => `${f.width}w`).join(", ")}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="shell" aria-labelledby="roles">
+      <div class="paper">
+        <h2 id="roles">Roles and their status</h2>
+        <p>
+          A role without an approved illustration renders its fallback, here a note, or nothing at all. No page breaks
+          for want of an image.
+        </p>
+        <ul class="roles" role="list">
+          {
+            ILLUSTRATION_ROLES.map((role) => (
+              <li data-role={role}>
+                <code>{role}</code>
+                <BearnardIllustration role={role} decorative>
+                  <span slot="fallback" class="pending">no approved illustration yet</span>
+                </BearnardIllustration>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  /* Study layout only. */
+  .study {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-l);
+    max-inline-size: var(--size-shell-max);
+    margin-inline: auto;
+    padding: var(--space-gutter);
+  }
+
+  .shell {
+    padding: var(--space-shell-padding);
+    border: var(--border-width-hairline) solid var(--color-shell-border);
+    border-radius: var(--radius-shell);
+    background-color: var(--color-shell);
+    box-shadow: var(--shadow-shell);
+  }
+
+  .intro {
+    padding: var(--space-content-block) var(--space-content-inline);
+  }
+
+  .intro h1 {
+    max-inline-size: 24ch;
+    font-size: var(--font-size-h1);
+  }
+
+  .lead {
+    max-inline-size: var(--measure-prose);
+    margin-block-start: var(--space-s);
+    font-size: var(--font-size-lead);
+  }
+
+  .overline,
+  .sample-overline {
+    font-family: var(--font-label);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: uppercase;
+  }
+
+  .overline {
+    margin-block-end: var(--space-3xs);
+    color: var(--color-text-on-dark-muted);
+  }
+
+  .sample-overline {
+    color: var(--color-text-muted);
+  }
+
+  .paper {
+    display: grid;
+    gap: var(--space-s);
+    padding: var(--space-content-block) var(--space-content-inline);
+    border-radius: var(--radius-paper);
+    background-color: var(--color-folder-active);
+    box-shadow: var(--shadow-paper-raised);
+  }
+
+  .pair {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-l);
+    align-items: end;
+  }
+
+  @media (min-width: 48rem) {
+    .pair {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 16rem);
+    }
+  }
+
+  .figure {
+    display: grid;
+    gap: var(--space-2xs);
+    justify-items: center;
+    max-inline-size: 16rem;
+  }
+
+  .figure figcaption,
+  .pending {
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .roles {
+    display: grid;
+    gap: var(--space-2xs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .roles li {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    align-items: baseline;
+  }
+</style>

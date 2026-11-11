@@ -126,8 +126,8 @@ test("TRANS-B02", "Reduced motion turns the transition off", (check) => {
 
 const pages = siteNavigation.pagePaths()
 const built = new Map()
-for (const path of [...pages, "/_design/tokens/", "/_design/folders/"])
-  built.set(path, await stylesOf(path))
+const studies = ["/_design/tokens/", "/_design/folders/", "/_design/bearnard/"]
+for (const path of [...pages, ...studies]) built.set(path, await stylesOf(path))
 
 test("TRANS-B03", "Every folder page opts in; the design studies do not", (check) => {
   for (const path of pages) {
@@ -141,7 +141,7 @@ test("TRANS-B03", "Every folder page opts in; the design studies do not", (check
       `${path} lacks the reduced-motion opt-out`,
     )
   }
-  for (const path of ["/_design/tokens/", "/_design/folders/"]) {
+  for (const path of studies) {
     check(
       !/@view-transition/.test(built.get(path).styles),
       `${path} opts in to page transitions`,

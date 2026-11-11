@@ -5,12 +5,13 @@ Last updated: P09, 2026-11-11. Verified facts only.
 ## Framework
 
 - **Astro 7.4.8**, static output. The repository root is the Astro project.
-- **39 pages:**
+- **40 pages:**
   - **37 folder pages**, one for every registered folder, generated from the navigation registry (P06). Each shows the physical folders with working tab links, folder previews (P07) and **temporary development content only**.
-  - **2 temporary design studies**, not part of the website:
+  - **3 temporary design studies**, not part of the website:
     - the **P03 tokens specimen** at `/_design/tokens/` (`src/pages/[design]/tokens.astro`; it was `/` until P06);
-    - the **P05 folder study** at `/_design/folders/` (`src/pages/[design]/folders.astro`).
-- **Not implemented:** real section content, the homepage composition, Bearnard rendering and a designed 404 page.
+    - the **P05 folder study** at `/_design/folders/` (`src/pages/[design]/folders.astro`);
+    - the **P09 Bearnard study** at `/_design/bearnard/` (`src/pages/[design]/bearnard.astro`).
+- **Not implemented:** real section content, the homepage composition, Bearnard on any site page (the foundation exists, below) and a designed 404 page.
 - The archived Pelican site in `_backup/pelican-legacy/` is not built.
 - Nothing has been deployed, and no deployment workflow is active.
 
@@ -127,6 +128,20 @@ Built:
 
 Navigation is still ordinary: real pages, real URLs, no client router. The reported blink was a one-frame hard cut, not a blank frame; the fade replaces it where the browser supports cross-document view transitions (Chromium; Safari 18.2+).
 
+## Bearnard illustrations (P09)
+
+| Item | Where |
+| --- | --- |
+| Registry: one illustration (`bearnard-v1.3-portrait`), nine roles, none assigned | `src/illustrations/bearnard.ts` |
+| Component: by role or by ID; fallback slot; responsive, lazy, sized | `src/components/bearnard/BearnardIllustration.astro` |
+| Web derivatives of the v1.3 master: WebP, 320 × 632 (54,626 bytes) and 640 × 1265 (187,394 bytes) | `public/illustrations/bearnard/` |
+| Provenance: source checksum, settings, output checksums | `assets/bearnard/derivatives.json` |
+| Generator, run by hand (Python with Pillow); never part of the build | `scripts/bearnard_derivatives.py` |
+| Study page | `/_design/bearnard/` |
+| Rules | `planning/design-system.md` section 11; `planning/architecture.md`, "Bearnard illustrations"; D-073, D-074 |
+
+No site page shows Bearnard yet, and no role has an illustration: assigning one is the owner's decision (G-P09-B7). The build does not need the masters: a copy of the repository without `brand/bearnard/` passes `npm run verify`, with BEAR-004 reported as skipped. Only the canonical master is registered; the 2 approved-derived, 5 historical, 310 experimental, 31 unclassified and 3 working-copy images in the inventory are not.
+
 ## Toolchain
 
 | Item | Value |
@@ -142,22 +157,23 @@ Navigation is still ordinary: real pages, real URLs, no client router. The repor
 
 ## npm scripts
 
-`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs`, `tests/responsive.mjs` and `tests/transitions.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs`, `tests/responsive-browser.mjs` and `tests/transitions-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
+`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs`, `tests/responsive.mjs`, `tests/transitions.mjs` and `tests/bearnard.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs`, `tests/responsive-browser.mjs` and `tests/transitions-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
 
 ## Build status
 
 `npm run verify` passes:
 
-- `astro check`: 0 errors, 0 warnings, 0 hints across 40 files.
-- Build: 39 pages. `dist/` holds them and three stylesheets, 811,331 bytes in all (KL-30). No script file: the 38 pages with folders each inline one module (4.1 KB: previews and rows; at Vite's inlining limit, KL-36); the P03 specimen has no script.
+- `astro check`: 0 errors, 0 warnings, 0 hints across 46 files.
+- Build: 40 pages. `dist/` holds 45 files, 1,080,242 bytes in all: the site's pages and stylesheets (641,645 bytes), the design studies (196,577) and the two Bearnard derivatives (242,020), each under its own ceiling (D-074, KL-30). No script file: the 38 pages with folders each inline one module (4.1 KB: previews and rows; at Vite's inlining limit, KL-36); the P03 specimen and the Bearnard study have no script.
 - Token checks and contrast checks pass (245 of 245 enforced pairings; 260 in all).
 - Navigation: 22 of 22 model tests pass (NAV-001 to NAV-021, NAV-025).
-- Smoke test passes. The built pages are exactly the 37 registered destinations and the 2 declared `/_design/` studies.
+- Smoke test passes. The built pages are exactly the 37 registered destinations and the 3 declared `/_design/` studies, and the only other files are stylesheets and the registered derivatives.
 - Folders: 10 of 10 tests pass (FOLD-001 to FOLD-010).
 - Routes: 9 of 9 tests pass (NAV-022, NAV-023, NAV-026 to NAV-032). NAV-024 passed in the browser.
 - Previews: 11 of 11 checks pass without a browser (PREV-001 to PREV-007, and the markup of PREV-004, PREV-013, PREV-014 and PREV-015).
 - Responsive: 8 of 8 checks pass without a browser (RESP-006 to RESP-008 and RESP-013 to RESP-017).
 - Transitions: 4 of 4 checks pass without a browser (TRANS-B01 to TRANS-B04).
+- Bearnard: 8 of 8 checks pass (BEAR-001 to BEAR-008); BEAR-004 is skipped in a checkout without the masters.
 
 `npm run test:browser` passes separately in headless Chrome 157: 12 of 12 preview checks (PREV-005, PREV-008 to PREV-014), 17 of 17 responsive checks (RESP-001 to RESP-017) and 12 of 12 navigation-continuity checks (TRANS-001 to TRANS-012).
 
@@ -175,7 +191,7 @@ Navigation is still ordinary: real pages, real URLs, no client router. The repor
 ## Assets
 
 - The 352 Bearnard images in `brand/bearnard/` are unchanged and gitignored; every checksum in `assets/bearnard/SHA256SUMS` matches.
-- No Bearnard image is in `public/` or `dist/`.
+- `public/` and `dist/` hold two Bearnard images, both registered WebP derivatives of the v1.3 master (D-073). No master, and no other image, is in either.
 
 ## Legacy archive
 
@@ -201,6 +217,7 @@ None.
 - Decide what to do about ISSUE-0003, including the possible third file.
 - The deployment design: target repository, CNAME and token (D-005).
 - How to store Bearnard masters (D-011).
+- **Bearnard roles:** whether the v1.3 portrait should stand in for any role, and which other illustrations to approve (G-P09-B7; `planning/design-system.md` section 10, question 23).
 - Approval of the 204 Codex expression candidates.
 - What to do with the untracked `clean` file.
 

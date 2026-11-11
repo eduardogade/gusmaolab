@@ -11,7 +11,7 @@ import { siteNavigation } from "../src/navigation/index.ts"
 // Temporary design studies. They live under /_design/, which no registry path can reach
 // (slugs never start with "_"), and are the only pages allowed outside the navigation
 // registry: the P03 specimen (moved from / in P06) and the P05 folder study.
-const designStudies = ["/_design/tokens/", "/_design/folders/"]
+const designStudies = ["/_design/tokens/", "/_design/folders/", "/_design/bearnard/"]
 const fileOf = (path) => `${path.slice(1)}index.html`
 // Pages the build must produce (P06): every registered destination, and the studies.
 const expectedPages = [...siteNavigation.pagePaths(), ...designStudies].map(fileOf)
@@ -19,6 +19,14 @@ const expectedPages = [...siteNavigation.pagePaths(), ...designStudies].map(file
 // expected. Its one script, the folder previews (P07), is inlined in the pages that show
 // folders, so it is no file of its own.
 const expectedAsset = /^_astro\/[\w.-]+\.css$/
+// The only images: the registered Bearnard web derivatives (P09), with their provenance.
+const derivatives = JSON.parse(
+  await readFile(
+    new URL("../assets/bearnard/derivatives.json", import.meta.url),
+    "utf8",
+  ),
+).derivatives.flatMap((d) => d.outputs)
+const expectedImages = new Map(derivatives.map((o) => [o.url.slice(1), o]))
 const specimenFile = fileOf("/_design/tokens/")
 const studyFile = fileOf("/_design/folders/")
 
@@ -49,14 +57,24 @@ const check = (ok, message) => ok || failures.push(message)
 
 // 1. Only the expected pages and stylesheets, and nothing private.
 const unexpected = files.filter(
-  (file) => !expectedPages.includes(file) && !expectedAsset.test(file),
+  (file) =>
+    !expectedPages.includes(file) &&
+    !expectedAsset.test(file) &&
+    !expectedImages.has(file),
 )
 check(unexpected.length === 0, `unexpected files in dist/: ${unexpected.join(", ")}`)
 for (const page of expectedPages) check(files.includes(page), `missing page: ${page}`)
 const privatePath =
   /(^|\/)(_backup|brand|bearnard|_books|_papers|_references|_reports|planning|development|debugging|node_modules|\.git)(\/|$)/
 check(
-  !files.some((file) => privatePath.test(file)),
+  // Declared pages and registered derivatives may say "bearnard" in their paths (P09):
+  // the study /_design/bearnard/ and illustrations/bearnard/, both checked elsewhere.
+  !files.some(
+    (file) =>
+      privatePath.test(file) &&
+      !expectedImages.has(file) &&
+      !expectedPages.includes(file),
+  ),
   "private or archived paths in dist/",
 )
 
@@ -64,17 +82,38 @@ check(
 const sums = await readFile(new URL("assets/bearnard/SHA256SUMS", repo), "utf8")
 const bearnard = new Set(sums.split("\n").map((line) => line.trim().split(/\s+/)[0]))
 let totalBytes = 0
+let siteBytes = 0
+let studyBytes = 0
+let imageBytes = 0
 for (const file of files) {
   const bytes = await readFile(join(dist, file))
-  totalBytes += bytes.length
   const hash = createHash("sha256").update(bytes).digest("hex")
   check(
     !bearnard.has(hash),
     `${file} is a Bearnard image listed in assets/bearnard/SHA256SUMS`,
   )
+  totalBytes += bytes.length
+  const derivative = expectedImages.get(file)
+  if (derivative) {
+    imageBytes += bytes.length
+    check(hash === derivative.sha256, `${file} differs from its recorded derivative`)
+    check(
+      bytes.length <= 250_000,
+      `${file} is ${bytes.length} bytes, too large for the web`,
+    )
+  } else if (file.startsWith("_design/")) studyBytes += bytes.length
+  else siteBytes += bytes.length
 }
-// A generous ceiling, not an exact size: it catches accidental artwork or bundles.
-check(totalBytes < 1_000_000, `dist/ holds ${totalBytes} bytes, more than expected`)
+// Generous ceilings, not exact sizes: they catch accidental artwork or bundles. Since P09
+// the site (pages, styles, script), the temporary design studies and the registered
+// illustrations each have their own.
+check(
+  siteBytes < 1_000_000,
+  `the site's files total ${siteBytes} bytes, more than expected`,
+)
+check(studyBytes < 600_000, `the design studies total ${studyBytes} bytes`)
+check(imageBytes < 600_000, `the illustrations total ${imageBytes} bytes`)
+for (const file of expectedImages.keys()) check(files.includes(file), `missing ${file}`)
 
 // 3. Every page: document basics, and no script except the folder previews (P07), once,
 //    on pages with folders. Then the temporary P03 specimen.
@@ -223,7 +262,7 @@ if (failures.length > 0) {
   process.exit(1)
 }
 console.log(
-  `PASS: dist/ holds ${files.length} file(s), ${totalBytes} bytes: ${files.join(", ")}`,
+  `PASS: dist/ holds ${files.length} file(s), ${totalBytes} bytes (site ${siteBytes}, studies ${studyBytes}, illustrations ${imageBytes}): ${files.join(", ")}`,
 )
 console.log(
   `INFO: ${built} of ${destinations.length} registered destinations have a built page`,

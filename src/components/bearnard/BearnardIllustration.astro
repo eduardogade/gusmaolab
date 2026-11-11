@@ -1,0 +1,80 @@
+---
+/**
+ * One approved Bearnard illustration (P09), from src/illustrations/bearnard.ts.
+ *
+ *   <BearnardIllustration role="not-found" />            the role's approved illustration
+ *   <BearnardIllustration variant="bearnard-v1.3-portrait" />   a specific one, by ID
+ *   <BearnardIllustration role="booking"><p slot="fallback">…</p></BearnardIllustration>
+ *
+ * A role without an approved illustration renders its fallback slot, or nothing: pages
+ * may ask for a role before the owner has assigned one. An unknown variant ID fails the
+ * build, because it is a typo. The choice never changes between builds or visits.
+ *
+ * The image is responsive (srcset of the web derivatives), keeps its aspect ratio from
+ * its width and height, loads lazily unless told otherwise, and is informative by default:
+ * pass `decorative` when the text around it already says everything, so its alt is empty.
+ */
+import {
+  illustrationById,
+  illustrationFor,
+  type IllustrationRole,
+} from "../../illustrations/bearnard.ts"
+
+interface Props {
+  role?: IllustrationRole
+  /** An illustration ID; takes precedence over `role`. */
+  variant?: string
+  /** True when the illustration adds nothing the text does not say. */
+  decorative?: boolean
+  /** The `sizes` attribute: how wide it is drawn. Default: up to 20rem. */
+  sizes?: string
+  loading?: "lazy" | "eager"
+  class?: string
+}
+
+const {
+  role,
+  variant,
+  decorative = false,
+  sizes = "(min-width: 40rem) 20rem, 60vw",
+  loading = "lazy",
+  class: className,
+} = Astro.props
+const illustration = variant
+  ? illustrationById(variant)
+  : role
+    ? illustrationFor(role)
+    : undefined
+if (variant && illustration === undefined) {
+  throw new Error(`BearnardIllustration: no approved illustration "${variant}"`)
+}
+const largest = illustration?.files.at(-1)
+---
+
+{
+  illustration && largest ? (
+    <img
+      class:list={["gl-bearnard", className]}
+      src={largest.src}
+      srcset={illustration.files.map((file) => `${file.src} ${file.width}w`).join(", ")}
+      sizes={sizes}
+      width={largest.width}
+      height={largest.height}
+      alt={decorative ? "" : illustration.alt}
+      loading={loading}
+      decoding="async"
+      data-illustration={illustration.id}
+    />
+  ) : (
+    <slot name="fallback" />
+  )
+}
+
+<style>
+  /* Fills its container's width, keeps its aspect ratio, never crops. */
+  .gl-bearnard {
+    display: block;
+    inline-size: 100%;
+    block-size: auto;
+  }
+</style>

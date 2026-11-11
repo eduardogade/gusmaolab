@@ -350,6 +350,33 @@ P09 has three separate gates. Navigation continuity (Gate A) is checked by `npm 
 | TRANS-012 Stability | Browser | Pass |
 | TRANS-B01 to TRANS-B04 Declarations and scope | `tests/transitions.mjs` | Pass |
 
+### Gate B — Bearnard foundations
+
+Checked by `tests/bearnard.mjs` (in `npm run verify`), the smoke test, `shasum -c` over the masters, and a build in a copy of the repository without `brand/bearnard/`.
+
+| ID | Gate | Status | Evidence |
+| --- | --- | --- | --- |
+| G-P09-B1 | The illustration registry exists | Passed | `src/illustrations/bearnard.ts`; BEAR-001, BEAR-003 |
+| G-P09-B2 | The reusable component exists and fails gracefully | Passed | `BearnardIllustration`; BEAR-005; `/_design/bearnard/` |
+| G-P09-B3 | Protected masters remain unchanged | Passed | `shasum -a 256 -c assets/bearnard/SHA256SUMS`: 352 of 352 match after generation; BEAR-004; `brand/bearnard/` still gitignored |
+| G-P09-B4 | Every derivative is traceable to an approved original | Passed | `assets/bearnard/derivatives.json`; BEAR-002, BEAR-003; the generator refuses unapproved or altered masters |
+| G-P09-B5 | The build is reproducible without the masters | Passed | A copy without `brand/bearnard/`: `npm run verify` passes, BEAR-004 SKIPPED, all others pass; BEAR-007 |
+| G-P09-B6 | No full-resolution master in `public/` or `dist/` | Passed | BEAR-006, BEAR-008; the smoke test's checksum comparison against all 352 masters |
+| G-P09-B7 | The owner assigns illustrations to roles | **Untested** | No role is assigned (D-073; design-system question 23). Not decided on the owner's behalf. |
+
+### Bearnard tests (P09)
+
+| Test | Where | Result |
+| --- | --- | --- |
+| BEAR-001 Registry integrity: unique, stable IDs matching the provenance | `tests/bearnard.mjs` | Pass |
+| BEAR-002 Asset existence: files in `public/` and `dist/` match their recorded checksums and sizes | `tests/bearnard.mjs` | Pass |
+| BEAR-003 Metadata: alt text, known roles, approved master, matching provenance, uncropped | `tests/bearnard.mjs` | Pass |
+| BEAR-004 The masters are unchanged | `tests/bearnard.mjs` | Pass with the masters present; SKIPPED in a checkout without them |
+| BEAR-005 Missing variant: unassigned roles and unknown IDs fall back | `tests/bearnard.mjs`; the study | Pass |
+| BEAR-006 The build holds no master and no oversized image | `tests/bearnard.mjs`; smoke test | Pass |
+| BEAR-007 Nothing in the build reads the masters | `tests/bearnard.mjs`; clean copy | Pass |
+| BEAR-008 Asset references are site-relative, never local paths | `tests/bearnard.mjs` | Pass |
+
 ## Future gates
 
 | ID | Gate | Source | Status |
@@ -362,7 +389,7 @@ P09 has three separate gates. Navigation continuity (Gate A) is checked by `npm 
 | G-06 | No persistent sidebar, no breadcrumbs, no file-manager design | Information architecture | **Passed** in P06 on the site's pages: they hold only rows of folder tabs and the content (NAV-028 counts the landmarks); the temporary content repeats no trail of folders |
 | G-07 | Content deeper than level three lives in the third-level folder body | Information architecture | Untested on site pages: no content route exists yet. The model keeps the owning folder selected (NAV-009, NAV-025), and `FolderPage` puts any page in its folder's body. |
 | G-08 | Shared design system across sections | R-03, R-04 | **Passed** in P06 (technical): every page uses the shared tokens and its section's environment (NAV-027). Stronger environment differences are deferred (D-056). |
-| G-09 | Only Bearnard v1.3 and approved variants appear; no full-resolution masters in the public directory | R-05 | Untested |
+| G-09 | Only Bearnard v1.3 and approved variants appear; no full-resolution masters in the public directory | R-05 | **Passed** in P09 for what exists: the only images in `public/` and `dist/` are two registered derivatives of the v1.3 master (BEAR-002, BEAR-003, BEAR-006). Untested on site pages: none shows Bearnard yet. |
 | G-10 | Eight independent editorial collections | R-06 | Untested |
 | G-11 | Canonical records reused across pages | R-07 | Untested |
 | G-12 | Interactive 3D nucleus/chromatin visualization on Home, with isolated client-side JavaScript | R-08 | Untested |

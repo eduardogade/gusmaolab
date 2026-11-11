@@ -23,6 +23,8 @@ const componentFiles = [
   "src/components/folders/FolderPreview.astro",
   "src/scripts/folder-previews.ts",
   "src/scripts/folder-rows.ts",
+  "src/components/bearnard/BearnardIllustration.astro",
+  "src/pages/[design]/bearnard.astro",
   "src/components/scaffold/ScaffoldContent.astro",
   "src/layouts/FolderPage.astro",
   "src/pages/index.astro",

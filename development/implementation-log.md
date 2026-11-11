@@ -22,6 +22,20 @@ Newest entry first.
   - After Back from the back-forward cache, Chrome replayed a stale pointer position once the fade ended and reopened a preview: previews now wait for real pointer movement (D-072).
 - **Tests:** `tests/transitions.mjs` (TRANS-B01 to TRANS-B04, in `npm test`) and `tests/transitions-browser.mjs` (TRANS-001 to TRANS-012, in `npm run test:browser`), with a small PNG reader for frame checks and an `on()` event hook in the harness.
 - **Recordings:** CV → Writing at 1440 px and CV → Research at 390 px, before and after, slowed five times, sent to the owner.
+- **Commit:** `93d3af0 fix(navigation): improve folder transition continuity [P09]`.
+
+### Part B — Bearnard foundations
+
+- **Inspected, read-only:** `assets/bearnard/README.md`, `inventory.csv` (352 rows: 1 canonical-master, 2 approved-derived, 5 historical-version, 310 experimental, 31 unclassified, 3 working-copy) and `SHA256SUMS`; the v1.3 master's size and mode (892 × 1763, RGBA). `shasum -a 256 -c` matched 352 of 352 before and after generating.
+- **Approved for the site:** only what the inventory already approves. One illustration is registered, the canonical v1.3 portrait. The two approved-derived files (the Codex working reference and the model sheet) are not website illustrations and were left out. Nothing was reclassified.
+- **Built** (D-073, D-074):
+  - `scripts/bearnard_derivatives.py`: checks the inventory category and both checksums, then writes WebP derivatives to `public/illustrations/bearnard/` and their provenance to `assets/bearnard/derivatives.json`; refuses to write inside `brand/bearnard/`. Run once, with Pillow 12.3.0: 320 × 632 (54,626 bytes) and 640 × 1265 (187,394 bytes).
+  - `src/illustrations/bearnard.ts`: the registry, with nine named roles and none assigned.
+  - `src/components/bearnard/BearnardIllustration.astro`: role or ID, fallback slot, `srcset`, reserved size, lazy loading, registry alt text or `decorative`.
+  - `/_design/bearnard/`: a study showing the portrait on paper beside text, the registry entry, and all nine roles falling back.
+- **Tests:** `tests/bearnard.mjs` (BEAR-001 to BEAR-008, in `npm test`). The smoke test now allows registered derivatives only, compares every image against the 352 master checksums, and has three size ceilings. RESP-001 covers the study.
+- **Reproducibility:** a copy of the repository without `brand/bearnard/`, installed with `npm ci`, passed `npm run verify`; BEAR-004 reported SKIPPED and the other seven checks passed.
+- **Not done, on purpose:** no role assignment, no Bearnard on a site page, no new artwork, no approval of any experimental or unclassified image.
 
 ## P08 — Responsive Physical-Folder Navigation & Adaptive Layout — 2026-11-11
 

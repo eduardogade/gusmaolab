@@ -1,0 +1,40 @@
+{
+  "generator": "scripts/bearnard_derivatives.py",
+  "tool": "Pillow 12.3.0",
+  "settings": {
+    "format": "WebP",
+    "quality": 80,
+    "method": 6,
+    "resample": "LANCZOS"
+  },
+  "derivatives": [
+    {
+      "id": "bearnard-v1.3-portrait",
+      "source": {
+        "path": "brand/bearnard/bearnard_v1.3.png",
+        "category": "canonical-master",
+        "sha256": "71040bf6607a97f6e627061c7997781464271ababddbeb2603f41944643d432a",
+        "width": 892,
+        "height": 1763
+      },
+      "outputs": [
+        {
+          "path": "public/illustrations/bearnard/bearnard-v1.3-portrait-320.webp",
+          "url": "/illustrations/bearnard/bearnard-v1.3-portrait-320.webp",
+          "width": 320,
+          "height": 632,
+          "bytes": 54626,
+          "sha256": "6ec4e879831d9f4193a29ed5eccef1a1c936cc90e97f9838985148764209d58c"
+        },
+        {
+          "path": "public/illustrations/bearnard/bearnard-v1.3-portrait-640.webp",
+          "url": "/illustrations/bearnard/bearnard-v1.3-portrait-640.webp",
+          "width": 640,
+          "height": 1265,
+          "bytes": 187394,
+          "sha256": "a4d5f68a01b1489f6611c8f0732069908c833d0c5934297b5bc95140d3194bc2"
+        }
+      ]
+    }
+  ]
+}

@@ -10,6 +10,7 @@ The images are **not in Git**. They live in `brand/bearnard/`, which `.gitignore
 | --- | --- |
 | `inventory.csv` | One row per image: path, format, size, SHA-256, category, status, evidence, and whether the backup holds an identical copy |
 | `SHA256SUMS` | The same checksums in `shasum` format |
+| `derivatives.json` | Since P09: the provenance of the website's derivatives (source master and its checksum, settings, and each output's size and checksum) |
 
 To check that nothing has changed, run this from the repository root:
 
@@ -47,10 +48,23 @@ No sticker, Under Construction or error-page illustrations were found by filenam
 
 1. Masters are immutable inputs. Never edit, rename, crop, resize, convert, recompress or overwrite them.
 2. Never run image optimization, formatting or cleanup tools over `brand/bearnard/`.
-3. Generate derivatives from the master into a separate folder, in a later prompt.
+3. Generate derivatives into a separate folder, only from masters the inventory lists as `canonical-master` or `approved-derived` (see "Website derivatives").
 4. Never put full-resolution masters in the website's public directory.
 5. Only the owner can approve an experimental or unclassified image. Record approvals in `development/decisions.md` and update `inventory.csv`.
 6. Do not force-add `brand/bearnard/` to Git.
+
+## Website derivatives (P09)
+
+The website never reads the masters. It uses small WebP derivatives, which are in Git:
+
+| Derivative | Size | Bytes | Made from |
+| --- | --- | ---: | --- |
+| `public/illustrations/bearnard/bearnard-v1.3-portrait-320.webp` | 320 × 632 | 54,626 | `brand/bearnard/bearnard_v1.3.png` |
+| `public/illustrations/bearnard/bearnard-v1.3-portrait-640.webp` | 640 × 1265 | 187,394 | `brand/bearnard/bearnard_v1.3.png` |
+
+`scripts/bearnard_derivatives.py` made them and wrote `derivatives.json`. It only reads a master, and only after checking that the inventory lists it as approved and that its checksum matches the inventory and `SHA256SUMS`; it refuses to write inside `brand/bearnard/`. To add a derivative after the owner approves an illustration: add it to the script's list, run `python3 -I scripts/bearnard_derivatives.py` (needs Pillow with WebP support), add the illustration to `src/illustrations/bearnard.ts`, run `npm run verify`, and commit the new files with `derivatives.json`.
+
+The derivatives are not masters: they are not listed in `inventory.csv` or `SHA256SUMS`, and `tests/bearnard.mjs` checks them against `derivatives.json` instead. Which illustration appears where is recorded in `src/illustrations/bearnard.ts` and `planning/design-system.md`, section 11.
 
 ## Proposed organization (deferred)
 

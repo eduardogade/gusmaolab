@@ -89,6 +89,27 @@ Folder links are still ordinary links between real pages: every navigation loads
 - **Fallback.** Browsers without cross-document view transitions, and visitors with reduced motion, get the plain navigation. The design studies do not opt in.
 - **Interaction with the scripts.** Each page still runs its own scripts once. While the fade plays, the browser routes input to the page root, so clicks are ignored for those 140 ms (KL-34). After a restore from the back-forward cache the browser replays a stale pointer position, so previews now wait for real pointer movement (D-072).
 
+## Bearnard illustrations (P09)
+
+How Bearnard reaches a page (D-073, D-074). No site page shows him yet; `/_design/bearnard/` is a temporary study.
+
+```text
+brand/bearnard/ (masters: gitignored, immutable, never read by the build)
+   │  scripts/bearnard_derivatives.py   run by hand; checks the inventory and checksums first
+   ▼
+public/illustrations/bearnard/*.webp   committed web derivatives
+assets/bearnard/derivatives.json       committed provenance: source, settings, sizes, checksums
+   │
+src/illustrations/bearnard.ts          registry: ID, master, category, roles, alt text, files
+   │
+src/components/bearnard/BearnardIllustration.astro   <img srcset …>, or the fallback slot
+```
+
+- **Derivative pipeline.** The generator is the only code that opens a master, and it only reads. It refuses a master that the inventory does not list as `canonical-master` or `approved-derived`, or whose SHA-256 differs from the inventory or `SHA256SUMS`, and it refuses to write inside `brand/bearnard/`. Output: WebP, quality 80, Lanczos, aspect ratio and transparency kept, no cropping. Run `python3 -I scripts/bearnard_derivatives.py` (needs Pillow with WebP) only when the owner approves another illustration or an approved master changes on purpose; then commit the new files and `derivatives.json`, and add the illustration to the registry.
+- **Build reproducibility.** The build reads only `public/` and `src/`: nothing imports or reads from `brand/` (BEAR-007). A clean checkout, which has no masters, builds the same pages and images; there BEAR-004 (masters unchanged) reports SKIPPED, never PASS, and every other check runs. Pillow is not a project dependency.
+- **Registry and component.** The registry is plain data in erasable TypeScript, so the tests import it directly in Node.js, like `src/navigation/`. Pages ask the component for a role (`<BearnardIllustration role="not-found" />`) or a specific illustration (`variant="bearnard-v1.3-portrait"`). A role nobody has approved an illustration for renders the fallback slot or nothing, so pages can be written before the artwork exists. The choice is fixed at build time and is the same on every visit.
+- **Output rules.** `dist/` may hold only the registered derivatives, each matching its recorded checksum and under 250,000 bytes; no PNG, JPEG, TIFF or PSD, no file named like a master, no local path in any page or stylesheet (BEAR-006, BEAR-008, smoke test).
+
 ## Responsive layout and the row script (P08)
 
 The folders adapt with CSS: fluid spacing tokens, rows that scroll inside their folders, a coarse-pointer media query, and containment of wide content (D-064–D-068). JavaScript only helps with scrolling, and nothing depends on it:
@@ -98,36 +119,40 @@ The folders adapt with CSS: fluid spacing tokens, rows that scroll inside their 
 - **Previews in scrolling rows.** P07's popovers live in the top layer, outside every row's `overflow-x: auto`. While one is open, a scroll listener (capture phase, so it hears the rows) repositions it in the next frame, and it closes if its tab scrolls out of sight (D-059). P08 tested this and changed nothing in it.
 - **Fallback.** Without JavaScript, rows still scroll natively and every tab is a link; Chromium still opens rows at their selected tab, other browsers at their start.
 
-## Repository layout after P08
+## Repository layout after P09
 
 | Path | Role |
 | --- | --- |
-| `src/pages/` | Route files: Home (`index.astro`) and one generated route per tab level (`[section]/…`, D-053); the two temporary design studies in `[design]/` (`tokens.astro` at `/_design/tokens/`, `folders.astro` at `/_design/folders/`; D-048, D-055) |
+| `src/pages/` | Route files: Home (`index.astro`) and one generated route per tab level (`[section]/…`, D-053); the temporary design studies in `[design]/` (`tokens.astro` at `/_design/tokens/`, `folders.astro` at `/_design/folders/`, and since P09 `bearnard.astro` at `/_design/bearnard/`; D-048, D-055, D-073) |
 | `src/layouts/` | `BaseLayout` (document, styles, environment) and `FolderPage` (a page inside the folders; D-053, D-054) |
 | `src/components/folders/` | `FolderStack`, `FolderLayer`, `FolderTabStrip`, `FolderTab` and `FolderPreview` (D-043, D-059) |
+| `src/components/bearnard/` | `BearnardIllustration`: one approved Bearnard illustration, by role or ID (D-073) |
+| `src/illustrations/` | `bearnard.ts`: the Bearnard illustration registry (D-073) |
+| `public/illustrations/bearnard/` | Committed web derivatives of approved Bearnard masters; the only files in `public/` (D-073, D-074) |
+| `scripts/bearnard_derivatives.py` | Generates those derivatives and their provenance, by hand; needs Pillow |
 | `src/scripts/` | `folder-previews.ts` (D-060) and `folder-rows.ts` (D-066): the folders' client-side modules. Not `src/lib/`, which the root `.gitignore` would hide. |
 | `src/components/scaffold/` | `ScaffoldContent`: the temporary development content of the folder pages until the content prompts |
 | `src/styles/` | `tokens.css`, `environments.css` and `global.css`, loaded by BaseLayout; `folders.css`, loaded only by `FolderStack` |
 | `src/design/` | The token contract and the CSS token reader, shared by the specimen and the tests |
 | `src/navigation/` | Navigation types, registry and helpers; `index.ts` exports the compiled `siteNavigation`. Not `src/lib/`, which the root `.gitignore` would hide (KL-11). |
-| `tests/` | Token, contrast, navigation, build-output, folder-component, route and preview checks; `html-tree.mjs` is their shared HTML reader; `browser-harness.mjs` drives headless Chrome for `previews-browser.mjs` and `responsive-browser.mjs` |
+| `tests/` | Token, contrast, navigation, build-output, folder-component, route and preview checks; `html-tree.mjs` is their shared HTML reader; `browser-harness.mjs` drives headless Chrome for `previews-browser.mjs`, `responsive-browser.mjs` and `transitions-browser.mjs`; `bearnard.mjs` checks the illustrations (P09) |
 | `.claude/launch.json` | Local preview servers for the Claude desktop app (D-034) |
 | `astro.config.mjs`, `tsconfig.json` | Astro and TypeScript configuration |
 | `package.json`, `package-lock.json`, `.node-version` | npm project, lockfile and Node.js version policy |
 | `planning/` | Requirements and specifications |
 | `development/` | Roadmap, current state, decisions, logs, acceptance gates, releases |
 | `debugging/` | Issues, regressions, known limitations, investigations |
-| `assets/bearnard/` | Bearnard inventory and checksums. The images stay in `brand/bearnard/`, which is gitignored. |
+| `assets/bearnard/` | Bearnard inventory and checksums, and since P09 `derivatives.json`, the provenance of the web derivatives. The masters stay in `brand/bearnard/`, which is gitignored. |
 | `_backup/pelican-legacy/` | Archived Pelican site. Not a build input. |
 | `brand/` | Brand assets |
 | `docs/` | Pelican-era planning notes; several are empty placeholders |
-| `cv/`, `publications/`, `scripts/`, `data/`, `hyperglam/` | Retained from the old plan; every tracked file in them is empty |
+| `cv/`, `publications/`, `scripts/`, `data/`, `hyperglam/` | Retained from the old plan; every tracked file in them is empty, except `scripts/bearnard_derivatives.py` (above) |
 | `.github/workflows/` | Eight placeholder workflows, all commented out. No active workflow. |
 | `.pre-commit-config.yaml`, `.editorconfig`, `.prettierrc`, `.prettierignore` | Formatting and commit-hook configuration |
 | `_books/`, `_papers/`, `_references/`, `_reports/` | Private workspace, gitignored. Never commit. |
 | `backup/`, `releases/`, `resources/`, `viz/`, `_logo/` | Empty, untracked placeholder folders |
 
-`public/` does not exist yet (D-019); `src/components/` was created in P05. The site ships no images or font files, and one inlined script (P07, extended in P08). It builds 39 pages: 37 folder pages and 2 design studies.
+`public/` was created in P09 for the Bearnard derivatives (D-019, D-073); `src/components/` was created in P05. The site ships two images (the Bearnard portrait at two widths, used only by a design study so far), no font files, and one inlined script (P07, extended in P08). It builds 40 pages: 37 folder pages and 3 design studies.
 
 ## Deployment
 
