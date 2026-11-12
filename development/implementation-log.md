@@ -69,7 +69,8 @@ Screenshots were taken in headless Chrome 157 from the production preview (`astr
 - `shasum -a 256 -c assets/bearnard/SHA256SUMS`: 352 of 352 match. `brand/bearnard/` is still ignored.
 - `git diff --check`: clean. The pre-commit hooks ran on each commit.
 - The `astro dev` server on port 4321 that was running before P09 was left running.
-- **Commit:** `feat(design): explore section environment palettes [P09]`, the commit that holds this entry.
+- **Commit:** `b76f3b0 feat(design): explore section environment palettes [P09]`.
+- **Noticed in the final repository check:** `origin/main` is at `e28d43a`, two commits ahead of local `main` (`6036137`). The reflog shows a fetch at 08:22 on 2026-11-11, before P08 and not run by Claude Code; the commits merge pull request 125 and add seven files under `__frag8/`, unrelated to the site, like the `__bak9/` files in P02. `development/current-state.md` had still said both were at `6036137`; it is corrected in the records commit that follows `b76f3b0`. Nothing was fetched, merged or pushed.
 
 ## P08 — Responsive Physical-Folder Navigation & Adaptive Layout — 2026-11-11
 
