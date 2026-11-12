@@ -129,6 +129,7 @@ await test("RESP-001", "No page scrolls sideways, at ten widths", async (check) 
     "/_design/folders/",
     "/_design/tokens/",
     "/_design/bearnard/",
+    "/_design/environments-v2/",
   ]
   for (const width of WIDTHS) {
     await setViewport(width, 900, width < 768)

@@ -6,7 +6,7 @@ Shared rules for every coding agent in this repository: Claude Code, Codex and o
 
 GusmaoLab is Eduardo Gade Gusmao's personal website and publishing ecosystem: computational biology, bioinformatics, research, software engineering, teaching, literature and personal interests. Scientific rigor and visual humor go together.
 
-The site is an Astro static project. Every registered folder has a page generated from the navigation registry (P06), with temporary development content only, unopened folders preview their contents on hover and keyboard focus (P07), and the folders adapt to every screen size (P08); temporary design studies live under `/_design/` (the P03 tokens specimen, the P05 folder study and the P09 Bearnard study). The old Pelican site is archived in `_backup/pelican-legacy/`.
+The site is an Astro static project. Every registered folder has a page generated from the navigation registry (P06), with temporary development content only, unopened folders preview their contents on hover and keyboard focus (P07), and the folders adapt to every screen size (P08); temporary design studies live under `/_design/` (the P03 tokens specimen, the P05 folder study, and the P09 Bearnard and environments studies). The old Pelican site is archived in `_backup/pelican-legacy/`.
 
 ## Where things are
 
@@ -43,6 +43,7 @@ Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `n
 - Components use semantic tokens (`--color-*`, `--font-*`, `--space-*` …), never `--palette-*` primitives or raw colors.
 - Choose a section environment with `data-environment` (BaseLayout's `environment` prop). Change what an environment can set only through `src/design/contract.mjs` and a recorded decision.
 - Keep `tests/design-tokens.mjs` and `tests/contrast.mjs` passing. Do not lower a contrast threshold to make a color pass.
+- `src/styles/environment-candidates.css` holds proposed environments (`proposed-<section>`), shown only at `/_design/environments-v2/`. They are candidates: never use one on a site page, and adopt one only through the owner's recorded decision (D-075). Keep `tests/environments.mjs` passing.
 - Never place text directly on the flannel lining. Add no transitions, animation or smooth scrolling without a decision. The only motion is the 140 ms cross-fade between folder pages (`src/styles/view-transitions.css`, D-071), off under reduced motion; never add a client router for it.
 - On small screens the folders stay folders: rows scroll sideways inside their folders, never the page, and no menu, sidebar or icon row replaces them (D-064). Check layout changes at 320, 390, 768, 1024, 1280 and 1440 px.
 - Physical folders are `src/components/folders/` with `src/styles/folders.css`. Draw them from a `siteNavigation.resolve()` state (`<FolderStack state={…}>`), never a hand-built tree. Levels differ only by `data-level` and tokens; never add environment-specific folder rules (D-043–D-047).

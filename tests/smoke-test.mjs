@@ -11,7 +11,12 @@ import { siteNavigation } from "../src/navigation/index.ts"
 // Temporary design studies. They live under /_design/, which no registry path can reach
 // (slugs never start with "_"), and are the only pages allowed outside the navigation
 // registry: the P03 specimen (moved from / in P06) and the P05 folder study.
-const designStudies = ["/_design/tokens/", "/_design/folders/", "/_design/bearnard/"]
+const designStudies = [
+  "/_design/tokens/",
+  "/_design/folders/",
+  "/_design/bearnard/",
+  "/_design/environments-v2/",
+]
 const fileOf = (path) => `${path.slice(1)}index.html`
 // Pages the build must produce (P06): every registered destination, and the studies.
 const expectedPages = [...siteNavigation.pagePaths(), ...designStudies].map(fileOf)

@@ -4,7 +4,7 @@ Newest entry first.
 
 ## P09 — Navigation Continuity, Environmental Refinement & Bearnard Integration Foundations — 2026-11-11
 
-**Agent:** Claude Code. **Branch:** `development`. **Result:** in progress; recorded part by part, in the order of the brief's priorities.
+**Agent:** Claude Code. **Branch:** `development`. **Result:** technically completed, in three parts with one commit each. Three reviews are the owner's and still open: a retest of the folder transition on real browsers (G-P09-A6), the Bearnard role assignments (G-P09-B7) and the environment candidates (G-P09-C7). Nothing was pushed or deployed. P10 was not started.
 
 ### Starting state (verified)
 
@@ -36,6 +36,40 @@ Newest entry first.
 - **Tests:** `tests/bearnard.mjs` (BEAR-001 to BEAR-008, in `npm test`). The smoke test now allows registered derivatives only, compares every image against the 352 master checksums, and has three size ceilings. RESP-001 covers the study.
 - **Reproducibility:** a copy of the repository without `brand/bearnard/`, installed with `npm ci`, passed `npm run verify`; BEAR-004 reported SKIPPED and the other seven checks passed.
 - **Not done, on purpose:** no role assignment, no Bearnard on a site page, no new artwork, no approval of any experimental or unclassified image.
+- **Commit:** `6ddf084 feat(bearnard): establish illustration registry [P09]`.
+
+### Part C — Environmental refinement
+
+- **Approach** (D-075): proposals beside the approved palette, not changes to it. The brief does not authorize applying every candidate to the production layout, so no site page changed.
+- **Built:**
+  - `src/styles/environment-candidates.css`: four complete environment contracts, `proposed-scientific`, `proposed-technical`, `proposed-literary` and `proposed-personal`, and eleven candidate hues. Fonts and type values are copied unchanged. A twelfth hue that no candidate used was removed before the commit.
+  - `/_design/environments-v2/` (`src/pages/[design]/environments-v2.astro`): each section twice, "Current · approved" and "Proposed · pending the owner's approval", with the same folder state and sample text, and a table of nine colour roles marking the ones that stay the same. The scientific pair also shows the Bearnard portrait on its paper, through `BearnardIllustration`, on a study page only.
+  - `tests/environments.mjs` (ENV-001 to ENV-006, in `npm test`): complete token sets; all 49 enforced contrast pairings in each candidate; tab distinction no lower than the approved environments; colours only and identical folder structure on both sides; no candidate styling on any other page; a fingerprint of the approved palette.
+  - The smoke, route, token, transition and responsive tests list the new study.
+- **Ideas:** scientific, celadon cardstock on midnight navy with spruce lines; technical, honey kraft on a spruce workbench; literary, copper and peach on oxblood; personal, amber and honey cream on forest-green flannel. `planning/design-system.md` section 7 has every value and the contrast figures.
+- **Unchanged:** `environments.css`, `tokens.css`, the contract, folder geometry and behaviour, fonts, and every site page.
+- **Not done, on purpose:** no candidate adopted; no candidate for Core; no typography change (D-042); no claim that a candidate is better.
+
+### Visual review
+
+Screenshots were taken in headless Chrome 157 from the production preview (`astro preview`, port 4322).
+
+- **Environment pairs, 16 screenshots** (four sections at 1440, 1280, 768 and 390 px). Looked at: all four at 1440, 768 and 390 px; scientific, technical and personal at 1280 px. Not looked at one by one: literary at 1280 px. The pairs sit side by side at 1440 and 1280 px and stack at 768 and 390 px.
+- **Bearnard study, 4 screenshots** (1440, 1280, 768, 390 px). Looked at: 1440, 768 and 390 px. Not looked at: 1280 px.
+- **Folder regression, 6 screenshots** (`/cv/research/` and `/writing/kosmos/` at 1440, 390 and 320 px). Looked at: all but `/writing/kosmos/` at 320 px.
+- **Measured at 1440, 1280, 768, 390 and 320 px** on both P09 studies, Home, `/cv/research/` and `/writing/kosmos/`: no sideways page scroll, and every row's selected tab in view. The studies' wide tables scroll inside themselves on phones, as P08 intends.
+- **One capture artefact.** The first technical pair at 768 px showed the approved sample with an empty first row. The page was correct in a visible browser at that width, the row measurements matched on both sides, and two re-captures of all 16 pairs were correct, with every other file identical pixel for pixel. It was a one-off fault of the off-screen capture, not of the site; the screenshot was replaced. No issue record was opened.
+- **Recordings** of the folder transition before and after Part A, slowed five times: `/cv/` to `/writing/` at 1440 px and `/cv/` to `/cv/research/` at 390 px.
+- **Not checked:** Firefox, Safari, real phones and tablets, and colour on a calibrated or a low-quality display.
+
+### Validation (final)
+
+- `npm run verify`: passes. `astro check` 0 errors, warnings and hints in 48 files; 41 pages; 260 contrast pairings; 22 navigation, 10 folder, 9 route, 11 preview, 8 responsive, 4 transition, 8 Bearnard and 6 environment checks; `dist/` 47 files, 1,197,525 bytes (site 651,442, studies 304,063, illustrations 242,020).
+- `npm run test:browser`: 12 of 12 preview, 17 of 17 responsive and 12 of 12 navigation-continuity checks in headless Chrome 157.
+- `shasum -a 256 -c assets/bearnard/SHA256SUMS`: 352 of 352 match. `brand/bearnard/` is still ignored.
+- `git diff --check`: clean. The pre-commit hooks ran on each commit.
+- The `astro dev` server on port 4321 that was running before P09 was left running.
+- **Commit:** `feat(design): explore section environment palettes [P09]`, the commit that holds this entry.
 
 ## P08 — Responsive Physical-Folder Navigation & Adaptive Layout — 2026-11-11
 

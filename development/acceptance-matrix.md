@@ -377,6 +377,31 @@ Checked by `tests/bearnard.mjs` (in `npm run verify`), the smoke test, `shasum -
 | BEAR-007 Nothing in the build reads the masters | `tests/bearnard.mjs`; clean copy | Pass |
 | BEAR-008 Asset references are site-relative, never local paths | `tests/bearnard.mjs` | Pass |
 
+### Gate C — Environmental refinement
+
+Checked by `tests/environments.mjs` (in `npm run verify`) and by screenshots of `/_design/environments-v2/` at 1440, 1280, 768 and 390 px. The tests prove structure and legibility; preference is the owner's.
+
+| ID | Gate | Status | Evidence |
+| --- | --- | --- | --- |
+| G-P09-C1 | A visual comparison exists for the four environments | Passed | `/_design/environments-v2/`: four pairs, same folders and text on both sides (ENV-004); 16 screenshots |
+| G-P09-C2 | The approved palette remains available and unchanged | Passed | ENV-006 (fingerprint of every approved environment token; all four shown as "Current · approved"); `environments.css` and `tokens.css` have no diff |
+| G-P09-C3 | Candidates are marked pending the owner's approval | Passed | Every proposed sample is captioned "Proposed · pending the owner's approval" (ENV-006); D-075; the candidate stylesheet's header |
+| G-P09-C4 | Candidates reach no site page | Passed | ENV-005: no page but the study contains or loads `proposed-` styling; all 37 folder pages keep an approved environment |
+| G-P09-C5 | Candidates stay legible | Passed | ENV-001 (complete token sets), ENV-002 (49 enforced pairings in each of the 4 candidates, 0 failures), ENV-003 (tab distinction) |
+| G-P09-C6 | Folder geometry and behaviour are untouched | Passed | ENV-004; FOLD, PREV, RESP and TRANS suites unchanged and passing; RESP-001 covers the study at ten widths |
+| G-P09-C7 | The owner decides which candidates to adopt | **Untested** | Pending the owner's review (D-075; design-system question 24). Not marked on the owner's behalf. |
+
+### Environment tests (P09)
+
+| Test | Where | Result |
+| --- | --- | --- |
+| ENV-001 Every environment, approved or proposed, is a complete token set | `tests/environments.mjs` | Pass |
+| ENV-002 Text and indicators stay legible in every proposed environment | `tests/environments.mjs` | Pass |
+| ENV-003 Active and inactive tabs stay as distinct as in the approved environments | `tests/environments.mjs` | Pass |
+| ENV-004 Candidates change colours only, never folder geometry | `tests/environments.mjs` | Pass |
+| ENV-005 Candidate styling reaches no other page | `tests/environments.mjs` | Pass |
+| ENV-006 The approved palette is unchanged and still shown; proposals marked pending | `tests/environments.mjs` | Pass |
+
 ## Future gates
 
 | ID | Gate | Source | Status |
@@ -388,7 +413,7 @@ Checked by `tests/bearnard.mjs` (in `npm run verify`), the smoke test, `shasum -
 | G-05 | Active tab shows a V-shaped indicator; inactive tabs stay visible | Information architecture | **Passed** in P06 on the site's pages (NAV-028, NAV-030); appearance approved in P05 (G-P05-17) and on the P06 pages (G-P06-20) |
 | G-06 | No persistent sidebar, no breadcrumbs, no file-manager design | Information architecture | **Passed** in P06 on the site's pages: they hold only rows of folder tabs and the content (NAV-028 counts the landmarks); the temporary content repeats no trail of folders |
 | G-07 | Content deeper than level three lives in the third-level folder body | Information architecture | Untested on site pages: no content route exists yet. The model keeps the owning folder selected (NAV-009, NAV-025), and `FolderPage` puts any page in its folder's body. |
-| G-08 | Shared design system across sections | R-03, R-04 | **Passed** in P06 (technical): every page uses the shared tokens and its section's environment (NAV-027). Stronger environment differences are deferred (D-056). |
+| G-08 | Shared design system across sections | R-03, R-04 | **Passed** in P06 (technical): every page uses the shared tokens and its section's environment (NAV-027). Stronger environment differences exist as candidates awaiting the owner (D-056, D-075). |
 | G-09 | Only Bearnard v1.3 and approved variants appear; no full-resolution masters in the public directory | R-05 | **Passed** in P09 for what exists: the only images in `public/` and `dist/` are two registered derivatives of the v1.3 master (BEAR-002, BEAR-003, BEAR-006). Untested on site pages: none shows Bearnard yet. |
 | G-10 | Eight independent editorial collections | R-06 | Untested |
 | G-11 | Canonical records reused across pages | R-07 | Untested |

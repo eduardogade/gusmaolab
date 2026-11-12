@@ -1,0 +1,319 @@
+---
+// Temporary P09 design study: the approved section environments beside proposed,
+// stronger ones. Not a page of the website. The proposals are CANDIDATES pending the
+// owner's approval; the site's pages keep the approved environments (environments.css).
+// The candidate stylesheet is imported here only, so it reaches no other page.
+import BaseLayout from "../../layouts/BaseLayout.astro"
+import FolderStack from "../../components/folders/FolderStack.astro"
+import BearnardIllustration from "../../components/bearnard/BearnardIllustration.astro"
+import { siteNavigation } from "../../navigation/index.ts"
+import type { NavigationState } from "../../navigation/index.ts"
+import { readTokens } from "../../design/css-tokens.mjs"
+import "../../styles/environment-candidates.css"
+import candidatesCss from "../../styles/environment-candidates.css?raw"
+import environmentsCss from "../../styles/environments.css?raw"
+import tokensCss from "../../styles/tokens.css?raw"
+
+export function getStaticPaths() {
+  return [{ params: { design: "_design" } }]
+}
+
+const tokens = readTokens(tokensCss, environmentsCss, candidatesCss)
+const stateAt = (url: string): NavigationState => {
+  const result = siteNavigation.resolve(url)
+  if (!result.found) throw new Error(`The environment study needs ${url}`)
+  return result.state
+}
+
+// The colours that differ most between environments, as the reader resolves them.
+const SWATCHES: [string, string][] = [
+  ["Flannel ground", "--color-backdrop"],
+  ["Flannel line", "--color-flannel-line"],
+  ["Shell", "--color-shell"],
+  ["Folder, level 1", "--color-folder-parent"],
+  ["Folder, level 2", "--color-folder-nested"],
+  ["Reading paper", "--color-folder-active"],
+  ["Links", "--color-text-link"],
+  ["Accent", "--color-accent"],
+  ["The V", "--color-indicator-selected"],
+]
+const hex = (name: string, env: string) => tokens.color(name, env).hex
+
+const PAIRS = [
+  {
+    id: "scientific",
+    name: "Scientific",
+    sections: "CV, Research, Lab, Portfolio",
+    url: "/cv/research/",
+    idea: "Blue-green cardstock outside and warm parchment inside, on midnight navy with spruce and honey threads.",
+    heading: "Research",
+    text: "Inside the nucleus, chromatin folds into loops and domains. A contact map counts how often two loci meet, and the counts fall with genomic distance, roughly as a power law.",
+    bearnard: true,
+  },
+  {
+    id: "technical",
+    name: "Technical",
+    sections: "Lecture Notes, The Greenhouse, Bearnard's Trail, Berries, Timber Logs",
+    url: "/lecture-notes/greenhouse/",
+    idea: "A workshop: honey kraft folders on a deep spruce workbench, cream and graph-paper papers, spruce for links and the V.",
+    heading: "The Greenhouse",
+    text: "A hash table keeps each key in a bucket chosen by a hash function. Lookups take constant time on average while the table stays sparse; when it fills, it doubles and rehashes.",
+    bearnard: false,
+  },
+  {
+    id: "literary",
+    name: "Literary",
+    sections: "Writing, Months' Original, Kosmos Series, Book Club",
+    url: "/writing/kosmos/",
+    idea: "Copper cardstock, peach and rich cream papers, an oxblood shell on oxblood flannel, rust links and V, ember accents.",
+    heading: "Kosmos Series",
+    text: "The archive keeps its own weather. In winter the paper smells of cedar and old tea; in summer, of dust and the river. Somewhere between the folders, a story waits to be filed.",
+    bearnard: false,
+  },
+  {
+    id: "personal",
+    name: "Personal",
+    sections: "Bearnard's Area, Photos, Videos, Powerlifting, Bear Life",
+    url: "/bearnards-area/powerlifting/",
+    idea: "Bearnard's colours, stronger: amber folders, honey-cream inside, navy and forest around, his green eyes for accents.",
+    heading: "Powerlifting",
+    text: "Training notes: warm up slowly, keep the bar path straight, and log every set. The numbers tell the story the mirror cannot.",
+    bearnard: false,
+  },
+].map((pair) => ({ ...pair, state: stateAt(pair.url) }))
+---
+
+<BaseLayout
+  title="GusmaoLab — section environments, current and proposed (P09, temporary)"
+  description="Temporary design study for the GusmaoLab website: each section environment as approved, beside a proposed stronger palette pending the owner's approval."
+>
+  <div class="study" data-study="p09-environments">
+    <header class="shell intro gl-on-dark">
+      <p class="overline">Design study · P09 · Temporary</p>
+      <h1>Section Environments — Current and Proposed</h1>
+      <p class="lead">
+        A <strong>temporary design study</strong>, not a page of the website. Each section is shown twice, with the same
+        folders and text: as approved, and with a proposed, stronger palette. <strong>The proposals are candidates pending the owner's approval</strong>; the site's pages keep the approved environments.
+      </p>
+      <ul class="notes" role="list">
+        <li>Only colours and materials change. Folder geometry, tabs, the V, Overview and every behaviour are the same; so are the fonts.</li>
+        <li>Each proposal can be adopted on its own, or left as it is.</li>
+        <li>Every proposal passes the same contrast checks as the approved environments.</li>
+      </ul>
+    </header>
+
+    {
+      PAIRS.map((pair) => (
+        <section class="pair" data-env-pair={pair.id} aria-labelledby={`pair-${pair.id}`}>
+          <header class="shell pair-head gl-on-dark">
+            <p class="overline">{pair.sections}</p>
+            <h2 id={`pair-${pair.id}`}>{pair.name}</h2>
+            <p class="idea">Proposed: {pair.idea}</p>
+            <div class="gl-scroll-x" tabindex="0" role="region" aria-label={`${pair.name} colours, current and proposed`}>
+              <table class="swatches">
+                <thead>
+                  <tr><th scope="col">Role</th><th scope="col">Current</th><th scope="col">Proposed</th></tr>
+                </thead>
+                <tbody>
+                  {SWATCHES.map(([label, name]) => {
+                    const before = hex(name, pair.id)
+                    const after = hex(name, `proposed-${pair.id}`)
+                    return (
+                      <tr data-changed={before !== after ? "" : undefined}>
+                        <th scope="row">{label}</th>
+                        <td><span class="chip" style={`background-color: ${before}`} aria-hidden="true"></span> <code>{before}</code></td>
+                        <td><span class="chip" style={`background-color: ${after}`} aria-hidden="true"></span> <code>{after}</code>{before === after ? " (same)" : ""}</td>
+                      </tr>
+                    )
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </header>
+          <div class="compare">
+            {[
+              { variant: "current", env: pair.id, caption: "Current · approved" },
+              { variant: "proposed", env: `proposed-${pair.id}`, caption: "Proposed · pending the owner's approval" },
+            ].map((side) => (
+              <figure class="frame gl-flannel" data-variant={side.variant} data-environment={side.env}>
+                <figcaption class="tag">{side.caption}</figcaption>
+                <div class="mini-shell">
+                  <FolderStack state={pair.state} links={false}>
+                    <div class:list={["sample", { "with-bearnard": pair.bearnard }]}>
+                      <div class="gl-prose">
+                        <p class="sample-overline">Sample content · {pair.name.toLowerCase()}</p>
+                        <h3>{pair.heading}</h3>
+                        <p>{pair.text}</p>
+                      </div>
+                      {pair.bearnard && (
+                        <div class="bearnard">
+                          <BearnardIllustration variant="bearnard-v1.3-portrait" sizes="(min-width: 64rem) 9rem, 30vw" />
+                        </div>
+                      )}
+                    </div>
+                  </FolderStack>
+                </div>
+              </figure>
+            ))}
+          </div>
+        </section>
+      ))
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  /* Study layout only. The folders and the environments come from the shared styles. */
+  .study {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-xl);
+    max-inline-size: 96rem;
+    margin-inline: auto;
+    padding: var(--space-gutter);
+  }
+
+  .shell {
+    padding: var(--space-shell-padding);
+    border: var(--border-width-hairline) solid var(--color-shell-border);
+    border-radius: var(--radius-shell);
+    background-color: var(--color-shell);
+    box-shadow: var(--shadow-shell);
+  }
+
+  .intro,
+  .pair-head {
+    display: grid;
+    gap: var(--space-2xs);
+    padding: var(--space-m) var(--space-content-inline);
+  }
+
+  .intro h1 {
+    max-inline-size: 26ch;
+    font-size: var(--font-size-h1);
+  }
+
+  .lead,
+  .notes,
+  .idea {
+    max-inline-size: var(--measure-wide);
+  }
+
+  .lead {
+    font-size: var(--font-size-lead);
+  }
+
+  .notes {
+    display: grid;
+    gap: var(--space-3xs);
+    margin: 0;
+    padding-inline-start: var(--space-m);
+    color: var(--color-text-on-dark-muted);
+  }
+
+  .overline,
+  .sample-overline,
+  .tag {
+    font-family: var(--font-label);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: uppercase;
+  }
+
+  .overline {
+    color: var(--color-text-on-dark-muted);
+  }
+
+  .pair {
+    display: grid;
+    gap: var(--space-s);
+  }
+
+  .swatches {
+    inline-size: auto;
+    font-size: var(--font-size-sm);
+  }
+
+  .swatches tr {
+    background: none;
+  }
+
+  .swatches th,
+  .swatches td {
+    padding: var(--space-3xs) var(--space-xs);
+    border-color: color-mix(in srgb, var(--color-text-on-dark) 20%, transparent);
+    background: none;
+    color: inherit;
+    white-space: nowrap;
+  }
+
+  .swatches tr:not([data-changed]) td:last-child {
+    color: var(--color-text-on-dark-muted);
+  }
+
+  .chip {
+    display: inline-block;
+    inline-size: 1em;
+    block-size: 1em;
+    vertical-align: -0.15em;
+    border: var(--border-width-hairline) solid var(--color-text-on-dark);
+    border-radius: var(--radius-control);
+  }
+
+  .compare {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-s);
+  }
+
+  @media (min-width: 72rem) {
+    .compare {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    }
+  }
+
+  /* Each side carries its own environment and flannel. */
+  .frame {
+    display: grid;
+    gap: var(--space-2xs);
+    margin: 0;
+    padding: var(--space-s);
+    border-radius: var(--radius-shell);
+  }
+
+  .tag {
+    justify-self: start;
+    padding: var(--space-3xs) var(--space-2xs);
+    border-radius: var(--radius-control);
+    background-color: var(--color-shell);
+    color: var(--color-text-on-dark);
+  }
+
+  .mini-shell {
+    padding: var(--space-shell-padding);
+    border: var(--border-width-hairline) solid var(--color-shell-border);
+    border-radius: var(--radius-shell);
+    background-color: var(--color-shell);
+    box-shadow: var(--shadow-shell);
+  }
+
+  .sample {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-m);
+    align-items: end;
+  }
+
+  .sample.with-bearnard {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 9rem);
+  }
+
+  .sample-overline {
+    color: var(--color-text-muted);
+  }
+
+  .bearnard {
+    max-inline-size: 9rem;
+  }
+</style>

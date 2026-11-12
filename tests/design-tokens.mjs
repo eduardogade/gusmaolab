@@ -25,6 +25,7 @@ const componentFiles = [
   "src/scripts/folder-rows.ts",
   "src/components/bearnard/BearnardIllustration.astro",
   "src/pages/[design]/bearnard.astro",
+  "src/pages/[design]/environments-v2.astro",
   "src/components/scaffold/ScaffoldContent.astro",
   "src/layouts/FolderPage.astro",
   "src/pages/index.astro",

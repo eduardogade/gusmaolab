@@ -59,7 +59,7 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 | D-053 | Folder pages are generated from the registry by one route file per tab level; no catch-all route | Approved | 2026-11-11 |
 | D-054 | Tabs are links: `aria-current="page"` on the page's own tab, `"true"` on open folders above it; each row is a labelled `nav`; `<main>` is inside the deepest folder | Approved; its "no JavaScript" note is replaced by D-060 | 2026-11-11 |
 | D-055 | The P03 specimen moves to `/_design/tokens/`; `/` becomes the Home folder page | Approved (P06 brief) | 2026-11-11 |
-| D-056 | Stronger palette differences between section environments | Deferred | 2026-11-11 |
+| D-056 | Stronger palette differences between section environments | Open: candidates proposed in P09 (D-075), awaiting the owner | 2026-11-11 |
 | D-057 | The owner approved the P06 navigation and Overview tabs | Approved by the owner | 2026-11-11 |
 | D-058 | Folder previews show an unopened folder's immediate contents, Overview first, reusing P06's display tabs; open folders, leaves and Overviews get none | Approved (P07 brief); appearance approved by the owner (D-063) | 2026-11-11 |
 | D-059 | Previews are built with the page inside their tab and shown as `popover="manual"` in the top layer, placed by the script from the tab's position | Approved | 2026-11-11 |
@@ -78,6 +78,7 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 | D-072 | Hover previews open only after the pointer has really moved since the page appeared | Approved | 2026-11-11 |
 | D-073 | Bearnard on the website: an illustration registry, one component, and web derivatives generated from approved masters and committed in `public/illustrations/bearnard/` | Approved (P09 brief); role assignments await the owner | 2026-11-11 |
 | D-074 | The build may hold registered illustrations and nothing else new: only derivatives recorded in `assets/bearnard/derivatives.json`, with separate size ceilings for the site, the design studies and the illustrations | Approved | 2026-11-11 |
+| D-075 | Four proposed section palettes exist as candidates only, in their own stylesheet and design study; the approved environments are unchanged, and adopting any candidate needs the owner | Experimental; awaits the owner | 2026-11-11 |
 
 ## Details
 
@@ -267,3 +268,12 @@ This replaces the "no client-side JavaScript" clause of D-054 and of the archite
 - **Study.** `/_design/bearnard/` is a temporary design study showing the portrait, the registry and every role's fallback. D-011 (where the masters are stored) is unchanged. Bearnard may appear in any section, scientific ones included (R-05).
 
 **D-074.** Until P09 `public/` did not exist (D-019) and the smoke test allowed only pages and stylesheets, under one 1 MB ceiling for the whole of `dist/`. Now `public/illustrations/bearnard/` exists, and the smoke test allows exactly the files recorded in `assets/bearnard/derivatives.json`: each must match its recorded checksum and stay under 250,000 bytes, and any other image still fails. The single ceiling became three, so that artwork cannot hide inside the site's allowance or the reverse: the site's pages, styles and script under 1 MB (as before), the temporary design studies under 600 KB, and the illustrations under 600 KB. The check for private paths in `dist/` still matches `bearnard` anywhere, to catch a stray master; the declared study page and the registered derivatives are exempt by their exact paths. KL-30 has the sizes.
+
+**D-075.** The owner asked for section environments that differ more in palette (D-056). P09 answers with proposals, not changes: the brief says its technical completion does not authorize applying every candidate to the production layout.
+
+- **What exists.** One candidate palette for each of Scientific, Technical, Literary and Personal, as a complete environment contract named `proposed-<section>`, in `src/styles/environment-candidates.css` with eleven candidate hues (`--palette-proposed-*`). The design study `/_design/environments-v2/` shows each approved environment beside its candidate, with the same folders and text.
+- **What did not change.** `environments.css`, `tokens.css`, the contract and every site page. ENV-006 holds a fingerprint of every approved environment token, so a change to the approved palette fails the tests until a decision updates the fingerprint. ENV-005 fails if candidate styling reaches any page other than the study.
+- **Scope.** Colours and materials only: no geometry, behaviour, font or type value differs (ENV-004). Typography consolidation stays deferred (D-042), and no font was added.
+- **Evidence, and its limit.** Each candidate passes the 49 enforced contrast pairings and keeps its tabs at least as distinct as the approved ones (ENV-002, ENV-003). That proves legibility. Whether a candidate is better is the owner's judgement, and nothing here records it as made.
+- **Adoption.** Selective: each candidate can be adopted, changed or dropped alone, by a recorded decision. An adopted block moves into `environments.css` under the section's own name, its hues move into `tokens.css`, and the ENV-006 fingerprint and `planning/design-system.md` section 7 are updated in the same change. Until then `data-environment="proposed-…"` must not appear on a site page.
+- **D-056** stays open until the owner has decided on all four. Core, the environment of Home and the studies, has no candidate.

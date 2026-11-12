@@ -123,7 +123,7 @@ The folders adapt with CSS: fluid spacing tokens, rows that scroll inside their 
 
 | Path | Role |
 | --- | --- |
-| `src/pages/` | Route files: Home (`index.astro`) and one generated route per tab level (`[section]/…`, D-053); the temporary design studies in `[design]/` (`tokens.astro` at `/_design/tokens/`, `folders.astro` at `/_design/folders/`, and since P09 `bearnard.astro` at `/_design/bearnard/`; D-048, D-055, D-073) |
+| `src/pages/` | Route files: Home (`index.astro`) and one generated route per tab level (`[section]/…`, D-053); the temporary design studies in `[design]/` (`tokens.astro` at `/_design/tokens/`, `folders.astro` at `/_design/folders/`, and since P09 `bearnard.astro` at `/_design/bearnard/` and `environments-v2.astro` at `/_design/environments-v2/`; D-048, D-055, D-073, D-075) |
 | `src/layouts/` | `BaseLayout` (document, styles, environment) and `FolderPage` (a page inside the folders; D-053, D-054) |
 | `src/components/folders/` | `FolderStack`, `FolderLayer`, `FolderTabStrip`, `FolderTab` and `FolderPreview` (D-043, D-059) |
 | `src/components/bearnard/` | `BearnardIllustration`: one approved Bearnard illustration, by role or ID (D-073) |
@@ -132,7 +132,7 @@ The folders adapt with CSS: fluid spacing tokens, rows that scroll inside their 
 | `scripts/bearnard_derivatives.py` | Generates those derivatives and their provenance, by hand; needs Pillow |
 | `src/scripts/` | `folder-previews.ts` (D-060) and `folder-rows.ts` (D-066): the folders' client-side modules. Not `src/lib/`, which the root `.gitignore` would hide. |
 | `src/components/scaffold/` | `ScaffoldContent`: the temporary development content of the folder pages until the content prompts |
-| `src/styles/` | `tokens.css`, `environments.css` and `global.css`, loaded by BaseLayout; `folders.css`, loaded only by `FolderStack` |
+| `src/styles/` | `tokens.css`, `environments.css` and `global.css`, loaded by BaseLayout; `folders.css`, loaded only by `FolderStack`; `environment-candidates.css`, the proposed environments, loaded only by the environments study and never by a site page (D-075) |
 | `src/design/` | The token contract and the CSS token reader, shared by the specimen and the tests |
 | `src/navigation/` | Navigation types, registry and helpers; `index.ts` exports the compiled `siteNavigation`. Not `src/lib/`, which the root `.gitignore` would hide (KL-11). |
 | `tests/` | Token, contrast, navigation, build-output, folder-component, route and preview checks; `html-tree.mjs` is their shared HTML reader; `browser-harness.mjs` drives headless Chrome for `previews-browser.mjs`, `responsive-browser.mjs` and `transitions-browser.mjs`; `bearnard.mjs` checks the illustrations (P09) |
@@ -152,7 +152,7 @@ The folders adapt with CSS: fluid spacing tokens, rows that scroll inside their 
 | `_books/`, `_papers/`, `_references/`, `_reports/` | Private workspace, gitignored. Never commit. |
 | `backup/`, `releases/`, `resources/`, `viz/`, `_logo/` | Empty, untracked placeholder folders |
 
-`public/` was created in P09 for the Bearnard derivatives (D-019, D-073); `src/components/` was created in P05. The site ships two images (the Bearnard portrait at two widths, used only by a design study so far), no font files, and one inlined script (P07, extended in P08). It builds 40 pages: 37 folder pages and 3 design studies.
+`public/` was created in P09 for the Bearnard derivatives (D-019, D-073); `src/components/` was created in P05. The site ships two images (the Bearnard portrait at two widths, used only by a design study so far), no font files, and one inlined script (P07, extended in P08). It builds 41 pages: 37 folder pages and 4 design studies.
 
 ## Deployment
 

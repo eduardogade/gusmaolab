@@ -18,7 +18,9 @@ Status: **implemented and approved.** Built in P03 (2026-11-10); in P04 the owne
 
 **P09 (2026-11-11): Bearnard foundations** (section 11). A registry of approved illustrations, one component and the first web derivatives of the v1.3 master exist (D-073). No site page shows Bearnard yet, and no role has an illustration assigned: both await the owner.
 
-**Deferred refinements:** stronger palette differences between the environments (D-056) and typography consolidation (D-042). Neither changed in P06, P07 or P08.
+**P09 (2026-11-11): environment candidates** (section 7, "Proposed environments"). Each of the four section environments has a proposed, stronger palette, shown beside the approved one at `/_design/environments-v2/` (D-075). They are **candidates pending the owner's approval**: no site page uses them, and the approved environments are unchanged.
+
+**Deferred refinements:** typography consolidation (D-042), unchanged since P04. Stronger palette differences between the environments (D-056) now have candidates (D-075); the question stays open until the owner adopts or rejects each one.
 
 Source files: `src/styles/tokens.css`, `src/styles/environments.css`, `src/styles/global.css`, `src/styles/folders.css` and the contract in `src/design/contract.mjs`. The specimen, the folder study and the tests read the values from those files, so this document can go stale but the pages cannot. Regenerate the contrast tables with `node tests/contrast.mjs --markdown`.
 
@@ -261,6 +263,64 @@ One folder system, four environments. Section lists come from the P03 brief; P04
 - **Literary:** chestnut lining with warmer bands, amber-kraft folders, warmer paper, Iowan for body and italic headings, rust links, a narrower measure.
 - **Personal:** Bearnard's palette: his orange flannel check, navy-fur shell, gold folders, Superclarendon Bold headings in navy, eye-green accents, the highest ornament.
 
+### Proposed environments (P09, candidates)
+
+**Status: candidates pending the owner's approval (D-075).** The tables above are still the approved palette, and the only one the site uses. The owner asked for environments that differ more (D-056); P09 proposes one stronger palette for each section, to be compared at `/_design/environments-v2/`, where each section appears twice with the same folders and text.
+
+Rules for the candidates:
+
+- **Colours and materials only.** Folder geometry, tabs, the V, Overview, previews, small-screen behaviour, fonts and type values are the same on both sides (ENV-004). Typography consolidation stays deferred (D-042).
+- **Separate from the approved palette.** They live in `src/styles/environment-candidates.css`, as complete contract blocks named `proposed-<section>` plus eleven candidate hues (`--palette-proposed-*`). Only the study loads that file (ENV-005). `environments.css` and `tokens.css` did not change (ENV-006).
+- **Same contrast rules.** Each candidate passes all 49 enforced pairings of section 8, and its active and inactive tabs are at least as distinct as the approved ones (ENV-002, ENV-003). Passing proves legibility, not taste.
+- **Selective.** Each candidate can be adopted alone, changed or rejected. Adopting one needs a recorded decision; its block then moves into `environments.css` and its hues into `tokens.css`.
+
+The ideas:
+
+- **Scientific:** blue-green (celadon) cardstock outside and the same warm parchment and cream inside, on midnight navy with a navy band and spruce lines. Cool, not sterile; honey stays for small accents.
+- **Technical:** a workshop. Honey-kraft folders on a deep spruce workbench instead of charcoal, cream and graph-paper cream inside, honey instead of gold for thread and accent.
+- **Literary:** copper cardstock with peach and rich cream papers, an oxblood shell on oxblood flannel with a rust band, ember accents.
+- **Personal:** Bearnard's colours, stronger. Amber folders with honey cream inside, and a forest-green flannel with navy bands and forest lines instead of the orange-brown one.
+
+Current → proposed, as resolved. "same" means the candidate keeps the approved value.
+
+| Role | Scientific | Technical | Literary | Personal |
+| --- | --- | --- | --- | --- |
+| Lining | same | same | `#463128` → `#55301F` | `#683D20` → `#22372C` |
+| Flannel band | `#1F1713` → `#202D39` | same | `#74422D` → `#8E3D1C` | `#1F1713` → `#202D39` |
+| Flannel line | `#3D4E60` → `#1F5F5B` | same | same | `#202D39` → `#3D6B2F` |
+| Flannel thread | same | `#E5B45A` → `#D89348` | `#E5B45A` → `#E6A26F` | `#E5B45A` → `#F2B93B` |
+| Shell | same | `#28282D` → `#142D29` | `#32251E` → `#3D1E13` | same |
+| Shell border | same | `#454344` → `#374741` | same | same |
+| Parent folder | `#D4B089` → `#A9C6B5` | `#D4B089` → `#DBAB68` | `#D5A672` → `#E6A26F` | `#E5B45A` → `#F2B93B` |
+| Inactive tab (derived) | `#AC9377` → `#8BA49A` | `#AE9275` → `#AF8F5A` | `#B18A60` → `#C1855B` | `#BA9653` → `#C49A3B` |
+| Nested folder | same | `#F4E2C9` → `#F4E9CF` | `#F4E2C9` → `#F6D8B6` | `#F4E2C9` → `#F8E6B6` |
+| Inactive nested tab (derived) | same | `#C7B9A7` → `#C3C0AA` | `#C9B8A3` → `#CDAF92` | `#C5BAA9` → `#C8BD9B` |
+| Third-level folder (derived) | `#E6CCAC` → `#D2D5C0` | `#E6CCAC` → `#E9CDA1` | `#E6C7A2` → `#EFC096` | `#EDCD97` → `#F5D27F` |
+| Inactive third-level tab (derived) | `#BAA993` → `#ABB0A2` | `#BCA890` → `#BAAA87` | `#BEA385` → `#C89C79` | `#C0AA82` → `#C6AE70` |
+| Reading paper | same | `#FFF8EA` → `#FCF7E8` | `#FCF1E0` → `#FAEBD3` | same |
+| Folder border (base colour) | same | same | `#74422D` → `#8E3D1C` | same |
+| Text on the shell | same | `#F4E2C9` → `#F4E9CF` | `#F4E2C9` → `#F6D8B6` | same |
+| Muted text on the shell | `#D4B089` → `#A9C6B5` | `#D4B089` → `#DBAB68` | `#D4B089` → `#E6A26F` | `#D4B089` → `#F2B93B` |
+| Accent | same | `#E5B45A` → `#D89348` | `#D89348` → `#AA5B22` | same |
+| Active state | `#202D39` → `#1F5F5B` | same | same | same |
+| Flannel strength | 0.8 → 0.85 | same | same | same |
+| Ornament intensity | 0.25 → 0.3 | 0.4 → 0.45 | 0.6 → 0.7 | same |
+
+Primary, secondary and muted text, headings, links, the selection indicator and every font and type value are the same as approved in all four.
+
+Contrast, current → proposed (`tests/environments.mjs`; 49 enforced pairings each, none failing):
+
+| Measure | Scientific | Technical | Literary | Personal |
+| --- | --- | --- | --- | --- |
+| Tightest enforced pairing | Muted text on nested folder, 4.85 → 4.85 | Label on an inactive tab, 5.05 → 4.86 | Label on an inactive tab, 4.70 → 4.77 | Links on nested folder, 4.96 → 5.08 |
+| Primary text on reading paper | 15.59 → 15.59 | 14.00 → 13.82 | 13.25 → 12.61 | 14.00 → 14.00 |
+| Links on reading paper | 5.94 → 5.94 | 6.98 → 6.89 | 6.63 → 6.31 | 5.94 → 5.94 |
+| Text on the shell | 11.08 → 11.08 | 11.57 → 12.11 | 11.68 → 11.06 | 11.08 → 11.08 |
+| Inactive tab against its folder | 1.44 → 1.45 | 1.45 → 1.45 | 1.43 → 1.44 | 1.45 → 1.47 |
+| Parent folder against the shell | 6.93 → 7.64 | 7.24 → 6.98 | 6.71 → 7.01 | 7.36 → 7.87 |
+
+What the comparison shows: with the candidates, no two sections share a first-level folder colour (celadon, honey kraft, copper, amber; today scientific and technical share kraft), and the four second-level folders differ, where today all four are the same parchment. What it cannot show: whether the result is better. That is question 24 in section 10.
+
 ## 8. Contrast verification
 
 `tests/contrast.mjs` (part of `npm test`) resolves 52 text and indicator pairings in the core and all four environments, using the WCAG 2.2 relative-luminance formula. It enforces 4.5:1 for body text and 3:1 for essential non-text indicators: 245 checks, all passing. Ratios are truncated, never rounded up. Three pairings are informational only: disabled text (WCAG exempts disabled controls) and the two nested-tab silhouettes at the end of the table. P05 added twelve pairings for the second and third folder levels, P06 two for hovered tabs on those levels, and P07 four for the folder previews.
@@ -467,11 +527,12 @@ A preview is a glimpse into an unopened folder, not another open folder (D-058, 
 16. **Inactive labels (P05)** sit 2 px lower than the selected label, because inactive tabs stand 0.25rem lower and are a little shorter. Should all labels share one baseline instead?
 17. **Section colors on the global row (P05):** every tab takes the current page's environment. Should the twelve top-level tabs carry their own sections' colors instead?
 18. **Overview (P06):** it looks exactly like the other tabs. Should it be told apart, for example by a slightly narrower card, a different weight, or a section-specific label?
-19. **Stronger environments (deferred, D-056):** the owner would like the environments to differ more in palette. To be designed in a later prompt, with the contrast tests.
+19. **Stronger environments (D-056):** the owner would like the environments to differ more in palette. P09 proposed one candidate per section (section 7, "Proposed environments"; D-075); see question 24.
 20. **Hover (P06):** an inactive tab lightens 12 points towards the folder material when hovered. Too subtle, or right?
 21. **Folder previews (P07):** a parchment index card with a honey top edge, hanging from its tab, with a small title and a compact list. Is it distinct enough from the folders without feeling like a generic menu? Should it carry a paper-grain or ruled-card detail, or the hovered folder's own section color?
 22. **Small screens (P08):** rows scroll sideways with a fade and a glimpse of the next tab, and no buttons. Is that discoverable enough, or should a row show small "more" arrows or previous/next buttons? Are 4 px insets on phones enough to read three levels as nested folders? Should the flannel band on phones be thinner, or gone?
 23. **Bearnard roles (P09):** nine places may show Bearnard (section 11), and none has an illustration yet. Should the v1.3 portrait stand in for any of them, for example the Home welcome, until role-specific poses are approved? Which of the 204 expression candidates, if any, should be approved for which role?
+24. **Environment candidates (P09):** which of the four proposed palettes should be adopted, changed or dropped (`/_design/environments-v2/`)? Each can be decided alone. Points to judge on a real screen: is celadon right for the scientific folders, or too far from paper? Is the technical spruce workbench too close to the scientific navy at a glance? Is the literary oxblood too heavy behind long reading? Does Personal lose warmth without its orange-brown flannel? Should the twelve global tabs then carry their own sections' colours (question 17)?
 
 ## 11. Bearnard illustrations (P09)
 

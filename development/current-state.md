@@ -5,12 +5,13 @@ Last updated: P09, 2026-11-11. Verified facts only.
 ## Framework
 
 - **Astro 7.4.8**, static output. The repository root is the Astro project.
-- **40 pages:**
+- **41 pages:**
   - **37 folder pages**, one for every registered folder, generated from the navigation registry (P06). Each shows the physical folders with working tab links, folder previews (P07) and **temporary development content only**.
-  - **3 temporary design studies**, not part of the website:
+  - **4 temporary design studies**, not part of the website:
     - the **P03 tokens specimen** at `/_design/tokens/` (`src/pages/[design]/tokens.astro`; it was `/` until P06);
     - the **P05 folder study** at `/_design/folders/` (`src/pages/[design]/folders.astro`);
-    - the **P09 Bearnard study** at `/_design/bearnard/` (`src/pages/[design]/bearnard.astro`).
+    - the **P09 Bearnard study** at `/_design/bearnard/` (`src/pages/[design]/bearnard.astro`);
+    - the **P09 environments study** at `/_design/environments-v2/` (`src/pages/[design]/environments-v2.astro`): each approved environment beside a proposed one.
 - **Not implemented:** real section content, the homepage composition, Bearnard on any site page (the foundation exists, below) and a designed 404 page.
 - The archived Pelican site in `_backup/pelican-legacy/` is not built.
 - Nothing has been deployed, and no deployment workflow is active.
@@ -142,6 +143,18 @@ Navigation is still ordinary: real pages, real URLs, no client router. The repor
 
 No site page shows Bearnard yet, and no role has an illustration: assigning one is the owner's decision (G-P09-B7). The build does not need the masters: a copy of the repository without `brand/bearnard/` passes `npm run verify`, with BEAR-004 reported as skipped. Only the canonical master is registered; the 2 approved-derived, 5 historical, 310 experimental, 31 unclassified and 3 working-copy images in the inventory are not.
 
+## Environment candidates (P09)
+
+| Item | Where |
+| --- | --- |
+| Approved environments (Core, Scientific, Technical, Literary, Personal), unchanged; the only ones site pages use | `src/styles/environments.css` |
+| Four candidates, `proposed-scientific`, `proposed-technical`, `proposed-literary` and `proposed-personal`, with eleven candidate hues | `src/styles/environment-candidates.css` |
+| Comparison: each section as approved and as proposed, same folders and text, with a table of the colours that differ | `/_design/environments-v2/` |
+| Checks | `tests/environments.mjs` (ENV-001 to ENV-006) |
+| Values, rationale and contrast | `planning/design-system.md` section 7, "Proposed environments"; D-075 |
+
+The candidates are **pending the owner's approval** and are loaded by the study only. They change colours and materials, not geometry, behaviour or fonts. Each can be adopted, changed or dropped alone, by a recorded decision (G-P09-C7).
+
 ## Toolchain
 
 | Item | Value |
@@ -157,23 +170,24 @@ No site page shows Bearnard yet, and no role has an illustration: assigning one 
 
 ## npm scripts
 
-`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs`, `tests/responsive.mjs`, `tests/transitions.mjs` and `tests/bearnard.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs`, `tests/responsive-browser.mjs` and `tests/transitions-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
+`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs`, `tests/responsive.mjs`, `tests/transitions.mjs`, `tests/bearnard.mjs` and `tests/environments.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs`, `tests/responsive-browser.mjs` and `tests/transitions-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
 
 ## Build status
 
 `npm run verify` passes:
 
-- `astro check`: 0 errors, 0 warnings, 0 hints across 46 files.
-- Build: 40 pages. `dist/` holds 45 files, 1,080,242 bytes in all: the site's pages and stylesheets (641,645 bytes), the design studies (196,577) and the two Bearnard derivatives (242,020), each under its own ceiling (D-074, KL-30). No script file: the 38 pages with folders each inline one module (4.1 KB: previews and rows; at Vite's inlining limit, KL-36); the P03 specimen and the Bearnard study have no script.
+- `astro check`: 0 errors, 0 warnings, 0 hints across 48 files.
+- Build: 41 pages. `dist/` holds 47 files, 1,197,525 bytes in all: the site's pages and stylesheets (651,442 bytes, of which 9,797 are the candidate stylesheet that only the environments study loads), the design studies (304,063) and the two Bearnard derivatives (242,020), each under its own ceiling (D-074, KL-30). No script file: the 39 pages with folders each inline one module (4.1 KB: previews and rows; at Vite's inlining limit, KL-36); the P03 specimen and the Bearnard study have no script.
 - Token checks and contrast checks pass (245 of 245 enforced pairings; 260 in all).
 - Navigation: 22 of 22 model tests pass (NAV-001 to NAV-021, NAV-025).
-- Smoke test passes. The built pages are exactly the 37 registered destinations and the 3 declared `/_design/` studies, and the only other files are stylesheets and the registered derivatives.
+- Smoke test passes. The built pages are exactly the 37 registered destinations and the 4 declared `/_design/` studies, and the only other files are stylesheets and the registered derivatives.
 - Folders: 10 of 10 tests pass (FOLD-001 to FOLD-010).
 - Routes: 9 of 9 tests pass (NAV-022, NAV-023, NAV-026 to NAV-032). NAV-024 passed in the browser.
 - Previews: 11 of 11 checks pass without a browser (PREV-001 to PREV-007, and the markup of PREV-004, PREV-013, PREV-014 and PREV-015).
 - Responsive: 8 of 8 checks pass without a browser (RESP-006 to RESP-008 and RESP-013 to RESP-017).
 - Transitions: 4 of 4 checks pass without a browser (TRANS-B01 to TRANS-B04).
 - Bearnard: 8 of 8 checks pass (BEAR-001 to BEAR-008); BEAR-004 is skipped in a checkout without the masters.
+- Environments: 6 of 6 checks pass (ENV-001 to ENV-006), for 4 approved and 4 proposed environments.
 
 `npm run test:browser` passes separately in headless Chrome 157: 12 of 12 preview checks (PREV-005, PREV-008 to PREV-014), 17 of 17 responsive checks (RESP-001 to RESP-017) and 12 of 12 navigation-continuity checks (TRANS-001 to TRANS-012).
 
@@ -181,11 +195,11 @@ No site page shows Bearnard yet, and no role has an illustration: assigning one 
 
 | Item | Value |
 | --- | --- |
-| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; P05 at `4771127` and `40083ce`; the Bearnard sticker task's notes at `cda026e`, `fa522dc` and `aaa32a7`; P06 at `39bc564` and its approval record `f8eead2`; P07 at `750e98f` and its approval record `28392b0`; P08 at `5a906f1` and the approval record that follows it |
+| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; P05 at `4771127` and `40083ce`; the Bearnard sticker task's notes at `cda026e`, `fa522dc` and `aaa32a7`; P06 at `39bc564` and its approval record `f8eead2`; P07 at `750e98f` and its approval record `28392b0`; P08 at `5a906f1` and its approval record `ca0dc82`; P09 at `93d3af0` (navigation continuity), `6ddf084` (Bearnard foundations) and the environment-candidates commit that follows them |
 | Milestone branches | `chore/gusmaolab-foundation-p01` (`4096691`), `chore/gusmaolab-astro-foundation-p02` (`5fab52c`), `feat/gusmaolab-design-system-p03` (`851fdbb`), all kept |
 | Recovery tag | `pre-astro-checkpoint` → `6eedf02`, local only |
 | `main` and `origin/main` | `6036137`, the same tree as the checkpoint. No `development` branch exists on `origin`. |
-| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, public. Nothing was pushed in P01–P08. |
+| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, public. Nothing was pushed in P01–P09. |
 | Untracked | `clean`, a byte-identical copy of `clean.sh` that appeared at 18:01 on 2026-11-10. Claude Code did not create it, and left it alone at the owner's instruction. |
 
 ## Assets
@@ -195,11 +209,11 @@ No site page shows Bearnard yet, and no role has an illustration: assigning one 
 
 ## Legacy archive
 
-Unchanged since P03; P05 to P08 did not touch it. ISSUE-0003 stays open: the recruiter-era files in the public history, and a possible third file.
+Unchanged since P03; P05 to P09 did not touch it. ISSUE-0003 stays open: the recruiter-era files in the public history, and a possible third file.
 
 ## Completed prompts
 
-P01 to P08. P08's real-device checks are pending. P09 is in progress.
+P01 to P09. P08's real-device checks are pending. P09 is technically completed; three owner reviews are pending (G-P09-A6, G-P09-B7, G-P09-C7). P10 has not started.
 
 ## Blockers
 
@@ -210,7 +224,9 @@ None.
 - **Retest folder navigation** on a real desktop and Android phone in Chrome, and say whether the blink has meaningfully improved (G-P09-A6, ISSUE-0004).
 - If possible, try the site on a real phone and tablet (G-P08-21, KL-32).
 - Optional refinements to the folders, the Overview tab, the previews and small screens, if wanted: `planning/design-system.md` section 10, questions 13–22.
-- Stronger palette differences between environments (D-056) and typography consolidation (D-042), both deferred.
+- **Review the environment candidates** at `/_design/environments-v2/` and say which to adopt, change or drop; each can be decided alone (G-P09-C7, D-075; `planning/design-system.md` section 10, question 24).
+- **Assign Bearnard illustrations to roles**, or leave them empty for now (G-P09-B7; question 23).
+- Typography consolidation (D-042), still deferred.
 - The third-level folders, when content work reaches them (`planning/information-architecture.md` section 3).
 - Whether the second-level slugs are final before first publication (D-037).
 - Update the local Node.js to the latest 26.x LTS release (KL-06).
