@@ -61,7 +61,7 @@ The study at `/_design/records/`, from the production preview (`astro preview`, 
 - `git diff --check`: clean. The pre-commit hooks ran on the commit.
 - **Push decision:** none (D-082, D-087): an internal data milestone with no production content. `origin/main` is still `e28d43a`.
 - **Other agent's work:** the CV-01 sections of `development/current-state.md` and this log, `cv/codex-yaml/` and `clean` stayed unstaged and unchanged.
-- **Commit:** `feat(records): establish canonical research and professional entities [P11]`, recorded in `development/current-state.md`.
+- **Commit:** `48d7ae3 feat(records): establish canonical research and professional entities [P11]`, followed by a records commit that only adds this hash.
 
 ## P10 — Editorial Collections, Structured Publishing Foundations & Navigation Consolidation — 2026-11-13
 
