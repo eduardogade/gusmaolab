@@ -2,6 +2,67 @@
 
 Newest entry first.
 
+## P11 — Canonical Research, Publication, People & Professional Records — 2026-11-13
+
+**Agent:** Claude Code. **Branch:** `development`. **Result:** completed. The canonical record system exists, is validated and tested, and holds **no real record**: the site's eight lists are empty, and everything was proved with a synthetic fixture. Nothing was pushed or deployed, `main` was not touched, and P12 was not started.
+
+### Starting state (verified)
+
+- **HEAD:** `development` at `426712c` (the P10 records commit). Working tree: the other agent's CV-01 sections in `development/current-state.md` and this log, the untracked `cv/codex-yaml/` and the untracked `clean`, all left alone.
+- **P10 verified:** `npm run verify` passed before any change (39 pages; 23 navigation, 17 editorial model and 13 editorial build checks among the rest). Eleven tabs in five category blocks, eight collections, drafts without pages, entries owned by their folders: as recorded.
+- **Existing structured data:** none usable. `cv/cv.md`, `cv/template.tex`, `publications/publications.bib` and `publications/style.csl` are empty files; `data/` holds empty legacy placeholders; there was no `src/data/`.
+- **`cv/codex-yaml/` (another task):** looked at only as far as needed to judge the overlap: its file names and sizes, and the top-level section keys of its proposal. No content was read into a record, quoted or changed, and nothing there was staged. It is an unverified proposal with pending placeholders, and it holds contact details and references.
+
+### What was built
+
+- **Model** (`src/records/`, pure, Node-runnable):
+  - `schema.ts`: eight families (people, organizations, research areas, projects, scholarly outputs, appointments, education, activities as a discriminated union of six types), family-prefixed IDs, strict Zod schemas, DOI normalization, ORCID check digit, URL validation.
+  - `dates.ts`: dates as text at the precision known, periods with `end: "present"`, order and display.
+  - `registry.ts`: `validateRecords()` and `createRecords()`: schema pass, then dataset pass (unique IDs, references, the organization hierarchy, synthetic records refused unless allowed); a deeply frozen store.
+  - `selectors.ts`, `projections.ts`, `citation.ts`: derived relationships and orders; CV, Portfolio and Lab view models; one citation per output.
+  - `index.ts`: `siteRecords`, the site's validated store.
+- **Data** (`src/data/records/`): one typed list per family, all empty, each file saying when a record may be added.
+- **Fixture and study:** `src/design/records-fixture.ts` (29 invented records, deliberately awkward) and `/_design/records/` (one project in three projections, one citation three times, a CV projection, counts, a validation example).
+- **Editorial contract:** the optional `relatedRecords` in the common entry metadata; `recordReferenceIssues()` in the loader; `entriesAbout()` for the reverse.
+- **Tests:** `tests/records.mjs` (REC-001 to REC-026, in `npm test`); CONT-020 and the `bad-related-record` fixture; the study declared in the smoke, route, transition, responsive and editorial-build tests; the editorial components and the study added to the token check.
+- **Dependencies:** none.
+
+### Decisions taken (D-083 to D-088)
+
+- TypeScript data modules, not YAML (no parser in the project, no checking while typing, and the YAML date hazard of P10) and not content collections (the editorial collections stay eight).
+- `src/records/`, not the suggested `src/lib/`, which the root `.gitignore` hides.
+- One side of every relationship is stored; reverses are selectors.
+- A record is shown only if `public` and `verified`; neither flag is a security boundary.
+- The site's data stays empty rather than hold a plausible guess.
+
+### Findings
+
+- **A P10 defect, fixed.** Adding the editorial components to the token check showed that `EditorialEntry.astro` used `--font-size-lg`, which does not exist, so an entry's description rendered at the inherited size. It now uses `--font-size-lead`. P10's tests had not listed the new components for that check.
+- **Cascading diagnostics, fixed before commit.** A record that failed its schema was dropped, and every reference to it was then reported as "does not exist" (one bad URL on a person gave twenty messages). Such a record is now remembered as declared, so only its own error is reported (KL-48).
+- **The study leaked a reference, fixed before commit.** Its first version printed the raw project record, which names a participant whose own record is hidden. REC-025 caught the ID in the page. The study now prints the record without its participants; the rule is that a page never prints a reference to a person it may not name.
+- **Shared objects in the fixture.** Spreading one `provenance` object into every record meant a test that edited one record's provenance edited all of them. The tests replace the object instead; the store itself parses fresh copies.
+- **The scratch directory was emptied** between sessions (the helper scripts of earlier prompts were gone). Nothing in the repository depended on it.
+
+### Visual review
+
+The study at `/_design/records/`, from the production preview (`astro preview`, port 4322), in the app's browser pane.
+
+- **Looked at:** 1440 px (all five sections) and 390 px (the three projections and the CV section).
+- **Measured, not looked at:** 1280, 768 and 320 px: no sideways page scroll.
+- **Regression:** the folders were not changed; the browser suites cover them (RESP-001 includes the new study at ten widths).
+- **Not checked:** Safari, Firefox, real devices.
+
+### Validation (final)
+
+- `npm run verify`: passes. `astro check` 0 errors, warnings and hints in 78 files; 40 pages; 43 primitives and 213 tokens; 260 contrast pairings; 23 navigation, 10 folder, 9 route, 11 preview, 8 responsive, 4 transition, 8 Bearnard, 10 archive, 17 editorial model, 14 editorial build and 26 record checks; `dist/` 45 files, 1,176,165 bytes (site 702,682, studies 231,463, illustrations 242,020).
+- `npm run test:browser`: 12 of 12 preview, 17 of 17 responsive, 12 of 12 navigation-continuity and 8 of 8 colour and navigation checks in headless Chrome 157.
+- **Mutation check:** with `isShown` made to show hidden records, REC-011, 013, 016, 017, 018, 019 and 020 failed, as they should; reverted.
+- `shasum -a 256 -c assets/bearnard/SHA256SUMS`: 352 of 352 match.
+- `git diff --check`: clean. The pre-commit hooks ran on the commit.
+- **Push decision:** none (D-082, D-087): an internal data milestone with no production content. `origin/main` is still `e28d43a`.
+- **Other agent's work:** the CV-01 sections of `development/current-state.md` and this log, `cv/codex-yaml/` and `clean` stayed unstaged and unchanged.
+- **Commit:** `feat(records): establish canonical research and professional entities [P11]`, recorded in `development/current-state.md`.
+
 ## P10 — Editorial Collections, Structured Publishing Foundations & Navigation Consolidation — 2026-11-13
 
 **Agent:** Claude Code. **Branch:** `development`. **Result:** completed, in two commits: the global row grouped by category, and the editorial collections. Nothing was pushed or deployed, `main` was not touched, and P11 was not started.

@@ -9,5 +9,6 @@ and checks the output. The real `src/content/` and the real `dist/` are never to
 
 - `good/`: valid entries for several collections, covering drafts, published and archived
   entries, Markdown features and collections left empty.
-- `bad-duplicate-slug/`, `bad-date/`, `bad-missing-field/`, `bad-unknown-field/`: scenarios
-  that must fail the build.
+- `bad-duplicate-slug/`, `bad-date/`, `bad-missing-field/`, `bad-unknown-field/`,
+  `bad-related-record/` (P11: a reference to a canonical record that does not exist):
+  scenarios that must fail the build.

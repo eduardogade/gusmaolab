@@ -86,6 +86,12 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 | D-080 | Entries are content routes owned by their collection's folder; publication state decides route generation; public URLs are prefix plus an explicit slug | Approved (P10 brief) | 2026-11-13 |
 | D-081 | Minimal rendering and indexes: Markdown through Astro's `render()` on the folder's paper, one list per collection, an empty state; drafts previewed only by `astro dev` | Approved (P10 brief) | 2026-11-13 |
 | D-082 | Git policy: routine milestone commits without separate confirmation; pushes allowed but never automatic; promotion to `main` only by the steps below | Approved by the owner (P10 brief) | 2026-11-13 |
+| D-083 | Canonical records: eight families of typed static records, one authoritative copy each, in TypeScript data modules validated by Zod; separate from the editorial collections | Approved (P11 brief) | 2026-11-13 |
+| D-084 | Record identity and time: family-prefixed stable IDs; dates at the precision known (`YYYY`, `YYYY-MM`, `YYYY-MM-DD`); `end: "present"` for ongoing, a missing end never shown as present | Approved (P11 brief) | 2026-11-13 |
+| D-085 | Relationships by ID, stored on one side and derived on the other; referential integrity checked for the whole dataset; ordered authors, registered or external | Approved (P11 brief) | 2026-11-13 |
+| D-086 | Selectors, projections (CV, Portfolio, Lab) and one citation format; a record is shown only if public and verified; visibility is not a security boundary | Approved (P11 brief) | 2026-11-13 |
+| D-087 | The site's records stay empty until the owner supplies verified ones; a synthetic fixture and a development-only study prove the system; nothing imported from the CV workflow or the Pelican archive | Approved (P11 brief) | 2026-11-13 |
+| D-088 | Editorial entries may reference records with `relatedRecords`; the build checks the IDs exist; the dependency runs one way | Approved (P11 brief) | 2026-11-13 |
 
 ## Details
 
@@ -370,3 +376,45 @@ This replaces the "no client-side JavaScript" clause of D-054 and of the archite
 - **Pushing `development`** (as a backup or for collaboration) may be considered after inspecting the actual remote (`git ls-remote`, then a fetch) and checking that the push carries no private or unrelated content.
 - **Promotion to `main`**, when a release is intended: (1) fetch and inspect the remote; (2) reconcile any divergence without discarding unrelated commits; (3) verify the private-file and secret exclusions; (4) run the release validation; (5) confirm the deployment target; (6) only then integrate and push. A deployment is never triggered unreviewed.
 - **P10's decision: nothing was pushed.** `origin/main` is at `e28d43a`, still two commits ahead of local `main` (the `__frag8/` merge); `origin` has no `development` branch and 19 unrelated branches. P10 is unfinished infrastructure with temporary pages, and no backup or collaboration need was stated, so it stays local and `main` is unchanged.
+
+**D-083. Canonical records.** Decided in the P11 brief (2026-11-13): one authoritative record, many contextual presentations.
+
+- **Eight families:** people, organizations, research areas, projects, scholarly outputs, appointments, education and activities (teaching, presentation, mentoring, award, service, outreach as one discriminated union). Enough to describe a research career without contradiction, few enough to understand; funding is left out until something needs it.
+- **Source format: typed TypeScript data modules** in `src/data/records/`, one list per family, validated by Zod when loaded. YAML was considered, since the CV workflow uses it: it needs a parser the project does not have (a new dependency), offers no checking while typing, and brings the silent date correction found in P10 (KL-41). JSON has no comments and the same lack of checking. A YAML or JSON source can be added later behind the same schemas.
+- **Not content collections.** Records are structured entities, not authored documents. They do not go through Astro's Content Layer, so the eight editorial collections remain exactly eight (CONT-001, REC-023) and the two systems cannot blur.
+- **Code in `src/records/`**, pure and Node-runnable like `src/navigation/` and `src/editorial/`. The brief's suggested `src/lib/` is ignored by the root `.gitignore` (KL-11).
+- **No database, CMS, fetching or browser code.** No dependency was added.
+
+**D-084. Identity and time.**
+
+- **IDs** are `<family prefix>-<lowercase-kebab-name>`: `person-`, `organization-`, `area-`, `project-`, `publication-`, `appointment-`, `education-`, `activity-`. Unique across all records, so a bare ID is enough for a cross-reference and its family is evident. Never derived from a title, a list position or private information.
+- **ID, slug, route and visibility are four things.** A record creates no page; `slug` (projects) only reserves an address.
+- **Dates keep their precision:** `YYYY`, `YYYY-MM` or `YYYY-MM-DD`, as text. A year is never expanded to 1 January.
+- **Periods:** optional `start` and `end`; `end: "present"` asserts an ongoing state; a missing end is unrecorded and never displayed as present. An end is an error only when certainly before the start, compared as far as both are known. Overlaps are allowed.
+- **Order:** a less precise date sorts where its period begins (`2022` < `2022-01` < `2022-01-01`), so year-only entries follow the dated ones of their year in newest-first lists. Every order ends with the ID.
+
+**D-085. Relationships.**
+
+- **By stable ID, validated for the whole dataset:** existence, the right family, no repeats, no self-reference, and no loop in the one declared hierarchy (an organization's `parentId`). Other relations form a graph and may be mutual.
+- **One authoritative side.** An output names its projects and areas; the project's outputs are derived. No relationship is written twice.
+- **Authors** are an ordered list, never sorted: `{ personId, as? }` for a registered person (`as` is the name as printed) or `{ name }` for an external credit, which needs no person record. An author is not automatically a profile: `profile` is a separate, explicit field, `none` by default.
+- **Output status and type:** `submitted`, `accepted`, `preprint`, `published`; the `preprint` type and status go together; a preprint and its article are two records linked by `related`. Nothing is merged by title, and no metadata is fetched from a DOI.
+- **All-or-nothing:** every problem is reported with the record's ID, and an invalid dataset fails the build. A record that fails its schema is reported once; references to it are not reported again as missing.
+
+**D-086. Selectors, projections, citation, visibility.**
+
+- **Selectors** are pure, deterministic and return new lists; **projections** (`cvProjection`, `portfolioProjection`, `labProjection`) are view models that hold no facts and know nothing about whose data they draw.
+- **One citation** per output (`citationOf`), used by every projection: `Authors. Title. Venue volume(issue):pages (year). Status.` No citation-style engine; CSL is a future consideration. Missing facts are absent, never substituted.
+- **Shown = `public` and `verified`.** `imported` and `unreviewed` records may be stored and are never rendered; `synthetic` records load only in a fixture store.
+- **A hidden person** is still named in the author list of a shown output, because the list is part of the work, and nowhere else: not as a participant, a collaborator or a mentee.
+- **Not a security boundary.** `visibility` and `provenance` decide rendering. The repository is public, so nothing confidential may be written into a record at all.
+
+**D-087. Empty production data; synthetic proof.**
+
+- **The site's eight lists are empty.** No real record was written: the repository holds no owner-verified, publication-ready source for one. `cv/cv.md` and `publications/publications.bib` are empty files; the Pelican archive is historical and was not read; the names the brief mentions (Phenoteka, GenSUS, Stainalyzer, LumenNet, TryDINN, Bloom) have no verified description in the repository, so none became a record.
+- **`cv/codex-yaml/`** belongs to a concurrent task. P11 listed its file names and the section keys of its proposal to judge the overlap, read no content into any record, and changed nothing there. It is an unverified proposal with pending placeholders and contains contact details and references. `planning/content-model.md` describes an import boundary: a future, reviewed, one-way conversion whose records arrive as `imported`.
+- **Synthetic fixture:** `src/design/records-fixture.ts`, 29 invented records, every ID and name marked synthetic, using the reserved `10.5555` DOI prefix and `example.org`. The site's loader refuses it (REC-021).
+- **Study:** `/_design/records/`, development only, shows one project in the CV, Portfolio and Lab projections, one citation three times, a CV projection, the counts and a validation example, all labelled as invented. A page was chosen over test-rendered components because the owner can look at it, and it follows the existing studies (D-048). Whether studies ship is still the deployment decision (D-005).
+- **No push** (D-082): P11 is an internal data-architecture milestone with no production content; `origin/main` is unchanged at `e28d43a`.
+
+**D-088. Entries may reference records.** The common editorial metadata gains the optional `relatedRecords`: a list of record IDs, default none, each well formed and listed once. The editorial loader fails the build for an ID that does not exist in the site's records, drafts included. The entry remains an entry of its collection and the record a record; the reverse relation is derived (`entriesAbout`). The editorial code depends on the record store, never the other way, so there is no cycle. No rendering was added: P12 decides how related records appear on a reading page.

@@ -6,7 +6,7 @@ Shared rules for every coding agent in this repository: Claude Code, Codex and o
 
 GusmaoLab is Eduardo Gade Gusmao's personal website and publishing ecosystem: computational biology, bioinformatics, research, software engineering, teaching, literature and personal interests. Scientific rigor and visual humor go together.
 
-The site is an Astro static project. Every registered folder has a page generated from the navigation registry (P06), with temporary development content only, unopened folders preview their contents on hover and keyboard focus (P07), and the folders adapt to every screen size (P08); the eleven sections belong to five colour categories, each a permanent cardstock (the Chromatic Archive, P09-A01); temporary design studies live under `/_design/` (the P03 tokens specimen, the P05 folder study and the P09 Bearnard study). The old Pelican site is archived in `_backup/pelican-legacy/`.
+The site is an Astro static project. Every registered folder has a page generated from the navigation registry (P06), with temporary development content only, unopened folders preview their contents on hover and keyboard focus (P07), and the folders adapt to every screen size (P08); the eleven sections belong to five colour categories, each a permanent cardstock (the Chromatic Archive, P09-A01); temporary design studies live under `/_design/` (the P03 tokens specimen, the P05 folder study, the P09 Bearnard study and the P11 records study). The old Pelican site is archived in `_backup/pelican-legacy/`.
 
 ## Where things are
 
@@ -24,7 +24,7 @@ The site is an Astro static project. Every registered folder has a page generate
 
 ## Commands
 
-Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `npm run verify` (diagnostics, build, token, contrast, navigation, folder, route, preview, category and editorial tests, smoke test) before committing. After changing the folders' interaction, also run `npm run test:browser` (headless Chrome). `README.md` lists every command.
+Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `npm run verify` (diagnostics, build, token, contrast, navigation, folder, route, preview, category, editorial and record tests, smoke test) before committing. After changing the folders' interaction, also run `npm run test:browser` (headless Chrome). `README.md` lists every command.
 
 ## Navigation
 
@@ -36,6 +36,7 @@ Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `n
 - No catch-all route, server rendering or client-side router. Keep `tests/navigation.mjs` and `tests/routes.mjs` passing.
 - The global row is grouped by category: the tabs of one category are adjacent, and `validateNavigation()` rejects a registry that splits one (D-077).
 - Editorial entries (P10, D-078 to D-081) are content routes owned by their collection's folder, never tabs or registry nodes. Collections, schemas and routing rules live in `src/editorial/` and `src/content.config.ts`; one Markdown file per entry in `src/content/<collection>/`. Publication state decides route generation: a draft has no page in a build. Never publish a fabricated entry, never migrate Pelican content unasked, and keep synthetic fixtures in `tests/fixtures/editorial/`, never in `src/content/`. Keep `tests/content.mjs` and `tests/editorial-build.mjs` passing (`planning/content-model.md`).
+- Canonical records (P11, D-083 to D-088) are the one copy of every person, organization, research area, project, scholarly output, appointment, qualification and activity: typed lists in `src/data/records/`, model in `src/records/`. Pages read them through selectors and projections and never keep their own copy of a fact; relationships are IDs, stored on one side only. Never invent, infer or import a record: add one only from facts the owner has confirmed, with its `provenance`, and leave unknown fields out. Nothing confidential goes in a record (the repository is public), and a record creates no page. Synthetic records live only in `src/design/records-fixture.ts`. Do not read, change or stage `cv/codex-yaml/` (another task). Keep `tests/records.mjs` passing (`planning/content-model.md`).
 - Folder previews (P07) show an unopened folder's Overview and immediate children, from `row.previews`; never an open folder's, never deeper. The only client-side scripts are `src/scripts/folder-previews.ts` (previews) and `src/scripts/folder-rows.ts` (scrolling rows to the selected or focused tab); neither changes the URL, history, focus or selection, and navigation must keep working without them (D-058–D-060, D-066). Keep `tests/previews.mjs`, `tests/responsive.mjs` and `npm run test:browser` passing.
 - Code under `src/navigation/` also runs directly in Node.js: use erasable TypeScript only, `import type` for types, and `.ts` extensions on relative imports (D-040).
 

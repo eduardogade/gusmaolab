@@ -43,7 +43,12 @@ import {
 const json = (value) => JSON.stringify(value)
 const repo = fileURLToPath(new URL("../", import.meta.url))
 const fixtures = join(repo, "tests/fixtures/editorial")
-const designStudies = ["/_design/tokens/", "/_design/folders/", "/_design/bearnard/"]
+const designStudies = [
+  "/_design/tokens/",
+  "/_design/folders/",
+  "/_design/bearnard/",
+  "/_design/records/",
+]
 
 const results = []
 async function test(id, title, body) {
@@ -193,7 +198,7 @@ await test(
     const extra = pages.filter((f) => !expected.has(f))
     check(extra.length === 0, `unexpected pages: ${extra.join(", ")}`)
     check(!pages.some((f) => f.startsWith("external/")), "an External page was built")
-    check(pages.length === 36 + 3 + 7, `${pages.length} pages, expected 46`)
+    check(pages.length === 36 + 4 + 7, `${pages.length} pages, expected 47`)
     // One route per entry: no page is generated twice under another name.
     check(
       !good.files.some((f) => /fixture-published\/.+\//.test(f)),
@@ -493,6 +498,24 @@ await test(
   },
 )
 
+await test(
+  "CONT-020",
+  "An entry that names a record the site lacks fails the build (built)",
+  async (check) => {
+    // P11: entries may reference canonical records by ID. The site's records are empty,
+    // so this reference is to nothing, even on a draft.
+    const bad = await buildScenario("bad-related-record")
+    check(!bad.ok, "the build succeeded")
+    check(
+      bad.output.includes(
+        "names the record project-fixture-does-not-exist, which does not exist",
+      ),
+      `no broken reference reported in:\n${bad.output.slice(-900)}`,
+    )
+    check(!bad.files.some((f) => f.includes("fixture-")), "pages were produced")
+  },
+)
+
 // --- Report -------------------------------------------------------------------------------
 
 let failed = 0
@@ -506,5 +529,5 @@ for (const { id, title, failures } of results) {
 }
 if (failed > 0) process.exit(1)
 console.log(
-  `PASS: ${results.length} editorial build checks; 5 builds, ${good.files.length} files in the good one`,
+  `PASS: ${results.length} editorial build checks; 6 builds, ${good.files.length} files in the good one`,
 )

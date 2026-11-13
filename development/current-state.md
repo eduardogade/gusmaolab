@@ -1,16 +1,17 @@
 # Current state
 
-Last updated: P10, 2026-11-13. Verified facts only.
+Last updated: P11, 2026-11-13. Verified facts only.
 
 ## Framework
 
 - **Astro 7.4.8**, static output. The repository root is the Astro project.
-- **39 pages:**
+- **40 pages:**
   - **36 folder pages**, one for every registered folder, generated from the navigation registry (P06). Each shows the physical folders with working tab links, folder previews (P07) and **temporary development content only**.
-  - **3 temporary design studies**, not part of the website:
+  - **4 temporary design studies**, not part of the website:
     - the **P03 tokens specimen** at `/_design/tokens/` (`src/pages/[design]/tokens.astro`; it was `/` until P06);
     - the **P05 folder study** at `/_design/folders/` (`src/pages/[design]/folders.astro`);
-    - the **P09 Bearnard study** at `/_design/bearnard/` (`src/pages/[design]/bearnard.astro`).
+    - the **P09 Bearnard study** at `/_design/bearnard/` (`src/pages/[design]/bearnard.astro`);
+    - the **P11 records study** at `/_design/records/` (`src/pages/[design]/records.astro`): the canonical records, with invented data.
   - The P09 environments study (`/_design/environments-v2/`) was removed in P09-A01 (D-076).
 - **Editorial entries (P10):** none. The eight collections exist and are empty, so every build page is a folder page or a study; an entry would add one page below its owning folder (see "Editorial collections").
 - **Not implemented:** real section content, the homepage composition, Bearnard on any site page (the foundation exists, below) and a designed 404 page.
@@ -207,6 +208,38 @@ Built:
 
 Not built, on purpose: the differentiated reading layouts (P12), Quarto and MDX (P13), authoring helpers (P14), feeds, search, related content, deeper Kosmos work and chapter URLs, and any Bearnard illustration on an entry.
 
+## Canonical records (P11)
+
+**One authoritative record, many presentations** (D-083 to D-088). The system exists and is tested; **the site's records are empty**, because no verified record has been supplied.
+
+| Item | Where |
+| --- | --- |
+| The site's records: eight typed lists, all empty | `src/data/records/` |
+| Schemas, families, ID patterns (Zod through `astro/zod`) | `src/records/schema.ts` |
+| Partial dates and periods | `src/records/dates.ts` |
+| Dataset validation and the frozen store | `src/records/registry.ts` |
+| Selectors: derived relationships, orders, what may be shown | `src/records/selectors.ts` |
+| Projections: CV, Portfolio, Lab | `src/records/projections.ts` |
+| Citation of an output | `src/records/citation.ts` |
+| The site's store, `siteRecords` | `src/records/index.ts` |
+| Synthetic fixture: 29 invented records | `src/design/records-fixture.ts` |
+| Study, development only | `/_design/records/` |
+| Entries may name records: `relatedRecords` | `src/editorial/schema.ts`, `model.ts`, `site.ts` |
+| Rules and fields | `planning/content-model.md`, "Canonical records" |
+| Checks | `tests/records.mjs` (REC-001 to REC-026); CONT-020 |
+
+Built:
+
+- **Eight families:** people, organizations, research areas, projects, scholarly outputs, appointments, education, activities (teaching, presentation, mentoring, award, service, outreach). IDs carry their family (`project-…`) and are unique across all records.
+- **Validation at load:** each record against its schema, then the dataset as a whole (unique IDs, references that exist and name the right family, no loop of parent organizations, no synthetic record in the site's data). Every problem is listed with the record's ID; an invalid dataset fails the build.
+- **Dates keep their precision** (`2022`, `2022-06`, `2022-06-14`); `end: "present"` marks an ongoing period; a missing end is never shown as present.
+- **Relationships are stored on one side** and derived on the other; authors are ordered and may be registered people or external names.
+- **Selectors, three projections and one citation format**, all pure, all returning only records that are public and verified.
+- **A record creates no page**, and no navigation changed. The study shows the projections with invented data only.
+- **Not done, on purpose:** no real record; nothing imported from `cv/codex-yaml/`, the Pelican archive or the web; no entity pages; no CV, Portfolio or Lab page; no citation-style engine; no funding family; no rendering of related records on entries.
+
+Also fixed: the P10 entry component used an undefined token (`--font-size-lg`), so an entry's description fell back to the inherited size. Found when the editorial components were added to the token check; it now uses `--font-size-lead`.
+
 ## Toolchain
 
 | Item | Value |
@@ -222,17 +255,17 @@ Not built, on purpose: the differentiated reading layouts (P12), Quarto and MDX 
 
 ## npm scripts
 
-`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs`, `tests/responsive.mjs`, `tests/transitions.mjs`, `tests/bearnard.mjs`, `tests/categories.mjs`, `tests/content.mjs` and `tests/editorial-build.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs`, `tests/responsive-browser.mjs`, `tests/transitions-browser.mjs` and `tests/categories-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
+`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs`, `tests/responsive.mjs`, `tests/transitions.mjs`, `tests/bearnard.mjs`, `tests/categories.mjs`, `tests/content.mjs`, `tests/editorial-build.mjs` and `tests/records.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs`, `tests/responsive-browser.mjs`, `tests/transitions-browser.mjs` and `tests/categories-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
 
 ## Build status
 
 `npm run verify` passes:
 
-- `astro check`: 0 errors, 0 warnings, 0 hints across 48 files.
-- Build: 39 pages. `dist/` holds 44 files, 1,154,869 bytes in all: the site's pages and stylesheets (702,612 bytes), the design studies (210,237) and the two Bearnard derivatives (242,020), each under its own ceiling (D-074, KL-30, KL-42). No script file: the 37 pages with folders each inline one module (4.1 KB: previews and rows; at Vite's inlining limit, KL-36); the P03 specimen and the Bearnard study have no script.
+- `astro check`: 0 errors, 0 warnings, 0 hints across 78 files.
+- Build: 40 pages. `dist/` holds 45 files, 1,176,165 bytes in all: the site's pages and stylesheets (702,682 bytes), the design studies (231,463) and the two Bearnard derivatives (242,020), each under its own ceiling (D-074, KL-30, KL-42, KL-51). No script file: the 37 pages with folders each inline one module (4.1 KB: previews and rows; at Vite's inlining limit, KL-36); the P03 specimen, the Bearnard study and the records study have no script.
 - Token checks pass (43 primitives, 213 tokens; 5 categories with 5 colour tokens each, 4 environments with 10 typography and texture tokens each). Contrast checks pass: 245 of 245 enforced pairings, 260 in all, across the five categories.
 - Navigation: 23 of 23 model tests pass (NAV-001 to NAV-021, NAV-025, NAV-033), for 11 sections and 36 folders.
-- Smoke test passes. The built pages are exactly the 36 registered destinations and the 3 declared `/_design/` studies, and the only other files are stylesheets and the registered derivatives.
+- Smoke test passes. The built pages are exactly the 36 registered destinations and the 4 declared `/_design/` studies, and the only other files are stylesheets and the registered derivatives.
 - Folders: 10 of 10 tests pass (FOLD-001 to FOLD-010).
 - Routes: 9 of 9 tests pass (NAV-022, NAV-023, NAV-026 to NAV-032). NAV-024 passed in the browser.
 - Previews: 11 of 11 checks pass without a browser (PREV-001 to PREV-007, and the markup of PREV-004, PREV-013, PREV-014 and PREV-015).
@@ -241,7 +274,8 @@ Not built, on purpose: the differentiated reading layouts (P12), Quarto and MDX 
 - Bearnard: 8 of 8 checks pass (BEAR-001 to BEAR-008); BEAR-004 is skipped in a checkout without the masters.
 - Chromatic Archive: 10 of 10 checks pass (CAT-001 to CAT-010), for 5 categories, 11 tabs and 36 pages.
 - Editorial model: 17 of 17 checks pass (CONT-001 to CONT-015, CONT-017, CONT-019), for 8 collections.
-- Editorial builds: 13 of 13 checks pass (CONT-004 to CONT-016 and CONT-018, built), in 5 throwaway builds.
+- Editorial builds: 14 of 14 checks pass (CONT-004 to CONT-016, CONT-018 and CONT-020, built), in 6 throwaway builds.
+- Records: 26 of 26 checks pass (REC-001 to REC-026), for 8 families and 29 synthetic records; the site's own records number 0.
 
 `npm run test:browser` passes separately in headless Chrome 157: 12 of 12 preview checks (PREV-005, PREV-008 to PREV-014), 17 of 17 responsive checks (RESP-001 to RESP-017), 12 of 12 navigation-continuity checks (TRANS-001 to TRANS-012) and 8 of 8 colour and navigation checks (CAT-011 to CAT-018).
 
@@ -249,12 +283,12 @@ Not built, on purpose: the differentiated reading layouts (P12), Quarto and MDX 
 
 | Item | Value |
 | --- | --- |
-| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; P05 at `4771127` and `40083ce`; the Bearnard sticker task's notes at `cda026e`, `fa522dc` and `aaa32a7`; P06 at `39bc564` and its approval record `f8eead2`; P07 at `750e98f` and its approval record `28392b0`; P08 at `5a906f1` and its approval record `ca0dc82`; P09 at `93d3af0` (navigation continuity), `6ddf084` (Bearnard foundations), `b76f3b0` (environment candidates, since superseded) and `ceec322` (records); P09-A01, the Chromatic Archive, at `4f1e68f` and `10b3223`; P10 at `2748020` (global row grouping) and `3108d93` (editorial collections) |
+| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; P05 at `4771127` and `40083ce`; the Bearnard sticker task's notes at `cda026e`, `fa522dc` and `aaa32a7`; P06 at `39bc564` and its approval record `f8eead2`; P07 at `750e98f` and its approval record `28392b0`; P08 at `5a906f1` and its approval record `ca0dc82`; P09 at `93d3af0` (navigation continuity), `6ddf084` (Bearnard foundations), `b76f3b0` (environment candidates, since superseded) and `ceec322` (records); P09-A01, the Chromatic Archive, at `4f1e68f` and `10b3223`; P10 at `2748020` (global row grouping) and `3108d93` (editorial collections); P11 in the commit recorded below |
 | Milestone branches | `chore/gusmaolab-foundation-p01` (`4096691`), `chore/gusmaolab-astro-foundation-p02` (`5fab52c`), `feat/gusmaolab-design-system-p03` (`851fdbb`), all kept |
 | Recovery tag | `pre-astro-checkpoint` → `6eedf02`, local only |
 | `main` | `6036137`, the same tree as the checkpoint |
 | `origin/main` | `e28d43a`, two commits ahead of local `main`: a fetch at 08:22 on 2026-11-11, not run by Claude Code, brought in a merge (pull request 125) that adds seven files under `__frag8/`, unrelated to this work. Noticed at the end of P09; nothing was fetched, merged or pushed in response. No `development` branch exists on `origin`. |
-| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, public. Nothing was pushed in P01–P10: P10's decision is recorded in D-082. `origin/main` was still `e28d43a` and `origin` still had no `development` branch when checked on 2026-11-13 with `git ls-remote`. |
+| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, public. Nothing was pushed in P01–P11: the decisions are recorded in D-082 and D-087. `origin/main` was still `e28d43a` and `origin` still had no `development` branch when checked on 2026-11-13 with `git ls-remote`. |
 | Untracked | `clean`, a byte-identical copy of `clean.sh` that appeared at 18:01 on 2026-11-10. Claude Code did not create it, and left it alone at the owner's instruction. Also untracked: `cv/codex-yaml/`, another agent's CV task (CV-01), which Claude Code did not create, stage or change. |
 
 ## Assets
@@ -268,7 +302,7 @@ Unchanged since P03; P05 to P09-A01 did not touch it. ISSUE-0003 stays open: the
 
 ## Completed prompts
 
-P01 to P10, including P09's Addendum 01 (the Chromatic Archive). P08's real-device checks are pending. P09 is technically completed; two owner reviews are pending (G-P09-A6, G-P09-B7); the third, G-P09-C7, was closed by D-076. P10 is completed (D-077 to D-082); P11 has not started.
+P01 to P11, including P09's Addendum 01 (the Chromatic Archive). P08's real-device checks are pending. P09 is technically completed; two owner reviews are pending (G-P09-A6, G-P09-B7); the third, G-P09-C7, was closed by D-076. P10 is completed (D-077 to D-082), and so is P11 (D-083 to D-088), with empty production records; P12 has not started.
 
 ## Blockers
 
@@ -281,6 +315,7 @@ None.
 - **Look at the Chromatic Archive on the running site** and on real screens (G-A01-23, KL-39). Two points for the owner's eye, neither changed because the values are locked: Core's and Research's cardstocks are the closest pair on the global row (question 25), and Forest Teal cannot be a link colour on the shell or directly on the three darker Level 1 cardstocks (question 26, KL-38).
 - Optional refinements to the folders, the Overview tab, the previews and small screens, if wanted: `planning/design-system.md` section 10, questions 13, 14, 16, 18 and 20–22.
 - A concurrent task: another agent (CV-01) appended a section to the working copies of this file and of the implementation log, and created the folder `cv/codex-yaml/`. P09-A01 left all three unchanged and out of its commit; the owner decides when they are committed.
+- **Records** (P11): the system is empty. To fill it, the owner supplies or confirms the facts: which people, organizations, projects, outputs, positions, degrees and activities are to be public; whether the proposed CV in `cv/codex-yaml/` is to become their source once verified, and through what review (`planning/content-model.md`, "The CV workflow"); whether a YAML source is preferred to the TypeScript lists; whether funding should be a family; which collaborators may have a profile (KL-46).
 - **Editorial decisions** (P10): whether to write the first entries; the Kosmos structure, including the order of the works and any work and chapter URLs (KL-44); whether `heroImage`, `mascot`, `related` and `featured` are wanted (`planning/content-model.md`); whether a push of `development` is wanted as a backup (D-082).
 - **Assign Bearnard illustrations to roles**, or leave them empty for now (G-P09-B7; question 23).
 - Typography consolidation (D-042), still deferred.

@@ -126,6 +126,51 @@ export function collectionIssues(records: readonly EditorialRecord[]): string[] 
   return issues
 }
 
+// --- Canonical records (P11) --------------------------------------------------------------
+
+/**
+ * Problems in the entries' references to canonical records: an entry may name only
+ * records that exist. `exists` is the record store's own lookup, passed in, so this
+ * module needs nothing from src/records/ and the two systems cannot import each other in
+ * a circle. Drafts are checked too: a broken reference is fixed before it is published.
+ */
+export function recordReferenceIssues(
+  records: readonly EditorialRecord[],
+  exists: (recordId: string) => boolean,
+): string[] {
+  const issues: string[] = []
+  const ordered = [...records].sort(
+    (a, b) => text(a.collection, b.collection) || text(a.id, b.id),
+  )
+  for (const record of ordered) {
+    for (const id of record.data.relatedRecords ?? []) {
+      if (!exists(id))
+        issues.push(
+          `${record.collection}: "${record.id}" names the record ${id}, which does not exist`,
+        )
+    }
+  }
+  return issues
+}
+
+/**
+ * The public entries about one canonical record, in path order: what a future project or
+ * publication page lists as related reading. Derived from the entries; a record never
+ * lists its articles.
+ */
+export function entriesAbout(
+  recordId: string,
+  records: readonly EditorialRecord[],
+): EditorialRecord[] {
+  return records
+    .filter(
+      (record) =>
+        isPublic(record.data.status) &&
+        (record.data.relatedRecords ?? []).includes(recordId),
+    )
+    .sort((a, b) => text(publicPath(a), publicPath(b)))
+}
+
 // --- Ordering -----------------------------------------------------------------------------
 
 type Compare = (a: EditorialRecord, b: EditorialRecord) => number

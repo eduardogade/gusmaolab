@@ -511,6 +511,64 @@ Checked by `tests/navigation.mjs`, `tests/categories.mjs`, `tests/content.mjs` a
 | CONT-018 The content pipeline builds without the local Bearnard masters | `tests/editorial-build.mjs` | Pass |
 | CONT-019 Synthetic fixtures never enter the content directories | `tests/content.mjs` | Pass |
 
+## P11 gates — Canonical records
+
+Checked by `tests/records.mjs` (REC-001 to REC-026) and CONT-020 in `tests/editorial-build.mjs`, both in `npm run verify`; the existing suites and `npm run test:browser` (headless Chrome 157) for regressions; and the study `/_design/records/` looked at in a browser. **Every gate is passed with synthetic records only: the site's own records are empty.**
+
+| ID | Gate | Status | Evidence |
+| --- | --- | --- | --- |
+| G-P11-01 | P10 is complete before P11 starts | Passed | `npm run verify` at `426712c`: all suites pass; three P10 commits present |
+| G-P11-02 | Canonical entity types exist | Passed | Eight families in `src/records/schema.ts`; REC-014 |
+| G-P11-03 | Every record has a stable, unique identity | Passed | REC-001, REC-002 |
+| G-P11-04 | Records are schema-validated, with useful errors | Passed | REC-003, REC-004, REC-007 |
+| G-P11-05 | Dates keep their precision; impossible dates are rejected | Passed | REC-005, REC-006 |
+| G-P11-06 | Relationships use stable references, checked | Passed | REC-008 to REC-011, REC-014, REC-015 |
+| G-P11-07 | Author order is preserved; external authors need no profile | Passed | REC-012, REC-013 |
+| G-P11-08 | Projects and outputs are not duplicated across sections | Passed | REC-017 to REC-019: one record, derived views; no reverse list is stored (REC-011) |
+| G-P11-09 | CV, Portfolio, Lab and publication selectors exist and are deterministic | Passed | REC-016 to REC-020 |
+| G-P11-10 | Editorial collections can reference records, and stay eight | Passed | REC-023, CONT-001, CONT-020 |
+| G-P11-11 | Synthetic fixtures prove the data flow | Passed | 29 synthetic records; `/_design/records/` |
+| G-P11-12 | No fabricated professional or academic information is published | Passed | REC-021 (the site's loader refuses synthetic records; the production lists are empty), REC-025 |
+| G-P11-13 | Hidden and unverified records do not reach the build | Passed | REC-025: no page, the study included, shows a withheld record |
+| G-P11-14 | A record creates no page | Passed | REC-022; the smoke test; 36 folder pages and 4 studies |
+| G-P11-15 | The record system builds without private data or the masters | Passed | REC-024; CONT-018 (throwaway builds with no `brand/`, `cv/` or private folder) |
+| G-P11-16 | Physical folders, palette and P10 collections are unchanged | Passed (Chromium) | REC-026; NAV, FOLD, PREV, RESP, TRANS, CAT and CONT suites; no diff in `src/styles/` or `src/navigation/` |
+| G-P11-17 | The study is clearly development-only and synthetic | Passed | Looked at 1440 and 390 px; no sideways scroll at 1280, 768 and 320 px (measured) |
+| G-P11-18 | Real records are correct | **Untested** | There are none. The first real records need the owner's verification (KL-46). |
+| G-P11-19 | The projections suit the finished CV, Portfolio and Lab pages | **Untested** | Those pages are later prompts; the projections are shown only in the study. |
+
+### Record tests (P11)
+
+| Test | Result |
+| --- | --- |
+| REC-001 Every record has a valid, stable ID | Pass |
+| REC-002 Duplicate IDs are rejected | Pass |
+| REC-003 Missing required fields are reported usefully | Pass |
+| REC-004 Incomplete records are valid, and invent nothing | Pass |
+| REC-005 Dates keep the precision they were written with | Pass |
+| REC-006 Impossible and malformed dates are rejected | Pass |
+| REC-007 Malformed URLs, DOIs and ORCID iDs are rejected | Pass |
+| REC-008 Unknown person IDs are detected | Pass |
+| REC-009 Unknown organization IDs and looping hierarchies are detected | Pass |
+| REC-010 Unknown project IDs are detected | Pass |
+| REC-011 Outputs reference valid projects, areas and outputs | Pass |
+| REC-012 Author order is preserved exactly | Pass |
+| REC-013 External authors need no person record | Pass |
+| REC-014 A legitimate interconnected graph is valid | Pass |
+| REC-015 A broken graph gives actionable diagnostics | Pass |
+| REC-016 The CV projection is chronological and consistent | Pass |
+| REC-017 The Portfolio projection uses the canonical projects | Pass |
+| REC-018 The Lab projection relates areas, projects, outputs and people | Pass |
+| REC-019 One output says the same thing in every projection | Pass |
+| REC-020 Selectors change nothing | Pass |
+| REC-021 Synthetic records cannot become the site's records | Pass |
+| REC-022 A record creates no page | Pass |
+| REC-023 The eight editorial collections stay independent | Pass |
+| REC-024 The record system needs nothing outside `src/` | Pass |
+| REC-025 Hidden and synthetic records are not emitted | Pass |
+| REC-026 The physical folders are unchanged | Pass |
+| CONT-020 An entry that names a record the site lacks fails the build (built) | Pass |
+
 ## Future gates
 
 | ID | Gate | Source | Status |

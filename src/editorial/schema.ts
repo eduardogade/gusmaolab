@@ -15,6 +15,7 @@
  */
 import { z } from "astro/zod"
 import type { CollectionId } from "./collections.ts"
+import { RECORD_ID_PATTERN } from "../records/schema.ts"
 
 export const STATUSES = ["draft", "published", "archived"] as const
 export type EntryStatus = (typeof STATUSES)[number]
@@ -84,6 +85,16 @@ const common = {
   status: z.enum(STATUSES),
   slug,
   tags: z.array(slug).default([]),
+  /**
+   * Canonical records this entry is about (P11, D-088): IDs such as `project-…` or
+   * `publication-…`. Optional, and most entries have none. The entry stays an entry and
+   * the record stays a record; the build checks that every ID exists.
+   */
+  relatedRecords: z
+    .array(
+      z.string().regex(RECORD_ID_PATTERN, "not a record ID, such as project-example"),
+    )
+    .default([]),
 }
 
 /** What each collection adds (D-079). Berries add nothing: the shared tags are enough. */
@@ -127,6 +138,7 @@ export interface CommonData {
   status: EntryStatus
   slug: string
   tags: string[]
+  relatedRecords: string[]
   [extension: string]: unknown
 }
 
@@ -156,6 +168,9 @@ export function schemaFor(collection: CollectionId) {
       }
       const tags = data.tags as string[]
       if (new Set(tags).size !== tags.length) issue("tags", "a tag is listed twice")
+      const related = data.relatedRecords as string[]
+      if (new Set(related).size !== related.length)
+        issue("relatedRecords", "a record is listed twice")
       if (
         collection === "trail" &&
         data.position !== undefined &&

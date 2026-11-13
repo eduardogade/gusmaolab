@@ -1,0 +1,443 @@
+---
+// Temporary P11 design study: the canonical records, shown with a SYNTHETIC fixture. Not
+// a page of the website, and not anybody's CV: every person, organization, project and
+// publication on it is invented (src/design/records-fixture.ts). It proves that one
+// record feeds several presentations, before later prompts build the real pages.
+import BaseLayout from "../../layouts/BaseLayout.astro"
+import {
+  SYNTHETIC_PERSON,
+  SYNTHETIC_PROJECT,
+  SYNTHETIC_PUBLICATION,
+  SYNTHETIC_RECORDS,
+} from "../../design/records-fixture.ts"
+import {
+  FAMILY_NAMES,
+  createRecords,
+  cvProjection,
+  isShown,
+  labProjection,
+  portfolioProjection,
+  siteRecords,
+  validateRecords,
+} from "../../records/index.ts"
+
+export function getStaticPaths() {
+  return [{ params: { design: "_design" } }]
+}
+
+// The fixture is loaded as a fixture: the site's own dataset would refuse it.
+const records = createRecords(SYNTHETIC_RECORDS, { allowSynthetic: true })
+const cv = cvProjection(records, SYNTHETIC_PERSON)
+const portfolio = portfolioProjection(records)
+const lab = labProjection(records)
+
+const project = records.get("projects", SYNTHETIC_PROJECT)
+const inPortfolio = portfolio.find((p) => p.id === SYNTHETIC_PROJECT)!
+const inCv = cv.projects.find((p) => p.id === SYNTHETIC_PROJECT)!
+const inLab = lab.areas.filter((area) => area.projects.some((p) => p.id === SYNTHETIC_PROJECT))
+
+// One output, wherever it appears: the same citation object every time.
+const citations = [
+  ["CV", cv.publications.find((c) => c.id === SYNTHETIC_PUBLICATION)!],
+  ["Portfolio", inPortfolio.outputs.find((c) => c.id === SYNTHETIC_PUBLICATION)!],
+  ["Lab", inLab[0].outputs.find((c) => c.id === SYNTHETIC_PUBLICATION)!],
+] as const
+const [, citation] = citations[0]
+
+const cvSections = [
+  ["Appointments", cv.appointments],
+  ["Education", cv.education],
+  ["Projects", cv.projects],
+  ["Teaching", cv.teaching],
+  ["Talks and presentations", cv.presentations],
+  ["Mentoring and supervision", cv.mentoring],
+  ["Awards and honors", cv.awards],
+  ["Service", cv.service],
+  ["Outreach", cv.outreach],
+] as const
+
+const counts = FAMILY_NAMES.map((family) => ({
+  family,
+  production: siteRecords[family].length,
+  fixture: records[family].length,
+  shown: records[family].filter((record) => isShown(records, record)).length,
+}))
+
+// The record as written, without its participants: one of them has no public record, and
+// a page never prints a reference to a person it may not name.
+const { participants: _participants, ...source } = project
+
+// A deliberately broken copy, to show what the validation reports: five mistakes. It is
+// wrong on purpose, so it is passed to the validation untyped.
+const fixture = SYNTHETIC_RECORDS
+const broken = {
+  ...fixture,
+  people: [...fixture.people!, fixture.people![0]],
+  projects: fixture.projects!.map((p, i) =>
+    i === 0 ? { ...p, researchAreaIds: ["area-synthetic-missing"] } : p,
+  ),
+  publications: fixture.publications!.map((p, i) =>
+    i === 2
+      ? {
+          ...p,
+          authors: [{ personId: "person-synthetic-nobody" }],
+          projectIds: ["project-synthetic-nowhere"],
+        }
+      : p,
+  ),
+  activities: fixture.activities!.map((a, i) => (i === 3 ? { ...a, date: "2020-02-31" } : a)),
+}
+const diagnostics = validateRecords(broken as never, { allowSynthetic: true })
+---
+
+<BaseLayout
+  title="GusmaoLab — Canonical records (P11, temporary, synthetic)"
+  description="Temporary design study for the GusmaoLab website: canonical records and their projections, shown with invented data."
+>
+  <div class="study" data-study="p11-records">
+    <header class="shell intro gl-on-dark">
+      <p class="overline">Design study · P11 · Temporary · Synthetic data</p>
+      <h1>Canonical Records — One Source, Several Views</h1>
+      <p class="lead">
+        A <strong>temporary design study</strong>, not a page of the website. <strong
+          >Everything named below is invented</strong
+        >: the people, organizations, projects, publications, dates and links are a synthetic fixture, and describe no
+        real person or work. The site's own records are empty.
+      </p>
+    </header>
+
+    <section class="shell" aria-labelledby="one-record">
+      <div class="paper">
+        <p class="sample-overline">Synthetic fixture</p>
+        <h2 id="one-record">One project record, three presentations</h2>
+        <p>
+          The project is written once, as <code>{project.id}</code>. The CV, the Portfolio and the Lab each compute
+          their own view of it; none keeps a copy.
+        </p>
+        <div class="views">
+          <article class="view" data-view="cv">
+            <h3>CV</h3>
+            <p class="line">
+              <strong>{inCv.heading}</strong>
+              {inCv.detail && <span> · {inCv.detail}</span>}
+              <span class="when">{inCv.when}</span>
+            </p>
+          </article>
+          <article class="view" data-view="portfolio">
+            <h3>Portfolio</h3>
+            <p class="line">
+              <strong>{inPortfolio.title}</strong>
+              <span class="when">{inPortfolio.kind} · {inPortfolio.status} · {inPortfolio.when}</span>
+            </p>
+            {inPortfolio.description && <p>{inPortfolio.description}</p>}
+            <p>
+              People: {inPortfolio.people.map((p) => (p.role ? `${p.name} (${p.role})` : p.name)).join("; ")}
+            </p>
+            <p>Organizations: {inPortfolio.organizations.join("; ")}</p>
+            <p>
+              Links: {
+                inPortfolio.links.map((link) => (
+                  <a href={link.url} rel="nofollow">
+                    {link.label}
+                  </a>
+                ))
+              }
+            </p>
+            <p>Outputs: {inPortfolio.outputs.length}</p>
+          </article>
+          <article class="view" data-view="lab">
+            <h3>Lab</h3>
+            {
+              inLab.map((area) => (
+                <>
+                  <p class="line">
+                    <strong>{area.title}</strong>
+                  </p>
+                  {area.summary && <p>{area.summary}</p>}
+                  <p>
+                    Projects: {area.projects.map((p) => `${p.title} (${p.status})`).join("; ")}
+                  </p>
+                  <p>Outputs: {area.outputs.length}</p>
+                </>
+              ))
+            }
+          </article>
+        </div>
+        <details>
+          <summary>The record itself (participants omitted)</summary>
+          <div class="gl-scroll-x" tabindex="0" role="region" aria-label="The synthetic project record">
+            <pre><code>{JSON.stringify(source, null, 2)}</code></pre>
+          </div>
+        </details>
+      </div>
+    </section>
+
+    <section class="shell" aria-labelledby="one-citation">
+      <div class="paper">
+        <p class="sample-overline">Synthetic fixture</p>
+        <h2 id="one-citation">One output, one citation</h2>
+        <p>
+          Authors stay in the order printed. A registered author is named as on the work; an external author is a name
+          only; a co-author whose record is hidden is still credited, and nothing else about them is shown.
+        </p>
+        <ul class="citations" role="list">
+          {
+            citations.map(([where, c]) => (
+              <li data-citation={c.id} data-citation-in={where}>
+                <span class="where">{where}</span>
+                <span>
+                  <span class="citation-text">{c.text}</span>{" "}
+                  {c.link && (
+                    <a href={c.link} rel="nofollow">
+                      {c.doi ? `doi:${c.doi}` : "link"}
+                    </a>
+                  )}
+                </span>
+              </li>
+            ))
+          }
+        </ul>
+        <p>
+          Authors, in order: {
+            citation.authors.map((author, index) => (
+              <span data-author>
+                {index > 0 && ", "}
+                {author.name}
+                <small> ({author.personId ? "registered" : "name only"})</small>
+              </span>
+            ))
+          }
+        </p>
+        <p>
+          A preprint keeps its status in its citation:{" "}
+          <span class="citation-text" data-citation="publication-synthetic-preprint"
+            >{cv.publications.find((c) => c.status === "preprint")?.text}</span
+          >
+        </p>
+      </div>
+    </section>
+
+    <section class="shell" aria-labelledby="cv">
+      <div class="paper">
+        <p class="sample-overline">Synthetic fixture · not a real CV</p>
+        <h2 id="cv">A CV projection: {cv.person.name}</h2>
+        <p>
+          Dates keep the precision they were written with: a year stays a year. An ongoing position says so; a
+          position with no recorded end shows only its start.
+        </p>
+        {
+          cvSections.map(([title, entries]) => (
+            <section class="cv-section" data-cv-section={title}>
+              <h3>{title}</h3>
+              <ul class="entries" role="list">
+                {entries.map((entry) => (
+                  <li data-record={entry.id}>
+                    <span class="when">{entry.when}</span>
+                    <span>
+                      <strong>{entry.heading}</strong>
+                      {entry.organization && <span>, {entry.organization}</span>}
+                      {entry.detail && <span class="detail"> · {entry.detail}</span>}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          ))
+        }
+      </div>
+    </section>
+
+    <section class="shell" aria-labelledby="counts">
+      <div class="paper">
+        <h2 id="counts">What exists, and what is shown</h2>
+        <p>
+          A record is shown only if it is marked public and its facts are verified (in this fixture, synthetic). The
+          fixture holds hidden and unreviewed records on purpose; none of them appears anywhere on this page.
+        </p>
+        <div class="gl-scroll-x" tabindex="0" role="region" aria-label="Record counts by family">
+          <table>
+            <thead>
+              <tr
+                ><th scope="col">Family</th><th scope="col">Site's own records</th><th scope="col"
+                  >Synthetic fixture</th
+                ><th scope="col">Of which shown</th></tr
+              >
+            </thead>
+            <tbody>
+              {
+                counts.map((row) => (
+                  <tr data-family={row.family}>
+                    <td>
+                      <code>{row.family}</code>
+                    </td>
+                    <td data-production>{row.production}</td>
+                    <td>{row.fixture}</td>
+                    <td>{row.shown}</td>
+                  </tr>
+                ))
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="shell" aria-labelledby="validation">
+      <div class="paper">
+        <h2 id="validation">What the validation reports</h2>
+        <p>
+          A copy of the fixture with five mistakes: a person declared twice, an impossible date, and a research area,
+          an author and a project that do not exist. The real fixture, and the site's own dataset, report nothing.
+        </p>
+        <ul class="diagnostics" data-diagnostics={diagnostics.length}>
+          {
+            diagnostics.map((message) => (
+              <li>
+                <code>{message}</code>
+              </li>
+            ))
+          }
+        </ul>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<style>
+  /* Study layout only. */
+  .study {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-l);
+    max-inline-size: var(--size-shell-max);
+    margin-inline: auto;
+    padding: var(--space-gutter);
+  }
+
+  .shell {
+    padding: var(--space-shell-padding);
+    border: var(--border-width-hairline) solid var(--color-shell-border);
+    border-radius: var(--radius-shell);
+    background-color: var(--color-shell);
+    box-shadow: var(--shadow-shell);
+  }
+
+  .intro {
+    padding: var(--space-content-block) var(--space-content-inline);
+  }
+
+  .intro h1 {
+    max-inline-size: 24ch;
+    font-size: var(--font-size-h1);
+  }
+
+  .lead {
+    max-inline-size: var(--measure-prose);
+    margin-block-start: var(--space-s);
+    font-size: var(--font-size-lead);
+  }
+
+  .overline,
+  .sample-overline,
+  .where {
+    font-family: var(--font-label);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: uppercase;
+  }
+
+  .overline {
+    margin-block-end: var(--space-3xs);
+    color: var(--color-text-on-dark-muted);
+  }
+
+  .sample-overline,
+  .where,
+  .when,
+  .detail {
+    color: var(--color-text-muted);
+  }
+
+  .paper {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-s);
+    padding: var(--space-content-block) var(--space-content-inline);
+    border-radius: var(--radius-paper);
+    background-color: var(--color-folder-active);
+    box-shadow: var(--shadow-paper-raised);
+  }
+
+  .views {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-s);
+  }
+
+  @media (min-width: 64rem) {
+    .views {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .view {
+    display: grid;
+    gap: var(--space-2xs);
+    align-content: start;
+    padding: var(--space-s);
+    border: var(--border-width-hairline) solid var(--color-folder-border);
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface-card);
+  }
+
+  .view h3,
+  .cv-section h3 {
+    font-size: var(--font-size-h4);
+  }
+
+  .line {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3xs) var(--space-xs);
+    align-items: baseline;
+  }
+
+  .citations,
+  .entries,
+  .diagnostics {
+    display: grid;
+    gap: var(--space-2xs);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .citations li,
+  .entries li {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3xs) var(--space-s);
+  }
+
+  @media (min-width: 48rem) {
+    .citations li,
+    .entries li {
+      grid-template-columns: 12rem minmax(0, 1fr);
+    }
+  }
+
+  .cv-section {
+    display: grid;
+    gap: var(--space-2xs);
+  }
+
+  .diagnostics code {
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  summary {
+    cursor: pointer;
+  }
+</style>

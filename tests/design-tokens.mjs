@@ -38,6 +38,9 @@ const componentFiles = [
   "src/layouts/FolderPage.astro",
   "src/pages/index.astro",
   "src/pages/[design]/folders.astro",
+  "src/components/editorial/EditorialEntry.astro",
+  "src/components/editorial/CollectionIndex.astro",
+  "src/pages/[design]/records.astro",
 ]
 const sources = {
   "src/styles/tokens.css": await read("src/styles/tokens.css"),

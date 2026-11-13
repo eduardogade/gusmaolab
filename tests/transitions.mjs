@@ -126,7 +126,12 @@ test("TRANS-B02", "Reduced motion turns the transition off", (check) => {
 
 const pages = siteNavigation.pagePaths()
 const built = new Map()
-const studies = ["/_design/tokens/", "/_design/folders/", "/_design/bearnard/"]
+const studies = [
+  "/_design/tokens/",
+  "/_design/folders/",
+  "/_design/bearnard/",
+  "/_design/records/",
+]
 for (const path of [...pages, ...studies]) built.set(path, await stylesOf(path))
 
 test("TRANS-B03", "Every folder page opts in; the design studies do not", (check) => {

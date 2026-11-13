@@ -16,6 +16,7 @@ import { collectionOwnedBy, COLLECTION_IDS } from "./collections.ts"
 import type { CollectionId } from "./collections.ts"
 import {
   collectionIssues,
+  recordReferenceIssues,
   contentRoutes,
   indexItems,
   publicPath,
@@ -31,6 +32,7 @@ import {
 } from "../navigation/index.ts"
 import type { Navigation } from "../navigation/index.ts"
 import type { CommonData } from "./schema.ts"
+import { siteRecords } from "../records/index.ts"
 
 /** Only the dev server previews drafts; a build never routes one. */
 const routeOptions = () => ({ drafts: import.meta.env.DEV })
@@ -61,7 +63,11 @@ async function loadEntries(): Promise<LoadedEntry[]> {
     ),
   )
   const entries = loaded.flat()
-  const issues = collectionIssues(entries)
+  // Entries may name canonical records (P11): every ID must exist in the site's records.
+  const issues = [
+    ...collectionIssues(entries),
+    ...recordReferenceIssues(entries, (id) => siteRecords.byId.has(id)),
+  ]
   if (issues.length > 0) throw new EditorialConfigError(issues)
   return entries
 }

@@ -174,7 +174,7 @@ The registry creates no pages by itself. Pages come from Astro route files that 
 2. **Content routes (P10, D-080):** the editorial entries that are published or archived become `ContentRoute`s at build time (`src/editorial/site.ts`). They are passed to `createNavigation()` alongside the registry, and the same three route files generate their pages (`pageStaticPaths(level)` lists the folders at that depth, then the entries at that depth), so navigation and output cannot disagree. This replaces the earlier plan of separate route files under static segments: one mechanism serves every collection, and no second file can claim a pattern the first already has. An entry's page is built only below its owner, never at the owner's own path, and a draft's page is not built.
 3. **Build checks, active now:** the smoke test fails if `dist/` holds a page that is not a registered destination, a declared study, or an editorial entry that declares itself published or archived at its collection's prefix plus its slug, or if a registered destination has no page. Since P09-A01, 36 of 36 destinations have a page (37 before External was removed). `tests/routes.mjs` checks every page's folders, links, category, environment and landmarks.
 4. **Not to do:** no catch-all route (`[...slug]`) that could swallow unknown paths or collide with collections; no server rendering; no client-side router. An unknown URL has no file, so the static host answers 404.
-5. **Design studies (P05, P06):** temporary pages under `/_design/` are the only built pages outside the registry: the P03 tokens specimen at `/_design/tokens/` (moved from `/` in P06, D-055), the folder study at `/_design/folders/` and the Bearnard study at `/_design/bearnard/` (P09). No slug can start with `_`, so they can never collide with a folder. The smoke test lists them explicitly (D-048).
+5. **Design studies (P05, P06):** temporary pages under `/_design/` are the only built pages outside the registry: the P03 tokens specimen at `/_design/tokens/` (moved from `/` in P06, D-055), the folder study at `/_design/folders/`, the Bearnard study at `/_design/bearnard/` (P09) and the records study at `/_design/records/` (P11). No slug can start with `_`, so they can never collide with a folder. The smoke test lists them explicitly (D-048).
 
 ## 13. From navigation state to physical folders (P05)
 
@@ -305,6 +305,22 @@ The navigation is the same on every screen: the same rows, tabs, Overview, selec
 | `/cv/` | CV, centred | Overview, in view at the start |
 | `/cv/research/` | CV, centred | Research, centred |
 | `/bearnards-area/powerlifting/` | Bearnard's Area, at the end | Powerlifting, centred |
+
+## 17. Canonical records behind the sections (P11)
+
+P11 added the data that the research sections will present, and no navigation: the eleven tabs, the 25 folders and their URLs are unchanged, and no record has a page (D-083 to D-088; `planning/content-model.md`).
+
+| Section | What it will read | Through |
+| --- | --- | --- |
+| CV and its folders (Teaching, Research, Publications, Talks, Mentoring, Awards, Service, Outreach) | One person's appointments, education, projects, outputs and activities, each in its own chronological order | `cvProjection(records, personId)` |
+| Portfolio | The projects, with their people, organizations, links and outputs | `portfolioProjection(records)` |
+| Lab and its folders (People, Research Areas, Partners …) | Research areas with their projects and outputs, profiled people, the projects' organizations | `labProjection(records)` |
+| Any publication list | Outputs, cited once and identically everywhere | `publications()` and `citationOf()` |
+| Editorial entries (Lecture Notes, Blog) | The records an entry is about, and the entries about a record | `relatedRecords`, `entriesAbout()` |
+
+- The CV's eight folders match the record families and activity types one to one, so each folder's page is a section of one projection, not a list of its own.
+- A record never becomes a tab. If a project or a person gets a page, it will be a content route owned by a folder (section 8), added by a recorded decision.
+- Until verified records exist, these pages keep their development scaffolding. The projections are shown, with invented data, only at `/_design/records/`.
 
 ## Open questions
 

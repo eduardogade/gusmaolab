@@ -25,7 +25,12 @@ import {
 
 const repo = new URL("../", import.meta.url)
 const dist = fileURLToPath(new URL("dist/", repo))
-const STUDIES = ["/_design/tokens/", "/_design/folders/", "/_design/bearnard/"]
+const STUDIES = [
+  "/_design/tokens/",
+  "/_design/folders/",
+  "/_design/bearnard/",
+  "/_design/records/",
+]
 // Studies that show folders, and so carry the folders' one script.
 const STUDIES_WITH_FOLDERS = ["/_design/folders/"]
 const fileOf = (path) => join(dist, `${path.slice(1)}index.html`)
@@ -560,6 +565,7 @@ test("NAV-032", "Every approved route is a static page", (check) => {
       json([
         "[design]/bearnard.astro",
         "[design]/folders.astro",
+        "[design]/records.astro",
         "[design]/tokens.astro",
         "[section]/[folder]/[subfolder]/index.astro",
         "[section]/[folder]/index.astro",

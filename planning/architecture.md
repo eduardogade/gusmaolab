@@ -147,6 +147,35 @@ src/content/<collection>/*.md ──► glob loader + Zod schema ──► Astro
 - **Output accounting.** The smoke test accepts a page beyond the registered ones only if it declares itself an editorial entry (`data-editorial-*`) that is published or archived, with a URL equal to its collection's prefix plus its slug.
 - **Tests.** `tests/content.mjs` tests the model on synthetic records. `tests/editorial-build.mjs` builds throwaway copies of the project with synthetic fixtures from `tests/fixtures/editorial/`, without `brand/` or any private folder, and checks the output; the real `src/content/` stays empty of entries and the real `dist/` is never touched.
 
+## Canonical records (P11)
+
+One authoritative record, many contextual presentations. The rules and fields are in `planning/content-model.md`; this is how the parts join.
+
+```text
+src/data/records/*.ts ──► createRecords() ──► siteRecords (frozen store, by family and by ID)
+ (typed lists, one per     (src/records/registry.ts)        │
+  family; all empty)        1. each record against its       │
+                               Zod schema (schema.ts)        ▼
+src/design/                 2. records against each     selectors.ts      derived relationships,
+ records-fixture.ts ──►        other: IDs, references,   │                orders, what may be shown
+ (synthetic; study and         hierarchy, provenance     ├─► citation.ts   one citation per output
+  tests only)                                            └─► projections.ts
+                                                              cvProjection · portfolioProjection · labProjection
+                                                                        │
+                                                          future pages (CV, Portfolio, Lab) render these
+```
+
+- **Typed static data, not a database and not a collection.** The site's records are TypeScript modules in `src/data/records/`, validated by Zod when `src/records/index.ts` loads; an invalid dataset throws and fails the build. Records do not use Astro's Content Layer: the eight editorial collections stay eight, and `src/content.config.ts` knows nothing of records (D-083).
+- **Pure code.** Everything in `src/records/` runs in plain Node.js (erasable TypeScript, D-040), imports only `astro/zod`, reads no file and no network, and knows nothing of navigation, editorial code or Astro. The tests run it directly.
+- **Referential integrity at load.** IDs are unique and carry their family in their prefix; every reference must name an existing record of the right family; the one declared hierarchy (an organization's parent) may not loop. All problems are listed together; nothing half-loads.
+- **One side stores, the other is derived.** Reverse relationships (a project's outputs, a person's collaborators) are selectors, never data.
+- **Projections are view models.** The CV, Portfolio and Lab projections reshape records for a kind of page and hold no facts; every output is cited through `citationOf`, so it reads the same everywhere.
+- **Visibility is a rendering rule.** Selectors return only records that are `public` and `verified`; `synthetic` records load only in a store created with `allowSynthetic` (the fixture), never in `siteRecords`. This hides nothing from the public repository, and is documented as such.
+- **No routes.** A record creates no page; no route file reads the store except the design study at `/_design/records/`, which shows the synthetic fixture. Entity pages, when approved, will be content routes owned by a folder.
+- **Editorial entries may point at records** (`relatedRecords`). The editorial loader asks the store whether each ID exists (`recordReferenceIssues`); the dependency runs one way, editorial → records, so there is no import cycle.
+- **Build time only.** Nothing about records runs in the browser: no fetching, no client-side store, no script.
+- **Tests.** `tests/records.mjs` (REC-001 to REC-026): schemas, references, projections, immutability, and that neither synthetic nor hidden records reach a page.
+
 ## Colour architecture (P09-A01)
 
 Colour is the Chromatic Archive: five locked category palettes and four shared colours (D-076; `planning/design-system.md`, section 7).
@@ -180,9 +209,11 @@ environments.css  ten typography and texture tokens per [data-environment]; no c
 | --- | --- |
 | `src/content/` | The editorial collections: one directory per collection, one Markdown file per entry (D-078). Empty of entries since P10. |
 | `src/content.config.ts` | Astro's content configuration: the eight collections, their loaders and schemas |
+| `src/data/records/` | The site's canonical records: one typed list per family (D-083). Empty since P11. |
+| `src/records/` | The record model: schemas, dates, registry, selectors, projections, citation; pure. Not `src/lib/`, which the root `.gitignore` would hide. |
 | `src/editorial/` | The editorial model: collection registry, schemas, routing rules, date guard (pure), and `site.ts` (Astro) |
 | `src/components/editorial/` | `EditorialEntry` and `CollectionIndex` |
-| `src/pages/` | Route files: Home (`index.astro`) and one generated route per tab level (`[section]/…`, D-053; folders and entries since P10); the temporary design studies in `[design]/` (`tokens.astro` at `/_design/tokens/`, `folders.astro` at `/_design/folders/`, and since P09 `bearnard.astro` at `/_design/bearnard/`; D-048, D-055, D-073) |
+| `src/pages/` | Route files: Home (`index.astro`) and one generated route per tab level (`[section]/…`, D-053; folders and entries since P10); the temporary design studies in `[design]/` (`tokens.astro` at `/_design/tokens/`, `folders.astro` at `/_design/folders/`, since P09 `bearnard.astro` at `/_design/bearnard/`, and since P11 `records.astro` at `/_design/records/`; D-048, D-055, D-073, D-087) |
 | `src/layouts/` | `BaseLayout` (document, styles, category, environment) and `FolderPage` (a page inside the folders; D-053, D-054) |
 | `src/components/folders/` | `FolderStack`, `FolderLayer`, `FolderTabStrip`, `FolderTab` and `FolderPreview` (D-043, D-059) |
 | `src/components/bearnard/` | `BearnardIllustration`: one approved Bearnard illustration, by role or ID (D-073) |
@@ -192,7 +223,7 @@ environments.css  ten typography and texture tokens per [data-environment]; no c
 | `src/scripts/` | `folder-previews.ts` (D-060) and `folder-rows.ts` (D-066): the folders' client-side modules. Not `src/lib/`, which the root `.gitignore` would hide. |
 | `src/components/scaffold/` | `ScaffoldContent`: the temporary development content of the folder pages until the content prompts |
 | `src/styles/` | `tokens.css` (global tokens and aliases), `categories.css` (the five locked category palettes, and the only place that declares them; D-076), `environments.css` (typography and texture) and `global.css`, loaded by BaseLayout; `folders.css`, loaded only by `FolderStack` |
-| `src/design/` | The token contract and the CSS token reader, shared by the specimen and the tests |
+| `src/design/` | The token contract and the CSS token reader, shared by the specimen and the tests; and the synthetic record fixture, shared by the records study and the tests |
 | `src/navigation/` | Navigation types, registry and helpers; `index.ts` exports the compiled `siteNavigation`. Not `src/lib/`, which the root `.gitignore` would hide (KL-11). |
 | `tests/` | Token, contrast, navigation, build-output, folder-component, route and preview checks; `html-tree.mjs` is their shared HTML reader; `browser-harness.mjs` drives headless Chrome for `previews-browser.mjs`, `responsive-browser.mjs` and `transitions-browser.mjs`; `bearnard.mjs` checks the illustrations (P09) |
 | `.claude/launch.json` | Local preview servers for the Claude desktop app (D-034) |
@@ -211,7 +242,7 @@ environments.css  ten typography and texture tokens per [data-environment]; no c
 | `_books/`, `_papers/`, `_references/`, `_reports/` | Private workspace, gitignored. Never commit. |
 | `backup/`, `releases/`, `resources/`, `viz/`, `_logo/` | Empty, untracked placeholder folders |
 
-`public/` was created in P09 for the Bearnard derivatives (D-019, D-073); `src/components/` was created in P05. The site ships two images (the Bearnard portrait at two widths, used only by a design study so far), no font files, and one inlined script (P07, extended in P08). It builds 39 pages: 36 folder pages and 3 design studies.
+`public/` was created in P09 for the Bearnard derivatives (D-019, D-073); `src/components/` was created in P05. The site ships two images (the Bearnard portrait at two widths, used only by a design study so far), no font files, and one inlined script (P07, extended in P08). It builds 40 pages: 36 folder pages and 4 design studies.
 
 ## Deployment
 
