@@ -81,6 +81,11 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 | D-075 | Four proposed section palettes exist as candidates only, in their own stylesheet and design study; the approved environments are unchanged, and adopting any candidate needs the owner | Superseded by D-076; candidates removed | 2026-11-11 |
 | D-076 | **P09-A01 — Chromatic Archive: Five Locked Category Palettes.** Five colour categories with permanent cardstock; every top-level tab keeps its own colour; shell, links, accent and V are shared; environments set typography only; External leaves the navigation (eleven tabs) | **APPROVED / LOCKED** by the owner | 2026-11-12 |
 | D-077 | The global row is grouped by category: the tabs of one category are adjacent; only the order changes | Approved by the owner (P10 brief) | 2026-11-13 |
+| D-078 | Eight independent editorial collections, each one directory of Markdown files with its own schema, public prefix and owning folder; one shared pipeline | Approved by the owner (P10 brief) | 2026-11-13 |
+| D-079 | Editorial metadata: a small common contract plus per-collection extensions, validated with Zod; calendar dates as `YYYY-MM-DD`; explicit status and slug | Approved (P10 brief) | 2026-11-13 |
+| D-080 | Entries are content routes owned by their collection's folder; publication state decides route generation; public URLs are prefix plus an explicit slug | Approved (P10 brief) | 2026-11-13 |
+| D-081 | Minimal rendering and indexes: Markdown through Astro's `render()` on the folder's paper, one list per collection, an empty state; drafts previewed only by `astro dev` | Approved (P10 brief) | 2026-11-13 |
+| D-082 | Git policy: routine milestone commits without separate confirmation; pushes allowed but never automatic; promotion to `main` only by the steps below | Approved by the owner (P10 brief) | 2026-11-13 |
 
 ## Details
 
@@ -318,3 +323,50 @@ This replaces the "no client-side JavaScript" clause of D-054 and of the archite
 - **Enforced.** `validateNavigation()` rejects a registry in which a category returns after another began (so a future tab cannot split a block); NAV-001 and CAT-001 fix the order; NAV-033 checks the five blocks.
 - **Side effect.** Blog, a leaf, now follows Lab, so keyboard Tab from Lab's preview reaches Blog (no preview) before Lecture Notes; PREV-008 was updated for it.
 - **Supersedes** the order in the P04 brief, section 4, and D-076's table.
+
+**D-078. Eight independent editorial collections.** Decided in the P10 brief (2026-11-13).
+
+| Collection ID | Public collection | Directory | Owning folder |
+| --- | --- | --- | --- |
+| `blog` | Blog | `src/content/blog/` | `blog` |
+| `trail` | Bearnard's Trail | `src/content/trail/` | `lecture-notes-bearnards-trail` |
+| `greenhouse` | The Greenhouse | `src/content/greenhouse/` | `lecture-notes-greenhouse` |
+| `berries` | Berries | `src/content/berries/` | `lecture-notes-berries` |
+| `timberLogs` | Timber Logs | `src/content/timber-logs/` | `lecture-notes-timber-logs` |
+| `monthsOriginal` | Months' Original | `src/content/months-original/` | `writing-months-original` |
+| `kosmos` | Kosmos Series | `src/content/kosmos/` | `writing-kosmos` |
+| `bookClub` | Book Club | `src/content/book-club/` | `writing-book-club` |
+
+- **Independent identities, one pipeline.** The eight differ in metadata, order and purpose (`planning/content-model.md`); they share the loader, the schema fragments, the routing rules and the rendering, so there is one implementation and not eight copies. The IDs are the brief's recommended ones, unchanged.
+- **Astro's Content Layer** (`defineCollection()`, the `glob()` loader, `getCollection()`, `render()`), in `src/content.config.ts`, with Markdown only. No MDX, CMS, database, hosted editor or new dependency: `package.json` is unchanged (MDX and Quarto are P13).
+- **Empty is a state, not an error.** All eight hold no entry; no content was written, migrated or invented. The Pelican archive was not read.
+- **Ownership is declared**, by folder ID in `src/editorial/collections.ts`, never inferred from a URL. The public prefixes are the owning folders' paths, which are the brief's table and the P04 destinations, unchanged.
+- **Category.** Blog, Bearnard's Trail, The Greenhouse, Berries and Timber Logs are Blog & Notes; Months' Original, Kosmos Series and Book Club are Writing. No collection is Core, Research or Bearnard, and no tab recolours to match the page (D-076).
+
+**D-079. Editorial metadata.**
+
+- **Common:** `title`, `status` and `slug` always; `description` and `publishedAt` for published and archived entries; `updatedAt` and `tags` optional. **Extensions:** Blog `kind`; Trail `seriesId`, `position`, `prerequisites`; Greenhouse `difficulty`, `prerequisites`, `references`; Timber Logs and Months' Original `period` (required); Kosmos `workId` (required), `chapterNumber`, `position`; Book Club `bookTitle` (required), `bookAuthor`, `sessionDate`. Berries add nothing. Only fields with a reader in P10 exist; `heroImage`, `mascot`, `related` and `featured` are proposed and left to P12.
+- **Strict.** Unknown fields are errors. Status has no default, and neither has the slug.
+- **Dates are calendar dates**, `YYYY-MM-DD`, periods `YYYY-MM`, so order and display depend on no time zone or locale. The YAML parser rolls an unquoted impossible date (`2026-02-30`) over to a real one without a warning, so the raw text is checked first and the build fails (`src/editorial/raw-dates.ts`; KL-41).
+- **Zod through `astro/zod`**, the library Astro validates with, shared by the build and the tests.
+- **Sequence places** are unique: Trail `(seriesId, position)`, Kosmos `(workId, chapterNumber)` and `(workId, position)`. They stay plain fields: books, works and series become canonical records only if P11 decides so.
+
+**D-080. Routes, ownership, publication state and URLs.**
+
+- **Entries are content routes** (D-039) owned by their collection's folder. They never enter the registry, get no tab and add no row: at most three, whatever the URL length.
+- **Public URL = owner path + slug.** The entry ID (the file path) is internal; the title never enters the URL; changing either never moves a page, and publishing a draft never changes its address. A slug is one segment, so the deepest entry URL is one segment below its folder. Deeper Kosmos work and chapter URLs are an extension that needs the owner's approval; none is built.
+- **State decides route generation.** Draft: no page in a build. Published: a page and an index entry. Archived: the same URL, listed and marked historical. `astro dev` alone also serves drafts, at their future URL, with a notice and never in an index.
+- **Clashes fail the build:** two entries of one collection with one slug (whatever their status), a route that equals a folder's path or lies outside its owner, a repeated sequence place.
+- **One mechanism.** The three existing route files list `pageStaticPaths(level)`, folders then entries; `FolderPage` resolves through `getSiteNavigation()`. No catch-all, no router, no hydration; the P09 cross-fade is unchanged. This replaces the planned separate route files under static segments (`planning/information-architecture.md`, section 12).
+- **Smoke test:** a page beyond the registered ones is accepted only if it declares itself a published or archived entry at its collection's prefix plus its slug.
+
+**D-081. Rendering and indexes.** `EditorialEntry` shows title, description, dates, an archived or draft notice and the Markdown body through Astro's `render()`, on the category's reading paper with the global typography; no font, colour or geometry was added. `CollectionIndex` lists a collection's published and archived entries on the owning folder's own page, in the collection's order (`planning/content-model.md`, "Index order"), or says "This collection has no published entries yet." These are foundations: P12 designs the differentiated reading layouts and indexes. The Kosmos order (by work, then position) is provisional.
+
+**D-082. Git policy.** Decided by the owner in the P10 brief (2026-11-13); it replaces "never push unless the owner explicitly asks" and "do not merge into `main` without the owner" in `AGENTS.md` as follows.
+
+- **Commits.** A coherent, verified commit at the end of a milestone needs no separate confirmation. Ordinary work stays on the persistent `development` branch (D-035); no `feature/pNN` branches. The pre-commit hooks are never bypassed. Another agent's changes are never staged.
+- **Pushes are permitted, not automatic.** Whether to push is decided each time, from: verification, the branch's state, divergence from the remote, the repository being public, readiness for production, concurrent work and deployment implications. A milestone is not pushed merely because it is finished: foundations and temporary development pages stay local.
+- **Never.** Force-push, rewrite or discard public history, move or delete tags, or overwrite remote-only commits.
+- **Pushing `development`** (as a backup or for collaboration) may be considered after inspecting the actual remote (`git ls-remote`, then a fetch) and checking that the push carries no private or unrelated content.
+- **Promotion to `main`**, when a release is intended: (1) fetch and inspect the remote; (2) reconcile any divergence without discarding unrelated commits; (3) verify the private-file and secret exclusions; (4) run the release validation; (5) confirm the deployment target; (6) only then integrate and push. A deployment is never triggered unreviewed.
+- **P10's decision: nothing was pushed.** `origin/main` is at `e28d43a`, still two commits ahead of local `main` (the `__frag8/` merge); `origin` has no `development` branch and 19 unrelated branches. P10 is unfinished infrastructure with temporary pages, and no backup or collaboration need was stated, so it stays local and `main` is unchanged.

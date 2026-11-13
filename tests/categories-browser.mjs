@@ -1,4 +1,4 @@
-// Browser checks for the Chromatic Archive (P09-A01, D-076): CAT-011 to CAT-017, in
+// Browser checks for the Chromatic Archive (P09-A01, D-076): CAT-011 to CAT-018, in
 // headless Chromium through tests/browser-harness.mjs. tests/categories.mjs checks the
 // declarations and the markup; these read the colours the browser actually paints, on
 // the real angled tabs, so a rule that overrides a tab's category cannot pass.
@@ -53,7 +53,7 @@ const categoryOf = (path) => siteNavigation.resolve(path).state.category
 
 const { js, setViewport, moveTo, click, goto, waitForPath, state, away, test, finish } =
   await startBrowser({
-    ids: Array.from({ length: 7 }, (_, i) => `CAT-0${11 + i}`),
+    ids: Array.from({ length: 8 }, (_, i) => `CAT-0${11 + i}`),
     timeout: 240_000,
   })
 
@@ -416,6 +416,102 @@ await test(
             `${width} px ${path}: ${tab.id} is ${tab.fill}, expected ${expected}`,
           )
         }
+      }
+    }
+  },
+)
+
+await test(
+  "CAT-018",
+  "The five navigations of P10: ordinary URLs, selection, colours, Back and Forward",
+  async (check) => {
+    // Home ↔ CV, CV ↔ Writing, Blog ↔ Lecture Notes, Lecture Notes ↔ Berries,
+    // Writing ↔ Kosmos Series: each by clicking the destination's tab, then Back, then
+    // Forward. After every step the URL, the open folders, the V, the global tabs'
+    // colours, and the surrounding colours must match what the registry says.
+    const STEPS = [
+      ["/", "/cv/"],
+      ["/cv/", "/writing/"],
+      ["/blog/", "/lecture-notes/"],
+      ["/lecture-notes/", "/lecture-notes/berries/"],
+      ["/writing/", "/writing/kosmos/"],
+    ]
+    const verify = async (path, where) => {
+      check(await waitForPath(path), `${where}: the address is not ${path}`)
+      await away()
+      await sleep(250)
+      const page = await paint()
+      const expected = siteNavigation.resolve(path).state
+      const colours = LOCKED[expected.category]
+      check(page.category === expected.category, `${where}: category ${page.category}`)
+      check(page.overflow <= 0, `${where}: the page scrolls sideways`)
+      const open = await js(
+        `[...document.querySelectorAll("[data-selected]")].map((tab) => tab.dataset.tabId)`,
+      )
+      const selected = expected.rows.map((row) => row.selectedId)
+      check(
+        json(open) === json(selected),
+        `${where}: selected ${json(open)}, expected ${json(selected)}`,
+      )
+      check(
+        page.levels.length === expected.rows.length,
+        `${where}: ${page.levels.length} rows`,
+      )
+      check(
+        page.vs.length === expected.rows.length,
+        `${where}: ${page.vs.length} V indicators`,
+      )
+      check(
+        page.vs.every((stroke) => same(stroke, V)),
+        `${where}: a V changed colour`,
+      )
+      for (const tab of page.levels[0].tabs) {
+        const node = siteNavigation.node(tab.id)
+        const wanted = tab.selected
+          ? LOCKED[node.category][LEVEL1]
+          : derived("--color-folder-tab-inactive", node.category)
+        check(
+          tab.category === node.category,
+          `${where}: ${tab.id} is marked ${tab.category}`,
+        )
+        check(
+          same(tab.fill, wanted),
+          `${where}: ${tab.id} is ${tab.fill}, expected ${wanted}`,
+        )
+      }
+      check(
+        same(page.levels[0].body, colours[LEVEL1]),
+        `${where}: the open folder is ${page.levels[0].body}`,
+      )
+      check(same(page.paper, colours[PAPER]), `${where}: the paper is ${page.paper}`)
+      check(
+        same(page.ground, colours[GROUND]),
+        `${where}: the flannel is ${page.ground}`,
+      )
+      check(
+        same(page.shell, SHELL) && same(page.link, LINK),
+        `${where}: the shell or links changed`,
+      )
+    }
+    for (const width of [1440, 390]) {
+      await setViewport(width, 900, width < 768)
+      for (const [from, to] of STEPS) {
+        const where = `${width} px ${from} → ${to}`
+        await goto(from)
+        await verify(from, `${where} (start)`)
+        const point = await js(`(() => {
+          const a = document.querySelector('.gl-folder-tab a[href="${to}"]');
+          a.scrollIntoView({ inline: "center", block: "nearest" });
+          const r = a.getBoundingClientRect();
+          return { x: r.left + r.width / 2, y: r.top + r.height / 2 };
+        })()`)
+        await moveTo(point.x, point.y, 4)
+        await click(point.x, point.y)
+        await verify(to, where)
+        await js("history.back()")
+        await verify(from, `${where} (Back)`)
+        await js("history.forward()")
+        await verify(to, `${where} (Forward)`)
       }
     }
   },

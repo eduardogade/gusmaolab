@@ -8,14 +8,15 @@
  *   <FolderPage>…the page's content…</FolderPage>
  *
  * A page supplies only its content: the URL decides which folders surround it, so no page
- * builds its own rows of tabs. A URL the registry does not know fails the build.
+ * builds its own rows of tabs. A URL the registry and the editorial entries do not know
+ * fails the build.
  *
  * Landmarks: each row of tabs is a navigation landmark ("Sections", "CV folders"), and
  * `<main>` is the content inside the deepest folder, after every row.
  */
 import BaseLayout from "./BaseLayout.astro"
 import FolderStack from "../components/folders/FolderStack.astro"
-import { siteNavigation } from "../navigation/index.ts"
+import { getSiteNavigation } from "../editorial/site.ts"
 // A short cross-fade between folder pages, where the browser supports it (P09).
 import "../styles/view-transitions.css"
 
@@ -25,7 +26,8 @@ interface Props {
   description?: string
 }
 
-const result = siteNavigation.resolve(Astro.url.pathname)
+// The folders plus the entries' pages (P10): an entry resolves to its owning folder.
+const result = (await getSiteNavigation()).resolve(Astro.url.pathname)
 if (!result.found) {
   throw new Error(`FolderPage: ${result.path} is not a registered page`)
 }

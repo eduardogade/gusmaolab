@@ -6,6 +6,7 @@
 // reported NOT RUN and the exit code is 2. Chromium only: Safari and Firefox, real phones
 // and tablets, and screen readers are not covered (touch is emulated).
 import { json, sleep, startBrowser } from "./browser-harness.mjs"
+import { siteNavigation } from "../src/navigation/index.ts"
 
 const {
   serve,
@@ -143,19 +144,8 @@ await test(
   "RESP-002",
   "Every global tab is reachable in a scrolling row",
   async (check) => {
-    const labels = [
-      "Home",
-      "About",
-      "Blog",
-      "Portfolio",
-      "Contact",
-      "Schedule",
-      "CV",
-      "Lab",
-      "Lecture Notes",
-      "Writing",
-      "Bearnard's Area",
-    ]
+    // The global row, in the registry's order (grouped by category since P10).
+    const labels = siteNavigation.sections.map((node) => node.label)
     for (const width of [320, 390, 768, 1024]) {
       await setViewport(width, 900, width < 768)
       await goto("/cv/research/")

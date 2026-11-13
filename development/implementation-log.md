@@ -2,6 +2,68 @@
 
 Newest entry first.
 
+## P10 — Editorial Collections, Structured Publishing Foundations & Navigation Consolidation — 2026-11-13
+
+**Agent:** Claude Code. **Branch:** `development`. **Result:** completed, in two commits: the global row grouped by category, and the editorial collections. Nothing was pushed or deployed, `main` was not touched, and P11 was not started.
+
+### Starting state (verified)
+
+- **HEAD:** `development` at `10b3223` (the P09-A01 records commit). Working tree: the other agent's CV-01 sections in `development/current-state.md` and `development/implementation-log.md`, the untracked `cv/codex-yaml/` and the untracked `clean`, all left alone.
+- **Baseline claims checked against the files:** Astro 7.4.8, static output, 11 top-level and 25 second-level folders (36 destinations), 3 design studies, 5 locked palettes, previews, scrolling rows, the cross-fade and the Bearnard registry; no content collections, no `src/content/`, no `src/content.config.ts`, no `@types/node`. All as recorded.
+- **Remote (read-only, `git ls-remote`):** `origin/main` at `e28d43a` (the `__frag8/` merge, two commits ahead of local `main`), 19 unrelated branches, no `development`. `development` is 24 commits ahead of `origin/main`.
+- **Local dev server:** an `astro dev` process the owner started at 05:03 was listening on 4321 (PID 62816); left running (see "Colours in the local browser").
+
+### Part A — the global row, grouped by category (D-077)
+
+- **Registry:** the sections were reordered to Home, About, Contact, Schedule · Portfolio, CV, Lab · Blog, Lecture Notes · Writing · Bearnard's Area. Labels, IDs, URLs, categories, environments and children are unchanged.
+- **Rule:** `validateNavigation()` now rejects a registry in which a category returns after another began. NAV-033 checks the five blocks (4, 3, 2, 1, 1), the rejection and its message, and that a reversed row stays valid.
+- **Tests updated:** NAV-001 and CAT-001 (the order). PREV-008 (keyboard) assumed Lecture Notes followed Lab; Blog, a leaf, now does, so it checks Blog (no preview) and then Lecture Notes. RESP-002 (browser) hardcoded the old order; it now reads the registry's.
+- **CAT-018 (new, browser):** Home ↔ CV, CV ↔ Writing, Blog ↔ Lecture Notes, Lecture Notes ↔ Berries, Writing ↔ Kosmos Series, at 1440 and 390 px, by clicking the destination's tab, then Back and Forward: URL, selected tabs, one V per row in Midnight Ink, every global tab's own colour (selected or dimmed), the open folder, paper and flannel, and the shell and link colours.
+- **Commit:** `2748020 refactor(navigation): group tabs by archive category [P10]`.
+
+### Part B — editorial collections (D-078 to D-081)
+
+- **Collections:** eight, in `src/editorial/collections.ts`, each with a directory in `src/content/`, an owning folder by ID, and a prefix and category read from that folder. Each directory holds a `.gitkeep` only.
+- **Schemas:** `src/editorial/schema.ts`, Zod through `astro/zod`: a strict common contract (`title`, `status`, `slug` always; `description` and `publishedAt` for published and archived; `updatedAt`, `tags`) and extensions for Blog, Trail, Greenhouse, Timber Logs, Months' Original, Kosmos and Book Club.
+- **Loader:** `src/content.config.ts`, the stable `glob()` loader with an explicit `generateId` (the file path), so the ID never mixes with the slug; files starting with `_` are ignored.
+- **Routing model:** `src/editorial/model.ts` (pure): routes for published and archived entries (and drafts only in the dev server), clash detection, total orders, index items, display of dates.
+- **Astro side:** `src/editorial/site.ts`: `getSiteNavigation()` (folders plus entry routes; `FolderPage` resolves through it), `pageStaticPaths(1 | 2 | 3)` (the three existing route files list folders then entries) and `collectionIndexFor()`.
+- **Components:** `EditorialEntry.astro` and `CollectionIndex.astro`; no font, colour or geometry was added.
+- **Smoke test:** accepts a page beyond the registered ones only if it declares itself a published or archived entry at its collection's prefix plus its slug.
+- **Tests:** `tests/content.mjs` (17 checks, on synthetic records) and `tests/editorial-build.mjs` (13 checks, in 5 throwaway builds of a copy of the project with the fixtures in `tests/fixtures/editorial/`). A mutation check (a draft counted as public) failed CONT-007, CONT-013 and CONT-014 as it should.
+- **Fixtures:** synthetic, marked "SYNTHETIC FIXTURE", outside `src/content/`; never published; the real `dist/` holds no editorial page.
+- **Dependencies:** none. `src/node-fs.d.ts` declares the one Node function `content.config.ts` uses, because the project installs no `@types/node`.
+
+### Findings
+
+- **The YAML parser corrects impossible dates silently.** The first build of the `bad-date` scenario (`publishedAt: 2026-02-30`) succeeded and published the entry as 2026-03-02. `src/editorial/raw-dates.ts` now checks the raw text of the three date fields and the build fails (KL-41, D-079). Found by the test, not by inspection.
+- **Temporary directories on macOS:** `os.tmpdir()` is `/var/…`, a link to `/private/var/…`; Vite then sees two names for one file and fails to find its compile metadata. The build test uses the real path.
+- **Per-page weight:** the route files import both editorial components, so every folder page inlines about 2 KB more CSS (KL-42).
+- **Build noise:** each empty collection prints two warnings (KL-40).
+- **Draft preview:** checked by hand in a throwaway `astro dev` (draft 200 with its notice, absent from the index, unknown slug 404); not automated (G-P10-18).
+
+### Colours in the local browser
+
+The brief asks to verify the local serving before changing any CSS. Read-only: the owner's dev server (started 05:03 today, working directory this repository) serves `<html data-category="core">`, `src/styles/categories.css` with all 25 locked values (`#a09a91`, `#cbc5b9`, `#f4f2ec` …), every top-level tab with its own `data-category`, and the new tab order. The production preview (port 4322) paints the same colours (CAT-011 to CAT-018, and screenshots). No CSS was changed and no browser storage was touched. If the owner's browser shows different colours, the discrepancy is in that browser (a cached page or an old tab), not in what is served; a hard reload or reopening the tab is the next thing to try, and the dev server may need a restart now that `src/content.config.ts` exists (KL-43). I could not see the owner's browser.
+
+### Visual review
+
+Headless Chrome 157, the production preview (`astro preview`, port 4322) and, for entries, a throwaway fixture build served locally.
+
+- **Global row:** looked at Home, CV, Blog, Berries and Writing at 1440 px (four silver Core tabs, three cream Research, two cinnamon Blog & Notes, one golden Writing, one powder-blue Bearnard; geometry as before), and measured all five at 1280 px and 390 px (no sideways page scroll; the selected tab in view; the row scrolls on the phone).
+- **Entries (synthetic):** looked at a published berry at 1440 and 390 px (Lecture Notes and Berries tabs selected, Blog & Notes cardstock and paper, headings, link, list, table). Captured and measured but not looked at one by one: the archived berry, the Blog index and a Kosmos chapter, and the 1280 px captures of the entries.
+- **Not checked:** Safari, Firefox, real phones and tablets, forced-colors, other displays.
+
+### Validation (final)
+
+- `npm run verify`: passes. `astro check` 0 errors, warnings and hints in 59 files; 39 pages; 43 primitives and 213 tokens; 260 contrast pairings (245 enforced, 0 failures); 23 navigation, 10 folder, 9 route, 11 preview, 8 responsive, 4 transition, 8 Bearnard, 10 archive, 17 editorial model and 13 editorial build checks; `dist/` 44 files, 1,154,869 bytes (site 702,612, studies 210,237, illustrations 242,020).
+- `npm run test:browser`: 12 of 12 preview, 17 of 17 responsive, 12 of 12 navigation-continuity and 8 of 8 colour and navigation checks in headless Chrome 157.
+- `shasum -a 256 -c assets/bearnard/SHA256SUMS`: 352 of 352 match; `brand/bearnard/` was not touched and is still ignored.
+- `git diff --check`: clean. The pre-commit hooks ran on each commit.
+- **Push decision:** none (D-082). P10 is unfinished infrastructure with temporary pages; no backup or collaboration need was stated; `origin/main` still has the `__frag8/` commits that `main` lacks.
+- **Other agent's work:** the CV-01 sections of `development/current-state.md` and this log, `cv/codex-yaml/` and `clean` stayed unstaged and unchanged.
+- **Commits:** `2748020` (Part A) and the editorial commit recorded in `development/current-state.md`.
+
 ## P09-A01 — Final Color Architecture: Chromatic Archive — 2026-11-12
 
 **Agent:** Claude Code. **Branch:** `development`. **Result:** completed. The owner's Addendum 01 to P09, "approved and locked by the owner", replaces the palette-experimentation part of P09 (Part C below) with five permanent category palettes (D-076). Nothing was pushed or deployed. P10 was not started.

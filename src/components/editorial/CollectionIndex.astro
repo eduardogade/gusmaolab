@@ -1,0 +1,67 @@
+---
+/**
+ * The list of a collection's published and archived entries, on the collection folder's
+ * own page (P10, D-081). A foundation, not the final index: it lists title, date and
+ * description with a link, in the collection's own order, and says so plainly when there
+ * is nothing yet. Drafts never reach it.
+ */
+import { formatWhen } from "../../editorial/model.ts"
+import type { IndexItem } from "../../editorial/model.ts"
+
+interface Props {
+  label: string
+  items: readonly IndexItem[]
+}
+
+const { label, items } = Astro.props
+---
+
+<section class="gl-index" data-editorial-index={label}>
+  <h2>Entries</h2>
+  {
+    items.length === 0 ? (
+      <p class="gl-index__empty">This collection has no published entries yet.</p>
+    ) : (
+      <ul class="gl-index__list">
+        {items.map((item) => (
+          <li>
+            <a href={item.path}>{item.title}</a>
+            {item.when && (
+              <span class="gl-index__meta">
+                {" "}
+                · <time datetime={item.when}>{formatWhen(item.when)}</time>
+              </span>
+            )}
+            {item.status === "archived" && <span class="gl-index__meta"> · archived</span>}
+            {item.description && <p class="gl-index__description">{item.description}</p>}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</section>
+
+<style>
+  .gl-index {
+    margin-block-start: var(--space-l);
+  }
+
+  .gl-index__list {
+    padding-inline-start: 0;
+    list-style: none;
+  }
+
+  .gl-index__list > li + li {
+    margin-block-start: var(--space-s);
+  }
+
+  .gl-index__meta,
+  .gl-index__empty {
+    color: var(--color-text-muted);
+  }
+
+  .gl-index__description {
+    margin-block-start: var(--space-3xs);
+    color: var(--color-text-secondary);
+  }
+</style>

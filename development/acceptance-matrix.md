@@ -460,6 +460,57 @@ Addendum 01 to P09 (D-076). Checked by `tests/categories.mjs` and `tests/contras
 | CAT-016 CV → Writing: the tabs keep their colours and only the open folder changes | Browser | Pass |
 | CAT-017 Small screens: the selected tab is in view, in its own colour, among the others | Browser | Pass |
 
+## P10 gates — Editorial collections and navigation grouping
+
+Checked by `tests/navigation.mjs`, `tests/categories.mjs`, `tests/content.mjs` and `tests/editorial-build.mjs` (all in `npm run verify`), by `tests/categories-browser.mjs` and the other browser suites (`npm run test:browser`, headless Chrome 157), and by screenshots at 1440, 1280 and 390 px. Real devices and other browsers are untested.
+
+| ID | Gate | Status | Evidence |
+| --- | --- | --- | --- |
+| G-P10-01 | The eleven tabs are ordered by category and each category is one block | Passed | NAV-001, NAV-033, CAT-001; screenshots of the row at 1440, 1280 and 390 px |
+| G-P10-02 | Labels, IDs, URLs, categories, environments and children are unchanged | Passed | NAV-001 to NAV-021, CAT-002, CAT-003; every page of the build |
+| G-P10-03 | A registry that splits a category is rejected | Passed | `validateNavigation()`; NAV-033 |
+| G-P10-04 | Folder geometry, Overview, previews and small-screen scrolling are unchanged | Passed (Chromium) | FOLD, PREV, RESP and TRANS suites; only the order assumed by PREV-008 and RESP-002 changed (D-077) |
+| G-P10-05 | The palettes and the shared colours are unchanged | Passed | CAT-003, CAT-004, `git diff` of `categories.css`, `tokens.css` and `folders.css` is empty |
+| G-P10-06 | Exactly eight editorial collections, each with its directory, owner and prefix | Passed | CONT-001 |
+| G-P10-07 | Common and collection-specific metadata validate; malformed metadata is rejected | Passed | CONT-002, CONT-003, CONT-004; built: CONT-004 |
+| G-P10-08 | Public URLs are unique, stable and independent of titles and file names | Passed | CONT-005, CONT-006; built: CONT-005 |
+| G-P10-09 | Drafts have no page; published and archived entries do | Passed | CONT-007 to CONT-009; built: CONT-007 to CONT-009 |
+| G-P10-10 | Entries belong to the right folder and category and add no fourth row | Passed (Chromium for the paint) | CONT-010 to CONT-012; built: CONT-010 to CONT-012 |
+| G-P10-11 | Unknown slugs are not pages; entry and folder routes do not collide | Passed | CONT-013, CONT-017; built: CONT-013 |
+| G-P10-12 | Indexes are deterministic and empty collections work | Passed | CONT-014, CONT-015; built: CONT-014, CONT-015 |
+| G-P10-13 | Markdown renders inside the owning folder, with no client router | Passed | built: CONT-016; screenshots of a synthetic berry at 1440 and 390 px |
+| G-P10-14 | The pipeline builds without the Bearnard masters and any private folder | Passed | CONT-018 |
+| G-P10-15 | No synthetic fixture, draft or private file reaches the real build | Passed | CONT-019; the smoke test; the real `dist/` holds no editorial page |
+| G-P10-16 | The five required navigations keep URLs, selection, tab colours, Back and Forward | Passed (Chromium) | CAT-018 at 1440 and 390 px |
+| G-P10-17 | Editorial pages work on real devices and in Safari and Firefox | **Untested** | Chromium only (KL-39) |
+| G-P10-18 | Draft preview in `astro dev` | Passed (manual) | A throwaway copy served by `astro dev`: draft 200 with its notice, not in the index, unknown slug 404. Not automated. |
+
+### Editorial tests (P10)
+
+| Test | Where | Result |
+| --- | --- | --- |
+| NAV-033 Each category is one contiguous block in the global row | `tests/navigation.mjs` | Pass |
+| CAT-018 The five navigations of P10: ordinary URLs, selection, colours, Back and Forward | Browser | Pass |
+| CONT-001 Exactly eight editorial collections are registered | `tests/content.mjs` | Pass |
+| CONT-002 The shared metadata contract | `tests/content.mjs` | Pass |
+| CONT-003 Collection-specific fields | `tests/content.mjs` | Pass |
+| CONT-004 Invalid metadata is rejected | `tests/content.mjs`; `tests/editorial-build.mjs` (built) | Pass |
+| CONT-005 Two entries cannot share a public URL | `tests/content.mjs`; `tests/editorial-build.mjs` (built) | Pass |
+| CONT-006 Public routes do not depend on titles or file names | `tests/content.mjs` | Pass |
+| CONT-007 Draft entries have no page | both (model and built) | Pass |
+| CONT-008 Published entries declare their routes | both | Pass |
+| CONT-009 Archived entries keep their routes | both | Pass |
+| CONT-010 Every entry belongs to the folder that owns its collection | both | Pass |
+| CONT-011 Entries inherit their section's archive category | both | Pass |
+| CONT-012 An entry adds no fourth row of tabs | both | Pass |
+| CONT-013 Unregistered paths are not pages | both | Pass |
+| CONT-014 Indexes list in a stable order | both | Pass |
+| CONT-015 Empty collections are fine | both | Pass |
+| CONT-016 Markdown renders in the standard page shell | `tests/editorial-build.mjs` (built only) | Pass |
+| CONT-017 Entry routes never collide with folder routes | `tests/content.mjs` | Pass |
+| CONT-018 The content pipeline builds without the local Bearnard masters | `tests/editorial-build.mjs` | Pass |
+| CONT-019 Synthetic fixtures never enter the content directories | `tests/content.mjs` | Pass |
+
 ## Future gates
 
 | ID | Gate | Source | Status |

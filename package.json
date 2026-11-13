@@ -15,7 +15,7 @@
     "build": "astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "test": "node tests/design-tokens.mjs && node tests/contrast.mjs && node tests/navigation.mjs && node tests/smoke-test.mjs && node tests/folders.mjs && node tests/routes.mjs && node tests/previews.mjs && node tests/responsive.mjs && node tests/transitions.mjs && node tests/bearnard.mjs && node tests/categories.mjs",
+    "test": "node tests/design-tokens.mjs && node tests/contrast.mjs && node tests/navigation.mjs && node tests/smoke-test.mjs && node tests/folders.mjs && node tests/routes.mjs && node tests/previews.mjs && node tests/responsive.mjs && node tests/transitions.mjs && node tests/bearnard.mjs && node tests/categories.mjs && node tests/content.mjs && node tests/editorial-build.mjs",
     "test:browser": "node tests/previews-browser.mjs && node tests/responsive-browser.mjs && node tests/transitions-browser.mjs && node tests/categories-browser.mjs",
     "verify": "npm run check && npm run build && npm test",
     "astro": "astro",

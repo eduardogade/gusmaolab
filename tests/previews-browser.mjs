@@ -380,10 +380,7 @@ await test(
     check(json(now.open) === "[]", `a leaf opened a preview: ${json(now.open)}`)
     await press("Tab")
     now = await state()
-    check(
-      now.active === "tab:lecture-notes",
-      `Tab after Blog reached ${now.active}`,
-    )
+    check(now.active === "tab:lecture-notes", `Tab after Blog reached ${now.active}`)
     check(
       json(now.open) === json(["lecture-notes"]),
       `one preview at a time: ${json(now.open)}`,

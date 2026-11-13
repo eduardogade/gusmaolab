@@ -1,6 +1,6 @@
 # Current state
 
-Last updated: P09-A01, 2026-11-12. Verified facts only.
+Last updated: P10, 2026-11-13. Verified facts only.
 
 ## Framework
 
@@ -12,6 +12,7 @@ Last updated: P09-A01, 2026-11-12. Verified facts only.
     - the **P05 folder study** at `/_design/folders/` (`src/pages/[design]/folders.astro`);
     - the **P09 Bearnard study** at `/_design/bearnard/` (`src/pages/[design]/bearnard.astro`).
   - The P09 environments study (`/_design/environments-v2/`) was removed in P09-A01 (D-076).
+- **Editorial entries (P10):** none. The eight collections exist and are empty, so every build page is a folder page or a study; an entry would add one page below its owning folder (see "Editorial collections").
 - **Not implemented:** real section content, the homepage composition, Bearnard on any site page (the foundation exists, below) and a designed 404 page.
 - The archived Pelican site in `_backup/pelican-legacy/` is not built.
 - Nothing has been deployed, and no deployment workflow is active.
@@ -25,7 +26,7 @@ The owner approved the visual direction and overall appearance (D-041). Tokens a
 | Item | Where |
 | --- | --- |
 | Types | `src/navigation/types.ts` |
-| Registry: 11 top-level and 25 second-level folders, no third level yet; each section declares its category and environment | `src/navigation/registry.ts` |
+| Registry: 11 top-level and 25 second-level folders, no third level yet; each section declares its category and environment; the global row is grouped by category (P10) | `src/navigation/registry.ts` |
 | Helpers: normalization, validation, resolution, previews | `src/navigation/navigation.ts` |
 | Compiled site navigation (`siteNavigation`) | `src/navigation/index.ts` |
 | Rules and site map | `planning/information-architecture.md` |
@@ -178,6 +179,34 @@ Built:
 
 **Not owner-reviewed yet:** the colours as they look on the running site and on real screens (G-A01-23, KL-39). The palette itself is the owner's and is not in question.
 
+## Global row order (P10)
+
+The eleven top-level tabs are grouped by category, in this order (D-077): **Core** Home, About, Contact, Schedule; **Research** Portfolio, CV, Lab; **Blog & Notes** Blog, Lecture Notes; **Writing** Writing; **Bearnard** Bearnard's Area. Only the order changed: labels, IDs, URLs, categories, environments, children, geometry, previews, small-screen scrolling and the locked palettes are as before. `validateNavigation()` rejects a registry that splits a category; NAV-001, NAV-033 and CAT-001 check the row, and CAT-018 navigates the five pairs the brief names in headless Chrome. Blog, a leaf, now follows Lab, so keyboard Tab from Lab's preview reaches Blog before Lecture Notes (PREV-008).
+
+## Editorial collections (P10)
+
+| Item | Where |
+| --- | --- |
+| Eight collections (Blog, Bearnard's Trail, The Greenhouse, Berries, Timber Logs, Months' Original, Kosmos Series, Book Club): ID, directory, owning folder | `src/editorial/collections.ts`; `src/content/<directory>/` (empty; `.gitkeep` only) |
+| Astro configuration: Content Layer `glob()` loaders, schemas, date guard | `src/content.config.ts` |
+| Metadata schemas (Zod through `astro/zod`) | `src/editorial/schema.ts` |
+| Routing, ordering, index and clash rules; pure | `src/editorial/model.ts`, `raw-dates.ts` |
+| Astro side: loading, navigation with entry routes, static paths, indexes | `src/editorial/site.ts` |
+| Rendering: one entry; one collection index | `src/components/editorial/EditorialEntry.astro`, `CollectionIndex.astro` |
+| Route files: folders and entries at each depth | `src/pages/[section]/…` (`pageStaticPaths`) |
+| Rules, schemas, frontmatter examples, workflow | `planning/content-model.md`; D-078 to D-081 |
+| Checks | `tests/content.mjs` (CONT-001 to CONT-015, 017, 019), `tests/editorial-build.mjs` (CONT-004 to CONT-016, CONT-018, built), fixtures in `tests/fixtures/editorial/` |
+
+Built:
+
+- Entries are Markdown files, one per entry, validated at load time; a bad file fails the build and is named. Status (`draft`, `published`, `archived`) decides route generation: drafts have no page in a build, published and archived entries get one at the owner's path plus an explicit slug. `astro dev` alone previews drafts.
+- Entries are content routes owned by their collection's folder: no tab, no registry node, at most three rows. They render inside the folder on the category's reading paper; unknown slugs have no page.
+- A collection's index appears on its folder's own page, or says "This collection has no published entries yet." The Berries, Timber Logs and Greenhouse pages show it now, and so do the others.
+- Verified with synthetic fixtures built in throwaway copies of the project (never in `src/content/`): 46 pages in the good scenario (36 folders, 3 studies, 7 entries), drafts and ignored files absent, three invalid scenarios and a slug clash failing the build.
+- No content was written, migrated or published; the Pelican archive was not read; no dependency was added.
+
+Not built, on purpose: the differentiated reading layouts (P12), Quarto and MDX (P13), authoring helpers (P14), feeds, search, related content, deeper Kosmos work and chapter URLs, and any Bearnard illustration on an entry.
+
 ## Toolchain
 
 | Item | Value |
@@ -193,16 +222,16 @@ Built:
 
 ## npm scripts
 
-`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs`, `tests/responsive.mjs`, `tests/transitions.mjs`, `tests/bearnard.mjs` and `tests/categories.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs`, `tests/responsive-browser.mjs`, `tests/transitions-browser.mjs` and `tests/categories-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
+`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs`, `tests/responsive.mjs`, `tests/transitions.mjs`, `tests/bearnard.mjs`, `tests/categories.mjs`, `tests/content.mjs` and `tests/editorial-build.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs`, `tests/responsive-browser.mjs`, `tests/transitions-browser.mjs` and `tests/categories-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
 
 ## Build status
 
 `npm run verify` passes:
 
 - `astro check`: 0 errors, 0 warnings, 0 hints across 48 files.
-- Build: 39 pages. `dist/` holds 44 files, 1,080,362 bytes in all: the site's pages and stylesheets (628,105 bytes), the design studies (210,237) and the two Bearnard derivatives (242,020), each under its own ceiling (D-074, KL-30). No script file: the 37 pages with folders each inline one module (4.1 KB: previews and rows; at Vite's inlining limit, KL-36); the P03 specimen and the Bearnard study have no script.
+- Build: 39 pages. `dist/` holds 44 files, 1,154,869 bytes in all: the site's pages and stylesheets (702,612 bytes), the design studies (210,237) and the two Bearnard derivatives (242,020), each under its own ceiling (D-074, KL-30, KL-42). No script file: the 37 pages with folders each inline one module (4.1 KB: previews and rows; at Vite's inlining limit, KL-36); the P03 specimen and the Bearnard study have no script.
 - Token checks pass (43 primitives, 213 tokens; 5 categories with 5 colour tokens each, 4 environments with 10 typography and texture tokens each). Contrast checks pass: 245 of 245 enforced pairings, 260 in all, across the five categories.
-- Navigation: 22 of 22 model tests pass (NAV-001 to NAV-021, NAV-025), for 11 sections and 36 folders.
+- Navigation: 23 of 23 model tests pass (NAV-001 to NAV-021, NAV-025, NAV-033), for 11 sections and 36 folders.
 - Smoke test passes. The built pages are exactly the 36 registered destinations and the 3 declared `/_design/` studies, and the only other files are stylesheets and the registered derivatives.
 - Folders: 10 of 10 tests pass (FOLD-001 to FOLD-010).
 - Routes: 9 of 9 tests pass (NAV-022, NAV-023, NAV-026 to NAV-032). NAV-024 passed in the browser.
@@ -211,19 +240,21 @@ Built:
 - Transitions: 4 of 4 checks pass without a browser (TRANS-B01 to TRANS-B04).
 - Bearnard: 8 of 8 checks pass (BEAR-001 to BEAR-008); BEAR-004 is skipped in a checkout without the masters.
 - Chromatic Archive: 10 of 10 checks pass (CAT-001 to CAT-010), for 5 categories, 11 tabs and 36 pages.
+- Editorial model: 17 of 17 checks pass (CONT-001 to CONT-015, CONT-017, CONT-019), for 8 collections.
+- Editorial builds: 13 of 13 checks pass (CONT-004 to CONT-016 and CONT-018, built), in 5 throwaway builds.
 
-`npm run test:browser` passes separately in headless Chrome 157: 12 of 12 preview checks (PREV-005, PREV-008 to PREV-014), 17 of 17 responsive checks (RESP-001 to RESP-017), 12 of 12 navigation-continuity checks (TRANS-001 to TRANS-012) and 7 of 7 colour checks (CAT-011 to CAT-017).
+`npm run test:browser` passes separately in headless Chrome 157: 12 of 12 preview checks (PREV-005, PREV-008 to PREV-014), 17 of 17 responsive checks (RESP-001 to RESP-017), 12 of 12 navigation-continuity checks (TRANS-001 to TRANS-012) and 8 of 8 colour and navigation checks (CAT-011 to CAT-018).
 
 ## Repository
 
 | Item | Value |
 | --- | --- |
-| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; P05 at `4771127` and `40083ce`; the Bearnard sticker task's notes at `cda026e`, `fa522dc` and `aaa32a7`; P06 at `39bc564` and its approval record `f8eead2`; P07 at `750e98f` and its approval record `28392b0`; P08 at `5a906f1` and its approval record `ca0dc82`; P09 at `93d3af0` (navigation continuity), `6ddf084` (Bearnard foundations), `b76f3b0` (environment candidates, since superseded) and `ceec322` (records); P09-A01, the Chromatic Archive, at `4f1e68f` |
+| Working branch | `development` (D-035), local only. P04 at `ef5f78a`; P05 at `4771127` and `40083ce`; the Bearnard sticker task's notes at `cda026e`, `fa522dc` and `aaa32a7`; P06 at `39bc564` and its approval record `f8eead2`; P07 at `750e98f` and its approval record `28392b0`; P08 at `5a906f1` and its approval record `ca0dc82`; P09 at `93d3af0` (navigation continuity), `6ddf084` (Bearnard foundations), `b76f3b0` (environment candidates, since superseded) and `ceec322` (records); P09-A01, the Chromatic Archive, at `4f1e68f` and `10b3223`; P10 at `2748020` (global row grouping) and the editorial commit recorded below |
 | Milestone branches | `chore/gusmaolab-foundation-p01` (`4096691`), `chore/gusmaolab-astro-foundation-p02` (`5fab52c`), `feat/gusmaolab-design-system-p03` (`851fdbb`), all kept |
 | Recovery tag | `pre-astro-checkpoint` → `6eedf02`, local only |
 | `main` | `6036137`, the same tree as the checkpoint |
 | `origin/main` | `e28d43a`, two commits ahead of local `main`: a fetch at 08:22 on 2026-11-11, not run by Claude Code, brought in a merge (pull request 125) that adds seven files under `__frag8/`, unrelated to this work. Noticed at the end of P09; nothing was fetched, merged or pushed in response. No `development` branch exists on `origin`. |
-| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, public. Nothing was pushed in P01–P09 or P09-A01. |
+| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, public. Nothing was pushed in P01–P10: P10's decision is recorded in D-082. `origin/main` was still `e28d43a` and `origin` still had no `development` branch when checked on 2026-11-13 with `git ls-remote`. |
 | Untracked | `clean`, a byte-identical copy of `clean.sh` that appeared at 18:01 on 2026-11-10. Claude Code did not create it, and left it alone at the owner's instruction. Also untracked: `cv/codex-yaml/`, another agent's CV task (CV-01), which Claude Code did not create, stage or change. |
 
 ## Assets
@@ -237,7 +268,7 @@ Unchanged since P03; P05 to P09-A01 did not touch it. ISSUE-0003 stays open: the
 
 ## Completed prompts
 
-P01 to P09, and P09's Addendum 01 (the Chromatic Archive). P08's real-device checks are pending. P09 is technically completed; two owner reviews are pending (G-P09-A6, G-P09-B7); the third, G-P09-C7, was closed by D-076. P10 has not started.
+P01 to P10, including P09's Addendum 01 (the Chromatic Archive). P08's real-device checks are pending. P09 is technically completed; two owner reviews are pending (G-P09-A6, G-P09-B7); the third, G-P09-C7, was closed by D-076. P10 is completed (D-077 to D-082); P11 has not started.
 
 ## Blockers
 
@@ -250,9 +281,10 @@ None.
 - **Look at the Chromatic Archive on the running site** and on real screens (G-A01-23, KL-39). Two points for the owner's eye, neither changed because the values are locked: Core's and Research's cardstocks are the closest pair on the global row (question 25), and Forest Teal cannot be a link colour on the shell or directly on the three darker Level 1 cardstocks (question 26, KL-38).
 - Optional refinements to the folders, the Overview tab, the previews and small screens, if wanted: `planning/design-system.md` section 10, questions 13, 14, 16, 18 and 20–22.
 - A concurrent task: another agent (CV-01) appended a section to the working copies of this file and of the implementation log, and created the folder `cv/codex-yaml/`. P09-A01 left all three unchanged and out of its commit; the owner decides when they are committed.
+- **Editorial decisions** (P10): whether to write the first entries; the Kosmos structure, including the order of the works and any work and chapter URLs (KL-44); whether `heroImage`, `mascot`, `related` and `featured` are wanted (`planning/content-model.md`); whether a push of `development` is wanted as a backup (D-082).
 - **Assign Bearnard illustrations to roles**, or leave them empty for now (G-P09-B7; question 23).
 - Typography consolidation (D-042), still deferred.
-- `origin/main` holds two commits that local `main` lacks, adding `__frag8/` (see Repository). Decide whether they belong there before `development` is ever merged into `main`.
+- `origin/main` holds two commits that local `main` lacks, adding `__frag8/` (see Repository). Decide whether they belong there before `development` is ever merged into `main` (D-082 lists the steps).
 - The third-level folders, when content work reaches them (`planning/information-architecture.md` section 3).
 - Whether the second-level slugs are final before first publication (D-037).
 - Update the local Node.js to the latest 26.x LTS release (KL-06).

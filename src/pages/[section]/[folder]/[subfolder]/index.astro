@@ -1,16 +1,31 @@
 ---
-// Level-3 folder pages, generated from the navigation registry (P06, D-053). The registry
-// has no approved third-level folder yet, so this builds no page; registering one is
-// enough to build it. There is never a level-4 route: deeper pages are content routes.
+// Level-3 pages (P06, P10): the registered folders at this depth (none is approved yet) and the entries at /<section>/<folder>/<slug>/, generated from
+// data. Only registered folders and entries that are published or archived get a page;
+// any other URL has none. There is never a level-4 route: a deeper path is a future extension (planning/content-model.md).
 import FolderPage from "../../../../layouts/FolderPage.astro"
 import ScaffoldContent from "../../../../components/scaffold/ScaffoldContent.astro"
-import { siteNavigation } from "../../../../navigation/index.ts"
+import EditorialEntry from "../../../../components/editorial/EditorialEntry.astro"
+import CollectionIndex from "../../../../components/editorial/CollectionIndex.astro"
+import { collectionIndexFor, pageStaticPaths } from "../../../../editorial/site.ts"
 
 export function getStaticPaths() {
-  return siteNavigation.folderStaticPaths(3)
+  return pageStaticPaths(3)
 }
+
+const { collection, entry } = Astro.props
+const index = entry === undefined ? await collectionIndexFor(Astro.url.pathname) : null
 ---
 
-<FolderPage>
-  <ScaffoldContent path={Astro.url.pathname} />
-</FolderPage>
+{
+  collection !== undefined && entry !== undefined ? (
+    <FolderPage description={entry.data.description}>
+      <EditorialEntry collection={collection} entry={entry} />
+    </FolderPage>
+  ) : (
+    <FolderPage>
+      <ScaffoldContent path={Astro.url.pathname}>
+        {index && <CollectionIndex label={index.label} items={index.items} />}
+      </ScaffoldContent>
+    </FolderPage>
+  )
+}

@@ -24,7 +24,7 @@ The site is an Astro static project. Every registered folder has a page generate
 
 ## Commands
 
-Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `npm run verify` (diagnostics, build, token, contrast, navigation, folder, route and preview tests, smoke test) before committing. After changing the folders' interaction, also run `npm run test:browser` (headless Chrome). `README.md` lists every command.
+Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `npm run verify` (diagnostics, build, token, contrast, navigation, folder, route, preview, category and editorial tests, smoke test) before committing. After changing the folders' interaction, also run `npm run test:browser` (headless Chrome). `README.md` lists every command.
 
 ## Navigation
 
@@ -34,6 +34,8 @@ Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `n
 - Folder pages come from one route file per tab level (`src/pages/index.astro`, `[section]/`, `[section]/[folder]/`, `[section]/[folder]/[subfolder]/`), each listing `siteNavigation.folderStaticPaths(level)`, and wrap their content in `FolderPage` (`src/layouts/`), which draws the folders from the page's own URL (D-053, D-054).
 - An open folder with children always shows its row with a selected tab: its Overview, a display tab linking to the parent's own URL. Overview is never a registry node and never has a URL of its own (D-050, D-051).
 - No catch-all route, server rendering or client-side router. Keep `tests/navigation.mjs` and `tests/routes.mjs` passing.
+- The global row is grouped by category: the tabs of one category are adjacent, and `validateNavigation()` rejects a registry that splits one (D-077).
+- Editorial entries (P10, D-078 to D-081) are content routes owned by their collection's folder, never tabs or registry nodes. Collections, schemas and routing rules live in `src/editorial/` and `src/content.config.ts`; one Markdown file per entry in `src/content/<collection>/`. Publication state decides route generation: a draft has no page in a build. Never publish a fabricated entry, never migrate Pelican content unasked, and keep synthetic fixtures in `tests/fixtures/editorial/`, never in `src/content/`. Keep `tests/content.mjs` and `tests/editorial-build.mjs` passing (`planning/content-model.md`).
 - Folder previews (P07) show an unopened folder's Overview and immediate children, from `row.previews`; never an open folder's, never deeper. The only client-side scripts are `src/scripts/folder-previews.ts` (previews) and `src/scripts/folder-rows.ts` (scrolling rows to the selected or focused tab); neither changes the URL, history, focus or selection, and navigation must keep working without them (D-058–D-060, D-066). Keep `tests/previews.mjs`, `tests/responsive.mjs` and `npm run test:browser` passing.
 - Code under `src/navigation/` also runs directly in Node.js: use erasable TypeScript only, `import type` for types, and `.ts` extensions on relative imports (D-040).
 
@@ -69,8 +71,8 @@ Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `n
 - Inspect before modifying, and prefer reversible operations.
 - Ordinary prompts work on the persistent `development` branch (D-035). Start from its verified HEAD, check the working tree, implement one milestone, validate it, and commit with the prompt ID. Do not create `feature/pNN` branches.
 - Use an `experiment/<topic>` branch or a worktree only for independent, high-risk work that needs isolation, such as `experiment/nucleus`. Never reset, rebase or overwrite `development`; if it has diverged unexpectedly, stop and report.
-- Do not commit directly to `main`, and do not merge into it without the owner.
-- Never push, force-push, rewrite history, amend pushed commits, or move or delete tags unless the owner explicitly asks.
+- Do not commit directly to `main`. Promote to it only for an intended release, in the order of D-082: fetch and inspect, reconcile without discarding commits, check private-file exclusions, validate, confirm the deployment target, then push. Never trigger an unreviewed deployment.
+- Commit coherent, verified milestones to `development` without asking each time (D-082). Pushing is permitted but never automatic: decide each time from verification, remote divergence, the repository being public, readiness and deployment implications, and push unfinished work to no remote branch that deploys. Never force-push, rewrite history, amend pushed commits, discard remote-only commits, or move or delete tags.
 - Never run destructive commands such as `git reset --hard`, `git clean -fd` or `rm -rf` on project content. Never discard changes you did not make.
 - The repository is public. Do not commit secrets, credentials or unexpectedly large binary files.
 - Commit `package-lock.json`. Never commit `node_modules/`, `dist/` or `.astro/`.

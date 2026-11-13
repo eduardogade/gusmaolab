@@ -6,6 +6,7 @@ import { join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 import { CATEGORIES, ENVIRONMENTS } from "../src/design/contract.mjs"
 import { readTokens } from "../src/design/css-tokens.mjs"
+import { collectionById, collectionPrefix } from "../src/editorial/collections.ts"
 import { siteNavigation } from "../src/navigation/index.ts"
 
 // Temporary design studies. They live under /_design/, which no registry path can reach
@@ -54,6 +55,34 @@ try {
 
 const failures = []
 const check = (ok, message) => ok || failures.push(message)
+
+// 1a. Editorial entries (P10): the entries' pages are generated from content, which this
+// test cannot list without Astro, so it accepts a page beyond the registered ones only if
+// the page itself declares what it is (EditorialEntry.astro) and the declaration is
+// consistent: a known collection, a published or archived status (never a draft), and a
+// URL equal to the collection's prefix plus the declared slug. Anything else stays
+// unexpected. tests/content.mjs and tests/editorial-build.mjs test the generation itself.
+const editorialPages = []
+for (const file of files.filter((f) => f.endsWith("/index.html"))) {
+  if (expectedPages.includes(file)) continue
+  const html = await readFile(join(dist, file), "utf8")
+  const mark = (name) => new RegExp(`data-editorial-${name}="([^"]*)"`).exec(html)?.[1]
+  const [collection, status, slug] = [mark("collection"), mark("status"), mark("slug")]
+  let prefix
+  try {
+    prefix = collectionPrefix(collectionById(collection))
+  } catch {
+    continue
+  }
+  const path = `/${file.slice(0, -"index.html".length)}`
+  if (
+    (status === "published" || status === "archived") &&
+    slug !== undefined &&
+    path === `${prefix}${slug}/`
+  )
+    editorialPages.push(file)
+}
+expectedPages.push(...editorialPages)
 
 // 1. Only the expected pages and stylesheets, and nothing private.
 const unexpected = files.filter(

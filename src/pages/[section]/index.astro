@@ -1,16 +1,31 @@
 ---
-// Level-1 folder pages, such as /about/ and /cv/, generated from the navigation registry
-// (P06, D-053). Only registered paths are built; any other first segment has no page.
-// Home is src/pages/index.astro.
+// Level-1 pages (P06, P10): the registered folders at this depth (such as /cv/ and
+// /blog/), generated from data. Only registered folders and entries that are published or archived get a page;
+// any other URL has none. Home is src/pages/index.astro.
 import FolderPage from "../../layouts/FolderPage.astro"
 import ScaffoldContent from "../../components/scaffold/ScaffoldContent.astro"
-import { siteNavigation } from "../../navigation/index.ts"
+import EditorialEntry from "../../components/editorial/EditorialEntry.astro"
+import CollectionIndex from "../../components/editorial/CollectionIndex.astro"
+import { collectionIndexFor, pageStaticPaths } from "../../editorial/site.ts"
 
 export function getStaticPaths() {
-  return siteNavigation.folderStaticPaths(1)
+  return pageStaticPaths(1)
 }
+
+const { collection, entry } = Astro.props
+const index = entry === undefined ? await collectionIndexFor(Astro.url.pathname) : null
 ---
 
-<FolderPage>
-  <ScaffoldContent path={Astro.url.pathname} />
-</FolderPage>
+{
+  collection !== undefined && entry !== undefined ? (
+    <FolderPage description={entry.data.description}>
+      <EditorialEntry collection={collection} entry={entry} />
+    </FolderPage>
+  ) : (
+    <FolderPage>
+      <ScaffoldContent path={Astro.url.pathname}>
+        {index && <CollectionIndex label={index.label} items={index.items} />}
+      </ScaffoldContent>
+    </FolderPage>
+  )
+}

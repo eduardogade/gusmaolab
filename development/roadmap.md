@@ -23,8 +23,9 @@ Status: provisional. The six-wave structure is approved. Individual tasks are no
 - **P08** — Responsive Physical-Folder Navigation & Adaptive Layout (completed; the owner approved the small-screen layout; real-device checks pending)
 - **P09** — Navigation Continuity, Environmental Refinement & Bearnard Integration Foundations (technically completed; awaiting the owner's retest of the folder transition and the Bearnard role assignments)
   - **P09-A01** — Final Color Architecture: Chromatic Archive (addendum to P09; implemented 2026-11-12; five category palettes approved and locked by the owner, D-076; it replaces P09's environment candidates and removes External from the navigation)
-- **P10** — Editorial Collections & Structured Publishing Foundations (next; not started)
-- P11–P24 — titles not yet supplied
+- **P10** — Editorial Collections, Structured Publishing Foundations & Navigation Consolidation (completed 2026-11-13: the global row grouped by category, eight schema-validated collections, entry routes inside the folders, no content published; nothing pushed)
+- **P11** — Canonical Research, Publication, People & Professional Records (next; not started)
+- P12 (differentiated editorial reading layouts), P13 (Quarto) and P14 (authoring helpers) are named in the P10 brief; P12–P24 titles are otherwise not yet supplied
 
 Since P04, ordinary prompts run on the persistent `development` branch (D-035).
 
