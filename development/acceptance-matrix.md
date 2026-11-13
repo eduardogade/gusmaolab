@@ -379,7 +379,9 @@ Checked by `tests/bearnard.mjs` (in `npm run verify`), the smoke test, `shasum -
 
 ### Gate C — Environmental refinement
 
-Checked by `tests/environments.mjs` (in `npm run verify`) and by screenshots of `/_design/environments-v2/` at 1440, 1280, 768 and 390 px. The tests prove structure and legibility; preference is the owner's.
+**Superseded by P09-A01 (D-076) on 2026-11-12.** The owner chose the Chromatic Archive; the candidates, their study, their stylesheet and `tests/environments.mjs` were removed, and the gates below are kept as the record of P09 as it stood at `b76f3b0`. They are not current checks.
+
+At the time: checked by `tests/environments.mjs` (in `npm run verify`) and by screenshots of `/_design/environments-v2/` at 1440, 1280, 768 and 390 px. The tests prove structure and legibility; preference is the owner's.
 
 | ID | Gate | Status | Evidence |
 | --- | --- | --- | --- |
@@ -389,9 +391,11 @@ Checked by `tests/environments.mjs` (in `npm run verify`) and by screenshots of 
 | G-P09-C4 | Candidates reach no site page | Passed | ENV-005: no page but the study contains or loads `proposed-` styling; all 37 folder pages keep an approved environment |
 | G-P09-C5 | Candidates stay legible | Passed | ENV-001 (complete token sets), ENV-002 (49 enforced pairings in each of the 4 candidates, 0 failures), ENV-003 (tab distinction) |
 | G-P09-C6 | Folder geometry and behaviour are untouched | Passed | ENV-004; FOLD, PREV, RESP and TRANS suites unchanged and passing; RESP-001 covers the study at ten widths |
-| G-P09-C7 | The owner decides which candidates to adopt | **Untested** | Pending the owner's review (D-075; design-system question 24). Not marked on the owner's behalf. |
+| G-P09-C7 | The owner decides which candidates to adopt | Closed: superseded | The owner adopted none and approved the Chromatic Archive instead (D-076) |
 
-### Environment tests (P09)
+### Environment tests (P09; removed in P09-A01)
+
+Results at `b76f3b0`. The file no longer exists; CAT-010 checks that the candidates are gone.
 
 | Test | Where | Result |
 | --- | --- | --- |
@@ -401,6 +405,60 @@ Checked by `tests/environments.mjs` (in `npm run verify`) and by screenshots of 
 | ENV-004 Candidates change colours only, never folder geometry | `tests/environments.mjs` | Pass |
 | ENV-005 Candidate styling reaches no other page | `tests/environments.mjs` | Pass |
 | ENV-006 The approved palette is unchanged and still shown; proposals marked pending | `tests/environments.mjs` | Pass |
+
+## P09-A01 gates — Chromatic Archive
+
+Addendum 01 to P09 (D-076). Checked by `tests/categories.mjs` and `tests/contrast.mjs` (in `npm run verify`), by `tests/categories-browser.mjs` (in `npm run test:browser`, headless Chrome 157) and by screenshots.
+
+**Counts since P09-A01.** External left the navigation: the site has **11** top-level tabs, 36 registered folders and 36 folder pages, and 3 design studies. Earlier gates in this file that say twelve tabs, 37 pages, four design studies, or "every environment" for colour record what was true when they passed; the same tests pass today with the new counts.
+
+| ID | Gate | Status | Evidence |
+| --- | --- | --- | --- |
+| G-A01-01 | Exactly eleven top-level tabs; External absent | Passed | CAT-001; NAV-001 to NAV-021; `/external/` is not built (NAV-026, smoke test) |
+| G-A01-02 | The tabs are in the approved order | Passed | CAT-001 (registry and every built page) |
+| G-A01-03 | Every section has its approved category | Passed | CAT-002; NAV-027 (each page's `data-category` and `data-environment`) |
+| G-A01-04 | The five palettes are the exact locked values | Passed | CAT-003: 25 values compared with the addendum's table |
+| G-A01-05 | Every top-level tab keeps its own colour on every page | Passed (Chromium) | CAT-008 (markup, 36 pages), CAT-011 (painted colour of all 11 tabs on 9 pages, at 1440 and 390 px), CAT-006 |
+| G-A01-06 | A selected tab and its folder body are the same colour | Passed (Chromium) | CAT-005 (tokens, three levels), CAT-012 (painted, levels 1 and 2) |
+| G-A01-07 | Second-level tabs and bodies use the Level 2 material | Passed (Chromium) | CAT-005, CAT-012 |
+| G-A01-08 | The reading paper is the page's category | Passed (Chromium) | CAT-003, CAT-013 |
+| G-A01-09 | Flannel ground and line follow the page's category; the weave is unchanged | Passed (Chromium) | CAT-013; `global.css` `.gl-flannel` geometry has no diff |
+| G-A01-10 | Shell, links, accent and V are fixed everywhere | Passed (Chromium) | CAT-004 (tokens), CAT-014 (painted on 9 pages) |
+| G-A01-11 | No environment override recolours unrelated tabs | Passed | CAT-007: environments declare no colour token; CAT-011 |
+| G-A01-12 | Overview tabs still work | Passed | NAV-022, NAV-029, RESP-006; FOLD suite |
+| G-A01-13 | Hover previews still work, in the hovered folder's own material | Passed (Chromium) | PREV-001 to PREV-015; CAT-015 |
+| G-A01-14 | Small-screen tab scrolling still works | Passed (Chromium) | RESP-001 to RESP-017; CAT-017 |
+| G-A01-15 | Browser navigation still works: ordinary pages, no router | Passed (Chromium) | TRANS-001 to TRANS-012; NAV-031; CAT-016 (CV → Writing) |
+| G-A01-16 | No fourth folder layer | Passed | RESP-008; NAV-025 |
+| G-A01-17 | Contrast checks updated and run for the five categories | Passed | `tests/contrast.mjs`: 260 pairings, 245 enforced, 0 failures; `planning/design-system.md` section 8 |
+| G-A01-18 | The locked link colour is legible wherever it is used | Passed, with a recorded limit | Links on paper 6.93–7.54:1 and on Level 2 4.52–6.74:1. Forest Teal is not used on the shell (1.88:1) nor directly on Level 1 cardstock (2.78–5.78:1): KL-38, design-system question 26 |
+| G-A01-19 | No font or geometry change | Passed | `git diff` of `folders.css` changes colour tokens only; FOLD-001 to FOLD-010, NAV-030 and RESP-015 pass; environment type values compared in CAT-007 |
+| G-A01-20 | One source of truth for the palettes | Passed | CAT-009: category tokens are declared only in `src/styles/categories.css` |
+| G-A01-21 | The superseded candidates are gone | Passed | CAT-010 |
+| G-A01-22 | Bearnard masters untouched | Passed | BEAR-004; `shasum -a 256 -c assets/bearnard/SHA256SUMS` |
+| G-A01-23 | The colours look right on real screens, in Safari and Firefox, and to the owner's eye | **Untested** | Chromium on one display only (KL-39). The owner's review of the screenshots and of the running site is pending. |
+
+### Category tests (P09-A01)
+
+| Test | Where | Result |
+| --- | --- | --- |
+| CAT-001 The global row has exactly the eleven approved tabs | `tests/categories.mjs` | Pass |
+| CAT-002 Every section has its approved category | `tests/categories.mjs` | Pass |
+| CAT-003 The five palettes are the locked colours | `tests/categories.mjs` | Pass |
+| CAT-004 The shell, links, accent and V never change | `tests/categories.mjs` | Pass |
+| CAT-005 A selected tab and its folder body are one material, level by level | `tests/categories.mjs` | Pass |
+| CAT-006 Inactive and hovered top-level tabs are their own cardstock, evenly dimmed | `tests/categories.mjs` | Pass |
+| CAT-007 No environment can recolour anything | `tests/categories.mjs` | Pass |
+| CAT-008 Every built page gives each top-level tab its own category | `tests/categories.mjs` | Pass |
+| CAT-009 The palettes have one source of truth | `tests/categories.mjs` | Pass |
+| CAT-010 The superseded palette candidates are gone | `tests/categories.mjs` | Pass |
+| CAT-011 Every top-level tab is painted in its own cardstock, on every page | Browser | Pass |
+| CAT-012 The selected tab and its open folder are one material, at both levels | Browser | Pass |
+| CAT-013 Reading paper and flannel follow the page; the shell never changes | Browser | Pass |
+| CAT-014 Links, the accent and the V are the same colours on every page | Browser | Pass |
+| CAT-015 A hovered tab keeps its own hue, moves no V, and previews in its own cardstock | Browser | Pass |
+| CAT-016 CV → Writing: the tabs keep their colours and only the open folder changes | Browser | Pass |
+| CAT-017 Small screens: the selected tab is in view, in its own colour, among the others | Browser | Pass |
 
 ## Future gates
 

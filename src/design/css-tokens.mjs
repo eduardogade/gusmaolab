@@ -1,11 +1,11 @@
 /**
  * Reads the custom properties declared in GusmaoLab's token stylesheets and resolves
- * them per environment, as the browser would. Used at build time by the P03 design
- * specimen and by the token and contrast tests.
+ * them per archive category and section environment, as the browser would. Used at
+ * build time by the design specimen and by the token, category and contrast tests.
  *
- * It understands only the syntax tokens.css and environments.css use: hex colours,
- * `transparent`, `rgb()`, `var()` references and `color-mix(in srgb, …)`. Anything else
- * resolves to raw text (font stacks, lengths, shadows).
+ * It understands only the syntax tokens.css, categories.css and environments.css use:
+ * hex colours, `transparent`, `rgb()`, `var()` references and `color-mix(in srgb, …)`.
+ * Anything else resolves to raw text (font stacks, lengths, shadows).
  */
 
 /** @typedef {[number, number, number, number]} Rgba channels 0–255, alpha 0–1 */
@@ -13,10 +13,17 @@
 /** @typedef {{ kind: "raw", text: string }} RawValue */
 /** @typedef {ColorValue | RawValue} TokenValue */
 /** @typedef {{ selectors: string[], declarations: Map<string, string> }} Rule */
+/**
+ * Where a token is resolved: an element's category and environment. A string names one
+ * or the other (their ids never overlap); undefined is the root element with neither
+ * attribute, which is the Core category in the core environment.
+ * @typedef {string | { category?: string, environment?: string } | undefined} Scope
+ */
 
 const ENVIRONMENT_SELECTOR =
   /^\[data-environment=(?:"([a-z-]+)"|'([a-z-]+)'|([a-z-]+))\]$/
-const ALIAS_SELECTORS = [":root", "[data-environment]"]
+const CATEGORY_SELECTOR = /^\[data-category=(?:"([a-z-]+)"|'([a-z-]+)'|([a-z-]+))\]$/
+const ALIAS_SELECTORS = [":root", "[data-environment]", "[data-category]"]
 
 /** @param {string} css */
 export function stripComments(css) {
@@ -225,21 +232,24 @@ export function references(value) {
 
 export class TokenSet {
   /**
-   * @param {Map<string, string>} root       declared on `:root` alone
-   * @param {Map<string, string>} aliases    declared on `:root, [data-environment]`
+   * @param {Map<string, string>} root       declared on `:root`
+   * @param {Map<string, string>} aliases    declared on the alias selectors
    * @param {Map<string, Map<string, string>>} environments  declared per environment
+   * @param {Map<string, Map<string, string>>} [categories]  declared per category
    */
-  constructor(root, aliases, environments) {
+  constructor(root, aliases, environments, categories = new Map()) {
     this.root = root
     this.aliases = aliases
     this.environments = environments
+    this.categories = categories
   }
 
   /** Every declared name, in any scope. */
   names() {
     const all = new Set([...this.root.keys(), ...this.aliases.keys()])
-    for (const scope of this.environments.values())
-      for (const name of scope.keys()) all.add(name)
+    for (const scopes of [this.environments, this.categories])
+      for (const scope of scopes.values())
+        for (const name of scope.keys()) all.add(name)
     return all
   }
 
@@ -249,47 +259,73 @@ export class TokenSet {
   }
 
   /**
-   * The declaration that applies to an element with `data-environment="env"`, or to the
-   * root element when env is undefined. Environment blocks come after the alias block
-   * in the cascade, and the alias block after :root.
-   * @param {string} name
-   * @param {string} [env]
-   * @returns {{ value: string, env: string | undefined } | undefined}
+   * @param {Scope} scope
+   * @returns {{ category?: string, environment?: string } | undefined}
    */
-  declaration(name, env) {
-    if (env !== undefined) {
-      const scope = this.environments.get(env)
-      if (!scope) throw new Error(`Unknown environment: ${env}`)
-      if (scope.has(name))
-        return { value: /** @type {string} */ (scope.get(name)), env }
-      if (this.aliases.has(name))
-        return { value: /** @type {string} */ (this.aliases.get(name)), env }
+  scope(scope) {
+    if (scope === undefined) return undefined
+    if (typeof scope === "string") {
+      if (this.environments.has(scope)) return { environment: scope }
+      if (this.categories.has(scope)) return { category: scope }
+      throw new Error(`Unknown environment or category: ${scope}`)
+    }
+    const { category, environment } = scope
+    if (environment !== undefined && !this.environments.has(environment))
+      throw new Error(`Unknown environment: ${environment}`)
+    if (category !== undefined && !this.categories.has(category))
+      throw new Error(`Unknown category: ${category}`)
+    return category === undefined && environment === undefined
+      ? undefined
+      : { category, environment }
+  }
+
+  /**
+   * The declaration that applies to an element with the scope's `data-category` and
+   * `data-environment`, or to the bare root element when the scope is undefined.
+   * Environment and category blocks come after the alias block in the cascade, and the
+   * alias block after :root; an environment and a category never set the same token.
+   * @param {string} name
+   * @param {Scope} [scope]
+   * @returns {{ value: string, scope: Scope } | undefined}
+   */
+  declaration(name, scope) {
+    const where = this.scope(scope)
+    if (where !== undefined) {
+      for (const block of [
+        where.environment && this.environments.get(where.environment),
+        where.category && this.categories.get(where.category),
+        this.aliases,
+      ]) {
+        if (block && block.has(name))
+          return { value: /** @type {string} */ (block.get(name)), scope: where }
+      }
     }
     if (this.aliases.has(name))
-      return { value: /** @type {string} */ (this.aliases.get(name)), env: undefined }
+      return { value: /** @type {string} */ (this.aliases.get(name)), scope: undefined }
     if (this.root.has(name))
-      return { value: /** @type {string} */ (this.root.get(name)), env: undefined }
+      return { value: /** @type {string} */ (this.root.get(name)), scope: undefined }
     return undefined
   }
 
   /**
-   * Resolve a token in an environment (undefined = core). Tokens that the environment
-   * does not redeclare are inherited from the root element, already computed there.
+   * Resolve a token in a scope (undefined = Core, core environment). Tokens that the
+   * scope does not redeclare are inherited from the root element, already computed
+   * there.
    * @param {string} name
-   * @param {string} [env]
+   * @param {Scope} [scope]
    * @param {string[]} [chain]
    * @returns {TokenValue}
    */
-  resolve(name, env, chain = []) {
+  resolve(name, scope, chain = []) {
     if (chain.includes(name))
       throw new Error(`Circular reference: ${[...chain, name].join(" → ")}`)
-    const found = this.declaration(name, env)
+    const found = this.declaration(name, scope)
     if (!found) {
       const via = chain.length > 0 ? ` (via ${chain.join(" → ")})` : ""
       throw new Error(`Undefined token ${name}${via}`)
     }
     const text = found.value.replace(/var\(\s*(--[\w-]+)\s*\)/g, (_, ref) => {
-      return this.resolve(ref, found.env, [...chain, name]).text
+      return this.resolve(ref, found.scope, [...chain, name]).text
     })
     if (/var\(/.test(text))
       throw new Error(`Unsupported var() fallback in ${name}: ${found.value}`)
@@ -299,11 +335,11 @@ export class TokenSet {
   /**
    * Resolve a token that must be an opaque colour.
    * @param {string} name
-   * @param {string} [env]
+   * @param {Scope} [scope]
    * @returns {ColorValue}
    */
-  color(name, env) {
-    const value = this.resolve(name, env)
+  color(name, scope) {
+    const value = this.resolve(name, scope)
     if (value.kind !== "color")
       throw new Error(`${name} is not a colour: ${value.text}`)
     return value
@@ -311,7 +347,12 @@ export class TokenSet {
 }
 
 /**
- * Read the token stylesheets (tokens.css, environments.css) into a TokenSet.
+ * Read the token stylesheets (tokens.css, categories.css, environments.css) into a
+ * TokenSet. Four kinds of rule are understood, and anything else is an error:
+ *   `:root`                                        global tokens
+ *   `:root, [data-environment], [data-category]`   aliases
+ *   `[data-environment="id"]`                      one environment
+ *   `[data-category="id"]`, optionally with `:root` for the default category
  * @param {...string} stylesheets
  */
 export function readTokens(...stylesheets) {
@@ -321,6 +362,8 @@ export function readTokens(...stylesheets) {
   const aliases = new Map()
   /** @type {Map<string, Map<string, string>>} */
   const environments = new Map()
+  /** @type {Map<string, Map<string, string>>} */
+  const categories = new Map()
 
   /**
    * @param {Map<string, string>} target
@@ -333,13 +376,29 @@ export function readTokens(...stylesheets) {
       target.set(name, value)
     }
   }
+  /**
+   * @param {Map<string, Map<string, string>>} scopes
+   * @param {string} id
+   */
+  const block = (scopes, id) => {
+    if (!scopes.has(id)) scopes.set(id, new Map())
+    return /** @type {Map<string, string>} */ (scopes.get(id))
+  }
+  /**
+   * @param {string} selector
+   * @param {RegExp} pattern
+   */
+  const idIn = (selector, pattern) => {
+    const match = selector.match(pattern)
+    return match ? (match[1] ?? match[2] ?? match[3]) : undefined
+  }
 
   for (const css of stylesheets) {
     for (const { selectors, declarations } of parseRules(css)) {
-      const envIds = selectors.map((s) => {
-        const match = s.match(ENVIRONMENT_SELECTOR)
-        return match ? (match[1] ?? match[2] ?? match[3]) : undefined
-      })
+      const envIds = selectors.map((s) => idIn(s, ENVIRONMENT_SELECTOR))
+      // A category block may also name :root, which makes it the default category.
+      const categorySelectors = selectors.filter((s) => s !== ":root")
+      const categoryIds = categorySelectors.map((s) => idIn(s, CATEGORY_SELECTOR))
       if (selectors.length === 1 && selectors[0] === ":root") {
         assign(root, declarations, ":root")
       } else if (
@@ -348,14 +407,16 @@ export function readTokens(...stylesheets) {
       ) {
         assign(aliases, declarations, "the alias block")
       } else if (envIds.every((id) => id !== undefined)) {
-        for (const id of /** @type {string[]} */ (envIds)) {
-          if (!environments.has(id)) environments.set(id, new Map())
-          assign(
-            /** @type {Map<string, string>} */ (environments.get(id)),
-            declarations,
-            `[data-environment="${id}"]`,
-          )
-        }
+        for (const id of /** @type {string[]} */ (envIds))
+          assign(block(environments, id), declarations, `[data-environment="${id}"]`)
+      } else if (
+        categoryIds.length > 0 &&
+        categoryIds.every((id) => id !== undefined)
+      ) {
+        if (categorySelectors.length < selectors.length)
+          assign(root, declarations, ":root")
+        for (const id of /** @type {string[]} */ (categoryIds))
+          assign(block(categories, id), declarations, `[data-category="${id}"]`)
       } else {
         throw new Error(
           `Unexpected selector in a token stylesheet: ${selectors.join(", ")}`,
@@ -363,5 +424,5 @@ export function readTokens(...stylesheets) {
       }
     }
   }
-  return new TokenSet(root, aliases, environments)
+  return new TokenSet(root, aliases, environments, categories)
 }

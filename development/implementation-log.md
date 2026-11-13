@@ -2,6 +2,62 @@
 
 Newest entry first.
 
+## P09-A01 — Final Color Architecture: Chromatic Archive — 2026-11-12
+
+**Agent:** Claude Code. **Branch:** `development`. **Result:** completed. The owner's Addendum 01 to P09, "approved and locked by the owner", replaces the palette-experimentation part of P09 (Part C below) with five permanent category palettes (D-076). Nothing was pushed or deployed. P10 was not started.
+
+### Starting state (verified)
+
+- **HEAD:** `development` at `ceec322` (the last P09 records commit). Working tree clean apart from the untracked `clean` file, left alone.
+- **Baseline:** `npm run verify` and `npm run test:browser` passed as recorded at the end of P09.
+- **Uncommitted palette work:** none. P09's candidates were committed (`b76f3b0`) and were study-only; no site page used them.
+
+### What changed
+
+- **Navigation.** External was removed from `src/navigation/registry.ts`: 11 sections, 36 nodes, 36 pages (`folderStaticPaths` counts 10, 25 and 0). Every section now declares a `category` (`ArchiveCategory`: `core`, `research`, `blog-notes`, `writing`, `bearnard`) beside its `environment`; descendants inherit both, and the resolved state carries the page's category and each top-level tab's own.
+- **`/external/`.** It existed only as a page generated from the registry, with the development placeholder. Removing the entry stops it being built. Nothing else was deleted, no redirect or new destination was added, and no history was rewritten.
+- **Colour tokens.**
+  - `src/styles/categories.css` (new): the 25 locked colours as primitives named after the owner's colour names, and five tokens per `[data-category]` (flannel ground, flannel line, Level 1, Level 2, reading paper). `:root` is Core. It is the only file that declares them.
+  - `src/styles/tokens.css`: the three shared colours (Deep Charcoal, Forest Teal, Midnight Ink) and the global tokens that use them; nine primitives that only the old environment colours used were removed (24 → 15, plus 3 shared = 18; 43 with the archive). The aliases (inactive and hovered tabs, preview card, supporting surfaces) now recompute on `:root, [data-environment], [data-category]`.
+  - `src/styles/environments.css`: each environment keeps its ten typography and texture values, unchanged from P03, and sets no colour.
+  - `src/styles/folders.css`, `global.css`: colour inputs only. The third level's material is the reading paper; the flannel's thread is drawn from the category's line colour. No geometry, spacing, font or motion changed.
+- **Markup.** `BaseLayout` takes `category` and sets `data-category` on `<html>`; `FolderPage` passes the page's; `FolderStack` puts it on the stack, and `FolderTab` puts each top-level tab's own on its `<li>`. That is what keeps a tab's cardstock when another folder is open, with no script.
+- **Contract and reader.** `src/design/contract.mjs`: `CATEGORIES`, `CATEGORY_TOKENS` (5), `ENVIRONMENT_TOKENS` (10, was 33), and contrast pairings per category. `src/design/css-tokens.mjs` resolves tokens for a category.
+- **Removed (superseded, D-075):** `src/styles/environment-candidates.css`, `src/pages/[design]/environments-v2.astro` and `tests/environments.mjs`. They remain in the history at `b76f3b0`.
+- **Studies.** The tokens specimen and the folder study show the five categories; the Bearnard study is unchanged.
+- **Tests.** New: `tests/categories.mjs` (CAT-001 to CAT-010, in `npm test`) and `tests/categories-browser.mjs` (CAT-011 to CAT-017, in `npm run test:browser`). Updated for eleven tabs, 36 pages, three studies, categories and the colour-free environments: the token, contrast, navigation, folder, route, smoke, preview, responsive and transition tests and the browser harness.
+
+### What the locked colours required
+
+No locked value was changed. Recorded in D-076, `planning/design-system.md` section 8 and KL-38:
+
+- Forest Teal reaches 1.88:1 on the Deep Charcoal shell, so links on the shell keep the eye green (5.88:1).
+- Forest Teal reaches 2.78:1, 3.41:1 and 3.67:1 directly on the Core, Research and Blog & Notes Level 1 cardstock. No page places a link there. Links on Level 2 cardstock and on paper pass in every category; the tightest is Core's Level 2, 4.52:1.
+- Tab labels use the darkest ink; the tightest label is on an inactive Core tab, 4.57:1.
+- Muted text was darkened from `#6E5646` to `#654B3D` (an unlocked value) so it passes on every Level 2 cardstock.
+- The third level uses the reading paper itself, with no derived tint.
+
+### Visual review
+
+Screenshots in headless Chrome 157 from the production preview (`astro preview`, port 4322).
+
+- **Looked at:** at 1440 px, Home, CV, Blog, Writing, Bearnard's Area, CV → Research and Writing → Kosmos Series; at 1280 px, Lecture Notes → The Greenhouse and the tokens specimen; at 1024 px, Lecture Notes → The Greenhouse; at 768 px, CV → Research; at 390 px, Home and Writing → Kosmos Series; at 320 px, Bearnard's Area → Powerlifting.
+- **Captured and measured but not looked at one by one:** CV → Research and Bearnard's Area at 390 px, and the rest of the 56 captures.
+- **Sent to the owner:** the eight views the addendum asks for (Home, CV, Blog, Writing, Bearnard's Area, CV → Research and Writing → Kosmos Series at 1440 px; four phone views at 390 px).
+- **Not checked:** Safari, Firefox, real phones and tablets, forced-colors and high-contrast modes, colour-vision deficiencies, other displays (KL-39).
+
+### Other activity in the repository
+
+During this work another agent (Codex, task CV-01) appended a "CV-01" section to `development/current-state.md` and to this log, and created the untracked folder `cv/codex-yaml/`. Its text was left exactly as written and was **not** committed with P09-A01: only this entry and P09-A01's own changes to the two records were staged. The folder was not opened for editing, staged or changed. The `astro dev` server on port 4321 that had been running since before P09 was no longer listening when the work resumed after a pause; Claude Code did not stop it.
+
+### Validation (final)
+
+- `npm run verify`: passes. `astro check` 0 errors, warnings and hints in 48 files; 39 pages; 43 primitives and 213 tokens; 260 contrast pairings in 5 categories (245 enforced, 0 failures); 22 navigation, 10 folder, 9 route, 11 preview, 8 responsive, 4 transition, 8 Bearnard and 10 archive checks; `dist/` 44 files, 1,080,362 bytes (site 628,105, studies 210,237, illustrations 242,020).
+- `npm run test:browser`: 12 of 12 preview, 17 of 17 responsive, 12 of 12 navigation-continuity and 7 of 7 colour checks in headless Chrome 157.
+- `shasum -a 256 -c assets/bearnard/SHA256SUMS`: 352 of 352 match. `brand/bearnard/` is still ignored.
+- `git diff --check`: clean. The pre-commit hooks ran on the commit.
+- **Commit:** `feat(design): implement the Chromatic Archive category palettes [P09]`, the commit after `ceec322`.
+
 ## P09 — Navigation Continuity, Environmental Refinement & Bearnard Integration Foundations — 2026-11-11
 
 **Agent:** Claude Code. **Branch:** `development`. **Result:** technically completed, in three parts with one commit each. Three reviews are the owner's and still open: a retest of the folder transition on real browsers (G-P09-A6), the Bearnard role assignments (G-P09-B7) and the environment candidates (G-P09-C7). Nothing was pushed or deployed. P10 was not started.

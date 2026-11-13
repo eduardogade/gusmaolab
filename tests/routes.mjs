@@ -25,14 +25,9 @@ import {
 
 const repo = new URL("../", import.meta.url)
 const dist = fileURLToPath(new URL("dist/", repo))
-const STUDIES = [
-  "/_design/tokens/",
-  "/_design/folders/",
-  "/_design/bearnard/",
-  "/_design/environments-v2/",
-]
+const STUDIES = ["/_design/tokens/", "/_design/folders/", "/_design/bearnard/"]
 // Studies that show folders, and so carry the folders' one script.
-const STUDIES_WITH_FOLDERS = ["/_design/folders/", "/_design/environments-v2/"]
+const STUDIES_WITH_FOLDERS = ["/_design/folders/"]
 const fileOf = (path) => join(dist, `${path.slice(1)}index.html`)
 
 async function listFiles(dir) {
@@ -229,34 +224,39 @@ test("NAV-026", "Unknown paths have no page", (check) => {
   )
 })
 
-test("NAV-027", "Every page has its section's environment", (check) => {
+test("NAV-027", "Every page has its section's category and environment", (check) => {
+  // P09-A01 (D-076): the category is the colour, the environment is the typography and
+  // texture. [category, environment] of each page.
   const expected = {
-    "/": "core",
-    "/about/": "core",
-    "/blog/": "core",
-    "/portfolio/": "scientific",
-    "/contact/": "core",
-    "/external/": "core",
-    "/schedule/": "core",
-    "/cv/": "scientific",
-    "/cv/research/": "scientific",
-    "/lab/": "scientific",
-    "/lab/research-areas/": "scientific",
-    "/lecture-notes/": "technical",
-    "/lecture-notes/greenhouse/": "technical",
-    "/writing/": "literary",
-    "/writing/kosmos/": "literary",
-    "/bearnards-area/": "personal",
-    "/bearnards-area/powerlifting/": "personal",
+    "/": ["core", "core"],
+    "/about/": ["core", "core"],
+    "/blog/": ["blog-notes", "core"],
+    "/portfolio/": ["research", "scientific"],
+    "/contact/": ["core", "core"],
+    "/schedule/": ["core", "core"],
+    "/cv/": ["research", "scientific"],
+    "/cv/research/": ["research", "scientific"],
+    "/lab/": ["research", "scientific"],
+    "/lab/research-areas/": ["research", "scientific"],
+    "/lecture-notes/": ["blog-notes", "technical"],
+    "/lecture-notes/greenhouse/": ["blog-notes", "technical"],
+    "/writing/": ["writing", "literary"],
+    "/writing/kosmos/": ["writing", "literary"],
+    "/bearnards-area/": ["bearnard", "personal"],
+    "/bearnards-area/powerlifting/": ["bearnard", "personal"],
   }
-  for (const [path, environment] of Object.entries(expected)) {
+  for (const [path, [category, environment]] of Object.entries(expected)) {
+    check(pages.get(path)?.state.category === category, `${path} is not ${category}`)
     check(
       pages.get(path)?.state.environment === environment,
       `${path} is not ${environment}`,
     )
   }
+  check(!pages.has("/external/"), "/external/ is still a page")
+  const sectionCategories = json(siteNavigation.sections.map((node) => node.category))
   for (const [path, { tree, state }] of pages) {
-    const root = elements(tree).find((el) => el.tag === "html")
+    const all = elements(tree)
+    const root = all.find((el) => el.tag === "html")
     const attribute = root?.attrs["data-environment"]
     check(
       state.environment === "core"
@@ -264,14 +264,41 @@ test("NAV-027", "Every page has its section's environment", (check) => {
         : attribute === state.environment,
       `${path} has data-environment=${attribute}, expected ${state.environment}`,
     )
+    check(
+      root?.attrs["data-category"] === state.category,
+      `${path} has data-category=${root?.attrs["data-category"]}, expected ${state.category}`,
+    )
     // Children inherit; the folders never choose an environment themselves.
     const parent = state.selection.at(-2)
-    if (parent)
+    if (parent) {
       check(state.environment === parent.environment, `${path} differs from its parent`)
-    const scoped = elements(tree).filter(
+      check(
+        state.category === siteNavigation.resolve(parent.path).state.category,
+        `${path} has another category than its parent`,
+      )
+    }
+    const scoped = all.filter(
       (el) => el.tag !== "html" && "data-environment" in el.attrs,
     )
     check(scoped.length === 0, `${path} sets an environment inside the page`)
+    // Inside the page, only the folders and their top-level tabs name a category: the
+    // open folder its page's, each top-level tab its own section's, whatever is open.
+    const stack = all.find(hasClass("gl-folders"))
+    check(
+      stack?.attrs["data-category"] === state.category,
+      `${path}: the folders have the category ${stack?.attrs["data-category"]}`,
+    )
+    const { layers } = layersOf(tree)
+    const row = tabsOf(layers[0])
+    check(
+      json(row.map((tab) => tab.attrs["data-category"])) === sectionCategories,
+      `${path}: the global row does not keep every section's own category`,
+    )
+    const named = all.filter((el) => el.tag !== "html" && "data-category" in el.attrs)
+    check(
+      named.length === row.length + 1,
+      `${path}: ${named.length} elements name a category, expected the folders and ${row.length} tabs`,
+    )
   }
 })
 
@@ -406,8 +433,8 @@ test("NAV-030", "Folder pages keep the approved folder construction", (check) =>
     ["/", "a"],
     ["/cv/research/", "b"],
     ["/cv/", "f"],
-    ["/lab/research-areas/", "e-scientific"],
-    ["/writing/kosmos/", "e-literary"],
+    ["/lab/research-areas/", "e-research"],
+    ["/writing/kosmos/", "e-writing"],
   ]) {
     check(
       shapeOf(pages.get(path).tree) === shapeOf(caseOf(id)),
@@ -509,7 +536,7 @@ test("NAV-032", "Every approved route is a static page", (check) => {
   )
   const byLevel = [1, 2, 3].map((level) => siteNavigation.folderStaticPaths(level))
   check(
-    json(byLevel.map((list) => list.length)) === json([11, 25, 0]),
+    json(byLevel.map((list) => list.length)) === json([10, 25, 0]),
     "unexpected route counts",
   )
   check(
@@ -532,7 +559,6 @@ test("NAV-032", "Every approved route is a static page", (check) => {
     json(routeFiles) ===
       json([
         "[design]/bearnard.astro",
-        "[design]/environments-v2.astro",
         "[design]/folders.astro",
         "[design]/tokens.astro",
         "[section]/[folder]/[subfolder]/index.astro",

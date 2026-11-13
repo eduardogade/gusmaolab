@@ -1,15 +1,26 @@
 ---
-// Order matters: primitives and semantic tokens, then environment overrides, then the
-// global foundation that consumes them.
+// Order matters: primitives and semantic tokens, then the section environments
+// (typography and texture), then the category palettes (colour), then the global
+// foundation that consumes them.
 import "../styles/tokens.css"
 import "../styles/environments.css"
+import "../styles/categories.css"
 import "../styles/global.css"
-import type { SectionEnvironment } from "../navigation/index.ts"
+import type { ArchiveCategory, SectionEnvironment } from "../navigation/index.ts"
 
 interface Props {
   title: string
   description?: string
-  /** Section environment from src/styles/environments.css. Omit for the core environment. */
+  /**
+   * The page's archive category, from src/styles/categories.css: its flannel, folder
+   * bodies and reading paper. Default: Core. Top-level tabs keep their own category
+   * whatever this is.
+   */
+  category?: ArchiveCategory
+  /**
+   * Section environment from src/styles/environments.css: typography and texture, never
+   * colour. Omit for the core environment.
+   */
   environment?: Exclude<SectionEnvironment, "core">
   /**
    * Wrap the page in `<main>`. Folder pages pass false and place `<main>` inside the
@@ -18,11 +29,11 @@ interface Props {
   main?: boolean
 }
 
-const { title, description, environment, main = true } = Astro.props
+const { title, description, category = "core", environment, main = true } = Astro.props
 ---
 
 <!doctype html>
-<html lang="en" data-environment={environment}>
+<html lang="en" data-category={category} data-environment={environment}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />

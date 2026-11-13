@@ -25,7 +25,8 @@ Status: approved direction recorded in P01. The Astro foundation was set up in P
 | TypeScript | Extends `astro/tsconfigs/strict` with `erasableSyntaxOnly` (D-040); excludes `dist`, `_backup`, `brand` and the private folders |
 | Diagnostics | `astro check`, using `@astrojs/check` 0.9.12 and TypeScript 6.0.3 |
 | Styles | Native CSS custom properties in `src/styles/`, imported by `BaseLayout` (D-026). No CSS framework or preprocessor. |
-| Environments | `data-environment` on `<html>` via BaseLayout's `environment` prop, or on any element (D-027) |
+| Categories (colour) | `data-category` on `<html>` via BaseLayout's `category` prop, and on every top-level tab; the five palettes live only in `src/styles/categories.css` (D-076) |
+| Environments (typography and texture) | `data-environment` on `<html>` via BaseLayout's `environment` prop, or on any element (D-027, D-076) |
 | Navigation | A typed, declarative registry in `src/navigation/` (D-036–D-039), with Overview display tabs (D-050–D-052) |
 | Folder components | `src/components/folders/` and `src/styles/folders.css`: static Astro components that draw a navigation state as linked folder tabs (D-043–D-047, D-054), with server-rendered folder previews (D-058, D-059) |
 | Client-side script | Two small modules, bundled and inlined by Astro as one `<script type="module">` per page with folders (4.1 KB since P09; KL-36): `src/scripts/folder-previews.ts` shows and hides the previews (D-060); `src/scripts/folder-rows.ts` opens rows at their selected tab where the browser cannot and keeps keyboard focus clear of the row edges (D-066) |
@@ -36,16 +37,16 @@ Status: approved direction recorded in P01. The Astro foundation was set up in P
 
 Two systems, kept separate, and one layout that joins them:
 
-- **Navigation** (`src/navigation/`) decides which folder tabs exist, their order, URLs and environments, and what each URL shows: which tabs are selected in which rows, where the Overview tabs are, and which tab stands for the page. It is pure data and functions, evaluated at build time, with no client-side router and no server.
+- **Navigation** (`src/navigation/`) decides which folder tabs exist, their order, URLs, categories and environments, and what each URL shows: which tabs are selected in which rows, where the Overview tabs are, and which tab stands for the page. It is pure data and functions, evaluated at build time, with no client-side router and no server.
 - **Routing** stays Astro's: files in `src/pages/` and, later, content collections produce the pages. The registry creates no pages by itself; the route files ask it which pages to build.
 - **Folders** (`src/components/folders/`, P05) draw one resolved navigation state. They hold no navigation data of their own.
-- **`FolderPage`** (`src/layouts/FolderPage.astro`, P06) is the join. It resolves the page's own URL (`Astro.url.pathname`), passes the environment to `BaseLayout`, and draws `FolderStack` with the page's content in `<main>` inside the deepest folder. A page provides only its content.
+- **`FolderPage`** (`src/layouts/FolderPage.astro`, P06) is the join. It resolves the page's own URL (`Astro.url.pathname`), passes the page's category and environment to `BaseLayout`, and draws `FolderStack` with the page's content in `<main>` inside the deepest folder. A page provides only its content.
 
 ```text
 registry.ts ──► createNavigation() ──► siteNavigation
                                         │  folderStaticPaths(level)   resolve(url)
                                         ▼                              ▼
-src/pages/ route file per level ──► FolderPage ──► BaseLayout (environment)
+src/pages/ route file per level ──► FolderPage ──► BaseLayout (category, environment)
           (which pages exist)          │
                                         └► FolderStack ► FolderLayer ► FolderTabStrip ► FolderTab
                                                └ page content (slot) in <main> on the deepest folder's paper
@@ -119,12 +120,39 @@ The folders adapt with CSS: fluid spacing tokens, rows that scroll inside their 
 - **Previews in scrolling rows.** P07's popovers live in the top layer, outside every row's `overflow-x: auto`. While one is open, a scroll listener (capture phase, so it hears the rows) repositions it in the next frame, and it closes if its tab scrolls out of sight (D-059). P08 tested this and changed nothing in it.
 - **Fallback.** Without JavaScript, rows still scroll natively and every tab is a link; Chromium still opens rows at their selected tab, other browsers at their start.
 
+## Colour architecture (P09-A01)
+
+Colour is the Chromatic Archive: five locked category palettes and four shared colours (D-076; `planning/design-system.md`, section 7).
+
+```text
+registry.ts            each top-level section: category (colour), environment (typography)
+      │                descendants inherit both
+      ▼
+siteNavigation.resolve(url) ──► state.category, state.environment, and each tab's own category
+      │
+      ├─► BaseLayout   <html data-category data-environment>   flannel, shell, paper, type
+      └─► FolderStack  <div class="gl-folders" data-category>  open bodies, levels 2 and 3
+              └─► FolderTab  <li data-category>  (top level)   the tab's own permanent cardstock
+
+tokens.css        global tokens on :root (shell, links, accent, V, text inks, focus)
+                  and the aliases, recomputed on :root, [data-environment], [data-category]
+categories.css    the 25 locked colours and five tokens per [data-category]: the only source
+environments.css  ten typography and texture tokens per [data-environment]; no colour
+```
+
+1. **One source of truth.** The five palettes are declared in `src/styles/categories.css` and nowhere else; `CATEGORIES` and `CATEGORY_TOKENS` in `src/design/contract.mjs` name them for the tests. Which section has which category is declared in the registry and nowhere else.
+2. **Global and category tokens are separate.** The shell, links, the accent and the V are global tokens on `:root`; no category or environment can set them (CAT-004, CAT-007).
+3. **A tab's colour never depends on the page.** Every top-level tab carries its own `data-category`, and the aliases recompute there, so no page-level attribute can recolour it (CAT-008, CAT-011). The route decides only the active category: the open body, the paper and the flannel.
+4. **Components stay generic.** `folders.css` names no category and no environment; the tests reject both kinds of selector.
+5. **No script and no router.** The colours are static markup and CSS. Moving between categories is an ordinary page load, with the existing cross-fade (D-071).
+6. **Checks.** `tests/categories.mjs` (CAT-001 to CAT-010, in `npm test`) fixes the eleven tabs, the category of every section and every locked colour; `tests/categories-browser.mjs` (CAT-011 to CAT-017, in `npm run test:browser`) checks the painted colours in headless Chrome; `tests/contrast.mjs` checks 260 pairings.
+
 ## Repository layout after P09
 
 | Path | Role |
 | --- | --- |
-| `src/pages/` | Route files: Home (`index.astro`) and one generated route per tab level (`[section]/…`, D-053); the temporary design studies in `[design]/` (`tokens.astro` at `/_design/tokens/`, `folders.astro` at `/_design/folders/`, and since P09 `bearnard.astro` at `/_design/bearnard/` and `environments-v2.astro` at `/_design/environments-v2/`; D-048, D-055, D-073, D-075) |
-| `src/layouts/` | `BaseLayout` (document, styles, environment) and `FolderPage` (a page inside the folders; D-053, D-054) |
+| `src/pages/` | Route files: Home (`index.astro`) and one generated route per tab level (`[section]/…`, D-053); the temporary design studies in `[design]/` (`tokens.astro` at `/_design/tokens/`, `folders.astro` at `/_design/folders/`, and since P09 `bearnard.astro` at `/_design/bearnard/`; D-048, D-055, D-073) |
+| `src/layouts/` | `BaseLayout` (document, styles, category, environment) and `FolderPage` (a page inside the folders; D-053, D-054) |
 | `src/components/folders/` | `FolderStack`, `FolderLayer`, `FolderTabStrip`, `FolderTab` and `FolderPreview` (D-043, D-059) |
 | `src/components/bearnard/` | `BearnardIllustration`: one approved Bearnard illustration, by role or ID (D-073) |
 | `src/illustrations/` | `bearnard.ts`: the Bearnard illustration registry (D-073) |
@@ -132,7 +160,7 @@ The folders adapt with CSS: fluid spacing tokens, rows that scroll inside their 
 | `scripts/bearnard_derivatives.py` | Generates those derivatives and their provenance, by hand; needs Pillow |
 | `src/scripts/` | `folder-previews.ts` (D-060) and `folder-rows.ts` (D-066): the folders' client-side modules. Not `src/lib/`, which the root `.gitignore` would hide. |
 | `src/components/scaffold/` | `ScaffoldContent`: the temporary development content of the folder pages until the content prompts |
-| `src/styles/` | `tokens.css`, `environments.css` and `global.css`, loaded by BaseLayout; `folders.css`, loaded only by `FolderStack`; `environment-candidates.css`, the proposed environments, loaded only by the environments study and never by a site page (D-075) |
+| `src/styles/` | `tokens.css` (global tokens and aliases), `categories.css` (the five locked category palettes, and the only place that declares them; D-076), `environments.css` (typography and texture) and `global.css`, loaded by BaseLayout; `folders.css`, loaded only by `FolderStack` |
 | `src/design/` | The token contract and the CSS token reader, shared by the specimen and the tests |
 | `src/navigation/` | Navigation types, registry and helpers; `index.ts` exports the compiled `siteNavigation`. Not `src/lib/`, which the root `.gitignore` would hide (KL-11). |
 | `tests/` | Token, contrast, navigation, build-output, folder-component, route and preview checks; `html-tree.mjs` is their shared HTML reader; `browser-harness.mjs` drives headless Chrome for `previews-browser.mjs`, `responsive-browser.mjs` and `transitions-browser.mjs`; `bearnard.mjs` checks the illustrations (P09) |
@@ -152,7 +180,7 @@ The folders adapt with CSS: fluid spacing tokens, rows that scroll inside their 
 | `_books/`, `_papers/`, `_references/`, `_reports/` | Private workspace, gitignored. Never commit. |
 | `backup/`, `releases/`, `resources/`, `viz/`, `_logo/` | Empty, untracked placeholder folders |
 
-`public/` was created in P09 for the Bearnard derivatives (D-019, D-073); `src/components/` was created in P05. The site ships two images (the Bearnard portrait at two widths, used only by a design study so far), no font files, and one inlined script (P07, extended in P08). It builds 41 pages: 37 folder pages and 4 design studies.
+`public/` was created in P09 for the Bearnard derivatives (D-019, D-073); `src/components/` was created in P05. The site ships two images (the Bearnard portrait at two widths, used only by a design study so far), no font files, and one inlined script (P07, extended in P08). It builds 39 pages: 36 folder pages and 3 design studies.
 
 ## Deployment
 

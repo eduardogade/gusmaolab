@@ -1,46 +1,18 @@
 /*
- * Section environments. P03 candidate, awaiting the owner's visual review.
+ * Section environments: typography and texture. Never colour.
  *
- * Every environment shares the physical-folder system and the semantic token names.
- * Each block below defines exactly the environment contract listed in
- * src/design/contract.mjs: no more, no less. Values reference primitives from tokens.css,
- * never raw colours. Pages choose an environment declaratively with
- * `data-environment="…"` (BaseLayout's `environment` prop); there is no JavaScript.
+ * P09-A01 (D-076) separated the two concerns. A section's colours come from its archive
+ * category (categories.css); its environment chooses only how its text is set and how
+ * strong the lining and ornament are. Each block below defines exactly the environment
+ * contract listed in src/design/contract.mjs: no more, no less, and no colour token.
+ * Pages choose an environment declaratively with `data-environment="…"` (BaseLayout's
+ * `environment` prop); there is no JavaScript. The values are P03's, unchanged: the
+ * typography consolidation stays deferred (D-042).
  */
 
-/* Scientific: CV, Research, Lab, Portfolio. Midnight navy, warm cream, restrained green. */
+/* Scientific: Portfolio, CV, Lab. Editorial headings over an interface body; a quiet
+   lining. */
 [data-environment="scientific"] {
-  --color-backdrop: var(--palette-midnight);
-  --color-flannel-band: var(--palette-bark);
-  --color-flannel-line: var(--palette-slate);
-  --color-flannel-thread: var(--palette-honey);
-  --color-shell: var(--palette-navy);
-  --color-shell-border: var(--palette-slate);
-  --color-shadow: var(--palette-midnight);
-
-  --color-folder-parent: var(--palette-kraft);
-  --color-folder-nested: var(--palette-parchment);
-  --color-folder-active: var(--palette-ivory);
-  --color-folder-border: color-mix(in srgb, var(--palette-midnight) 18%, transparent);
-
-  --color-text-primary: var(--palette-midnight);
-  --color-text-secondary: var(--palette-slate);
-  --color-text-muted: var(--palette-denim);
-  --color-text-heading: var(--palette-midnight);
-  --color-text-link: var(--palette-forest);
-  --color-text-link-hover: color-mix(
-    in srgb,
-    var(--palette-forest) 70%,
-    var(--palette-midnight)
-  );
-  --color-text-on-dark: var(--palette-parchment);
-  --color-text-on-dark-muted: var(--palette-kraft);
-  --color-text-link-on-dark: var(--palette-eye-green);
-
-  --color-accent: var(--palette-honey);
-  --color-state-active: var(--palette-navy);
-  --color-indicator-selected: var(--palette-navy);
-
   --font-body: var(--font-interface);
   --font-heading: var(--font-editorial);
   --font-heading-style: normal;
@@ -54,44 +26,8 @@
   --ornament-intensity: 0.25;
 }
 
-/* Technical: Lecture Notes, The Greenhouse, Bearnard's Trail, Berries, Timber Logs.
-   Terrain browns, honey and gold, spruce green-blue details, a charcoal workbench. */
+/* Technical: Lecture Notes. Interface type throughout, and a wider measure for code. */
 [data-environment="technical"] {
-  --color-backdrop: var(--palette-terrain);
-  --color-flannel-band: var(--palette-bark);
-  --color-flannel-line: var(--palette-spruce);
-  --color-flannel-thread: var(--palette-gold);
-  --color-shell: var(--palette-charcoal);
-  --color-shell-border: color-mix(
-    in srgb,
-    var(--palette-charcoal) 70%,
-    var(--palette-ash)
-  );
-  --color-shadow: var(--palette-bark);
-
-  --color-folder-parent: var(--palette-kraft);
-  --color-folder-nested: var(--palette-parchment);
-  --color-folder-active: var(--palette-ivory);
-  --color-folder-border: color-mix(in srgb, var(--palette-bark) 16%, transparent);
-
-  --color-text-primary: var(--palette-espresso);
-  --color-text-secondary: var(--palette-umber);
-  --color-text-muted: var(--palette-cocoa);
-  --color-text-heading: var(--palette-espresso);
-  --color-text-link: var(--palette-spruce);
-  --color-text-link-hover: color-mix(
-    in srgb,
-    var(--palette-spruce) 70%,
-    var(--palette-bark)
-  );
-  --color-text-on-dark: var(--palette-parchment);
-  --color-text-on-dark-muted: var(--palette-kraft);
-  --color-text-link-on-dark: var(--palette-gold);
-
-  --color-accent: var(--palette-gold);
-  --color-state-active: var(--palette-spruce);
-  --color-indicator-selected: var(--palette-spruce);
-
   --font-body: var(--font-interface);
   --font-heading: var(--font-interface);
   --font-heading-style: normal;
@@ -105,52 +41,8 @@
   --ornament-intensity: 0.4;
 }
 
-/* Literary: Writing, Kosmos, Months' Original, Book Club.
-   Espresso, warm amber, chestnut and parchment; editorial type for long prose. */
+/* Literary: Writing. Editorial type for long prose, italic headings, a narrow measure. */
 [data-environment="literary"] {
-  --color-backdrop: var(--palette-chestnut);
-  --color-flannel-band: var(--palette-warm-brown);
-  --color-flannel-line: var(--palette-bark);
-  --color-flannel-thread: var(--palette-gold);
-  --color-shell: var(--palette-espresso);
-  --color-shell-border: var(--palette-chestnut);
-  --color-shadow: var(--palette-bark);
-
-  --color-folder-parent: color-mix(
-    in srgb,
-    var(--palette-kraft) 65%,
-    var(--palette-honey)
-  );
-  --color-folder-nested: var(--palette-parchment);
-  --color-folder-active: color-mix(
-    in srgb,
-    var(--palette-ivory) 70%,
-    var(--palette-parchment)
-  );
-  --color-folder-border: color-mix(in srgb, var(--palette-warm-brown) 20%, transparent);
-
-  --color-text-primary: var(--palette-espresso);
-  --color-text-secondary: var(--palette-umber);
-  --color-text-muted: var(--palette-cocoa);
-  --color-text-heading: var(--palette-espresso);
-  --color-text-link: var(--palette-rust);
-  --color-text-link-hover: color-mix(
-    in srgb,
-    var(--palette-rust) 65%,
-    var(--palette-bark)
-  );
-  --color-text-on-dark: var(--palette-parchment);
-  --color-text-on-dark-muted: var(--palette-kraft);
-  --color-text-link-on-dark: var(--palette-honey);
-
-  --color-accent: var(--palette-honey);
-  --color-state-active: var(--palette-rust);
-  --color-indicator-selected: color-mix(
-    in srgb,
-    var(--palette-rust) 65%,
-    var(--palette-bark)
-  );
-
   --font-body: var(--font-editorial);
   --font-heading: var(--font-editorial);
   --font-heading-style: italic;
@@ -164,44 +56,8 @@
   --ornament-intensity: 0.6;
 }
 
-/* Personal: Bearnard's Area, Photos, Videos, Powerlifting, Bear Life.
-   Bearnard's own colours: navy fur, his orange flannel, gold, green eyes. */
+/* Personal: Bearnard's Area. Display headings, and the strongest texture and ornament. */
 [data-environment="personal"] {
-  --color-backdrop: color-mix(
-    in srgb,
-    var(--palette-ember) 45%,
-    var(--palette-espresso)
-  );
-  --color-flannel-band: var(--palette-bark);
-  --color-flannel-line: var(--palette-navy);
-  --color-flannel-thread: var(--palette-gold);
-  --color-shell: var(--palette-navy);
-  --color-shell-border: var(--palette-slate);
-  --color-shadow: var(--palette-bark);
-
-  --color-folder-parent: var(--palette-gold);
-  --color-folder-nested: var(--palette-parchment);
-  --color-folder-active: var(--palette-ivory);
-  --color-folder-border: color-mix(in srgb, var(--palette-bark) 18%, transparent);
-
-  --color-text-primary: var(--palette-espresso);
-  --color-text-secondary: var(--palette-umber);
-  --color-text-muted: var(--palette-cocoa);
-  --color-text-heading: var(--palette-navy);
-  --color-text-link: var(--palette-forest);
-  --color-text-link-hover: color-mix(
-    in srgb,
-    var(--palette-forest) 70%,
-    var(--palette-bark)
-  );
-  --color-text-on-dark: var(--palette-parchment);
-  --color-text-on-dark-muted: var(--palette-kraft);
-  --color-text-link-on-dark: var(--palette-eye-green);
-
-  --color-accent: var(--palette-eye-green);
-  --color-state-active: var(--palette-navy);
-  --color-indicator-selected: var(--palette-navy);
-
   --font-body: var(--font-interface);
   --font-heading: var(--font-display);
   --font-heading-style: normal;

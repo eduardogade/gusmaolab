@@ -4,19 +4,14 @@ import { createHash } from "node:crypto"
 import { readdir, readFile } from "node:fs/promises"
 import { join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
-import { ENVIRONMENTS } from "../src/design/contract.mjs"
+import { CATEGORIES, ENVIRONMENTS } from "../src/design/contract.mjs"
 import { readTokens } from "../src/design/css-tokens.mjs"
 import { siteNavigation } from "../src/navigation/index.ts"
 
 // Temporary design studies. They live under /_design/, which no registry path can reach
 // (slugs never start with "_"), and are the only pages allowed outside the navigation
 // registry: the P03 specimen (moved from / in P06) and the P05 folder study.
-const designStudies = [
-  "/_design/tokens/",
-  "/_design/folders/",
-  "/_design/bearnard/",
-  "/_design/environments-v2/",
-]
+const designStudies = ["/_design/tokens/", "/_design/folders/", "/_design/bearnard/"]
 const fileOf = (path) => `${path.slice(1)}index.html`
 // Pages the build must produce (P06): every registered destination, and the studies.
 const expectedPages = [...siteNavigation.pagePaths(), ...designStudies].map(fileOf)
@@ -178,6 +173,7 @@ for (const { id } of ENVIRONMENTS) {
 // 4. The palette specimen shows every primitive with its current value.
 const tokens = readTokens(
   await readFile(new URL("src/styles/tokens.css", repo), "utf8"),
+  await readFile(new URL("src/styles/categories.css", repo), "utf8"),
   await readFile(new URL("src/styles/environments.css", repo), "utf8"),
 )
 for (const name of tokens.root.keys()) {
@@ -221,6 +217,16 @@ for (const { id } of ENVIRONMENTS) {
   check(
     new RegExp(`\\[data-environment=["']?${id}["']?\\]`).test(css),
     `the built CSS lacks the ${id} environment`,
+  )
+}
+for (const { id } of CATEGORIES) {
+  check(
+    new RegExp(`\\[data-category=["']?${id}["']?\\]`).test(css),
+    `the built CSS lacks the ${id} category`,
+  )
+  check(
+    html.includes(`data-category="${id}"`),
+    `the specimen does not show the ${id} category`,
   )
 }
 

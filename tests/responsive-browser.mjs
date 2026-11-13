@@ -36,7 +36,6 @@ const SECTIONS = [
   "/blog/",
   "/portfolio/",
   "/contact/",
-  "/external/",
   "/schedule/",
   "/cv/",
   "/lab/",
@@ -129,7 +128,6 @@ await test("RESP-001", "No page scrolls sideways, at ten widths", async (check) 
     "/_design/folders/",
     "/_design/tokens/",
     "/_design/bearnard/",
-    "/_design/environments-v2/",
   ]
   for (const width of WIDTHS) {
     await setViewport(width, 900, width < 768)
@@ -151,7 +149,6 @@ await test(
       "Blog",
       "Portfolio",
       "Contact",
-      "External",
       "Schedule",
       "CV",
       "Lab",
@@ -261,7 +258,7 @@ await test(
       if (mode === "native") await run()
       else await withoutNative(run)
     }
-    // Case D: Bearnard's Area and Powerlifting, in the personal environment, at 390 px.
+    // Case D: Bearnard's Area and Powerlifting, in the Bearnard category, at 390 px.
     await setViewport(390, 844, true)
     await goto("/bearnards-area/powerlifting/")
     const rows = await rowsOf()
@@ -275,6 +272,7 @@ await test(
       `case D: ${json(rows)}`,
     )
     check(page.environment === "personal", `case D is ${page.environment}`)
+    check(page.category === "bearnard", `case D is ${page.category}`)
   },
 )
 
@@ -564,7 +562,7 @@ await test(
       }
       const global = seen.filter((t) => t.level === "1").map((t) => t.id)
       check(
-        global.length === 12,
+        global.length === 11,
         `${width} px: Tab reached ${global.length} global tabs`,
       )
       check(
@@ -645,7 +643,7 @@ await test(
 
 await test(
   "RESP-013",
-  "Every environment gets the same responsive layout",
+  "Every category and environment gets the same responsive layout",
   async (check) => {
     for (const width of [320, 768]) {
       await setViewport(width, 844, width < 768)
@@ -677,7 +675,7 @@ await test(
         .map(([, shape]) => shape)
       check(
         new Set(twoLevel).size === 1,
-        `${width} px: environments differ: ${json([...shapes])}`,
+        `${width} px: sections differ: ${json([...shapes])}`,
       )
     }
   },

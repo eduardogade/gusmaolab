@@ -9,6 +9,7 @@
  * TypeScript only and imports types with `import type`.
  */
 import type {
+  ArchiveCategory,
   ContentRoute,
   DisplayTab,
   NavigationEntry,
@@ -23,6 +24,15 @@ import type {
   TabPreview,
   TabRow,
 } from "./types.ts"
+
+/** Every archive category (P09-A01): the five permanent cardstock colours. */
+export const CATEGORY_IDS: readonly ArchiveCategory[] = [
+  "core",
+  "research",
+  "blog-notes",
+  "writing",
+  "bearnard",
+]
 
 /** Every section environment. "core" is the default, with no `data-environment` attribute. */
 export const ENVIRONMENT_IDS: readonly SectionEnvironment[] = [
@@ -57,6 +67,7 @@ const ENTRY_KEYS = new Set([
   "id",
   "label",
   "slug",
+  "category",
   "environment",
   "description",
   "children",
@@ -153,7 +164,7 @@ export function validateNavigation(
       if (!ENTRY_KEYS.has(key)) issues.push(`${name} has an unknown field "${key}"`)
     }
 
-    const { id, label, slug, environment, description, children } = entry
+    const { id, label, slug, category, environment, description, children } = entry
     if (typeof id !== "string" || !ID_PATTERN.test(id)) {
       issues.push(`${name} needs an id in lowercase kebab-case`)
     } else if (ids.has(id)) {
@@ -184,6 +195,16 @@ export function validateNavigation(
       else paths.set(path, typeof id === "string" ? id : name)
     }
 
+    // A category is the whole section's cardstock: declared once, on the section.
+    if (level === 1) {
+      if (category === undefined) {
+        issues.push(`${name} needs a category: every top-level section has one`)
+      } else if (!CATEGORY_IDS.includes(category as ArchiveCategory)) {
+        issues.push(`${name} has an unknown category "${String(category)}"`)
+      }
+    } else if (category !== undefined) {
+      issues.push(`${name} declares a category; a folder always shares its section's`)
+    }
     if (
       environment !== undefined &&
       !ENVIRONMENT_IDS.includes(environment as SectionEnvironment)
@@ -331,12 +352,19 @@ export function createNavigation(
   const compile = (
     entry: NavigationEntry,
     level: number,
-    parent: { path: string; id: string; environment: SectionEnvironment } | null,
+    parent: {
+      path: string
+      id: string
+      category: ArchiveCategory
+      environment: SectionEnvironment
+    } | null,
   ): NavigationNode => {
     const path =
       parent === null ? childPath("/", entry.slug) : childPath(parent.path, entry.slug)
+    // Validation guarantees a category on every section and on nothing below one.
+    const category = parent?.category ?? (entry.category as ArchiveCategory)
     const environment = entry.environment ?? parent?.environment ?? "core"
-    const self = { path, id: entry.id, environment }
+    const self = { path, id: entry.id, category, environment }
     const children = Object.freeze(
       (entry.children ?? []).map((child) => compile(child, level + 1, self)),
     )
@@ -345,6 +373,7 @@ export function createNavigation(
       label: entry.label,
       path,
       level: tabLevel(level),
+      category,
       environment,
       ...(entry.description === undefined ? {} : { description: entry.description }),
       parentId: parent?.id ?? null,
@@ -467,6 +496,7 @@ export function createNavigation(
       selection,
       rows: Object.freeze(rows.map(withPreviews)),
       currentTabId: page.kind === "folder" ? deepest.selectedId : null,
+      category: folder.category,
       environment: folder.environment,
     })
   }

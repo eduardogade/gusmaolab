@@ -32,6 +32,7 @@ for (const path of siteNavigation.pagePaths()) {
 const sources = {
   tokens: await read("src/styles/tokens.css"),
   environments: await read("src/styles/environments.css"),
+  categories: await read("src/styles/categories.css"),
   global: await read("src/styles/global.css"),
   folders: await read("src/styles/folders.css"),
   rows: await read("src/scripts/folder-rows.ts"),
@@ -91,7 +92,7 @@ test("RESP-007", "Every tab keeps a built destination", (check) => {
       check(pages.has(href) || study, `${path} links to ${href}, which has no page`)
     }
   }
-  check(links > 37 * 12, `only ${links} links found`)
+  check(links > 36 * 11, `only ${links} links found`)
 })
 
 test("RESP-008", "No fourth row, at any depth (built pages and model)", (check) => {
@@ -136,59 +137,79 @@ test("RESP-008", "No fourth row, at any depth (built pages and model)", (check) 
   )
 })
 
-test("RESP-013", "One responsive implementation for every environment", (check) => {
-  const environments = stripComments(sources.environments)
-  check(
-    !/@media|@container/.test(environments),
-    "environments.css has its own responsive rules",
-  )
-  for (const token of [
-    "--space-gutter",
-    "--space-shell-padding",
-    "--folder-nest-inset",
-    "--folder-tab-height",
-    "--folder-scroll-hint-size",
-  ]) {
-    check(!environments.includes(`${token}`), `an environment sets ${token}`)
-  }
-  check(
-    !/\[data-environment/.test(stripComments(sources.folders)),
-    "folders.css targets an environment",
-  )
-  // No responsive rule anywhere is written for one environment.
-  for (const [name, css] of Object.entries({
-    folders: sources.folders,
-    global: sources.global,
-    tokens: sources.tokens,
-  })) {
-    for (const block of stripComments(css).matchAll(
-      /@(media|container)[^{]*\{([^{}]*\{[^{}]*\})*[^{}]*\}/g,
-    )) {
-      check(
-        !block[0].includes("data-environment"),
-        `a responsive rule in ${name}.css targets an environment`,
+test(
+  "RESP-013",
+  "One responsive implementation for every category and environment",
+  (check) => {
+    const environments = stripComments(sources.environments)
+    check(
+      !/@media|@container/.test(environments),
+      "environments.css has its own responsive rules",
+    )
+    for (const token of [
+      "--space-gutter",
+      "--space-shell-padding",
+      "--folder-nest-inset",
+      "--folder-tab-height",
+      "--folder-scroll-hint-size",
+    ]) {
+      check(!environments.includes(`${token}`), `an environment sets ${token}`)
+    }
+    check(
+      !/\[data-environment/.test(stripComments(sources.folders)),
+      "folders.css targets an environment",
+    )
+    // P09-A01: a category is five colours and nothing else, so it cannot change a layout.
+    const categories = stripComments(sources.categories)
+    check(
+      !/@media|@container/.test(categories),
+      "categories.css has its own responsive rules",
+    )
+    check(
+      !/\[data-category\s*[~|^$*]?=/.test(stripComments(sources.folders)),
+      "folders.css targets one particular category",
+    )
+    // No responsive rule anywhere is written for one environment.
+    for (const [name, css] of Object.entries({
+      folders: sources.folders,
+      global: sources.global,
+      tokens: sources.tokens,
+    })) {
+      for (const block of stripComments(css).matchAll(
+        /@(media|container)[^{]*\{([^{}]*\{[^{}]*\})*[^{}]*\}/g,
+      )) {
+        check(
+          !block[0].includes("data-environment"),
+          `a responsive rule in ${name}.css targets an environment`,
+        )
+        check(
+          !block[0].includes("data-category"),
+          `a responsive rule in ${name}.css targets a category`,
+        )
+      }
+    }
+    // The built pages of the five categories and five environments share one stylesheet
+    // set.
+    const sheets = new Set()
+    for (const path of [
+      "/",
+      "/cv/",
+      "/blog/",
+      "/lecture-notes/",
+      "/writing/",
+      "/bearnards-area/",
+    ]) {
+      sheets.add(
+        json(
+          [...pages.get(path).html.matchAll(/href="(\/_astro\/[^"]+\.css)"/g)].map(
+            (m) => m[1],
+          ),
+        ),
       )
     }
-  }
-  // The built pages of the five environments share one stylesheet set.
-  const sheets = new Set()
-  for (const path of [
-    "/",
-    "/cv/",
-    "/lecture-notes/",
-    "/writing/",
-    "/bearnards-area/",
-  ]) {
-    sheets.add(
-      json(
-        [...pages.get(path).html.matchAll(/href="(\/_astro\/[^"]+\.css)"/g)].map(
-          (m) => m[1],
-        ),
-      ),
-    )
-  }
-  check(sheets.size === 1, `environments load ${sheets.size} different stylesheet sets`)
-})
+    check(sheets.size === 1, `the pages load ${sheets.size} different stylesheet sets`)
+  },
+)
 
 test("RESP-014", "Wide content is contained by the stylesheets", (check) => {
   const global = stripComments(sources.global)

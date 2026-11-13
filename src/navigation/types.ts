@@ -2,12 +2,28 @@
  * Types for the GusmaoLab navigation model (P04), with the display tabs added in P06 and
  * the folder previews added in P07.
  *
- * The model is data only. It holds no colors or styles (environments are semantic names
- * resolved by src/styles/environments.css) and no transient pointer or keyboard state:
+ * The model is data only. It holds no colors or styles (categories and environments are
+ * semantic names, resolved by src/styles/categories.css and src/styles/environments.css)
+ * and no transient pointer or keyboard state:
  * whether a preview is showing belongs to the page's script, never to the model (P07).
  */
 
-/** Section environments. "core" is the default: no `data-environment` attribute. */
+/**
+ * Archive categories (P09-A01, D-076): the five permanent cardstock colours. Every
+ * first-level section belongs to one, and its folders inherit it. A category decides
+ * colour only: its tab keeps that colour on every page.
+ */
+export type ArchiveCategory =
+  | "core"
+  | "research"
+  | "blog-notes"
+  | "writing"
+  | "bearnard"
+
+/**
+ * Section environments: typography and texture, never colour (D-076). "core" is the
+ * default: no `data-environment` attribute.
+ */
 export type SectionEnvironment =
   | "core"
   | "scientific"
@@ -26,6 +42,11 @@ export interface NavigationEntry {
   readonly label: string
   /** URL segment below the parent's path. Only Home has "", which gives the path "/". */
   readonly slug: string
+  /**
+   * The archive category. Required on first-level sections and allowed nowhere else:
+   * folders always share their section's cardstock.
+   */
+  readonly category?: ArchiveCategory
   /** Overrides the environment inherited from the parent; top-level tabs default to "core". */
   readonly environment?: SectionEnvironment
   /** Optional short accessible description. */
@@ -47,12 +68,14 @@ export interface ContentRoute {
   readonly title?: string
 }
 
-/** A folder tab after compilation: path, level and environment resolved. */
+/** A folder tab after compilation: path, level, category and environment resolved. */
 export interface NavigationNode {
   readonly id: string
   readonly label: string
   readonly path: string
   readonly level: TabLevel
+  /** The category of the node's first-level section: its permanent cardstock. */
+  readonly category: ArchiveCategory
   /** The node's own environment, or the one inherited from its parent. */
   readonly environment: SectionEnvironment
   readonly description?: string
@@ -148,6 +171,8 @@ export interface NavigationState {
    * a content page, whose selected tabs are all folders that contain it.
    */
   readonly currentTabId: string | null
+  /** The open section's category: the page's flannel, folder bodies and reading paper. */
+  readonly category: ArchiveCategory
   readonly environment: SectionEnvironment
 }
 

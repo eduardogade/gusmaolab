@@ -158,7 +158,7 @@ test("PREV-002", "Overview destination", (check) => {
   }
   // No preview adds a node, a path or a page: the registry is unchanged.
   check(
-    site.nodes.size === 37 && site.pagePaths().length === 37,
+    site.nodes.size === 36 && site.pagePaths().length === 36,
     "the registry changed size",
   )
 })
@@ -180,15 +180,7 @@ test("PREV-003", "Leaf behavior", (check) => {
     }
   }
   const top = site.resolve("/cv/research/").state.rows[0]
-  for (const leaf of [
-    "home",
-    "about",
-    "blog",
-    "portfolio",
-    "contact",
-    "external",
-    "schedule",
-  ]) {
+  for (const leaf of ["home", "about", "blog", "portfolio", "contact", "schedule"]) {
     check(!top.previews.has(leaf), `${leaf} has a preview`)
   }
 })

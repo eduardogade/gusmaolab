@@ -9,6 +9,7 @@ import { CONTENT_ROUTES, SECTIONS } from "./registry.ts"
 export const siteNavigation = createNavigation(SECTIONS, CONTENT_ROUTES)
 
 export {
+  CATEGORY_IDS,
   ENVIRONMENT_IDS,
   MAX_TAB_LEVELS,
   NavigationConfigError,

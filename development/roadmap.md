@@ -21,7 +21,8 @@ Status: provisional. The six-wave structure is approved. Individual tasks are no
 - **P06** — Route-Driven Physical Folder Navigation & Overview Tabs (completed; the owner approved the navigation and Overview tabs)
 - **P07** — Immediate-Child Hover Previews & Keyboard-Accessible Folder Discovery (completed; the owner approved the folder previews)
 - **P08** — Responsive Physical-Folder Navigation & Adaptive Layout (completed; the owner approved the small-screen layout; real-device checks pending)
-- **P09** — Navigation Continuity, Environmental Refinement & Bearnard Integration Foundations (technically completed; awaiting the owner's retest of the folder transition, the Bearnard role assignments and a decision on the environment candidates)
+- **P09** — Navigation Continuity, Environmental Refinement & Bearnard Integration Foundations (technically completed; awaiting the owner's retest of the folder transition and the Bearnard role assignments)
+  - **P09-A01** — Final Color Architecture: Chromatic Archive (addendum to P09; implemented 2026-11-12; five category palettes approved and locked by the owner, D-076; it replaces P09's environment candidates and removes External from the navigation)
 - **P10** — Editorial Collections & Structured Publishing Foundations (next; not started)
 - P11–P24 — titles not yet supplied
 

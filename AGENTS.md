@@ -6,7 +6,7 @@ Shared rules for every coding agent in this repository: Claude Code, Codex and o
 
 GusmaoLab is Eduardo Gade Gusmao's personal website and publishing ecosystem: computational biology, bioinformatics, research, software engineering, teaching, literature and personal interests. Scientific rigor and visual humor go together.
 
-The site is an Astro static project. Every registered folder has a page generated from the navigation registry (P06), with temporary development content only, unopened folders preview their contents on hover and keyboard focus (P07), and the folders adapt to every screen size (P08); temporary design studies live under `/_design/` (the P03 tokens specimen, the P05 folder study, and the P09 Bearnard and environments studies). The old Pelican site is archived in `_backup/pelican-legacy/`.
+The site is an Astro static project. Every registered folder has a page generated from the navigation registry (P06), with temporary development content only, unopened folders preview their contents on hover and keyboard focus (P07), and the folders adapt to every screen size (P08); the eleven sections belong to five colour categories, each a permanent cardstock (the Chromatic Archive, P09-A01); temporary design studies live under `/_design/` (the P03 tokens specimen, the P05 folder study and the P09 Bearnard study). The old Pelican site is archived in `_backup/pelican-legacy/`.
 
 ## Where things are
 
@@ -28,7 +28,7 @@ Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `n
 
 ## Navigation
 
-- `src/navigation/registry.ts` is the only place that declares tabs, labels, URLs, order and environments (`planning/information-architecture.md`). Components read `siteNavigation` from `src/navigation/index.ts`; they never hardcode labels or URLs.
+- `src/navigation/registry.ts` is the only place that declares tabs, labels, URLs, order, categories and environments (`planning/information-architecture.md`). Components read `siteNavigation` from `src/navigation/index.ts`; they never hardcode labels or URLs.
 - At most three visible tab levels. Deeper pages are content routes registered with an owning folder, never extra tabs. No breadcrumbs, sidebars, dropdown trees or computer-folder icons.
 - Do not add third-level folders that the owner has not approved. Mark test-only data as synthetic.
 - Folder pages come from one route file per tab level (`src/pages/index.astro`, `[section]/`, `[section]/[folder]/`, `[section]/[folder]/[subfolder]/`), each listing `siteNavigation.folderStaticPaths(level)`, and wrap their content in `FolderPage` (`src/layouts/`), which draws the folders from the page's own URL (D-053, D-054).
@@ -41,12 +41,13 @@ Use Node.js 26 LTS (`.node-version`) with npm. Install with `npm ci`, and run `n
 
 - Native CSS only. Tokens live in `src/styles/tokens.css`, environment overrides in `src/styles/environments.css`, and global defaults in `src/styles/global.css` (`planning/design-system.md`).
 - Components use semantic tokens (`--color-*`, `--font-*`, `--space-*` …), never `--palette-*` primitives or raw colors.
-- Choose a section environment with `data-environment` (BaseLayout's `environment` prop). Change what an environment can set only through `src/design/contract.mjs` and a recorded decision.
+- A section's category and environment are declared in the registry and reach the page as `data-category` and `data-environment` (BaseLayout's `category` and `environment` props). Change what either can set only through `src/design/contract.mjs` and a recorded decision.
 - Keep `tests/design-tokens.mjs` and `tests/contrast.mjs` passing. Do not lower a contrast threshold to make a color pass.
-- `src/styles/environment-candidates.css` holds proposed environments (`proposed-<section>`), shown only at `/_design/environments-v2/`. They are candidates: never use one on a site page, and adopt one only through the owner's recorded decision (D-075). Keep `tests/environments.mjs` passing.
+- Colour is the Chromatic Archive, approved and locked by the owner (D-076): five categories (`core`, `research`, `blog-notes`, `writing`, `bearnard`), whose palettes live only in `src/styles/categories.css`, and four shared colours (shell, links, accent, V) in `tokens.css`. Never change, substitute or add a palette colour, and never propose another palette, without the owner's recorded decision.
+- Every top-level tab keeps its own category's colour on every page, through its own `data-category`; the page's category colours only the open folder, the paper and the flannel. An environment sets typography and texture, never colour. Keep `tests/categories.mjs` and the category checks in `npm run test:browser` passing.
 - Never place text directly on the flannel lining. Add no transitions, animation or smooth scrolling without a decision. The only motion is the 140 ms cross-fade between folder pages (`src/styles/view-transitions.css`, D-071), off under reduced motion; never add a client router for it.
 - On small screens the folders stay folders: rows scroll sideways inside their folders, never the page, and no menu, sidebar or icon row replaces them (D-064). Check layout changes at 320, 390, 768, 1024, 1280 and 1440 px.
-- Physical folders are `src/components/folders/` with `src/styles/folders.css`. Draw them from a `siteNavigation.resolve()` state (`<FolderStack state={…}>`), never a hand-built tree. Levels differ only by `data-level` and tokens; never add environment-specific folder rules (D-043–D-047).
+- Physical folders are `src/components/folders/` with `src/styles/folders.css`. Draw them from a `siteNavigation.resolve()` state (`<FolderStack state={…}>`), never a hand-built tree. Levels differ only by `data-level` and tokens; never add environment-specific or category-specific folder rules (D-043–D-047, D-076).
 
 ## Invariants
 

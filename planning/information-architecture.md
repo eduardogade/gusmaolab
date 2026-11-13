@@ -1,29 +1,30 @@
 # Information architecture
 
-Status: navigation model implemented in P04 (2026-11-10). The first and second levels are approved. **No third-level folder is approved yet**: the model supports a third level, and the final third-level site map will be settled in the content prompts. P05 added the physical folder components that draw this model (section 13). P06 (2026-11-11) made the tabs links, generated a page for every folder from the registry, and added the Overview tab (section 14). P07 added temporary previews of an unopened folder's contents (section 15). P08 made the same folders work on every screen size (section 16).
+Status: navigation model implemented in P04 (2026-11-10). The first and second levels are approved. **No third-level folder is approved yet**: the model supports a third level, and the final third-level site map will be settled in the content prompts. P05 added the physical folder components that draw this model (section 13). P06 (2026-11-11) made the tabs links, generated a page for every folder from the registry, and added the Overview tab (section 14). P07 added temporary previews of an unopened folder's contents (section 15). P08 made the same folders work on every screen size (section 16). P09-A01 (2026-11-12, D-076) removed External from the navigation, leaving eleven sections, and gave every section a permanent archive category (sections 1 and 11).
 
-Source of truth: `src/navigation/registry.ts` (data), `src/navigation/navigation.ts` (helpers) and `src/navigation/types.ts` (types). Tests: `tests/navigation.mjs` (NAV-001 to NAV-021, NAV-025), `tests/routes.mjs` (NAV-022, NAV-023, NAV-026 to NAV-032) and, for the previews, `tests/previews.mjs` and `tests/previews-browser.mjs` (PREV-001 to PREV-015). NAV-024, Back and Forward, is checked in a browser.
+Source of truth: `src/navigation/registry.ts` (data), `src/navigation/navigation.ts` (helpers) and `src/navigation/types.ts` (types). Tests: `tests/navigation.mjs` (NAV-001 to NAV-021, NAV-025), `tests/routes.mjs` (NAV-022, NAV-023, NAV-026 to NAV-032), `tests/categories.mjs` and `tests/categories-browser.mjs` (CAT-001 to CAT-017, the categories) and, for the previews, `tests/previews.mjs` and `tests/previews-browser.mjs` (PREV-001 to PREV-015). NAV-024, Back and Forward, is checked in a browser.
 
 ## 1. Top-level sections (approved)
 
-Twelve tabs on the global row, in this order:
+Eleven tabs on the global row, in this order (P09-A01, D-076):
 
-| # | Label | ID | URL | Environment |
-| ---: | --- | --- | --- | --- |
-| 1 | Home | `home` | `/` | Core |
-| 2 | About | `about` | `/about/` | Core |
-| 3 | Blog | `blog` | `/blog/` | Core |
-| 4 | Portfolio | `portfolio` | `/portfolio/` | Scientific |
-| 5 | Contact | `contact` | `/contact/` | Core |
-| 6 | External | `external` | `/external/` | Core |
-| 7 | Schedule | `schedule` | `/schedule/` | Core |
-| 8 | CV | `cv` | `/cv/` | Scientific |
-| 9 | Lab | `lab` | `/lab/` | Scientific |
-| 10 | Lecture Notes | `lecture-notes` | `/lecture-notes/` | Technical |
-| 11 | Writing | `writing` | `/writing/` | Literary |
-| 12 | Bearnard's Area | `bearnards-area` | `/bearnards-area/` | Personal |
+| # | Label | ID | URL | Category (colour) | Environment (typography) |
+| ---: | --- | --- | --- | --- | --- |
+| 1 | Home | `home` | `/` | Core | Core |
+| 2 | About | `about` | `/about/` | Core | Core |
+| 3 | Blog | `blog` | `/blog/` | Blog & Notes | Core |
+| 4 | Portfolio | `portfolio` | `/portfolio/` | Research | Scientific |
+| 5 | Contact | `contact` | `/contact/` | Core | Core |
+| 6 | Schedule | `schedule` | `/schedule/` | Core | Core |
+| 7 | CV | `cv` | `/cv/` | Research | Scientific |
+| 8 | Lab | `lab` | `/lab/` | Research | Scientific |
+| 9 | Lecture Notes | `lecture-notes` | `/lecture-notes/` | Blog & Notes | Technical |
+| 10 | Writing | `writing` | `/writing/` | Writing | Literary |
+| 11 | Bearnard's Area | `bearnards-area` | `/bearnards-area/` | Bearnard | Personal |
 
 The labels are authoritative. The URLs are the brief's recommended values, adopted unchanged in P04.
+
+**External was removed in P09-A01.** It was the sixth of twelve tabs, at `/external/`, and held only the development placeholder: no content existed, so none was deleted or moved. Its page was generated from the registry, so removing the entry stops the page being built; `/external/` is now an unknown URL. Nothing took its place, and no new destination was invented for it.
 
 ## 2. Second-level folders (approved)
 
@@ -35,7 +36,7 @@ The labels are authoritative. The URLs are the brief's recommended values, adopt
 | Writing | Months' Original `/writing/months-original/` · Kosmos Series `/writing/kosmos/` · Book Club `/writing/book-club/` |
 | Bearnard's Area | Photos `/bearnards-area/photos/` · Videos `/bearnards-area/videos/` · Powerlifting `/bearnards-area/powerlifting/` · Bear Life `/bearnards-area/bear-life/` |
 
-That is 25 second-level folders, 37 tabs in all. Home, About, Blog, Portfolio, Contact, External and Schedule have no child folders: they display their own content. Blog is a publication collection, so its articles arrive as content routes (section 8), not tabs.
+That is 25 second-level folders, 36 tabs in all. Home, About, Blog, Portfolio, Contact and Schedule have no child folders: they display their own content. Blog is a publication collection, so its articles arrive as content routes (section 8), not tabs.
 
 Short slugs were chosen where a label is long or punctuated: `talks`, `mentoring`, `awards`, `outreach`, `greenhouse`, `kosmos`. They are recommendations and can change before anything is published. After publication, a changed URL needs a redirect.
 
@@ -57,7 +58,7 @@ Tests use explicitly synthetic fixtures (`synthetic-projects`, labeled "Syntheti
 
 Navigation uses real physical folder tabs, counting the global row as level 1:
 
-1. The global row: the twelve sections.
+1. The global row: the eleven sections.
 2. Opening a section with children shows a folder of their tabs inside its body.
 3. A third folder may appear inside the second.
 
@@ -91,7 +92,8 @@ Registry paths are never typed by hand: a tab's path is its parent's path plus i
 | `selection` | The selected tab per level, global row first (at most three) |
 | `rows` | Rows to draw: each with its level, parent, display tabs in order (a child row starts with its parent's Overview), and the `selectedId` carrying the V indicator. Every row has one (P06). Each row also has `previews`: the contents of its unselected folders that have children (P07, section 15). |
 | `currentTabId` | The tab that stands for the page itself, which gets `aria-current="page"`; `null` on a content page |
-| `environment` | The folder's semantic environment |
+| `category` | The open section's archive category: the colour of the flannel, the folder bodies and the paper (P09-A01) |
+| `environment` | The folder's semantic environment: typography and texture only |
 
 Examples:
 
@@ -130,9 +132,28 @@ Only registered routes resolve. A registered article never makes its siblings va
 
 The registry stores no interaction state. Selection comes from the URL. Since P07 the drawn previews are `TabRow.previews`, which add the folder's Overview in front of these children (section 15); whether a preview is showing is transient state that lives only in the page's script, never in the model (D-058).
 
-## 11. Environment inheritance
+## 11. Category and environment inheritance
 
-A tab's environment is its own, or else its parent's; a top-level tab without one is `core`. CV, Lab and Portfolio are scientific; Lecture Notes technical; Writing literary; Bearnard's Area personal; the rest core. Children inherit unless overridden. The registry names environments only; colors and type live in `src/styles/environments.css`. A page sets the environment through BaseLayout's `environment` prop, which adds `data-environment` (`core` means no attribute).
+Two separate properties, since P09-A01 (D-076):
+
+**Category: colour.** Every top-level section declares one of five archive categories, and the registry rejects one without it. Its folders inherit it and can never declare their own, so a whole section is one cardstock.
+
+| Category | ID | Sections |
+| --- | --- | --- |
+| Core | `core` | Home, About, Contact, Schedule |
+| Research | `research` | CV, Portfolio, Lab |
+| Blog & Notes | `blog-notes` | Blog, Lecture Notes |
+| Writing | `writing` | Writing |
+| Bearnard | `bearnard` | Bearnard's Area |
+
+The registry names categories only; the colours live in `src/styles/categories.css` (`design-system.md`, section 3). A category is used in two ways:
+
+- **The page's category** is the open section's: `FolderPage` passes `state.category` to BaseLayout, which sets `<html data-category>`. It colours the flannel, the open folder bodies, the second-level tabs and the reading paper.
+- **A tab's own category** is permanent: every top-level tab carries its section's `data-category`, so it keeps its own cardstock on every page, whichever folder is open. A preview is inside its tab and takes the same category.
+
+**Environment: typography and texture.** A tab's environment is its own, or else its parent's; a top-level tab without one is `core`. CV, Lab and Portfolio are scientific; Lecture Notes technical; Writing literary; Bearnard's Area personal; the rest core. Children inherit unless overridden. The registry names environments only; their type lives in `src/styles/environments.css`, which sets no colour. A page sets the environment through BaseLayout's `environment` prop, which adds `data-environment` (`core` means no attribute).
+
+Category and environment are independent: Blog is Blog & Notes in the core environment, and Lecture Notes is Blog & Notes in the technical one.
 
 ## 12. Route generation (P06)
 
@@ -143,15 +164,15 @@ The registry creates no pages by itself. Pages come from Astro route files that 
    | Route file | Pages |
    | --- | --- |
    | `src/pages/index.astro` | Home, `/` |
-   | `src/pages/[section]/index.astro` | The 11 other level-1 folders |
+   | `src/pages/[section]/index.astro` | The 10 other level-1 folders |
    | `src/pages/[section]/[folder]/index.astro` | The 25 level-2 folders |
    | `src/pages/[section]/[folder]/[subfolder]/index.astro` | Level-3 folders: none until one is approved |
 
    Each lists `siteNavigation.folderStaticPaths(level)`, so a page exists for exactly the registered folders, and adding a folder to the registry is enough to build its page. No page file is maintained by hand per section.
 2. **Content routes (Wave III):** collection entries become `ContentRoute`s at build time. They are passed to `createNavigation()` alongside the registry, and generate their pages from the same list, so navigation and output cannot disagree. Their route files sit under a static segment (for example `src/pages/blog/…`), which outranks the dynamic folder routes. They build only the pages below their owner, never the owner's own page.
-3. **Build checks, active now:** the smoke test fails if `dist/` holds a page that is not a registered destination or a declared study, or if a registered destination has no page. In P06, 37 of 37 destinations have a page. `tests/routes.mjs` checks every page's folders, links, environment and landmarks.
+3. **Build checks, active now:** the smoke test fails if `dist/` holds a page that is not a registered destination or a declared study, or if a registered destination has no page. Since P09-A01, 36 of 36 destinations have a page (37 before External was removed). `tests/routes.mjs` checks every page's folders, links, category, environment and landmarks.
 4. **Not to do:** no catch-all route (`[...slug]`) that could swallow unknown paths or collide with collections; no server rendering; no client-side router. An unknown URL has no file, so the static host answers 404.
-5. **Design studies (P05, P06):** temporary pages under `/_design/` are the only built pages outside the registry: the P03 tokens specimen at `/_design/tokens/` (moved from `/` in P06, D-055) and the folder study at `/_design/folders/`. No slug can start with `_`, so they can never collide with a folder. The smoke test lists them explicitly (D-048).
+5. **Design studies (P05, P06):** temporary pages under `/_design/` are the only built pages outside the registry: the P03 tokens specimen at `/_design/tokens/` (moved from `/` in P06, D-055), the folder study at `/_design/folders/` and the Bearnard study at `/_design/bearnard/` (P09). No slug can start with `_`, so they can never collide with a folder. The smoke test lists them explicitly (D-048).
 
 ## 13. From navigation state to physical folders (P05)
 
@@ -166,7 +187,9 @@ The folder components in `src/components/folders/` draw what `resolve()` returns
 | `state.currentTabId` | That tab's link carries `aria-current="page"`; other selected tabs carry `aria-current="true"` (P06) |
 | `tab.href` | The tab's link (P06); an Overview's is its parent's path |
 | The deepest folder | Its body holds the page's content on ivory paper, in `<main>`; a content route deeper than level 3 is shown there too |
-| `state.environment` | Set by `FolderPage` through BaseLayout's `environment`, or by a `data-environment` wrapper in a study; the components never choose it |
+| `state.category` | The stack's `data-category`, and `<html data-category>` through `FolderPage`: the open folders' cardstock, the paper and the flannel (P09-A01) |
+| A level-1 `tab.node.category` | That tab's own `data-category`: its permanent cardstock, and its preview's |
+| `state.environment` | Set by `FolderPage` through BaseLayout's `environment`, or by a `data-environment` wrapper in a study; the components never choose it. Typography only |
 | `row.previews` | Each unselected folder with children carries its preview after its link: a hidden index card of its Overview and children, shown on hover and keyboard focus (P07, section 15) |
 
 `FolderStack` fails the build if the rows are impossible: none, more than three, out of order, not following the selected tab, a row without a valid selection, an Overview out of place, or a row below an Overview. A page therefore cannot draw a fourth level, an unselected row, or a stack that disagrees with the registry. The folder study (`/_design/folders/`) builds its stacks from `siteNavigation.resolve()`. Its third level is a synthetic fixture (Projects, Themes, Datasets under CV › Research), made with `createNavigation()`, and is not added to the registry.
@@ -182,7 +205,7 @@ The registry holds **navigation nodes**: folders with an ID, label, slug and chi
 | `NodeTab` (`kind: "folder"`) | A registered folder | Its own path |
 | `OverviewTab` (`kind: "overview"`) | The open parent's own page, drawn first in the parent's row of children | The parent's own path |
 
-The Overview is a presentation, not data (D-051). It has no slug, no URL of its own and no page of its own, and it is never added to the registry. Its ID, `overview:<parent ID>`, can never be a node ID. It never has an Overview of its own, and no row opens below it. The registry's uniqueness rules are unchanged: 37 nodes, 37 paths, 37 pages.
+The Overview is a presentation, not data (D-051). It has no slug, no URL of its own and no page of its own, and it is never added to the registry. Its ID, `overview:<parent ID>`, can never be a node ID. It never has an Overview of its own, and no row opens below it. The registry's uniqueness rules are unchanged: 36 nodes, 36 paths, 36 pages.
 
 ### Selection
 
@@ -218,7 +241,7 @@ Selected tabs above the current page are the open folders that contain it: they 
 
 ### Pages
 
-Every folder page uses `FolderPage` (`src/layouts/FolderPage.astro`). It resolves the page's own URL, sets the environment, and draws the folders around the page's content, so no page builds its own rows. Until the content prompts, the content is `ScaffoldContent`: a labelled development placeholder that names the folder and invents nothing.
+Every folder page uses `FolderPage` (`src/layouts/FolderPage.astro`). It resolves the page's own URL, sets the category and the environment, and draws the folders around the page's content, so no page builds its own rows. Until the content prompts, the content is `ScaffoldContent`: a labelled development placeholder that names the folder and invents nothing.
 
 ## 15. Folder previews (P07)
 
@@ -227,8 +250,8 @@ Every folder page uses `FolderPage` (`src/layouts/FolderPage.astro`). It resolve
 | | An **open** folder | A **previewed** folder |
 | --- | --- | --- |
 | Comes from | The page's URL, at build time | Pointer hover or keyboard focus, in the page |
-| Looks like | A raised tab with the V, joined to its body, with its row of children below | An index card of its contents hanging from its tab; the tab keeps its hover color |
-| Changes | The URL, the selection, `aria-current`, the environment | Nothing: no URL, history entry, selection, V or environment change |
+| Looks like | A raised tab with the V, joined to its body, with its row of children below | An index card of its contents hanging from its tab, in the tab's own category (its level-2 cardstock); the tab keeps its hover color |
+| Changes | The URL, the selection, `aria-current`, the page's category and environment | Nothing: no URL, history entry, selection, V, category or environment change |
 | Lasts | As long as the page | Until the pointer and focus leave it, Escape, another preview or navigation |
 
 A previewed folder never looks open: it gets no V, no body and no row of tabs. Only one preview is visible at a time (D-058).
@@ -258,7 +281,7 @@ A previewed folder never looks open: it gets no V, no body and no row of tabs. O
 
 ### Selection invariants
 
-1. The URL alone decides the open folders, `aria-current` and the environment. Preview code never reads or writes them.
+1. The URL alone decides the open folders, `aria-current`, the page's category and the environment. Preview code never reads or writes them.
 2. Previews are data built beside the selection, never from it: a folder previewed from any page shows the same items.
 3. A preview item is a real destination; following it is ordinary navigation, after which the folders follow the new URL.
 

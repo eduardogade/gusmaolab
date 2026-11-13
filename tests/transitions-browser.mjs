@@ -45,6 +45,7 @@ await send("Page.addScriptToEvaluateOnNewDocument", {
         transition: Boolean(vt),
         rows: [...document.querySelectorAll(".gl-folder__strip")].map((r) => Math.round(r.scrollLeft)),
         environment: document.documentElement.dataset.environment ?? "core",
+        category: document.documentElement.dataset.category,
       };
       if (vt) {
         vt.ready.then(() => {
@@ -252,7 +253,7 @@ await test(
   },
 )
 
-await test("TRANS-003", "Same environment: CV → Research", async (check) => {
+await test("TRANS-003", "Same category: CV → Research", async (check) => {
   await setViewport(1440)
   await goto("/cv/")
   check(await clickTab("cv-research", "/cv/research/"), "did not arrive")
@@ -265,22 +266,30 @@ await test("TRANS-003", "Same environment: CV → Research", async (check) => {
   )
   check(
     page.environment === "scientific" && nav.reveal.environment === "scientific",
+    "the environment changed",
+  )
+  check(
+    page.category === "research" && nav.reveal.category === "research",
     "the palette changed",
   )
   check(nav.shift === 0, `layout shifted by ${nav.shift}`)
 })
 
-await test("TRANS-004", "Across environments: CV → Writing", async (check) => {
+await test("TRANS-004", "Across categories: CV → Writing", async (check) => {
   await setViewport(1440)
   await goto("/cv/")
   check(await clickTab("writing", "/writing/"), "did not arrive")
   const nav = await navRecord()
   const page = await state()
   check(nav.reveal.transition, "no cross-fade")
-  // The new page is literary from its first frame: no intermediate palette.
+  // The new page is Writing from its first frame: no intermediate palette.
   check(
     nav.reveal.environment === "literary" && page.environment === "literary",
     `environment ${nav.reveal.environment}`,
+  )
+  check(
+    nav.reveal.category === "writing" && page.category === "writing",
+    `category ${nav.reveal.category}`,
   )
   check(
     json(page.selected) === json(["writing", "overview:writing"]),

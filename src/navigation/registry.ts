@@ -1,10 +1,17 @@
 /**
  * The authoritative GusmaoLab navigation registry (P04).
  *
- * Provenance: the twelve first-level sections, their order and labels, and the
- * second-level folders come from the approved P04 brief (sections 4 and 5), matching
- * planning/information-architecture.md. No third-level folder is approved yet, so none is
- * declared here; the model supports three levels, and the tests use synthetic fixtures.
+ * Provenance: the first-level sections, their order and labels, and the second-level
+ * folders come from the approved P04 brief (sections 4 and 5), matching
+ * planning/information-architecture.md. P09-A01 (D-076) removed External, leaving eleven
+ * sections, and gave each one its permanent archive category. No third-level folder is
+ * approved yet, so none is declared here; the model supports three levels, and the tests
+ * use synthetic fixtures.
+ *
+ * `category` is the section's cardstock: the colour its tab keeps on every page, and the
+ * materials of everything inside it (src/styles/categories.css). It is declared on
+ * first-level sections only; their folders inherit it. `environment` is separate: it
+ * chooses typography and texture, never colour (src/styles/environments.css).
  *
  * Paths are derived: a tab's path is its parent's path plus its slug, so a folder cannot
  * escape its parent. Slugs are the recommended canonical URLs, chosen in P04 and
@@ -15,17 +22,24 @@
 import type { ContentRoute, NavigationEntry } from "./types.ts"
 
 export const SECTIONS: readonly NavigationEntry[] = [
-  { id: "home", label: "Home", slug: "" }, // /
-  { id: "about", label: "About", slug: "about" },
-  { id: "blog", label: "Blog", slug: "blog" }, // articles arrive as content routes
-  { id: "portfolio", label: "Portfolio", slug: "portfolio", environment: "scientific" },
-  { id: "contact", label: "Contact", slug: "contact" },
-  { id: "external", label: "External", slug: "external" },
-  { id: "schedule", label: "Schedule", slug: "schedule" },
+  { id: "home", label: "Home", slug: "", category: "core" }, // /
+  { id: "about", label: "About", slug: "about", category: "core" },
+  // Articles arrive as content routes.
+  { id: "blog", label: "Blog", slug: "blog", category: "blog-notes" },
+  {
+    id: "portfolio",
+    label: "Portfolio",
+    slug: "portfolio",
+    category: "research",
+    environment: "scientific",
+  },
+  { id: "contact", label: "Contact", slug: "contact", category: "core" },
+  { id: "schedule", label: "Schedule", slug: "schedule", category: "core" },
   {
     id: "cv",
     label: "CV",
     slug: "cv",
+    category: "research",
     environment: "scientific",
     children: [
       { id: "cv-teaching", label: "Teaching", slug: "teaching" },
@@ -42,6 +56,7 @@ export const SECTIONS: readonly NavigationEntry[] = [
     id: "lab",
     label: "Lab",
     slug: "lab",
+    category: "research",
     environment: "scientific",
     children: [
       { id: "lab-people", label: "People", slug: "people" },
@@ -56,6 +71,7 @@ export const SECTIONS: readonly NavigationEntry[] = [
     id: "lecture-notes",
     label: "Lecture Notes",
     slug: "lecture-notes",
+    category: "blog-notes",
     environment: "technical",
     children: [
       {
@@ -72,6 +88,7 @@ export const SECTIONS: readonly NavigationEntry[] = [
     id: "writing",
     label: "Writing",
     slug: "writing",
+    category: "writing",
     environment: "literary",
     children: [
       {
@@ -87,6 +104,7 @@ export const SECTIONS: readonly NavigationEntry[] = [
     id: "bearnards-area",
     label: "Bearnard's Area",
     slug: "bearnards-area",
+    category: "bearnard",
     environment: "personal",
     children: [
       { id: "bearnards-area-photos", label: "Photos", slug: "photos" },

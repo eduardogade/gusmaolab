@@ -11,6 +11,10 @@
  *
  * An unopened folder with children also carries its preview (P07): a hidden index card of
  * its contents, after the link, never inside it. The tab's link is unchanged by it.
+ *
+ * A top-level tab carries its section's archive category (P09-A01): its permanent
+ * cardstock, whichever folder is open. Its preview, inside it, takes the same category.
+ * Tabs below the first level belong to the open section and take the page's category.
  */
 import type { DisplayTab, TabPreview } from "../../navigation/index.ts"
 import FolderPreview from "./FolderPreview.astro"
@@ -29,12 +33,14 @@ interface Props {
 const { tab, selected = false, current = false, link = true, preview } = Astro.props
 const Label = link ? "a" : "span"
 const ariaCurrent = link && current ? "page" : selected ? "true" : undefined
+const category = tab.kind === "folder" && tab.node.level === 1 ? tab.node.category : undefined
 ---
 
 <li
   class="gl-folder-tab"
   data-tab-id={tab.id}
   data-tab-kind={tab.kind}
+  data-category={category}
   data-selected={selected ? "" : undefined}
   data-preview={preview ? "" : undefined}
 >

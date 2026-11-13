@@ -20,8 +20,12 @@
  * Site pages draw their tabs as links (FolderPage, P06). Design studies pass
  * `links={false}`: their states are pictures, and some of their tabs have no page.
  *
- * Choose the environment where the page is laid out (BaseLayout's `environment`, or a
- * `data-environment` wrapper); every level then takes that environment's materials.
+ * Colour comes from archive categories (P09-A01, src/styles/categories.css), never from
+ * the environment. The stack takes the open section's category (`state.category`) for its
+ * folder bodies and paper, and every top-level tab carries its own, so the row keeps all
+ * its colours whichever folder is open. Choose the environment, which sets typography
+ * only, where the page is laid out (BaseLayout's `environment`, or a `data-environment`
+ * wrapper).
  */
 import "../../styles/folders.css"
 import { MAX_TAB_LEVELS } from "../../navigation/index.ts"
@@ -96,7 +100,7 @@ if (problems.length > 0) {
 }
 ---
 
-<div class="gl-folders" data-folder-depth={rows.length}>
+<div class="gl-folders" data-category={state.category} data-folder-depth={rows.length}>
   <FolderLayer rows={rows} index={0} links={links} currentTabId={currentTabId}>
     <slot />
   </FolderLayer>

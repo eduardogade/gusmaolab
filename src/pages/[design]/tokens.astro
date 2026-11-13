@@ -1,15 +1,21 @@
 ---
 // Temporary P03 design specimen. It is not the GusmaoLab homepage: it exists so the owner
-// can review colours, type, materials and environments before the folder interface is
-// built. Every hex value and contrast ratio shown is read from the token stylesheets at
-// build time, so the page cannot drift from them.
+// can review colours, type, materials and environments. Every hex value and contrast
+// ratio shown is read from the token stylesheets at build time, so the page cannot drift
+// from them.
+//
+// P09-A01 (D-076) replaced its colours with the Chromatic Archive: the five locked
+// category palettes are read from categories.css, and Specimen D shows each pairing of a
+// category (colour) and an environment (typography and texture) that the registry uses.
 //
 // It was the temporary homepage until P06, which moved it unchanged to /_design/tokens/
 // (D-055); the /_design/ prefix comes from the one-value dynamic segment, as for the
 // folder study (D-048).
 import BaseLayout from "../../layouts/BaseLayout.astro"
-import { CONTRAST_PAIRS, ENVIRONMENTS } from "../../design/contract.mjs"
+import { CATEGORIES, CONTRAST_PAIRS, ENVIRONMENTS } from "../../design/contract.mjs"
 import { contrastRatio, readTokens } from "../../design/css-tokens.mjs"
+import { siteNavigation } from "../../navigation/index.ts"
+import categoriesCss from "../../styles/categories.css?raw"
 import environmentsCss from "../../styles/environments.css?raw"
 import tokensCss from "../../styles/tokens.css?raw"
 
@@ -17,48 +23,62 @@ export function getStaticPaths() {
   return [{ params: { design: "_design" } }]
 }
 
-const tokens = readTokens(tokensCss, environmentsCss)
-const hex = (name: string, env?: string) => tokens.color(name, env).hex.toUpperCase()
-const ratioOf = (foreground: string, background: string, env?: string) =>
-  contrastRatio(tokens.color(foreground, env).rgba, tokens.color(background, env).rgba)
+const tokens = readTokens(tokensCss, categoriesCss, environmentsCss)
+// `scope` is a category ID; without one a value is Core's, the default.
+const hex = (name: string, scope?: string) => tokens.color(name, scope).hex.toUpperCase()
+const ratioOf = (foreground: string, background: string, scope?: string) =>
+  contrastRatio(tokens.color(foreground, scope).rgba, tokens.color(background, scope).rgba)
 const show = (ratio: number) => `${(Math.floor(ratio * 10) / 10).toFixed(1)}:1`
 const stack = (name: string) => tokens.resolve(name).text
 
-const scopes = [undefined, ...ENVIRONMENTS.map((env) => env.id)]
+const scopes = CATEGORIES.map((category) => category.id)
 const enforced = CONTRAST_PAIRS.filter((pair) => pair.min !== null)
-const contrastChecks = scopes.flatMap((env) =>
-  enforced.map((pair) => ratioOf(pair.foreground, pair.background, env) >= (pair.min ?? 0)),
+const contrastChecks = scopes.flatMap((scope) =>
+  enforced.map((pair) => ratioOf(pair.foreground, pair.background, scope) >= (pair.min ?? 0)),
 )
 const contrastPassing = contrastChecks.filter(Boolean).length
 
 const foundations = [
-  { token: "--palette-espresso", name: "Espresso", role: "The shell; primary text" },
-  { token: "--palette-chestnut", name: "Chestnut", role: "Shell edges; dark details" },
-  { token: "--palette-warm-brown", name: "Warm brown", role: "Bear-pride brown; literary flannel" },
+  { token: "--palette-deep-charcoal", name: "Deep charcoal", role: "The shell, in every category (locked)" },
+  { token: "--palette-forest-teal", name: "Forest teal", role: "Links and the accent, in every category (locked)" },
+  { token: "--palette-midnight-ink", name: "Midnight ink", role: "The V on the selected tab (locked)" },
+  { token: "--palette-espresso", name: "Espresso", role: "Primary text and headings" },
+  { token: "--palette-warm-brown", name: "Warm brown", role: "Bear-pride brown" },
   { token: "--palette-ember", name: "Ember", role: "Bear-pride orange; Bearnard's flannel" },
-  { token: "--palette-honey", name: "Muted honey", role: "Accents; focus on dark surfaces" },
-  { token: "--palette-kraft", name: "Kraft", role: "Parent folders and their tabs" },
-  { token: "--palette-parchment", name: "Parchment", role: "Nested folders; quotes; code chips" },
-  { token: "--palette-ivory", name: "Warm ivory", role: "Active reading paper" },
+  { token: "--palette-honey", name: "Muted honey", role: "Focus on dark surfaces; text selection" },
+  { token: "--palette-kraft", name: "Kraft", role: "Muted text on the shell" },
+  { token: "--palette-parchment", name: "Parchment", role: "Text on the shell; bear-pride tan" },
+  { token: "--palette-ivory", name: "Warm ivory", role: "Edge highlights; bear-pride white" },
   { token: "--palette-navy", name: "Midnight navy", role: "Bearnard's fur; focus ring" },
-  { token: "--palette-forest", name: "Forest", role: "Links; the deep side of his green eyes" },
-  { token: "--palette-charcoal", name: "Charcoal", role: "Bear-pride black; technical shell" },
+  { token: "--palette-charcoal", name: "Charcoal", role: "Bear-pride black" },
 ]
 
 const supporting = [
-  { token: "--palette-bark", name: "Bark", role: "Shadows, flannel bands" },
+  { token: "--palette-bark", name: "Bark", role: "Shadows, flannel bands, tab labels" },
   { token: "--palette-umber", name: "Umber", role: "Secondary text" },
-  { token: "--palette-cocoa", name: "Cocoa", role: "Muted text" },
-  { token: "--palette-rust", name: "Rust", role: "Selection indicator; literary links" },
-  { token: "--palette-gold", name: "Gold", role: "Bear-pride gold; personal folders" },
-  { token: "--palette-midnight", name: "Midnight", role: "Scientific text and lining" },
-  { token: "--palette-slate", name: "Slate", role: "Navy edges; scientific secondary text" },
-  { token: "--palette-denim", name: "Denim", role: "Scientific muted text" },
-  { token: "--palette-eye-green", name: "Eye green", role: "Bearnard's eyes; links on dark" },
-  { token: "--palette-spruce", name: "Spruce", role: "Technical links and details" },
+  { token: "--palette-cocoa", name: "Cocoa", role: "Muted text, darkened with umber" },
+  { token: "--palette-gold", name: "Gold", role: "Bear-pride gold" },
+  { token: "--palette-eye-green", name: "Eye green", role: "Bearnard's eyes; links on the shell" },
   { token: "--palette-ash", name: "Ash", role: "Bear-pride gray; disabled states" },
-  { token: "--palette-terrain", name: "Terrain", role: "Technical flannel lining" },
-  { token: "--palette-oxblood", name: "Oxblood", role: "Core flannel lining" },
+]
+
+// The Chromatic Archive (P09-A01): the five rows of the locked palette, read per category.
+// The primitive a category token points at, and the owner's name for that color:
+// --palette-charcoal-terrain is "Charcoal Terrain".
+const primitiveOf = (token: string, category: string) =>
+  tokens.declaration(token, category)?.value.match(/--palette-[\w-]+/)?.[0] ?? ""
+const colorName = (token: string, category: string) =>
+  primitiveOf(token, category)
+    .replace("--palette-", "")
+    .split("-")
+    .map((word) => word[0].toUpperCase() + word.slice(1))
+    .join(" ")
+const paletteRows = [
+  { token: "--color-backdrop", name: "Flannel ground" },
+  { token: "--color-flannel-line", name: "Flannel line" },
+  { token: "--color-folder-parent", name: "Tab and folder, level 1" },
+  { token: "--color-folder-nested", name: "Tab and folder, level 2" },
+  { token: "--color-folder-active", name: "Reading paper" },
 ]
 
 const pride = [
@@ -87,17 +107,30 @@ const roles = [
 ]
 
 const layers = [
-  { token: "--color-shell", name: "Main shell", note: "The dark frame. Tabs will rise from it." },
-  { token: "--color-folder-parent", name: "Parent folder", note: "Kraft. Its tabs share this material." },
-  { token: "--color-folder-nested", name: "Nested folder", note: "Parchment: one step lighter, not a leap." },
+  { token: "--color-shell", name: "Main shell", note: "The dark frame, the same in every category." },
+  {
+    token: "--color-folder-parent",
+    name: "Parent folder",
+    note: "The category's level 1 cardstock. Its tab shares it.",
+  },
+  {
+    token: "--color-folder-nested",
+    name: "Nested folder",
+    note: "Level 2 cardstock: one step lighter, not a leap.",
+  },
   {
     token: "--color-folder-active",
     name: "Active reading paper",
-    note: "Ivory and quiet, because reading happens here.",
+    note: "The lightest and quietest, because reading happens here.",
   },
 ]
 
 const samples: Record<string, { heading: string; text: string; link: string; code?: string }> = {
+  core: {
+    heading: "About",
+    text: "Who runs the lab, what it studies and how to get in touch: the plain front office of the archive.",
+    link: "Read about the lab",
+  },
   scientific: {
     heading: "Research",
     text: "Chromatin conformation, gene regulation and the probabilistic models that read them, with the methods and data behind each result.",
@@ -116,26 +149,39 @@ const samples: Record<string, { heading: string; text: string; link: string; cod
   },
   personal: {
     heading: "Bear Life",
-    text: "Photos, training logs and Bearnard's own corner. More color, more character, and still the same archive.",
+    text: "Photos, training logs and Bearnard's own corner. More character, and still the same archive.",
     link: "Visit Bearnard's Area",
   },
 }
 
-const environmentCards = ENVIRONMENTS.map((env) => ({
-  ...env,
-  sample: samples[env.id],
-  ratios: [
-    { label: "Text", value: show(ratioOf("--color-text-primary", "--color-folder-active", env.id)) },
-    { label: "Link", value: show(ratioOf("--color-text-link", "--color-folder-active", env.id)) },
-    { label: "Muted", value: show(ratioOf("--color-text-muted", "--color-folder-active", env.id)) },
-    { label: "On shell", value: show(ratioOf("--color-text-on-dark", "--color-shell", env.id)) },
-  ],
-}))
+// Every pairing of a category and an environment that the registry uses, in the
+// categories' order, with the sections that have it.
+const environmentName = (id: string) =>
+  ENVIRONMENTS.find((env) => env.id === id)?.name ?? "Core"
+const pairingCards = CATEGORIES.flatMap((category) => {
+  const sections = siteNavigation.sections.filter((section) => section.category === category.id)
+  const environments = [...new Set(sections.map((section) => section.environment))]
+  return environments.map((environment) => ({
+    category,
+    environment,
+    environmentName: environmentName(environment),
+    sections: sections
+      .filter((section) => section.environment === environment)
+      .map((section) => section.label),
+    sample: samples[environment],
+    ratios: [
+      { label: "Text", value: show(ratioOf("--color-text-primary", "--color-folder-active", category.id)) },
+      { label: "Link", value: show(ratioOf("--color-text-link", "--color-folder-active", category.id)) },
+      { label: "Muted", value: show(ratioOf("--color-text-muted", "--color-folder-active", category.id)) },
+      { label: "On shell", value: show(ratioOf("--color-text-on-dark", "--color-shell", category.id)) },
+    ],
+  }))
+})
 ---
 
 <BaseLayout
   title="GusmaoLab — design study (P03, temporary)"
-  description="Temporary design specimen for the GusmaoLab website: palette, typography, paper materials and section environments awaiting the owner's review."
+  description="Temporary design specimen for the GusmaoLab website: the Chromatic Archive palettes, typography, paper materials and section environments."
 >
   <div class="frame" data-specimen="p03">
     <div class="shell">
@@ -156,15 +202,15 @@ const environmentCards = ENVIRONMENTS.map((env) => ({
             <span>The Lumberjack's</span> <b>Archive</b>
           </h1>
           <p class="lead">
-            Paper folders, honey light and a flannel lining, with a navy bear who is welcome
-            in every room of the lab.
+            Paper folders in five cardstocks and a flannel lining, with a navy bear who is
+            welcome in every room of the lab.
           </p>
           <div class="hero-body">
             <p>
               This page is a <strong>temporary design study</strong>, not the GusmaoLab
-              homepage. It shows the proposed palette, typefaces, paper materials and section
-              environments before any folder navigation exists. Every value on it is a
-              candidate awaiting the owner's review.
+              homepage. It shows the palette, typefaces, paper materials and section
+              environments. The colours are the Chromatic Archive, approved and locked by the
+              owner (P09-A01); the typefaces were approved in P03.
             </p>
             <p class="muted">
               Bioinformatics, AI, personal projects, literary experiments and occasional
@@ -193,7 +239,7 @@ const environmentCards = ENVIRONMENTS.map((env) => ({
             <li>
               <span class="principle-mark mark-structure" aria-hidden="true"><i></i></span>
               <strong>Structure</strong>
-              <span>Real paper folders: kraft, parchment and ivory.</span>
+              <span>Real paper folders, each category in its own cardstock.</span>
             </li>
           </ul>
         </section>
@@ -203,10 +249,12 @@ const environmentCards = ENVIRONMENTS.map((env) => ({
             <p class="overline">Specimen A</p>
             <h2 id="palette-title">Identity palette</h2>
             <p class="sheet-intro">
-              Eleven foundation colors carry the identity; thirteen supporting tones serve
-              specific roles. Components never use these primitives directly: they use the
-              semantic roles below, which each environment can reassign. The hex values are
-              read from <code>src/styles/tokens.css</code> when the site is built.
+              Twelve foundation colors are the same on every page: the locked shell, link
+              and V colors, the text inks and the identity. Six supporting tones serve
+              specific roles. The cardstock is separate: five category palettes, below.
+              Components never use these primitives directly, only semantic roles. The hex
+              values are read from <code>src/styles/tokens.css</code> and
+              <code>src/styles/categories.css</code> when the site is built.
             </p>
           </header>
 
@@ -266,7 +314,53 @@ const environmentCards = ENVIRONMENTS.map((env) => ({
             </div>
           </div>
 
-          <h3 class="group-title" id="roles-title">Semantic roles in the core environment</h3>
+          <h3 class="group-title" id="archive-title">The Chromatic Archive: five category palettes</h3>
+          <div class="table-wrap" role="region" aria-labelledby="archive-title" tabindex="0">
+            <table class="archive">
+              <thead>
+                <tr>
+                  <th scope="col">Element</th>
+                  {
+                    CATEGORIES.map((category) => (
+                      <th scope="col">
+                        {category.name}
+                        <span class="archive-sections">{category.sections.join(", ")}</span>
+                      </th>
+                    ))
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                {
+                  paletteRows.map((row) => (
+                    <tr>
+                      <th scope="row">
+                        {row.name}
+                        <code>{row.token}</code>
+                      </th>
+                      {CATEGORIES.map((category) => (
+                        <td class="role-value" data-category={category.id}>
+                          <span class="role-chip" style={`--chip: var(${row.token})`} />
+                          <span class="archive-color">
+                            {colorName(row.token, category.id)}
+                            <code>{hex(row.token, category.id)}</code>
+                            <code>{primitiveOf(row.token, category.id)}</code>
+                          </span>
+                        </td>
+                      ))}
+                    </tr>
+                  ))
+                }
+              </tbody>
+            </table>
+          </div>
+          <p class="note">
+            Locked by the owner. A top-level tab keeps its category's level 1 color on every
+            page; the open folder's category colors the flannel, the folder bodies and the
+            paper.
+          </p>
+
+          <h3 class="group-title" id="roles-title">Semantic roles on a Core page</h3>
           <div class="table-wrap" role="region" aria-labelledby="roles-title" tabindex="0">
             <table>
               <thead>
@@ -541,23 +635,31 @@ const environmentCards = ENVIRONMENTS.map((env) => ({
         <section class="sheet" id="environments" aria-labelledby="environments-title">
           <header class="sheet-head">
             <p class="overline">Specimen D</p>
-            <h2 id="environments-title">Section environments</h2>
+            <h2 id="environments-title">Categories and environments</h2>
             <p class="sheet-intro">
-              One folder system, four atmospheres. Each panel below is the same composition
-              with <code>data-environment</code> set, so only tokens change: lining, shell,
-              folder, text, links, accents and type.
+              One folder system. A section's category chooses its colors
+              (<code>data-category</code>: flannel, folder and paper) and its environment
+              chooses its typography and texture (<code>data-environment</code>). The shell,
+              links, accent and V are the same in every panel. These are the pairings the
+              site uses.
             </p>
           </header>
 
           <div class="environments">
             {
-              environmentCards.map((env) => (
+              pairingCards.map((env) => (
                 <figure class="env-figure">
-                  <div class="env" data-environment={env.id}>
+                  <div
+                    class="env"
+                    data-category={env.category.id}
+                    data-environment={env.environment === "core" ? undefined : env.environment}
+                  >
                     <div class="env-lining gl-flannel">
                       <div class="env-shell">
                         <p class="env-name gl-on-dark">
-                          <strong>{env.name}</strong>
+                          <strong>
+                            {env.category.name} · {env.environmentName}
+                          </strong>
                           <span>{env.sections.join(" · ")}</span>
                         </p>
                         <div class="env-folder">
@@ -668,7 +770,7 @@ const environmentCards = ENVIRONMENTS.map((env) => ({
               </dl>
               <p class="state-summary">
                 Contrast: {contrastPassing} of {contrastChecks.length} checked pairings meet
-                their WCAG minimum across the core and four environments.
+                their WCAG minimum across the five categories.
               </p>
             </div>
           </div>
@@ -1122,6 +1224,22 @@ const environmentCards = ENVIRONMENTS.map((env) => ({
   .role-value,
   .table-wrap td:first-child code {
     white-space: nowrap;
+  }
+
+  /* The palette table: row headings carry the token name, columns the sections. */
+  .archive-color code,
+  .archive th code,
+  .archive-sections {
+    display: block;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-regular);
+  }
+
+  .archive-color {
+    display: inline-block;
+    font-size: var(--font-size-sm);
+    vertical-align: top;
   }
 
   .role-chip {

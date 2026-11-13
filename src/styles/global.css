@@ -52,7 +52,8 @@ body {
 /*
  * An environment set below the root (a nested preview, say) re-applies the inherited
  * text properties, which would otherwise keep the values computed on <body>. Not on
- * :root, where a font size would rescale every rem.
+ * :root, where a font size would rescale every rem. A category needs no such rule: it
+ * changes materials only, and the text inks are the same on every cardstock.
  */
 :where([data-environment]:not(:root)) {
   color: var(--color-text-primary);
@@ -229,8 +230,10 @@ body {
 
 /*
  * 8. Flannel lining: a woven plaid for the area outside the shell. Decorative only,
- * so never place text directly on it. --texture-flannel-strength scales every thread;
- * 0 leaves the plain --color-backdrop, which is also the fallback.
+ * so never place text directly on it. The ground (--color-backdrop) and the lines
+ * (--color-flannel-line, and the thinner thread drawn from it) are the page's category;
+ * the dark band and the twill are the same everywhere. --texture-flannel-strength scales
+ * every thread; 0 leaves the plain ground, which is also the fallback.
  */
 
 .gl-flannel {

@@ -306,6 +306,7 @@ export async function startBrowser({ ids, timeout = 180_000 }) {
       path: location.pathname + location.search + location.hash,
       history: history.length,
       environment: document.documentElement.dataset.environment ?? "core",
+      category: document.documentElement.dataset.category,
       selected: [...document.querySelectorAll(".gl-folder-tab[data-selected]")].map((t) => t.dataset.tabId),
       current: [...document.querySelectorAll('[aria-current="page"]')].map((a) => a.closest(".gl-folder-tab")?.dataset.tabId),
       vs: [...document.querySelectorAll(".gl-folder-tab__indicator")].map((v) => {

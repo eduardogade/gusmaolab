@@ -5,7 +5,9 @@
 // the synthetic third level has no pages. P06 updated case F to the Overview rule
 // (D-050) and added case G. P07 added case H, a preview of a second-level folder; every
 // unopened folder with children in every case shows its preview on hover. P08 added case
-// I: wide content in the deepest folder, for the responsive checks.
+// I: wide content in the deepest folder, for the responsive checks. P09-A01 (D-076) made
+// case E the four categories with nested folders, each in its own cardstock: every stack
+// takes its colours from its own category, whatever the page's.
 //
 // Astro skips page files and folders whose names start with "_", so the /_design/
 // prefix comes from this one-value dynamic segment. The underscore keeps design studies
@@ -51,7 +53,8 @@ const stateAt = (navigation: Navigation, url: string): NavigationState => {
   if (!result.found) throw new Error(`The folder study needs ${url}, which is not registered`)
   return result.state
 }
-// "core" is the default environment: no attribute.
+// "core" is the default environment: no attribute. An environment is typography and
+// texture; the colours come from each stack's category (FolderStack sets it).
 const environmentOf = (state: NavigationState): SectionEnvironment | undefined =>
   state.environment === "core" ? undefined : state.environment
 
@@ -62,26 +65,26 @@ const outreach = stateAt(siteNavigation, "/cv/outreach/")
 const cvOverview = stateAt(siteNavigation, "/cv/")
 const researchOverview = stateAt(syntheticNavigation, "/cv/research/")
 const syntheticCv = stateAt(syntheticNavigation, "/cv/")
-const environmentCases = [
+const categoryCases = [
   {
     url: "/lab/research-areas/",
-    name: "Scientific",
-    text: "Navy shell and midnight lining, kraft and parchment folders, navy ink and an editorial serif for headings.",
+    name: "Research",
+    text: "Cream terrain and almond cream folders on cream ivory paper, with an editorial serif for headings.",
   },
   {
     url: "/lecture-notes/greenhouse/",
-    name: "Technical",
-    text: "Charcoal workbench shell, spruce indicator and links, gold accents, and sans-serif headings.",
+    name: "Blog & Notes",
+    text: "Cinnamon and apricot linen folders on peach ivory paper, with sans-serif headings for the lecture notes.",
   },
   {
     url: "/writing/kosmos/",
-    name: "Literary",
-    text: "Amber kraft folders, warmer paper, a rust indicator and italic serif headings over serif body text.",
+    name: "Writing",
+    text: "Golden honey and golden cream folders on lemon ivory paper, with italic serif headings over serif body text.",
   },
   {
     url: "/bearnards-area/powerlifting/",
-    name: "Personal",
-    text: "Bearnard's colors: a navy-fur shell, gold folders, a navy indicator and bold Clarendon headings.",
+    name: "Bearnard",
+    text: "Powder blue and pale glacier folders on snow white paper, the lightest cardstock, with bold Clarendon headings.",
   },
 ].map((item) => ({ ...item, state: stateAt(siteNavigation, item.url) }))
 
@@ -128,10 +131,11 @@ const selectionOf = (state: NavigationState) =>
 
     <section class="study-shell study-case" data-study-case="a" aria-labelledby="case-a">
       <header class="case-head gl-on-dark">
-        <p class="study-overline">Case A · one level · core environment</p>
-        <h2 id="case-a">The twelve sections, Home open</h2>
+        <p class="study-overline">Case A · one level · Core</p>
+        <h2 id="case-a">The eleven sections, Home open</h2>
         <p>
-          The global row at full length: twelve tabs in the approved order.
+          The global row at full length: eleven tabs in the approved order, each in its own
+          category's cardstock, whichever folder is open.
           Selection: <code>{selectionOf(home)}</code>, as resolved for <code>/</code>.
         </p>
       </header>
@@ -144,13 +148,13 @@ const selectionOf = (state: NavigationState) =>
             in one cabinet of paper folders.
           </p>
           <p>
-            The selected tab and this folder are one sheet of kraft: same material, one
-            continuous edge, and a V where the tab meets the body. The other eleven tabs
-            stand a little lower, behind its top edge, and stay readable.
+            The selected tab and this folder are one sheet of card: same material, one
+            continuous edge, and a V where the tab meets the body. The other ten tabs stand
+            a little lower, behind its top edge, keep their own colors and stay readable.
           </p>
           <p>
-            The reading surface is ivory paper inside the open folder, so long text never sits
-            on the darker card stock around it.
+            The reading surface is the category's lightest paper inside the open folder, so
+            long text never sits on the darker card stock around it.
           </p>
         </div>
       </FolderStack>
@@ -158,7 +162,7 @@ const selectionOf = (state: NavigationState) =>
 
     <section class="study-shell study-case" data-study-case="b" data-environment={environmentOf(research)} aria-labelledby="case-b">
       <header class="case-head gl-on-dark">
-        <p class="study-overline">Case B · two levels · scientific environment</p>
+        <p class="study-overline">Case B · two levels · Research</p>
         <h2 id="case-b">CV open, Research open inside it</h2>
         <p>
           The CV folder's body holds a second folder with its own row of tabs.
@@ -170,8 +174,9 @@ const selectionOf = (state: NavigationState) =>
           <p class="sample-overline">CV · Research · sample content</p>
           <h3>Research</h3>
           <p>
-            A parchment folder inside the kraft one. Both tab rows stay visible, so the path to
-            this page is told by the folders themselves, without a breadcrumb.
+            A lighter folder inside the first one: the category's level 2 cardstock. Both tab
+            rows stay visible, so the path to this page is told by the folders themselves,
+            without a breadcrumb.
           </p>
           <table>
             <thead>
@@ -189,7 +194,7 @@ const selectionOf = (state: NavigationState) =>
 
     <section class="study-shell study-case" data-study-case="c" data-environment={environmentOf(projects)} aria-labelledby="case-c">
       <header class="case-head gl-on-dark">
-        <p class="study-overline">Case C · three levels · scientific environment</p>
+        <p class="study-overline">Case C · three levels · Research</p>
         <h2 id="case-c">CV, Research and a third folder</h2>
         <p>
           The deepest stack the site allows. Selection: <code>{selectionOf(projects)}</code>. <strong>The third level is a synthetic fixture</strong>:
@@ -201,9 +206,10 @@ const selectionOf = (state: NavigationState) =>
           <p class="sample-overline">Synthetic fixture · sample content</p>
           <h3>Projects</h3>
           <p>
-            Three folders and the page, nested: kraft, parchment, a pale kraft, and ivory
-            paper. Deeper content, such as a single project, would open here, inside this
-            third folder, never as a fourth row of tabs.
+            Three folders and the page, nested: the level 1 and level 2 cardstocks, then
+            the category's lightest material for the third folder and its paper, set apart
+            by edges and shadows. Deeper content, such as a single project, would open here,
+            inside this third folder, never as a fourth row of tabs.
           </p>
           <ul>
             <li>Every level uses the same component; only its material and size change.</li>
@@ -218,7 +224,7 @@ const selectionOf = (state: NavigationState) =>
 
     <section class="study-shell study-case" data-study-case="d" data-environment={environmentOf(outreach)} aria-labelledby="case-d">
       <header class="case-head gl-on-dark">
-        <p class="study-overline">Case D · long labels, a stress test · scientific environment</p>
+        <p class="study-overline">Case D · long labels, a stress test · Research</p>
         <h2 id="case-d">The longest labels in the registry</h2>
         <p>
           CV's eight folders include “Talks / Presentations”, “Mentoring / Supervision”,
@@ -241,25 +247,26 @@ const selectionOf = (state: NavigationState) =>
 
     <section class="study-group" aria-labelledby="case-e">
       <header class="study-shell case-head gl-on-dark">
-        <p class="study-overline">Case E · environments</p>
-        <h2 id="case-e">One folder system, four environments</h2>
+        <p class="study-overline">Case E · categories</p>
+        <h2 id="case-e">One folder system, five cardstocks</h2>
         <p>
-          The same two-level stack in each section environment. Structure and geometry are
-          identical; only materials, colors and type change. Case A shows the core
-          environment.
+          The same two-level stack in each category that has nested folders. Structure and
+          geometry are identical; the category changes the cardstock and paper, and the
+          section's environment changes the type. The shell, the links and the V never
+          change. Case A shows Core.
         </p>
       </header>
       {
-        environmentCases.map((item) => (
+        categoryCases.map((item) => (
           <section
             class="study-shell study-case"
-            data-study-case={`e-${item.state.environment}`}
+            data-study-case={`e-${item.state.category}`}
             data-environment={environmentOf(item.state)}
-            aria-label={`${item.name} environment`}
+            aria-label={`${item.name} category`}
           >
             <header class="case-head gl-on-dark">
               <p class="study-overline">
-                Case E · {item.name.toLowerCase()} · <code>{item.url}</code>
+                Case E · {item.name} · <code>{item.url}</code>
               </p>
               <p>{item.text}</p>
             </header>
@@ -268,8 +275,8 @@ const selectionOf = (state: NavigationState) =>
                 <p class="sample-overline">{selectionOf(item.state)} · sample content</p>
                 <h3>{item.state.folder.label}</h3>
                 <p>
-                  A folder in the {item.name.toLowerCase()} environment: the same tabs, V,
-                  seams and shadows, in this section's materials.
+                  A folder of the {item.name} category: the same tabs, V, seams and
+                  shadows, in this category's cardstock.
                 </p>
               </div>
             </FolderStack>
@@ -280,7 +287,7 @@ const selectionOf = (state: NavigationState) =>
 
     <section class="study-shell study-case" data-study-case="f" data-environment={environmentOf(cvOverview)} aria-labelledby="case-f">
       <header class="case-head gl-on-dark">
-        <p class="study-overline">Case F · an open parent · scientific environment</p>
+        <p class="study-overline">Case F · an open parent · Research</p>
         <h2 id="case-f">CV open, its Overview selected</h2>
         <p>
           What <code>/cv/</code> shows since P06. Selection: <code>{selectionOf(cvOverview)}</code>. CV's row of folders starts with Overview, which stands for CV's own page and is
@@ -301,7 +308,7 @@ const selectionOf = (state: NavigationState) =>
 
     <section class="study-shell study-case" data-study-case="g" data-environment={environmentOf(researchOverview)} aria-labelledby="case-g">
       <header class="case-head gl-on-dark">
-        <p class="study-overline">Case G · three levels, an open parent · scientific environment</p>
+        <p class="study-overline">Case G · three levels, an open parent · Research</p>
         <h2 id="case-g">Research open, its Overview selected</h2>
         <p>
           If Research had folders of its own, <code>/cv/research/</code> would open a third row with its Overview selected. Selection: <code>{selectionOf(researchOverview)}</code>. <strong>The third level is the synthetic fixture</strong> of case C. Without such folders,
@@ -322,7 +329,7 @@ const selectionOf = (state: NavigationState) =>
 
     <section class="study-shell study-case" data-study-case="h" data-environment={environmentOf(syntheticCv)} aria-labelledby="case-h">
       <header class="case-head gl-on-dark">
-        <p class="study-overline">Case H · a second-level preview · scientific environment</p>
+        <p class="study-overline">Case H · a second-level preview · Research</p>
         <h2 id="case-h">CV open; hover Research to preview it</h2>
         <p>
           Selection: <code>{selectionOf(syntheticCv)}</code>. Here Research has folders of its own, from <strong>the synthetic fixture</strong> of case C, so hovering its
@@ -344,7 +351,7 @@ const selectionOf = (state: NavigationState) =>
 
     <section class="study-shell study-case" data-study-case="i" data-environment={environmentOf(projects)} aria-labelledby="case-i">
       <header class="case-head gl-on-dark">
-        <p class="study-overline">Case I · wide content in three levels · scientific environment</p>
+        <p class="study-overline">Case I · wide content in three levels · Research</p>
         <h2 id="case-i">Code, tables, formulas and long words in the deepest folder</h2>
         <p>
           Selection: <code>{selectionOf(projects)}</code>, the synthetic fixture of case C. <strong>Sample content for layout testing only.</strong> Each wide element

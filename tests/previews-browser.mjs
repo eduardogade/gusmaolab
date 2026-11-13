@@ -54,10 +54,29 @@ const maxOpen = (log) => {
   }
   return most
 }
-// What a preview must never change: the URL, history, environment, selection and the V.
+// What a preview must never change: the URL, history, environment, category, selection
+// and the V.
 const sameFolders = (a, b) =>
-  json([a.path, a.history, a.environment, a.selected, a.current, a.vs, a.scroll]) ===
-  json([b.path, b.history, b.environment, b.selected, b.current, b.vs, b.scroll])
+  json([
+    a.path,
+    a.history,
+    a.environment,
+    a.category,
+    a.selected,
+    a.current,
+    a.vs,
+    a.scroll,
+  ]) ===
+  json([
+    b.path,
+    b.history,
+    b.environment,
+    b.category,
+    b.selected,
+    b.current,
+    b.vs,
+    b.scroll,
+  ])
 
 // --- Tests --------------------------------------------------------------------------------
 
@@ -92,6 +111,7 @@ await test("PREV-005", "Hover never changes the page (case A)", async (check) =>
   )
   check(sameFolders(before, during), `hover changed the page: ${json(during)}`)
   check(during.environment === "scientific", "the environment changed")
+  check(during.category === "research", "the page's category changed")
   await away()
   await sleep(CLOSE_WAIT)
   const after = await state()
@@ -137,6 +157,7 @@ await test("PREV-005", "A preview item opens its page (case B)", async (check) =
     `selected ${json(after.selected)}, current ${json(after.current)}`,
   )
   check(after.environment === "literary", `environment ${after.environment}`)
+  check(after.category === "writing", `category ${after.category}`)
   check(after.history === before.history + 1, "the click did not add one history entry")
   check(
     json(after.open) === "[]",

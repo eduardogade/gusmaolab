@@ -1,8 +1,9 @@
 ---
 /**
  * A site page inside the physical folders (P06). It reads the page's own URL, resolves
- * the folder state from the navigation registry, sets the section environment, and draws
- * the folders with the page's content on paper inside the deepest open folder.
+ * the folder state from the navigation registry, sets the open section's archive category
+ * (colour, P09-A01) and environment (typography), and draws the folders with the page's
+ * content on paper inside the deepest open folder.
  *
  *   <FolderPage>…the page's content…</FolderPage>
  *
@@ -45,6 +46,7 @@ const title =
 <BaseLayout
   title={title}
   description={Astro.props.description}
+  category={state.category}
   environment={environment}
   main={false}
 >
@@ -60,7 +62,8 @@ const title =
 </BaseLayout>
 
 <style>
-  /* The cabinet: a dark shell on the flannel, holding the folders. */
+  /* The cabinet: a dark shell on the flannel, holding the folders. The same in every
+     category. */
   .page {
     max-inline-size: var(--size-shell-max);
     margin-inline: auto;

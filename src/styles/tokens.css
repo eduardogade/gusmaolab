@@ -1,18 +1,24 @@
 /*
  * GusmaoLab design tokens. Built in P03 and approved by the owner (D-041); folder
- * geometry and the third folder material added in P05.
+ * geometry added in P05; colour rebuilt as the Chromatic Archive in P09-A01 (D-076).
  *
  * Three layers:
- *   1. Primitives (--palette-*): raw colours. Only this file and environments.css use them.
+ *   1. Primitives (--palette-*): raw colours. Only this file and categories.css declare
+ *      them, and only token stylesheets use them.
  *   2. Semantic tokens: roles such as --color-text-primary or --color-folder-parent.
- *      Components use only these. The :root values below are the core environment;
- *      environments.css overrides the environment contract (src/design/contract.mjs)
- *      for each section environment.
+ *      Components use only these. Three kinds, each with one home:
+ *        - global, the same on every page: this file. The shell, links, the accent, the
+ *          V and the text inks never change with the category or the environment.
+ *        - category, the five cardstock colours: categories.css, and nowhere else.
+ *        - environment, typography and texture: defaults here, sections in
+ *          environments.css.
+ *      src/design/contract.mjs lists the category and environment contracts.
  *   3. Aliases: semantic tokens derived from other semantic tokens. They are declared on
- *      `:root, [data-environment]` so that every environment recomputes them.
+ *      `:root, [data-environment], [data-category]`, so every element that chooses a
+ *      category or an environment recomputes them. That is how a tab keeps its own
+ *      cardstock on a page of another colour.
  *
- * Every hex value is a design candidate, not a certified brand or flag value.
- * The specimen page and the contrast test read the values from this file.
+ * The specimen page and the contrast test read the values from these files.
  */
 
 /* 1. Primitives ------------------------------------------------------------------- */
@@ -21,11 +27,9 @@
   /* Bark and ember: the browns and oranges of the bear-pride stripe family */
   --palette-bark: #1f1713;
   --palette-espresso: #32251e;
-  --palette-chestnut: #463128;
   --palette-umber: #5c4033;
   --palette-cocoa: #6e5646;
   --palette-warm-brown: #74422d;
-  --palette-rust: #8e3d1c;
   --palette-ember: #aa5b22;
 
   /* Honey and paper */
@@ -35,23 +39,24 @@
   --palette-parchment: #f4e2c9;
   --palette-ivory: #fff8ea;
 
-  /* Bearnard: midnight-navy fur, denim, green eyes */
-  --palette-midnight: #16202a;
+  /* Bearnard: navy fur, green eyes */
   --palette-navy: #202d39;
-  --palette-slate: #3d4e60;
-  --palette-denim: #556373;
-  --palette-forest: #3d6b2f;
   --palette-eye-green: #8db04a;
-  --palette-spruce: #1f5f5b;
 
-  /* Neutrals and grounds */
+  /* Neutrals */
   --palette-ash: #8a827a;
   --palette-charcoal: #28282d;
-  --palette-terrain: #3a3125;
-  --palette-oxblood: #55301f;
+
+  /*
+   * The Chromatic Archive's shared colours (P09-A01, D-076): locked by the owner, and
+   * the same in every category. The five category palettes are in categories.css.
+   */
+  --palette-deep-charcoal: #29282c;
+  --palette-forest-teal: #275b52;
+  --palette-midnight-ink: #26313b;
 }
 
-/* 2. Semantic tokens that never change between environments -------------------------- */
+/* 2. Global semantic tokens: the same in every category and environment -------------- */
 
 :root {
   /* Identity: the bear-pride stripe family, top to bottom */
@@ -63,7 +68,50 @@
   --color-pride-gray: var(--palette-ash);
   --color-pride-black: var(--palette-charcoal);
 
+  /*
+   * The archive's fixed structure (P09-A01): locked values, never set per category.
+   * The shell is Deep Charcoal, links and the accent are Forest Teal, and the V on the
+   * selected tab is Midnight Ink, whichever folder is open.
+   */
+  --color-shell: var(--palette-deep-charcoal);
+  --color-shell-border: color-mix(
+    in srgb,
+    var(--palette-deep-charcoal) 70%,
+    var(--palette-ash)
+  );
+  --color-text-link: var(--palette-forest-teal);
+  --color-text-link-hover: color-mix(
+    in srgb,
+    var(--palette-forest-teal) 70%,
+    var(--palette-bark)
+  );
+  --color-accent: var(--palette-forest-teal);
+  --color-indicator-selected: var(--palette-midnight-ink);
+  --color-state-active: var(--palette-midnight-ink);
+
+  /*
+   * Text inks: one warm set for every cardstock, so no category needs its own. Muted
+   * text is a cocoa darkened towards umber, and tab labels use the darkest ink: both
+   * are what the Core cardstock, the darkest, needs to stay readable (D-076).
+   */
+  --color-text-primary: var(--palette-espresso);
+  --color-text-secondary: var(--palette-umber);
+  --color-text-muted: color-mix(
+    in srgb,
+    var(--palette-cocoa) 50%,
+    var(--palette-umber)
+  );
+  --color-text-heading: var(--palette-espresso);
+  --color-folder-tab-text: var(--palette-bark);
+  /* Forest Teal cannot be read on the dark shell, so links there keep the eye green. */
+  --color-text-on-dark: var(--palette-parchment);
+  --color-text-on-dark-muted: var(--palette-kraft);
+  --color-text-link-on-dark: var(--palette-eye-green);
+
   /* Materials */
+  --color-shadow: var(--palette-bark);
+  --color-folder-border: color-mix(in srgb, var(--palette-bark) 16%, transparent);
+  --color-flannel-band: var(--palette-bark);
   --color-flannel-twill: var(--palette-ivory);
   --color-folder-edge: var(--palette-ivory);
   --color-folder-recess: var(--palette-bark);
@@ -84,44 +132,12 @@
   );
 }
 
-/* 3. Core environment: the defaults for the environment contract --------------------- */
+/*
+ * 3. Core environment: the defaults for the environment contract. Typography and
+ *    texture only; an environment never sets a colour (D-076).
+ */
 
 :root {
-  /* Surroundings */
-  --color-backdrop: var(--palette-oxblood);
-  --color-flannel-band: var(--palette-bark);
-  --color-flannel-line: var(--palette-navy);
-  --color-flannel-thread: var(--palette-honey);
-  --color-shell: var(--palette-espresso);
-  --color-shell-border: var(--palette-chestnut);
-  --color-shadow: var(--palette-bark);
-
-  /* Folder materials */
-  --color-folder-parent: var(--palette-kraft);
-  --color-folder-nested: var(--palette-parchment);
-  --color-folder-active: var(--palette-ivory);
-  --color-folder-border: color-mix(in srgb, var(--palette-bark) 16%, transparent);
-
-  /* Text */
-  --color-text-primary: var(--palette-espresso);
-  --color-text-secondary: var(--palette-umber);
-  --color-text-muted: var(--palette-cocoa);
-  --color-text-heading: var(--palette-espresso);
-  --color-text-link: var(--palette-forest);
-  --color-text-link-hover: color-mix(
-    in srgb,
-    var(--palette-forest) 70%,
-    var(--palette-bark)
-  );
-  --color-text-on-dark: var(--palette-parchment);
-  --color-text-on-dark-muted: var(--palette-kraft);
-  --color-text-link-on-dark: var(--palette-eye-green);
-
-  /* Interaction */
-  --color-accent: var(--palette-honey);
-  --color-state-active: var(--palette-rust);
-  --color-indicator-selected: var(--palette-rust);
-
   /* Typography roles */
   --font-body: var(--font-interface);
   --font-heading: var(--font-display);
@@ -295,19 +311,20 @@
   --texture-flannel-twill: 4px;
 }
 
-/* 7. Aliases, recomputed in every environment --------------------------------------- */
+/* 7. Aliases, recomputed wherever a category or an environment is chosen ------------- */
 
 :root,
-[data-environment] {
+[data-environment],
+[data-category] {
+  /* The plaid's fine thread is the category's flannel line, drawn thinner. */
+  --color-flannel-thread: var(--color-flannel-line);
+
   /*
-   * A third folder level (P05): a pale kraft between the parent and nested materials, so
-   * the three folders read as related card stock rather than three brightness steps.
+   * A third folder level is the category's lightest cardstock: its reading paper
+   * (P09-A01). Edges and shadows, not another colour, set the tab, the folder and the
+   * page apart.
    */
-  --color-folder-deep: color-mix(
-    in srgb,
-    var(--color-folder-parent) 45%,
-    var(--color-folder-nested)
-  );
+  --color-folder-deep: var(--color-folder-active);
 
   /*
    * Folder tabs share their folder's material; inactive tabs sink toward the shell.
@@ -345,7 +362,6 @@
     var(--color-folder-deep) var(--folder-tab-hover-mix),
     var(--color-shell)
   );
-  --color-folder-tab-text: var(--color-text-primary);
   --color-folder-preview: var(--color-folder-nested);
   --color-state-hover: color-mix(
     in srgb,

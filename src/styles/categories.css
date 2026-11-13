@@ -1,0 +1,112 @@
+/*
+ * The Chromatic Archive: the five category palettes (P09-A01, D-076).
+ * APPROVED AND LOCKED BY THE OWNER. Every value below is the owner's; change one only
+ * through a recorded decision.
+ *
+ * This file is the single source of truth for category colour. Each category is a
+ * permanent cardstock: five colours, from the flannel behind the shell to the paper the
+ * page is printed on. Nothing else in the project may define them: not tokens.css, not
+ * environments.css, not a component, a page or a script.
+ *
+ *   --color-backdrop        flannel ground, outside the shell
+ *   --color-flannel-line    the plaid's lines
+ *   --color-folder-parent   the tab and folder of level 1
+ *   --color-folder-nested   the tabs and folders of level 2
+ *   --color-folder-active   the reading paper (and the lightest, third-level folder)
+ *
+ * Every block defines exactly these five tokens (CATEGORY_TOKENS in
+ * src/design/contract.mjs) and nothing else. Colours shared by every category (the
+ * shell, links, the accent, the V, text inks) are in tokens.css.
+ *
+ * How a category is chosen:
+ *   - The registry (src/navigation/registry.ts) gives each top-level section a category;
+ *     its folders inherit it.
+ *   - <html data-category> is the open section's category: flannel, folder bodies, paper.
+ *   - Each top-level tab carries its own data-category, so it keeps its own cardstock on
+ *     every page, whichever folder is open.
+ * An element without the attribute is Core.
+ */
+
+/* The twenty-five locked colours, by the owner's names. */
+:root {
+  /* Core */
+  --palette-charcoal-terrain: #303134;
+  --palette-silver-ash: #74716e;
+  --palette-silver-taupe: #a09a91;
+  --palette-ash-linen: #cbc5b9;
+  --palette-antique-white: #f4f2ec;
+
+  /* Research */
+  --palette-coffee-terrain: #47403b;
+  --palette-antique-gold: #947d65;
+  --palette-cream-terrain: #bbaa8c;
+  --palette-almond-cream: #ded0b7;
+  --palette-cream-ivory: #fcf4e6;
+
+  /* Blog & Notes */
+  --palette-oxblood: #5d3a35;
+  --palette-copper-clay: #ad6f5e;
+  --palette-cinnamon: #d1ab92;
+  --palette-apricot-linen: #e9c3aa;
+  --palette-peach-ivory: #fff3e9;
+
+  /* Writing */
+  --palette-dark-ochre: #68502f;
+  --palette-wheat-gold: #c6a05c;
+  --palette-golden-honey: #e7c46b;
+  --palette-golden-cream: #f2dea3;
+  --palette-lemon-ivory: #fffae5;
+
+  /* Bearnard */
+  --palette-navy-terrain: #344656;
+  --palette-glacier-blue: #819daa;
+  --palette-powder-blue: #d5e0e6;
+  --palette-pale-glacier: #eaf0f1;
+  --palette-snow-white: #fafcfd;
+}
+
+/* Core: Home, About, Contact, Schedule. The darkest cardstock, and the default. */
+:root,
+[data-category="core"] {
+  --color-backdrop: var(--palette-charcoal-terrain);
+  --color-flannel-line: var(--palette-silver-ash);
+  --color-folder-parent: var(--palette-silver-taupe);
+  --color-folder-nested: var(--palette-ash-linen);
+  --color-folder-active: var(--palette-antique-white);
+}
+
+/* Research: Portfolio, CV, Lab. */
+[data-category="research"] {
+  --color-backdrop: var(--palette-coffee-terrain);
+  --color-flannel-line: var(--palette-antique-gold);
+  --color-folder-parent: var(--palette-cream-terrain);
+  --color-folder-nested: var(--palette-almond-cream);
+  --color-folder-active: var(--palette-cream-ivory);
+}
+
+/* Blog & Notes: Blog, Lecture Notes. */
+[data-category="blog-notes"] {
+  --color-backdrop: var(--palette-oxblood);
+  --color-flannel-line: var(--palette-copper-clay);
+  --color-folder-parent: var(--palette-cinnamon);
+  --color-folder-nested: var(--palette-apricot-linen);
+  --color-folder-active: var(--palette-peach-ivory);
+}
+
+/* Writing: Writing. */
+[data-category="writing"] {
+  --color-backdrop: var(--palette-dark-ochre);
+  --color-flannel-line: var(--palette-wheat-gold);
+  --color-folder-parent: var(--palette-golden-honey);
+  --color-folder-nested: var(--palette-golden-cream);
+  --color-folder-active: var(--palette-lemon-ivory);
+}
+
+/* Bearnard: Bearnard's Area. The lightest cardstock, on dark navy flannel. */
+[data-category="bearnard"] {
+  --color-backdrop: var(--palette-navy-terrain);
+  --color-flannel-line: var(--palette-glacier-blue);
+  --color-folder-parent: var(--palette-powder-blue);
+  --color-folder-nested: var(--palette-pale-glacier);
+  --color-folder-active: var(--palette-snow-white);
+}

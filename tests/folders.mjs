@@ -1,9 +1,10 @@
 // Physical-folder component tests (P05): FOLD-001 to FOLD-010. They read the built
 // folder study (dist/_design/folders/) and the P03 specimen (dist/_design/tokens/ since
 // P06), so run `npm run build` first, or `npm run verify`. P06 brought the Overview tab:
-// every row now has exactly one selected tab.
+// every row now has exactly one selected tab. P09-A01 (D-076): eleven sections, and case
+// E shows the categories; tests/categories.mjs checks their colours.
 //
-// They prove structure: levels, nesting, selection, the V, labels, environments and the
+// They prove structure: levels, nesting, selection, the V, labels, categories and the
 // content slot. They cannot prove that the page looks like paper folders; that needs the
 // visual review recorded in development/acceptance-matrix.md.
 import { readFile } from "node:fs/promises"
@@ -54,10 +55,10 @@ const expectedUrls = {
   b: "/cv/research/",
   d: "/cv/outreach/",
   f: "/cv/",
-  "e-scientific": "/lab/research-areas/",
-  "e-technical": "/lecture-notes/greenhouse/",
-  "e-literary": "/writing/kosmos/",
-  "e-personal": "/bearnards-area/powerlifting/",
+  "e-research": "/lab/research-areas/",
+  "e-blog-notes": "/lecture-notes/greenhouse/",
+  "e-writing": "/writing/kosmos/",
+  "e-bearnard": "/bearnards-area/powerlifting/",
 }
 const stateOf = (id) => {
   const result = siteNavigation.resolve(expectedUrls[id])
@@ -89,7 +90,7 @@ test("FOLD-001", "Single-level rendering", (check) => {
   const expected = siteNavigation.sections.map((node) => node.label)
   check(
     JSON.stringify(labels) === JSON.stringify(expected),
-    `case A shows [${labels.join(", ")}], expected the twelve sections in order`,
+    `case A shows [${labels.join(", ")}], expected the eleven sections in order`,
   )
   const body = childrenOf(layer, hasClass("gl-folder__body"))
   check(body.length === 1, "case A's folder has no open body")
@@ -107,7 +108,7 @@ test("FOLD-002", "Two-level rendering", (check) => {
   check(inner.parent === outerBody, "level 2 is not inside level 1's body")
   check(inner.attrs["data-level"] === "2", "the nested folder is not level 2")
   check(
-    tabsOf(outer).length === 12,
+    tabsOf(outer).length === 11,
     "the global row is not fully visible above level 2",
   )
   const cvChildren = siteNavigation.node("cv").children.map((node) => node.label)
@@ -274,65 +275,91 @@ test("FOLD-006", "Inactive tabs stay present and labelled", (check) => {
   check(inactive > 0, "no inactive tabs were rendered")
 })
 
-test("FOLD-007", "One component structure in every environment", (check) => {
-  // The folder skeleton of a case, ignoring how many tabs each row has.
-  const skeleton = [
-    "gl-folder",
-    "gl-folder__strip",
-    "gl-folder__tabs",
-    "gl-folder__body",
-    "gl-folder__paper",
-  ]
-  const shapeOf = (caseElement) =>
-    elements(layersOf(caseElement).stack)
-      .map((el) => {
-        const name = classes(el).find((c) => skeleton.includes(c))
-        return (
-          name &&
-          `${name}${el.attrs["data-level"] ? `[${el.attrs["data-level"]}]` : ""}`
-        )
-      })
-      .filter(Boolean)
-      .join(" ")
-  // Every tab on the page is built the same way: the card, the label, and the V if
-  // selected, or the preview of its contents (P07) if it is an unopened parent.
-  const tabShapes = new Set(
-    all.filter(hasClass("gl-folder-tab")).map((tab) =>
-      childrenOf(tab, () => true)
-        .map((el) =>
-          classes(el).find(
-            (c) => c.startsWith("gl-folder-tab__") || c === "gl-folder-preview",
-          ),
-        )
+test(
+  "FOLD-007",
+  "One component structure in every category and environment",
+  (check) => {
+    // The folder skeleton of a case, ignoring how many tabs each row has.
+    const skeleton = [
+      "gl-folder",
+      "gl-folder__strip",
+      "gl-folder__tabs",
+      "gl-folder__body",
+      "gl-folder__paper",
+    ]
+    const shapeOf = (caseElement) =>
+      elements(layersOf(caseElement).stack)
+        .map((el) => {
+          const name = classes(el).find((c) => skeleton.includes(c))
+          return (
+            name &&
+            `${name}${el.attrs["data-level"] ? `[${el.attrs["data-level"]}]` : ""}`
+          )
+        })
+        .filter(Boolean)
         .join(" ")
-        .replace(/ gl-folder-(tab__indicator|preview)$/, ""),
-    ),
-  )
-  check(tabShapes.size === 1, `tabs are built in ${tabShapes.size} different ways`)
-  const environments = ["scientific", "technical", "literary", "personal"]
-  const shapes = environments.map((env) => {
-    const caseElement = cases.get(`e-${env}`)
-    check(caseElement !== undefined, `the study has no ${env} case`)
+    // Every tab on the page is built the same way: the card, the label, and the V if
+    // selected, or the preview of its contents (P07) if it is an unopened parent.
+    const tabShapes = new Set(
+      all.filter(hasClass("gl-folder-tab")).map((tab) =>
+        childrenOf(tab, () => true)
+          .map((el) =>
+            classes(el).find(
+              (c) => c.startsWith("gl-folder-tab__") || c === "gl-folder-preview",
+            ),
+          )
+          .join(" ")
+          .replace(/ gl-folder-(tab__indicator|preview)$/, ""),
+      ),
+    )
+    check(tabShapes.size === 1, `tabs are built in ${tabShapes.size} different ways`)
+    // Case E: one stack for each category that has nested folders. A stack names its own
+    // category, so it has its cardstock on a page of any other colour (P09-A01); the
+    // section around it names the environment, which is typography and texture.
+    const categories = ["research", "blog-notes", "writing", "bearnard"]
+    const shapes = categories.map((category) => {
+      const caseElement = cases.get(`e-${category}`)
+      check(caseElement !== undefined, `the study has no ${category} case`)
+      if (caseElement === undefined) return undefined
+      const state = stateOf(`e-${category}`)
+      check(
+        state.category === category,
+        `the ${category} case's folder is ${state.category} in the registry`,
+      )
+      const { stack, layers } = layersOf(caseElement)
+      check(
+        stack.attrs["data-category"] === category,
+        `the ${category} case's folders have the category ${stack.attrs["data-category"]}`,
+      )
+      check(
+        caseElement.attrs["data-environment"] ===
+          (state.environment === "core" ? undefined : state.environment),
+        `the ${category} case is not in its section's environment`,
+      )
+      // Every top-level tab keeps its own section's category, in every case.
+      const row = tabsOf(layers[0]).map((tab) => tab.attrs["data-category"])
+      check(
+        JSON.stringify(row) ===
+          JSON.stringify(siteNavigation.sections.map((node) => node.category)),
+        `the ${category} case's global row has the categories [${row.join(", ")}]`,
+      )
+      return shapeOf(caseElement)
+    })
     check(
-      caseElement?.attrs["data-environment"] === env,
-      `the ${env} case is not in the ${env} environment`,
+      new Set(shapes).size === 1,
+      "the category cases do not share one folder structure",
     )
     check(
-      stateOf(`e-${env}`).environment === env,
-      `the ${env} case's folder is not ${env} in the registry`,
+      !/\[data-environment/.test(foldersCss),
+      "folders.css has environment-specific rules",
     )
-    return shapeOf(caseElement)
-  })
-  check(
-    new Set(shapes).size === 1,
-    "the environment cases do not share one folder structure",
-  )
-  check(
-    !/\[data-environment/.test(foldersCss),
-    "folders.css has environment-specific rules",
-  )
-  check(!/--palette-/.test(foldersCss), "folders.css uses palette primitives")
-})
+    check(
+      !/\[data-category\s*[~|^$*]?=/.test(foldersCss),
+      "folders.css has rules for one particular category",
+    )
+    check(!/--palette-/.test(foldersCss), "folders.css uses palette primitives")
+  },
+)
 
 test("FOLD-008", "Long labels keep their full text", (check) => {
   const caseD = cases.get("d")

@@ -2,7 +2,8 @@
  * Physical folders (P05): the folder stack, its tab rows, its tabs and its bodies.
  * Imported by src/components/folders/FolderStack.astro, so only pages that show folders
  * load it. Semantic tokens only; no transitions or animation. P06 made the tabs links;
- * P07 added the folder previews (section 5).
+ * P07 added the folder previews (section 5); P09-A01 gave every top-level tab its own
+ * permanent cardstock (section 1).
  *
  * Markup, from the components in src/components/folders/:
  *
@@ -11,6 +12,7 @@
  *       nav.gl-folder__strip              FolderTabStrip: scrolls sideways if too wide
  *         ul.gl-folder__tabs              (a div in design studies, without links)
  *           li.gl-folder-tab[data-selected]       FolderTab; one selected per row
+ *                                         (top-level tabs also carry data-category)
  *             .gl-folder-tab__shape       the card stock: two skewed halves
  *             a.gl-folder-tab__label      the link; the whole tab is its click target
  *             .gl-folder-preview          FolderPreview: an unopened folder's contents,
@@ -18,7 +20,7 @@
  *             svg.gl-folder-tab__indicator        the V, on the selected tab only
  *       .gl-folder__body                  the selected tab's open folder: it holds the
  *                                         next level, or the page's paper
- *         .gl-folder__paper               the page itself, on ivory reading paper
+ *         .gl-folder__paper               the page itself, on the category's reading paper
  *
  * One tab, seen from the front:
  *
@@ -48,7 +50,7 @@
 }
 
 .gl-folder {
-  /* Level 1: kraft folders rising from the dark shell */
+  /* Level 1: the category's cardstock, rising from the dark shell */
   --_material: var(--color-folder-parent);
   --_inactive: var(--color-folder-tab-inactive);
   --_hover: var(--color-folder-tab-hover);
@@ -64,7 +66,7 @@
   isolation: isolate;
 }
 
-/* Level 2: parchment folders inside the kraft one */
+/* Level 2: the category's lighter cardstock, inside the first folder */
 .gl-folder[data-level="2"] {
   --_material: var(--color-folder-nested);
   --_inactive: var(--color-folder-tab-inactive-nested);
@@ -75,7 +77,7 @@
   --_body-shadow: var(--_nested-shadow);
 }
 
-/* Level 3: pale kraft folders inside the parchment one */
+/* Level 3: the category's lightest material, its reading paper, inside the second */
 .gl-folder[data-level="3"] {
   --_material: var(--color-folder-deep);
   --_inactive: var(--color-folder-tab-inactive-deep);
@@ -92,6 +94,19 @@
   --_nested-shadow:
     inset 0 1px 0 color-mix(in srgb, var(--color-folder-edge) 70%, transparent),
     var(--shadow-paper);
+}
+
+/*
+ * A top-level tab is cut from its own section's cardstock (P09-A01, D-076). It carries
+ * `data-category`, which gives it that category's tokens (src/styles/categories.css), so
+ * it takes its materials from them instead of the open folder's. Its selected state is
+ * the same colour as the body it joins, because the page has the selected tab's
+ * category. This rule reads the attribute's presence only: no category is named here.
+ */
+.gl-folder-tab[data-category] {
+  --_material: var(--color-folder-parent);
+  --_inactive: var(--color-folder-tab-inactive);
+  --_hover: var(--color-folder-tab-hover);
 }
 
 /*
@@ -359,7 +374,7 @@ a.gl-folder-tab__label::before {
 }
 
 /*
- * The page: always ivory paper, in the deepest open folder or in front of its tabs.
+ * The page: always the category's reading paper, in the deepest open folder.
  * Long words and addresses wrap. Code, formulas and .gl-scroll-x regions scroll inside
  * themselves; anything else too wide scrolls the paper sideways, never the page (P08).
  */
@@ -380,7 +395,8 @@ a.gl-folder-tab__label::before {
 /*
  * A small index card of an unopened folder's contents: its Overview, then its immediate
  * children. It is not a folder, so it has no tab, no V and no folder body; it is a slip
- * of parchment hanging from the foot of its tab, with a honey top edge.
+ * of its folder's lighter cardstock hanging from the foot of its tab, with an accent top
+ * edge. It sits inside its tab, so it takes the tab's category, not the page's.
  *
  * It is a popover in the top layer, so no scrolling row, folder or stacking context can
  * clip or cover it, and it takes no space in the page. src/scripts/folder-previews.ts

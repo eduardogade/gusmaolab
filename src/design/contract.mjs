@@ -1,73 +1,91 @@
 /**
- * The GusmaoLab design-token contract (P03 candidate, awaiting the owner's review).
- * Shared by the design specimen (src/pages/[design]/tokens.astro) and the tests in tests/.
+ * The GusmaoLab design-token contract: P03's tokens, with colour rebuilt as the Chromatic
+ * Archive in P09-A01 (D-076). Shared by the design specimen
+ * (src/pages/[design]/tokens.astro) and the tests in tests/.
+ *
+ * Two independent choices style a section. Its archive category decides colour
+ * (src/styles/categories.css); its environment decides typography and texture
+ * (src/styles/environments.css). Neither sets a token of the other's.
  */
 
 /**
- * The four section environments. The section lists come from the P03 brief and are
- * shown on the specimen only; P04's navigation data will assign real pages.
+ * The five archive categories, in the owner's order, with the sections that belong to
+ * each. The registry (src/navigation/registry.ts) assigns them; tests/categories.mjs
+ * checks that the two agree and that the colours are the locked ones.
+ */
+export const CATEGORIES = [
+  {
+    id: "core",
+    name: "Core",
+    sections: ["Home", "About", "Contact", "Schedule"],
+  },
+  {
+    id: "research",
+    name: "Research",
+    sections: ["Portfolio", "CV", "Lab"],
+  },
+  {
+    id: "blog-notes",
+    name: "Blog & Notes",
+    sections: ["Blog", "Lecture Notes"],
+  },
+  {
+    id: "writing",
+    name: "Writing",
+    sections: ["Writing"],
+  },
+  {
+    id: "bearnard",
+    name: "Bearnard",
+    sections: ["Bearnard's Area"],
+  },
+]
+
+/**
+ * The category contract: every category in categories.css defines exactly these five
+ * tokens, the locked palette's five rows, and nothing else.
+ */
+export const CATEGORY_TOKENS = [
+  "--color-backdrop", // flannel ground
+  "--color-flannel-line", // flannel line
+  "--color-folder-parent", // tab and folder, level 1
+  "--color-folder-nested", // tab and folder, level 2
+  "--color-folder-active", // reading paper
+]
+
+/**
+ * The four section environments: typography and texture, never colour. The section
+ * lists are the registry's (src/navigation/registry.ts).
  */
 export const ENVIRONMENTS = [
   {
     id: "scientific",
     name: "Scientific",
-    sections: ["CV", "Research", "Lab", "Portfolio"],
+    sections: ["Portfolio", "CV", "Lab"],
   },
   {
     id: "technical",
     name: "Technical",
-    sections: [
-      "Lecture Notes",
-      "The Greenhouse",
-      "Bearnard's Trail",
-      "Berries",
-      "Timber Logs",
-    ],
+    sections: ["Lecture Notes"],
   },
   {
     id: "literary",
     name: "Literary",
-    sections: ["Writing", "Kosmos", "Months' Original", "Book Club"],
+    sections: ["Writing"],
   },
   {
     id: "personal",
     name: "Personal",
-    sections: ["Bearnard's Area", "Photos", "Videos", "Powerlifting", "Bear Life"],
+    sections: ["Bearnard's Area"],
   },
 ]
 
 /**
  * The environment contract: every environment in environments.css defines exactly these
- * tokens, and :root in tokens.css defines them as the core defaults.
+ * tokens, and :root in tokens.css defines them as the core defaults. No colour: an
+ * environment that set one would recolour folders that belong to another category.
  */
 export const ENVIRONMENT_TOKENS = [
-  // Surroundings
-  "--color-backdrop",
-  "--color-flannel-band",
-  "--color-flannel-line",
-  "--color-flannel-thread",
-  "--color-shell",
-  "--color-shell-border",
-  "--color-shadow",
-  // Folder materials
-  "--color-folder-parent",
-  "--color-folder-nested",
-  "--color-folder-active",
-  "--color-folder-border",
-  // Text
-  "--color-text-primary",
-  "--color-text-secondary",
-  "--color-text-muted",
-  "--color-text-heading",
-  "--color-text-link",
-  "--color-text-link-hover",
-  "--color-text-on-dark",
-  "--color-text-on-dark-muted",
-  "--color-text-link-on-dark",
-  // Interaction
-  "--color-accent",
-  "--color-state-active",
-  "--color-indicator-selected",
   // Typography roles
   "--font-body",
   "--font-heading",
@@ -253,7 +271,7 @@ export const REQUIRED_TOKENS = {
 /** @typedef {[string, string, string, string, number | null]} ContrastRow */
 
 /**
- * Opaque pairings checked against WCAG 2.2 thresholds in the core and every environment:
+ * Opaque pairings checked against WCAG 2.2 thresholds in every archive category:
  * 4.5:1 for body text, 3:1 for essential non-text indicators. `min: null` is reported
  * for information only. Text over the flannel or translucent layers is not covered and
  * needs visual inspection.

@@ -1,13 +1,16 @@
 // Navigation model tests: NAV-001 to NAV-014 (P04), and the model's share of the P06 tests,
 // NAV-015 to NAV-021 and NAV-025. Pure functions only; no build needed. The P06 tests of
 // the built pages are in tests/routes.mjs. Node.js 26 imports the TypeScript modules
-// directly (native type stripping).
+// directly (native type stripping). P09-A01 (D-076) removed External (eleven sections,
+// 36 folders) and gave every section an archive category; tests/categories.mjs checks the
+// locked assignment and colours.
 //
 // Third-level folders and content routes below are SYNTHETIC FIXTURES, labeled as such.
 // They test what the model supports; they are not approved site content.
 import assert from "node:assert/strict"
-import { ENVIRONMENTS } from "../src/design/contract.mjs"
+import { CATEGORIES, ENVIRONMENTS } from "../src/design/contract.mjs"
 import {
+  CATEGORY_IDS,
   ENVIRONMENT_IDS,
   MAX_TAB_LEVELS,
   NavigationConfigError,
@@ -80,7 +83,6 @@ test("NAV-001", "Top-level order", () => {
     ["Blog", "/blog/"],
     ["Portfolio", "/portfolio/"],
     ["Contact", "/contact/"],
-    ["External", "/external/"],
     ["Schedule", "/schedule/"],
     ["CV", "/cv/"],
     ["Lab", "/lab/"],
@@ -253,13 +255,12 @@ test("NAV-011", "URL normalization", () => {
   assert.equal(site.resolve("/CV/").found, false)
 })
 
-test("NAV-012", "Environment inheritance", () => {
+test("NAV-012", "Environment and category inheritance", () => {
   const expected = {
     home: "core",
     about: "core",
     blog: "core",
     contact: "core",
-    external: "core",
     schedule: "core",
     portfolio: "scientific",
     cv: "scientific",
@@ -290,6 +291,35 @@ test("NAV-012", "Environment inheritance", () => {
   assert.equal(overridden.node("cv-teaching").environment, "scientific")
   // The environment names match the CSS environments, plus the core default.
   assert.deepEqual(ENVIRONMENT_IDS, ["core", ...ENVIRONMENTS.map((env) => env.id)])
+
+  // A category belongs to the section, and every folder below inherits it (P09-A01).
+  // It is independent of the environment: overriding one never changes the other.
+  assert.deepEqual(
+    CATEGORY_IDS,
+    CATEGORIES.map((category) => category.id),
+  )
+  const categories = {
+    home: "core",
+    schedule: "core",
+    blog: "blog-notes",
+    "lecture-notes-berries": "blog-notes",
+    cv: "research",
+    "cv-research": "research",
+    "lab-people": "research",
+    "writing-book-club": "writing",
+    "bearnards-area-photos": "bearnard",
+  }
+  for (const [id, category] of Object.entries(categories)) {
+    assert.equal(site.node(id).category, category, id)
+  }
+  assert.equal(fixture.node("synthetic-projects").category, "research")
+  assert.equal(overridden.node("cv-research").category, "research")
+  assert.equal(overridden.node("synthetic-essay").category, "research")
+  assert.equal(stateOf(site, "/cv/research/").category, "research")
+  assert.equal(stateOf(site, "/lecture-notes/berries/").category, "blog-notes")
+  assert.equal(stateOf(site, "/lecture-notes/berries/").environment, "technical")
+  assert.equal(stateOf(site, "/blog/").category, "blog-notes")
+  assert.equal(stateOf(site, "/blog/").environment, "core")
 })
 
 test("NAV-013", "Invalid configuration", () => {
@@ -306,49 +336,74 @@ test("NAV-013", "Invalid configuration", () => {
     slug,
     ...extra,
   })
+  // A top-level section: it must name its category.
+  const top = (id, slug, extra = {}) => tab(id, slug, { category: "core", ...extra })
   rejects([], [], /non-empty/, "empty registry")
+  rejects([tab("a", "a")], [], /needs a category/, "section without a category")
   rejects(
-    [tab("a", "a"), tab("a", "b")],
+    [top("a", "a", { category: "scientific" })],
+    [],
+    /unknown category "scientific"/,
+    "bad category",
+  )
+  rejects(
+    [top("a", "a", { children: [tab("b", "b", { category: "writing" })] })],
+    [],
+    /declares a category/,
+    "category below a section",
+  )
+  assert.deepEqual(
+    validateNavigation([top("a", "a", { children: [tab("b", "b")] })]),
+    [],
+    "a valid synthetic registry has no issues",
+  )
+  rejects(
+    [top("a", "a"), top("a", "b")],
     [],
     /id "a" is used more than once/,
     "duplicate ID",
   )
   rejects(
-    [tab("a", "same"), tab("b", "same")],
+    [top("a", "same"), top("b", "same")],
     [],
     /path \/same\/ is used/,
     "duplicate path",
   )
-  rejects([{ id: "a", label: " ", slug: "a" }], [], /needs a label/, "missing label")
-  rejects([tab("a", "Not Kebab")], [], /lowercase kebab-case segment/, "invalid slug")
   rejects(
-    [tab("a", "a/b")],
+    [{ id: "a", label: " ", slug: "a", category: "core" }],
+    [],
+    /needs a label/,
+    "missing label",
+  )
+  rejects([top("a", "Not Kebab")], [], /lowercase kebab-case segment/, "invalid slug")
+  rejects(
+    [top("a", "a/b")],
     [],
     /lowercase kebab-case segment/,
     "slug escaping its parent",
   )
-  rejects([tab("A b", "a")], [], /needs an id/, "invalid ID")
+  rejects([top("A b", "a")], [], /needs an id/, "invalid ID")
   rejects(
-    [tab("a", "a", { environment: "scientifc" })],
+    [top("a", "a", { environment: "scientifc" })],
     [],
     /unknown environment/,
     "bad environment",
   )
   rejects(
-    [tab("a", "a", { enviroment: "core" })],
+    [top("a", "a", { enviroment: "core" })],
     [],
     /unknown field "enviroment"/,
     "typo in a field",
   )
   rejects(
-    [tab("a", "a", { children: [tab("b", "")] })],
+    [top("a", "a", { children: [tab("b", "")] })],
     [],
     /empty slug/,
     "child with an empty slug",
   )
   rejects(
     [
-      tab("a", "a", {
+      top("a", "a", {
         children: [
           tab("b", "b", { children: [tab("c", "c", { children: [tab("d", "d")] })] }),
         ],
@@ -358,20 +413,20 @@ test("NAV-013", "Invalid configuration", () => {
     /tab level 4/,
     "fourth tab level",
   )
-  const loop = tab("loop", "loop")
+  const loop = top("loop", "loop")
   loop.children = [loop]
   rejects([loop], [], /cycle/, "cycle")
   const shared = tab("shared", "shared")
   rejects(
-    [tab("a", "a", { children: [shared] }), tab("b", "b", { children: [shared] })],
+    [top("a", "a", { children: [shared] }), top("b", "b", { children: [shared] })],
     [],
     /more than one place/,
     "reused entry",
   )
 
   const sections = [
-    tab("home", ""),
-    tab("notes", "notes", { children: [tab("berries", "berries")] }),
+    top("home", ""),
+    top("notes", "notes", { children: [tab("berries", "berries")] }),
   ]
   rejects(
     sections,
@@ -414,7 +469,7 @@ test("NAV-013", "Invalid configuration", () => {
   )
 
   assert.throws(
-    () => createNavigation([tab("a", "a"), tab("a", "a")]),
+    () => createNavigation([top("a", "a"), top("a", "a")]),
     NavigationConfigError,
   )
 })
@@ -481,9 +536,9 @@ test("NAV-016", "Overview URL identity", () => {
 
 test("NAV-017", "No duplicate registry nodes", () => {
   assert.deepEqual(validateNavigation(SECTIONS, CONTENT_ROUTES), [])
-  assert.equal(site.nodes.size, 37, "12 + 25 folders, unchanged by P06")
-  assert.equal(site.pagePaths().length, 37)
-  assert.equal(new Set(site.pagePaths()).size, 37, "no duplicate page paths")
+  assert.equal(site.nodes.size, 36, "11 sections + 25 folders (P09-A01)")
+  assert.equal(site.pagePaths().length, 36)
+  assert.equal(new Set(site.pagePaths()).size, 36, "no duplicate page paths")
   for (const node of site.nodes.values()) assert.ok(!node.id.startsWith("overview"))
   // An Overview ID can never be a node ID: the registry rejects it.
   assert.ok(

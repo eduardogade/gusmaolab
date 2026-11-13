@@ -30,8 +30,8 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 | D-024 | Exclude the archive, `brand/` and the private folders from TypeScript | Approved | 2026-11-10 |
 | D-025 | Remove two recruiter-era files from the working branch | Approved by the owner | 2026-11-10 |
 | D-026 | Design tokens in three layers of native CSS custom properties, in `src/styles/` | Approved (P03 brief); values Provisional | 2026-11-10 |
-| D-027 | Section environments selected declaratively with `data-environment`; a fixed environment contract | Approved | 2026-11-10 |
-| D-028 | Palette candidate: 24 primitives and their semantic roles | Approved in P04 (overall appearance; see D-041) | 2026-11-10 |
+| D-027 | Section environments selected declaratively with `data-environment`; a fixed environment contract | Approved; amended by D-076 (the contract is typography and texture only) | 2026-11-10 |
+| D-028 | Palette candidate: 24 primitives and their semantic roles | Approved in P04 (see D-041); its folder, flannel, shell, link and V colours superseded by D-076 | 2026-11-10 |
 | D-029 | Typography from installed system fonts only; no web fonts | Approved in P04 (overall appearance); consolidation deferred (D-042) | 2026-11-10 |
 | D-030 | Flannel lining and paper materials in CSS only | Approved in P04 (overall appearance; see D-041) | 2026-11-10 |
 | D-031 | Contrast policy: WCAG 2.2 thresholds, enforced by a test; one focus style everywhere | Approved | 2026-11-10 |
@@ -48,7 +48,7 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 | D-042 | Typography consolidation: fewer font families | Deferred | 2026-11-10 |
 | D-043 | Physical folders are four Astro components and one stylesheet, drawn from P04's tab rows | Approved | 2026-11-10 |
 | D-044 | Tab silhouette: two skewed halves, concave fillets, and a seam the selected tab covers | Approved by the owner (D-049) | 2026-11-10 |
-| D-045 | A third folder material and inactive-tab colors for levels 2 and 3; the page is always on ivory paper | Approved by the owner (D-049) | 2026-11-10 |
+| D-045 | A third folder material and inactive-tab colors for levels 2 and 3; the page is always on ivory paper | Approved by the owner (D-049); materials are the category's since D-076, and the third level is the reading paper | 2026-11-10 |
 | D-046 | Folder geometry token values revised for P05; new seam, headroom, scroll-hint and stacking tokens | Approved by the owner (D-049) | 2026-11-10 |
 | D-047 | Rows too wide for their folder scroll inside their own strip; the full responsive strategy is P08 | Approved; P08 kept it as the responsive strategy (D-064) | 2026-11-10 |
 | D-048 | Temporary design studies live under `/_design/`, outside the navigation registry | Approved | 2026-11-10 |
@@ -59,7 +59,7 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 | D-053 | Folder pages are generated from the registry by one route file per tab level; no catch-all route | Approved | 2026-11-11 |
 | D-054 | Tabs are links: `aria-current="page"` on the page's own tab, `"true"` on open folders above it; each row is a labelled `nav`; `<main>` is inside the deepest folder | Approved; its "no JavaScript" note is replaced by D-060 | 2026-11-11 |
 | D-055 | The P03 specimen moves to `/_design/tokens/`; `/` becomes the Home folder page | Approved (P06 brief) | 2026-11-11 |
-| D-056 | Stronger palette differences between section environments | Open: candidates proposed in P09 (D-075), awaiting the owner | 2026-11-11 |
+| D-056 | Stronger palette differences between section environments | Closed by D-076 (the Chromatic Archive) | 2026-11-11 |
 | D-057 | The owner approved the P06 navigation and Overview tabs | Approved by the owner | 2026-11-11 |
 | D-058 | Folder previews show an unopened folder's immediate contents, Overview first, reusing P06's display tabs; open folders, leaves and Overviews get none | Approved (P07 brief); appearance approved by the owner (D-063) | 2026-11-11 |
 | D-059 | Previews are built with the page inside their tab and shown as `popover="manual"` in the top layer, placed by the script from the tab's position | Approved | 2026-11-11 |
@@ -78,7 +78,8 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 | D-072 | Hover previews open only after the pointer has really moved since the page appeared | Approved | 2026-11-11 |
 | D-073 | Bearnard on the website: an illustration registry, one component, and web derivatives generated from approved masters and committed in `public/illustrations/bearnard/` | Approved (P09 brief); role assignments await the owner | 2026-11-11 |
 | D-074 | The build may hold registered illustrations and nothing else new: only derivatives recorded in `assets/bearnard/derivatives.json`, with separate size ceilings for the site, the design studies and the illustrations | Approved | 2026-11-11 |
-| D-075 | Four proposed section palettes exist as candidates only, in their own stylesheet and design study; the approved environments are unchanged, and adopting any candidate needs the owner | Experimental; awaits the owner | 2026-11-11 |
+| D-075 | Four proposed section palettes exist as candidates only, in their own stylesheet and design study; the approved environments are unchanged, and adopting any candidate needs the owner | Superseded by D-076; candidates removed | 2026-11-11 |
+| D-076 | **P09-A01 — Chromatic Archive: Five Locked Category Palettes.** Five colour categories with permanent cardstock; every top-level tab keeps its own colour; shell, links, accent and V are shared; environments set typography only; External leaves the navigation (eleven tabs) | **APPROVED / LOCKED** by the owner | 2026-11-12 |
 
 ## Details
 
@@ -269,7 +270,7 @@ This replaces the "no client-side JavaScript" clause of D-054 and of the archite
 
 **D-074.** Until P09 `public/` did not exist (D-019) and the smoke test allowed only pages and stylesheets, under one 1 MB ceiling for the whole of `dist/`. Now `public/illustrations/bearnard/` exists, and the smoke test allows exactly the files recorded in `assets/bearnard/derivatives.json`: each must match its recorded checksum and stay under 250,000 bytes, and any other image still fails. The single ceiling became three, so that artwork cannot hide inside the site's allowance or the reverse: the site's pages, styles and script under 1 MB (as before), the temporary design studies under 600 KB, and the illustrations under 600 KB. The check for private paths in `dist/` still matches `bearnard` anywhere, to catch a stray master; the declared study page and the registered derivatives are exempt by their exact paths. KL-30 has the sizes.
 
-**D-075.** The owner asked for section environments that differ more in palette (D-056). P09 answers with proposals, not changes: the brief says its technical completion does not authorize applying every candidate to the production layout.
+**D-075.** *Superseded by D-076 on 2026-11-12: the owner chose the Chromatic Archive instead, and the candidates, their stylesheet, their study and their test were removed. Kept as the record of what was proposed.* The owner asked for section environments that differ more in palette (D-056). P09 answers with proposals, not changes: the brief says its technical completion does not authorize applying every candidate to the production layout.
 
 - **What exists.** One candidate palette for each of Scientific, Technical, Literary and Personal, as a complete environment contract named `proposed-<section>`, in `src/styles/environment-candidates.css` with eleven candidate hues (`--palette-proposed-*`). The design study `/_design/environments-v2/` shows each approved environment beside its candidate, with the same folders and text.
 - **What did not change.** `environments.css`, `tokens.css`, the contract and every site page. ENV-006 holds a fingerprint of every approved environment token, so a change to the approved palette fails the tests until a decision updates the fingerprint. ENV-005 fails if candidate styling reaches any page other than the study.
@@ -277,3 +278,27 @@ This replaces the "no client-side JavaScript" clause of D-054 and of the archite
 - **Evidence, and its limit.** Each candidate passes the 49 enforced contrast pairings and keeps its tabs at least as distinct as the approved ones (ENV-002, ENV-003). That proves legibility. Whether a candidate is better is the owner's judgement, and nothing here records it as made.
 - **Adoption.** Selective: each candidate can be adopted, changed or dropped alone, by a recorded decision. An adopted block moves into `environments.css` under the section's own name, its hues move into `tokens.css`, and the ENV-006 fingerprint and `planning/design-system.md` section 7 are updated in the same change. Until then `data-environment="proposed-…"` must not appear on a site page.
 - **D-056** stays open until the owner has decided on all four. Core, the environment of Home and the studies, has no candidate.
+
+**D-076. P09-A01 — Chromatic Archive: Five Locked Category Palettes. Status: APPROVED / LOCKED.** Decided by the owner in "P09 Addendum 01 — Final Color Architecture" (2026-11-12), which overrides conflicting palette and navigation-colour instructions from P03 to P09. The owner chose "Palette B — Chromatic Archive" and approved every value below. No colour here may be substituted, adjusted or re-derived, and no other palette explored, without a new decision by the owner.
+
+- **Principle.** Each category has a permanent cardstock colour. Every top-level tab keeps its own category's Level 1 colour on every page, so all five colours stand together on the global row; opening a folder reveals that category's body, paper and flannel. The earlier model, in which the open section's environment coloured every visible tab, is rejected.
+- **Categories.** Core: Home, About, Contact, Schedule. Research: Portfolio, CV, Lab. Blog & Notes: Blog, Lecture Notes. Writing: Writing. Bearnard: Bearnard's Area. A section's folders inherit its category.
+- **The five palettes.**
+
+  | Element | Core | Research | Blog & Notes | Writing | Bearnard |
+  | --- | --- | --- | --- | --- | --- |
+  | Flannel ground | Charcoal Terrain `#303134` | Coffee Terrain `#47403B` | Oxblood `#5D3A35` | Dark Ochre `#68502F` | Navy Terrain `#344656` |
+  | Flannel line | Silver Ash `#74716E` | Antique Gold `#947D65` | Copper Clay `#AD6F5E` | Wheat Gold `#C6A05C` | Glacier Blue `#819DAA` |
+  | Tab and folder, Level 1 | Silver Taupe `#A09A91` | Cream Terrain `#BBAA8C` | Cinnamon `#D1AB92` | Golden Honey `#E7C46B` | Powder Blue `#D5E0E6` |
+  | Tab and folder, Level 2 | Ash Linen `#CBC5B9` | Almond Cream `#DED0B7` | Apricot Linen `#E9C3AA` | Golden Cream `#F2DEA3` | Pale Glacier `#EAF0F1` |
+  | Reading paper | Antique White `#F4F2EC` | Cream Ivory `#FCF4E6` | Peach Ivory `#FFF3E9` | Lemon Ivory `#FFFAE5` | Snow White `#FAFCFD` |
+
+- **Shared colours, never set per category.** Shell: Deep Charcoal `#29282C`. Links and the link-related accent: Forest Teal `#275B52`. The V on the selected tab: Midnight Ink `#26313B`.
+- **Materials.** A selected top-level tab and its open body are the same Level 1 colour. Second-level tabs and bodies use Level 2. The third level uses the reading paper, told apart by edges and shadows; no derived tint was introduced, and there is never a fourth row of tabs. The flannel's ground and line follow the page's category; its CSS weave is unchanged.
+- **Navigation.** External leaves the global navigation. Eleven tabs remain, in this order: Home, About, Blog, Portfolio, Contact, Schedule, CV, Lab, Lecture Notes, Writing, Bearnard's Area. Labels are unchanged. `/external/` existed only as a page generated from the registry, holding the development placeholder, so removing the entry stops it being built; no content was deleted, no destination was invented for it, no redirect was added, and no history was rewritten.
+- **Architecture.** A section's `category` is declared in `src/navigation/registry.ts` (`ArchiveCategory`: `core`, `research`, `blog-notes`, `writing`, `bearnard`). The palettes are declared only in `src/styles/categories.css`, as five tokens per `[data-category]`; the shared colours are global tokens in `src/styles/tokens.css`. The page carries its category on `<html>` and on the folder stack, and every top-level tab carries its own, so no page-level attribute can recolour a tab. Components name no category.
+- **Environments.** Scientific, Technical, Literary and Personal remain as a typography and texture classification, with P03's values: the environment contract shrank from 33 tokens to 10, none of them a colour (amending D-027). Category and environment are independent: Blog is Blog & Notes in the core type, Lecture Notes is Blog & Notes in the technical type.
+- **Superseded.** The environment colours of P03 (in D-027, D-028 and D-045); the wish recorded in D-056, now answered; the P09 candidates (D-075) with `src/styles/environment-candidates.css`, `/_design/environments-v2/` and `tests/environments.mjs`; gate G-P09-C7; and design-system questions 4, 5, 7, 8, 15, 17, 19 and 24. Nine primitives that only those colours used were removed from `tokens.css`.
+- **Unchanged.** Folder geometry and behaviour (D-043 to D-047, D-049), Overview tabs (D-050, D-051), previews (D-058 to D-063), small screens (D-064 to D-070), the 140 ms cross-fade (D-071), fonts and type values, and the Bearnard foundation (D-073, D-074). Typography consolidation stays deferred (D-042).
+- **What the locked values required, without changing any of them.** Forest Teal reaches 1.88:1 on the Deep Charcoal shell, so links on the shell keep the eye green `#8DB04A` (5.88:1); it reaches 2.78:1, 3.41:1 and 3.67:1 directly on the Core, Research and Blog & Notes Level 1 cardstock, where no page places a link (KL-38). Two unlocked values did the rest: tab labels use the darkest ink (bark), and muted text is `#654B3D`, darker than P03's `#6E5646`, so it passes on every Level 2 cardstock. Every one of the 245 enforced pairings passes; the tightest is a link on Core's Level 2 cardstock at 4.52:1. The smallest corrections, should a link ever be needed on a Level 1 body, are in `planning/design-system.md`, section 10, question 26: they are the owner's to choose.
+- **Checks.** `tests/categories.mjs` (CAT-001 to CAT-010) and `tests/categories-browser.mjs` (CAT-011 to CAT-017) fix the eleven tabs, each section's category, every locked hexadecimal value, the shared colours and the painted result; `tests/contrast.mjs` checks 52 pairings in each category.
