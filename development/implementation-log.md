@@ -56,7 +56,7 @@ During this work another agent (Codex, task CV-01) appended a "CV-01" section to
 - `npm run test:browser`: 12 of 12 preview, 17 of 17 responsive, 12 of 12 navigation-continuity and 7 of 7 colour checks in headless Chrome 157.
 - `shasum -a 256 -c assets/bearnard/SHA256SUMS`: 352 of 352 match. `brand/bearnard/` is still ignored.
 - `git diff --check`: clean. The pre-commit hooks ran on the commit.
-- **Commit:** `feat(design): implement the Chromatic Archive category palettes [P09]`, the commit after `ceec322`.
+- **Commit:** `4f1e68f feat(design): implement the Chromatic Archive category palettes [P09]`, followed by a records commit that only adds this hash.
 
 ## P09 — Navigation Continuity, Environmental Refinement & Bearnard Integration Foundations — 2026-11-11
 
