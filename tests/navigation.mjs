@@ -80,12 +80,12 @@ test("NAV-001", "Top-level order", () => {
   const expected = [
     ["Home", "/"],
     ["About", "/about/"],
-    ["Blog", "/blog/"],
-    ["Portfolio", "/portfolio/"],
     ["Contact", "/contact/"],
     ["Schedule", "/schedule/"],
+    ["Portfolio", "/portfolio/"],
     ["CV", "/cv/"],
     ["Lab", "/lab/"],
+    ["Blog", "/blog/"],
     ["Lecture Notes", "/lecture-notes/"],
     ["Writing", "/writing/"],
     ["Bearnard's Area", "/bearnards-area/"],
@@ -95,6 +95,30 @@ test("NAV-001", "Top-level order", () => {
     expected,
   )
   for (const node of site.sections) assert.equal(node.level, 1)
+})
+
+test("NAV-033", "Each category is one contiguous block in the global row", () => {
+  // The real row: five blocks, in the approved order.
+  const blocks = []
+  for (const node of site.sections) {
+    if (blocks.at(-1)?.[0] !== node.category) blocks.push([node.category, 0])
+    blocks.at(-1)[1] += 1
+  }
+  assert.deepEqual(blocks, [
+    ["core", 4],
+    ["research", 3],
+    ["blog-notes", 2],
+    ["writing", 1],
+    ["bearnard", 1],
+  ])
+  assert.deepEqual(validateNavigation(SECTIONS, CONTENT_ROUTES), [])
+  // A category that returns after another one is rejected, and named.
+  const [home, about, contact, schedule, portfolio] = SECTIONS
+  const split = validateNavigation([home, about, portfolio, contact, schedule])
+  assert.equal(split.length, 1)
+  assert.match(split[0], /splits the "core" category/)
+  // Reversing the row keeps every block together.
+  assert.deepEqual(validateNavigation([...SECTIONS].reverse()), [])
 })
 
 test("NAV-002", "Unique identity", () => {

@@ -4,7 +4,8 @@
  * Provenance: the first-level sections, their order and labels, and the second-level
  * folders come from the approved P04 brief (sections 4 and 5), matching
  * planning/information-architecture.md. P09-A01 (D-076) removed External, leaving eleven
- * sections, and gave each one its permanent archive category. No third-level folder is
+ * sections, and gave each one its permanent archive category. P10 grouped the row by
+ * category: tabs of one category are adjacent (D-077), which tests/categories.mjs enforces. No third-level folder is
  * approved yet, so none is declared here; the model supports three levels, and the tests
  * use synthetic fixtures.
  *
@@ -22,10 +23,12 @@
 import type { ContentRoute, NavigationEntry } from "./types.ts"
 
 export const SECTIONS: readonly NavigationEntry[] = [
+  // Core
   { id: "home", label: "Home", slug: "", category: "core" }, // /
   { id: "about", label: "About", slug: "about", category: "core" },
-  // Articles arrive as content routes.
-  { id: "blog", label: "Blog", slug: "blog", category: "blog-notes" },
+  { id: "contact", label: "Contact", slug: "contact", category: "core" },
+  { id: "schedule", label: "Schedule", slug: "schedule", category: "core" },
+  // Research
   {
     id: "portfolio",
     label: "Portfolio",
@@ -33,8 +36,6 @@ export const SECTIONS: readonly NavigationEntry[] = [
     category: "research",
     environment: "scientific",
   },
-  { id: "contact", label: "Contact", slug: "contact", category: "core" },
-  { id: "schedule", label: "Schedule", slug: "schedule", category: "core" },
   {
     id: "cv",
     label: "CV",
@@ -67,6 +68,9 @@ export const SECTIONS: readonly NavigationEntry[] = [
       { id: "lab-resources", label: "Resources", slug: "resources" },
     ],
   },
+  // Blog & Notes
+  // Blog articles arrive as content routes (P10).
+  { id: "blog", label: "Blog", slug: "blog", category: "blog-notes" },
   {
     id: "lecture-notes",
     label: "Lecture Notes",
@@ -84,6 +88,7 @@ export const SECTIONS: readonly NavigationEntry[] = [
       { id: "lecture-notes-timber-logs", label: "Timber Logs", slug: "timber-logs" },
     ],
   },
+  // Writing
   {
     id: "writing",
     label: "Writing",
@@ -100,6 +105,7 @@ export const SECTIONS: readonly NavigationEntry[] = [
       { id: "writing-book-club", label: "Book Club", slug: "book-club" },
     ],
   },
+  // Bearnard
   {
     id: "bearnards-area",
     label: "Bearnard's Area",

@@ -230,6 +230,24 @@ export function validateNavigation(
 
   for (const section of sections) visit(section, 1, "/", [])
 
+  // The global row is grouped by category (P10, D-077): the tabs of one category are
+  // adjacent, so the colour alone shows the groups. A category that returns after another
+  // one began breaks its block.
+  const closed = new Set<unknown>()
+  let current: unknown = undefined
+  for (const section of sections) {
+    if (!isPlainObject(section) || section.category === undefined) continue
+    if (section.category !== current) {
+      if (closed.has(section.category)) {
+        issues.push(
+          `${describe(section)} splits the "${String(section.category)}" category: its tabs must be adjacent`,
+        )
+      }
+      if (current !== undefined) closed.add(current)
+      current = section.category
+    }
+  }
+
   if (!Array.isArray(contentRoutes)) {
     issues.push("content routes must be an array")
     return issues

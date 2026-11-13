@@ -373,16 +373,22 @@ await test(
     for (let i = 0; i < 6; i++) await press("Tab")
     now = await state()
     check(now.active === "preview:lab:Resources", `the last item is ${now.active}`)
+    // Blog, the next tab since P10's regrouping, is a leaf: it has no preview.
+    await press("Tab")
+    now = await state()
+    check(now.active === "tab:blog", `Tab out of the preview reached ${now.active}`)
+    check(json(now.open) === "[]", `a leaf opened a preview: ${json(now.open)}`)
     await press("Tab")
     now = await state()
     check(
       now.active === "tab:lecture-notes",
-      `Tab out of the preview reached ${now.active}`,
+      `Tab after Blog reached ${now.active}`,
     )
     check(
       json(now.open) === json(["lecture-notes"]),
       `one preview at a time: ${json(now.open)}`,
     )
+    await press("Tab", { shift: true })
     await press("Tab", { shift: true })
     now = await state()
     check(
@@ -403,9 +409,12 @@ await test(
     await press("Tab")
     now = await state()
     check(
-      now.active === "tab:lecture-notes",
+      now.active === "tab:blog",
       `after Escape, Tab skips the closed preview: ${now.active}`,
     )
+    await press("Tab")
+    now = await state()
+    check(now.active === "tab:lecture-notes", `Tab after Blog reached ${now.active}`)
     await press("Escape")
     now = await state()
     check(
@@ -419,6 +428,7 @@ await test(
       now.active === "tab:lecture-notes" && json(now.open) === json(["lecture-notes"]),
       `focus returning after Escape: ${now.active}, ${json(now.open)}`,
     )
+    await press("Tab", { shift: true })
     await press("Tab", { shift: true })
     await press("Tab")
     await press("Tab")

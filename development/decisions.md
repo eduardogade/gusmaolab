@@ -80,6 +80,7 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 | D-074 | The build may hold registered illustrations and nothing else new: only derivatives recorded in `assets/bearnard/derivatives.json`, with separate size ceilings for the site, the design studies and the illustrations | Approved | 2026-11-11 |
 | D-075 | Four proposed section palettes exist as candidates only, in their own stylesheet and design study; the approved environments are unchanged, and adopting any candidate needs the owner | Superseded by D-076; candidates removed | 2026-11-11 |
 | D-076 | **P09-A01 — Chromatic Archive: Five Locked Category Palettes.** Five colour categories with permanent cardstock; every top-level tab keeps its own colour; shell, links, accent and V are shared; environments set typography only; External leaves the navigation (eleven tabs) | **APPROVED / LOCKED** by the owner | 2026-11-12 |
+| D-077 | The global row is grouped by category: the tabs of one category are adjacent; only the order changes | Approved by the owner (P10 brief) | 2026-11-13 |
 
 ## Details
 
@@ -302,3 +303,18 @@ This replaces the "no client-side JavaScript" clause of D-054 and of the archite
 - **Unchanged.** Folder geometry and behaviour (D-043 to D-047, D-049), Overview tabs (D-050, D-051), previews (D-058 to D-063), small screens (D-064 to D-070), the 140 ms cross-fade (D-071), fonts and type values, and the Bearnard foundation (D-073, D-074). Typography consolidation stays deferred (D-042).
 - **What the locked values required, without changing any of them.** Forest Teal reaches 1.88:1 on the Deep Charcoal shell, so links on the shell keep the eye green `#8DB04A` (5.88:1); it reaches 2.78:1, 3.41:1 and 3.67:1 directly on the Core, Research and Blog & Notes Level 1 cardstock, where no page places a link (KL-38). Two unlocked values did the rest: tab labels use the darkest ink (bark), and muted text is `#654B3D`, darker than P03's `#6E5646`, so it passes on every Level 2 cardstock. Every one of the 245 enforced pairings passes; the tightest is a link on Core's Level 2 cardstock at 4.52:1. The smallest corrections, should a link ever be needed on a Level 1 body, are in `planning/design-system.md`, section 10, question 26: they are the owner's to choose.
 - **Checks.** `tests/categories.mjs` (CAT-001 to CAT-010) and `tests/categories-browser.mjs` (CAT-011 to CAT-017) fix the eleven tabs, each section's category, every locked hexadecimal value, the shared colours and the painted result; `tests/contrast.mjs` checks 52 pairings in each category.
+
+**D-077. The global row is grouped by category.** Decided by the owner in the P10 brief (2026-11-13). Before, the row kept the original conceptual order, which interleaved Core, Research and Blog & Notes tabs. Now every category is one contiguous block, so the five colours read as five groups:
+
+| Block | Tabs |
+| --- | --- |
+| Core | Home, About, Contact, Schedule |
+| Research | Portfolio, CV, Lab |
+| Blog & Notes | Blog, Lecture Notes |
+| Writing | Writing |
+| Bearnard | Bearnard's Area |
+
+- **Only the order changed.** Labels, IDs, URLs, categories, environments, children, folder geometry, Overview behaviour, previews, small-screen scrolling and the locked palettes (D-076) are as before. No group heading, spacer or other element was added to the row: the colour identifies the groups.
+- **Enforced.** `validateNavigation()` rejects a registry in which a category returns after another began (so a future tab cannot split a block); NAV-001 and CAT-001 fix the order; NAV-033 checks the five blocks.
+- **Side effect.** Blog, a leaf, now follows Lab, so keyboard Tab from Lab's preview reaches Blog (no preview) before Lecture Notes; PREV-008 was updated for it.
+- **Supersedes** the order in the P04 brief, section 4, and D-076's table.

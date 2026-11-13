@@ -2,29 +2,31 @@
 
 Status: navigation model implemented in P04 (2026-11-10). The first and second levels are approved. **No third-level folder is approved yet**: the model supports a third level, and the final third-level site map will be settled in the content prompts. P05 added the physical folder components that draw this model (section 13). P06 (2026-11-11) made the tabs links, generated a page for every folder from the registry, and added the Overview tab (section 14). P07 added temporary previews of an unopened folder's contents (section 15). P08 made the same folders work on every screen size (section 16). P09-A01 (2026-11-12, D-076) removed External from the navigation, leaving eleven sections, and gave every section a permanent archive category (sections 1 and 11).
 
-Source of truth: `src/navigation/registry.ts` (data), `src/navigation/navigation.ts` (helpers) and `src/navigation/types.ts` (types). Tests: `tests/navigation.mjs` (NAV-001 to NAV-021, NAV-025), `tests/routes.mjs` (NAV-022, NAV-023, NAV-026 to NAV-032), `tests/categories.mjs` and `tests/categories-browser.mjs` (CAT-001 to CAT-017, the categories) and, for the previews, `tests/previews.mjs` and `tests/previews-browser.mjs` (PREV-001 to PREV-015). NAV-024, Back and Forward, is checked in a browser.
+Source of truth: `src/navigation/registry.ts` (data), `src/navigation/navigation.ts` (helpers) and `src/navigation/types.ts` (types). Tests: `tests/navigation.mjs` (NAV-001 to NAV-021, NAV-025 and NAV-033), `tests/routes.mjs` (NAV-022, NAV-023, NAV-026 to NAV-032), `tests/categories.mjs` and `tests/categories-browser.mjs` (CAT-001 to CAT-017, the categories) and, for the previews, `tests/previews.mjs` and `tests/previews-browser.mjs` (PREV-001 to PREV-015). NAV-024, Back and Forward, is checked in a browser.
 
 ## 1. Top-level sections (approved)
 
-Eleven tabs on the global row, in this order (P09-A01, D-076):
+Eleven tabs on the global row, in this order. P09-A01 (D-076) fixed the eleven and their categories; **P10 (D-077) grouped the row by category**, so the tabs of one category are adjacent and the colour alone shows the five groups.
 
 | # | Label | ID | URL | Category (colour) | Environment (typography) |
 | ---: | --- | --- | --- | --- | --- |
 | 1 | Home | `home` | `/` | Core | Core |
 | 2 | About | `about` | `/about/` | Core | Core |
-| 3 | Blog | `blog` | `/blog/` | Blog & Notes | Core |
-| 4 | Portfolio | `portfolio` | `/portfolio/` | Research | Scientific |
-| 5 | Contact | `contact` | `/contact/` | Core | Core |
-| 6 | Schedule | `schedule` | `/schedule/` | Core | Core |
-| 7 | CV | `cv` | `/cv/` | Research | Scientific |
-| 8 | Lab | `lab` | `/lab/` | Research | Scientific |
+| 3 | Contact | `contact` | `/contact/` | Core | Core |
+| 4 | Schedule | `schedule` | `/schedule/` | Core | Core |
+| 5 | Portfolio | `portfolio` | `/portfolio/` | Research | Scientific |
+| 6 | CV | `cv` | `/cv/` | Research | Scientific |
+| 7 | Lab | `lab` | `/lab/` | Research | Scientific |
+| 8 | Blog | `blog` | `/blog/` | Blog & Notes | Core |
 | 9 | Lecture Notes | `lecture-notes` | `/lecture-notes/` | Blog & Notes | Technical |
 | 10 | Writing | `writing` | `/writing/` | Writing | Literary |
 | 11 | Bearnard's Area | `bearnards-area` | `/bearnards-area/` | Bearnard | Personal |
 
+**Grouping rule (P10).** Every category forms one contiguous block of the global row: Core (4), Research (3), Blog & Notes (2), Writing (1), Bearnard (1). `validateNavigation()` rejects a registry in which a category returns after another began, and NAV-033 and CAT-001 check the real row. Only the order changed: labels, IDs, URLs, categories, environments and children are as before, and no heading, gap or other element was added to the row. Before P10 the row kept the original conceptual order (Home, About, Blog, Portfolio, Contact, Schedule, CV, Lab, Lecture Notes, Writing, Bearnard's Area), which interleaved Blog & Notes, Research and Core.
+
 The labels are authoritative. The URLs are the brief's recommended values, adopted unchanged in P04.
 
-**External was removed in P09-A01.** It was the sixth of twelve tabs, at `/external/`, and held only the development placeholder: no content existed, so none was deleted or moved. Its page was generated from the registry, so removing the entry stops the page being built; `/external/` is now an unknown URL. Nothing took its place, and no new destination was invented for it.
+**External was removed in P09-A01.** It was the sixth of twelve tabs in the P04 order, at `/external/`, and held only the development placeholder: no content existed, so none was deleted or moved. Its page was generated from the registry, so removing the entry stops the page being built; `/external/` is now an unknown URL. Nothing took its place, and no new destination was invented for it.
 
 ## 2. Second-level folders (approved)
 
