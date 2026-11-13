@@ -62,7 +62,7 @@ Headless Chrome 157, the production preview (`astro preview`, port 4322) and, fo
 - `git diff --check`: clean. The pre-commit hooks ran on each commit.
 - **Push decision:** none (D-082). P10 is unfinished infrastructure with temporary pages; no backup or collaboration need was stated; `origin/main` still has the `__frag8/` commits that `main` lacks.
 - **Other agent's work:** the CV-01 sections of `development/current-state.md` and this log, `cv/codex-yaml/` and `clean` stayed unstaged and unchanged.
-- **Commits:** `2748020` (Part A) and the editorial commit recorded in `development/current-state.md`.
+- **Commits:** `2748020 refactor(navigation): group tabs by archive category [P10]` (Part A) and `3108d93 feat(content): establish editorial collections [P10]` (Part B), followed by a records commit that only adds these hashes.
 
 ## P09-A01 — Final Color Architecture: Chromatic Archive — 2026-11-12
 
