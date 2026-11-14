@@ -97,7 +97,7 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 | D-090 | Source authority is not publication approval: an explicit manifest names the working file and the approved version (file, version, fingerprint, date); nothing is selected automatically; two validation layers | Approved (P11-A01 brief) | 2026-11-14 |
 | D-091 | Records may keep a source's text as written (author line, institution, venue details); statuses the source does not state are left out; an explicit identity map links CV identifiers to record IDs | Approved (P11-A01 brief) | 2026-11-14 |
 | D-092 | A read-only adapter with an allowlist, and a generated public snapshot: builds never read the CV; the CV relates outputs to the site's projects and never describes them | Approved (P11-A01 brief) | 2026-11-14 |
-| D-093 | The CV files stay out of the public repository: ignored by Git and by the formatter; email, telephone, location, references, templates, mentees' names and grades, amounts and confidential titles are never projected | Approved (P11-A01 brief); the Git ignore rule is Claude Code's safeguard, for the owner to confirm | 2026-11-14 |
+| D-093 | The CV files stay out of the public repository: ignored by Git and by the formatter; email, telephone, location, references, templates, mentees' names and grades, amounts and confidential titles are never projected | Approved (P11-A01 brief); the Git ignore rule, Claude Code's safeguard, confirmed by the owner on 2026-11-14 | 2026-11-14 |
 
 ## Details
 
@@ -471,7 +471,7 @@ This replaces the "no client-side JavaScript" clause of D-054 and of the archite
 **D-093. Privacy.**
 
 - **The repository is public.** A file that Astro does not publish is still public once committed. The CV files were untracked, not ignored, and have never been committed or pushed.
-- **Ignored by Git:** `/cv/codex-yaml/` and `/cv/CV*.yaml`. This is Claude Code's safeguard, not in the brief: the working file holds a telephone number, an email address and third parties' historical email addresses, and one `git add -A` by any agent would publish them irreversibly. It changes no file of the CV workflow. If the owner wants a CV file in Git after all, they record that decision and remove the line; CV-020 says so when it fails.
+- **Ignored by Git:** `/cv/codex-yaml/` and `/cv/CV*.yaml`. **Confirmed by the owner on 2026-11-14** ("Keep ignored"). It began as Claude Code's safeguard, not in the brief: the working file holds a telephone number, an email address and third parties' historical email addresses, and one `git add -A` by any agent would publish them irreversibly. It changes no file of the CV workflow. If the owner wants a CV file in Git after all, they record that decision and remove the line; CV-020 says so when it fails.
 - **Ignored by Prettier**, so `npm run format` cannot rewrite a CV file.
 - **Tracked in `cv/`:** `manifest.json`, `identities.json`, `README.md` and the two empty files from the first commit. CV-020 fails for anything else.
 - **Never projected:** the sections `declaracoes`, `cartas_de_apresentacao`, `referencias`, `topicos_master_sugeridos`, `placeholders_pendentes`; `modelo_sem_vinculos` and `texto_sem_vinculos` (writing templates, not statements); `fonte` and `fonte_identificador` (they name private documents); `email`, `telefone`, `localizacao`; `orientando` and `avaliacao_final` (another person's name and grade); `valor_e_condicoes`; unconfirmed teaching hours; `tecnologias`; `experiencia_declarada`; the title of a proposal reviewed in confidence.

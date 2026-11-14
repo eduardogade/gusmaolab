@@ -590,7 +590,7 @@ Checked by `tests/cv.mjs` (CV-001 to CV-020) in `npm run verify`, on a synthetic
 | G-A11-13 | No premature publication of the CV | Passed | `CV_SNAPSHOT` is `null`; CV-007, CV-015, CV-018 |
 | G-A11-14 | A real version, approved by the owner, yields a correct public snapshot | **Untested** | No version exists or is approved. Proved on the synthetic fixture only (CV-017). |
 | G-A11-15 | The mapping suits the finished CV pages and the CV exports | **Untested** | Those are later prompts. |
-| G-A11-16 | The Git ignore rule for the CV files is what the owner wants | **Awaiting the owner** | D-093: Claude Code's safeguard, not in the brief |
+| G-A11-16 | The Git ignore rule for the CV files is what the owner wants | Passed | D-093: the owner confirmed it on 2026-11-14 ("Keep ignored") |
 
 ### CV tests (P11-A01)
 

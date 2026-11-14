@@ -39,7 +39,7 @@ Newest entry first.
 - **Software yields relationships, not projects,** so the CV cannot overwrite the site's description of a project (D-092).
 - **An explicit identity map, empty,** rather than IDs derived from section numbers (D-091). No ID was assigned for the owner, not even the owner's own.
 - **Funding as an activity type,** not a ninth family: in the CV it has the shape of an award.
-- **The Git ignore rule** is Claude Code's addition, not the brief's (D-093). Reason: one `git add -A` would publish private details irreversibly. To be confirmed by the owner.
+- **The Git ignore rule** is Claude Code's addition, not the brief's (D-093). Reason: one `git add -A` would publish private details irreversibly. The owner confirmed it after the report, on 2026-11-14 ("Keep ignored").
 - **Left out of the allowlist** beyond the brief's list: mentees' names and grades, amounts of money, unconfirmed teaching hours, `tecnologias`, `experiencia_declarada`, and the titles of proposals reviewed in confidence.
 
 ### Checks
