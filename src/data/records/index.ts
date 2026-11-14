@@ -1,29 +1,27 @@
 /**
  * The site's canonical records (P11, D-083): the one authoritative copy of every person,
  * organization, research area, project, scholarly output, appointment, qualification and
- * activity that the site presents. One file per family; every file is a typed list.
+ * activity that the site presents. They have two sources, and no fact has both:
  *
- * All eight are empty: P11 built the system, and no verified record has been supplied
- * yet. Synthetic records are refused here; the test fixture lives in
- * src/design/records-fixture.ts and is never part of this dataset.
+ * - independent.ts: the records written by hand in this folder (projects, research areas,
+ *   organizations, other people). All eight lists are empty: no verified record has been
+ *   supplied yet.
+ * - ../cv/snapshot.ts: the records derived from the owner's CV, which owns the owner's
+ *   professional history (P11-A01, D-089). It is `null` until the owner approves a
+ *   version, and then it is generated, never edited.
+ *
+ * `mergeRecords` joins the two and refuses a fact stated on both sides. Synthetic records
+ * are refused here; the test fixture lives in src/design/records-fixture.ts and is never
+ * part of this dataset.
  */
-import { people } from "./people.ts"
-import { organizations } from "./organizations.ts"
-import { researchAreas } from "./research-areas.ts"
-import { projects } from "./projects.ts"
-import { publications } from "./publications.ts"
-import { appointments } from "./appointments.ts"
-import { education } from "./education.ts"
-import { activities } from "./activities.ts"
+import { mergeRecords } from "../../cv/snapshot.ts"
+import { CV_SNAPSHOT } from "../cv/snapshot.ts"
+import { INDEPENDENT_RECORDS } from "./independent.ts"
 import type { RecordsInput } from "../../records/schema.ts"
 
-export const PRODUCTION_RECORDS: RecordsInput = {
-  people,
-  organizations,
-  researchAreas,
-  projects,
-  publications,
-  appointments,
-  education,
-  activities,
-}
+export { INDEPENDENT_RECORDS }
+
+export const PRODUCTION_RECORDS: RecordsInput = mergeRecords(
+  INDEPENDENT_RECORDS,
+  CV_SNAPSHOT,
+)

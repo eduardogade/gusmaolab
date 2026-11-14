@@ -569,6 +569,54 @@ Checked by `tests/records.mjs` (REC-001 to REC-026) and CONT-020 in `tests/edito
 | REC-026 The physical folders are unchanged | Pass |
 | CONT-020 An entry that names a record the site lacks fails the build (built) | Pass |
 
+## P11-A01 gates — The CV as the source of the owner's records
+
+Checked by `tests/cv.mjs` (CV-001 to CV-020) in `npm run verify`, on a synthetic fixture (`tests/fixtures/cv/`) and, where it is present, on fingerprints and counts of the real working file; and by the existing suites for regressions.
+
+| ID | Gate | Status | Evidence |
+| --- | --- | --- | --- |
+| G-A11-01 | The versioned CV YAML is recognised as authoritative for the owner's professional history | Passed | D-089; `planning/content-model.md`, "The author's CV"; `AGENTS.md` |
+| G-A11-02 | P11 is reconciled with that authority | Passed | `PRODUCTION_RECORDS` = independent records + CV snapshot; CV-012 |
+| G-A11-03 | No second hand-maintained CV database | Passed | CV-012: a hand-written fact of the owner is refused; the independent lists are empty |
+| G-A11-04 | A read-only integration path exists | Passed | `src/cv/`, `scripts/cv.mjs`; CV-002, CV-003 |
+| G-A11-05 | The proposal stays editable and unchanged | Passed | SHA-256 `8e402f27…4e49` before and after; CV-003; nothing under `cv/codex-yaml/` written or staged |
+| G-A11-06 | Placeholder and review-state handling is explicit | Passed | CV-004, CV-005, CV-006, CV-007 |
+| G-A11-07 | Version selection is controlled | Passed | CV-008 |
+| G-A11-08 | Publication needs explicit approval | Passed | CV-006 to CV-008; `cv/manifest.json`: nothing approved, publication off |
+| G-A11-09 | Private references and unresolved records cannot reach the site | Passed | CV-005, CV-013, CV-014, CV-017, CV-018 |
+| G-A11-10 | P10 and P11 infrastructure still works | Passed (Chromium) | All earlier suites; CV-016, CV-019; `dist/` is byte-count identical (1,176,165) |
+| G-A11-11 | Automated checks pass | Passed | `npm run verify`; `npm run test:browser` |
+| G-A11-12 | Documentation is updated | Passed | The seven documents of the brief, and `cv/README.md`, `AGENTS.md`, `README.md` |
+| G-A11-13 | No premature publication of the CV | Passed | `CV_SNAPSHOT` is `null`; CV-007, CV-015, CV-018 |
+| G-A11-14 | A real version, approved by the owner, yields a correct public snapshot | **Untested** | No version exists or is approved. Proved on the synthetic fixture only (CV-017). |
+| G-A11-15 | The mapping suits the finished CV pages and the CV exports | **Untested** | Those are later prompts. |
+| G-A11-16 | The Git ignore rule for the CV files is what the owner wants | **Awaiting the owner** | D-093: Claude Code's safeguard, not in the brief |
+
+### CV tests (P11-A01)
+
+| Test | Result |
+| --- | --- |
+| CV-001 The proposal YAML parses successfully | Pass (real file and fixture) |
+| CV-002 The adapter supports the Portuguese section names | Pass |
+| CV-003 Source files remain unchanged after loading | Pass (real file and fixture) |
+| CV-004 Authoring validation keeps unresolved placeholders | Pass |
+| CV-005 Publication validation excludes unresolved placeholders | Pass |
+| CV-006 `fonte_de_verdade: true` does not authorize publication | Pass |
+| CV-007 A proposal under author review is not publicly approved | Pass |
+| CV-008 Version selection is explicit | Pass |
+| CV-009 Source IDs are kept through the identity mapping | Pass |
+| CV-010 Author order and co-first-author notes are kept | Pass |
+| CV-011 An unknown end is not an ongoing appointment | Pass |
+| CV-012 CV-derived records feed the record selectors, once | Pass |
+| CV-013 Private references and contact details are not projected | Pass |
+| CV-014 Templates and placeholder inventories never become records | Pass |
+| CV-015 No approved CV data does not break the build | Pass |
+| CV-016 The eight editorial collections stay independent | Pass |
+| CV-017 The site builds from an approved snapshot, without the raw CV (built) | Pass (synthetic snapshot) |
+| CV-018 No CV source reaches client-side code or public files | Pass (real file and fixture) |
+| CV-019 The Chromatic Archive and the folders are unchanged | Pass |
+| CV-020 The raw CV is not tracked, formatted or served (added by Claude Code) | Pass |
+
 ## Future gates
 
 | ID | Gate | Source | Status |

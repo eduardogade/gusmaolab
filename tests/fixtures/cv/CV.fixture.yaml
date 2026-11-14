@@ -1,0 +1,349 @@
+# SYNTHETIC FIXTURE (tests/fixtures/cv/README.md). Nothing here is true of anyone.
+metadados:
+  versao: 9.9.0
+  data_atualizacao: 2031-01-02
+  autor: Pessoa Sintética
+  idioma: pt-BR
+  fonte_de_verdade: true
+  situacao: Proposta para revisão do autor
+  corte_factual: 2031-01-01
+  regras:
+    - Datas ISO são textos; datas impossíveis e estados atuais recebem marcadores.
+identidade_profissional:
+  nome: Pessoa Sintética (fixture)
+  nome_exterior: Synthetic Person (fixture)
+  titulo_profissional: Cargo Sintético
+  experiencia_declarada: 99+ anos
+  resumo: Resumo sintético de uma carreira inventada para testes.
+  areas_de_especialidade:
+    - Área sintética um
+    - Área sintética dois
+  palavras_chave:
+    - palavra sintética
+  idiomas:
+    - idioma: Idioma Sintético
+      proficiencia: Nativo
+    - idioma: Outro Idioma
+      proficiencia: "{{PROFICIENCIA_OUTRO}}"
+contato:
+  email: privado.sintetico@example.org
+  fonte_email: 0.Fonte-privada.docx
+  telefone: "+00 00 0000-0000"
+  orcid: 0000-0002-1825-0097
+  lattes: https://example.org/lattes/sintetico
+  linkedin: "{{LINKEDIN_ATUAL}}"
+  github: https://example.org/git/sintetico
+  google_scholar: https://example.org/scholar?user=sintetico
+  site: sem-protocolo.example.org
+  researchgate: https://example.org/rg/sintetico
+  localizacao:
+    cidade: Cidade Privada Sintética
+    pais: País Sintético
+  modelo_sem_vinculos: MODELO SINTÉTICO | privado.sintetico@example.org
+formacao_academica:
+  - id: formacao_1
+    grau: Doutorado em Ciências Sintéticas
+    instituicao_e_local: Universidade Sintética – Cidade, País
+    supervisao: Prof. Dr. Orientador Sintético & Prof. Dr. Outra Sintética
+    periodo:
+      inicio: 2012-11-01
+      fim: 2016-12-15
+    titulo_trabalho: Tese sintética sobre nada
+    fonte: 0.Fonte-privada.docx
+    modelo_sem_vinculos: MODELO SINTÉTICO de formação em {{INSTITUICAO}}
+  - id: formacao_2
+    grau: Bacharelado em Ciências Sintéticas
+    instituicao_e_local: Universidade Sintética – Cidade, País
+    supervisao: "{{SUPERVISAO_FORMACAO_2}}"
+    periodo:
+      inicio: 2006-08-01
+      fim: "{{FORMACAO_2_FIM}}"
+    titulo_trabalho: Monografia sintética
+    fonte: N/A
+    modelo_sem_vinculos: MODELO SINTÉTICO
+experiencia_profissional:
+  academica_e_pesquisa:
+    - id: exp_1
+      cargo: Pesquisadora Sintética
+      instituicao_e_local: Instituto Sintético – Cidade, País
+      departamento_e_regime: Departamento Sintético
+      periodo:
+        inicio: 2023-07-01
+        fim: "{{EXP_1_FIM}}"
+      responsabilidades: "{{RESPONSABILIDADES_EXP_1}}"
+      tecnologias: "{{TECNOLOGIAS_EXP_1}}"
+      fonte: 0.Fonte-privada.docx — Atividades
+      modelo_sem_vinculos: MODELO SINTÉTICO em {{INSTITUICAO}}
+    - id: exp_2
+      cargo: Professor Sintético
+      instituicao_e_local: Universidade Sintética – Cidade, País
+      departamento_e_regime: Centro Sintético
+      periodo:
+        inicio: 2020-01-15
+        fim: 2022-12-31
+      responsabilidades: Responsabilidades sintéticas resolvidas.
+      tecnologias: Tecnologias sintéticas
+      fonte: 0.Fonte-privada.docx — Atividades
+      modelo_sem_vinculos: MODELO SINTÉTICO
+    - id: exp_3
+      cargo: "{{CARGO_EXP_3}}"
+      instituicao_e_local: Laboratório Sintético – Cidade, País
+      departamento_e_regime: Setor Sintético
+      periodo:
+        inicio: 2018-03-01
+        fim: 2019-02-28
+      responsabilidades: Texto sintético.
+      tecnologias: Texto sintético.
+      fonte: 0.Fonte-privada.docx — Atividades
+      modelo_sem_vinculos: MODELO SINTÉTICO
+  consultoria_industrial_documentada:
+    - id: exp_5
+      cargo: Consultora Sintética
+      instituicao_e_local: Empresa Sintética – Cidade, País
+      departamento_e_regime: Comitê Sintético
+      periodo:
+        inicio: 2021-05-01
+      responsabilidades: "{{RESPONSABILIDADES_EXP_5}}"
+      tecnologias: "{{TECNOLOGIAS_EXP_5}}"
+      fonte: 0.Fonte-privada.docx — Atividades
+      modelo_sem_vinculos: MODELO SINTÉTICO
+  industria:
+    - situacao: Rascunho; não contabilizar como vínculo
+      cargo: "{{CARGO_INDUSTRIA}}"
+      empresa: "{{EMPRESA_INDUSTRIA}}"
+      periodo:
+        inicio: "{{INICIO_INDUSTRIA}}"
+        fim: "{{FIM_INDUSTRIA}}"
+      responsabilidades:
+        - "{{RESPONSABILIDADES_INDUSTRIA}}"
+      modelo_sem_vinculos: MODELO SINTÉTICO
+publicacoes:
+  criterio: Somente registros sintéticos.
+  artigos:
+    - id: 4.1.1
+      autores: Alfa, A.*, Beta B.B.*, Sintetica, P.*, van Gama, C.D., Delta, E.-F.
+      titulo: Artigo sintético com coprimeira autoria
+      veiculo_e_detalhes: "Revista Sintética, 43(11): 114853, 2024."
+      ano: 2024
+      doi_ou_url: 10.5555/SINTETICO.2024.1
+      fonte_identificador: 0.Fonte-privada.docx
+      nota_autoria: Asterisco indica co-primeira autoria na fonte.
+    - id: 4.1.2
+      autores: Sintetica, P., Alfa, A.
+      titulo: Artigo sintético sem identificador
+      veiculo_e_detalhes: "Revista Sintética, 1(2): 3-4, 2020."
+      ano: 2020
+      doi_ou_url: "{{IDENTIFICADOR_4_1_2}}"
+    - id: 4.1.3
+      autores: Alfa, A., Sintetica, P.
+      titulo: Artigo sintético com endereço
+      veiculo_e_detalhes: "Boletim Sintético, 5: 6, 2019."
+      ano: 2019
+      doi_ou_url: https://example.org/artigo/sintetico-3
+  anais_completos:
+    - id: 4.2.1
+      autores: Sintetica, P., Beta, B.B.
+      titulo: Trabalho completo sintético
+      veiculo_e_detalhes: Proceedings of the Synthetic Conference, Cidade, País, 2014.
+      ano: 2014
+      doi_ou_url: "{{IDENTIFICADOR_4_2_1}}"
+      modelo_sem_vinculos: MODELO SINTÉTICO. Apresentado em {{EVENTO}}.
+  resumos_em_anais:
+    - id: 4.3.1
+      autores: Sintetica, P.
+      titulo: Resumo sintético
+      veiculo_e_detalhes: Proceedings of the Synthetic Meeting, Cidade, País, 2024.
+      ano: 2024
+      doi_ou_url: "{{IDENTIFICADOR_4_3_1}}"
+      modelo_sem_vinculos: MODELO SINTÉTICO
+  capitulos: []
+  preprints:
+    - id: 4.9.1
+      autores: Sintetica, P., Delta, E.-F.
+      titulo: Preprint sintético
+      veiculo_e_detalhes: Repositório Sintético, 2025.
+      ano: 2025
+      doi_ou_url: 10.5555/sintetico.2025.9
+  fonte: 0.Fonte-privada.docx
+apresentacoes_e_eventos:
+  palestras:
+    - id: 4.4.1
+      data: 2024-09-18
+      descricao: “Palestra sintética” em Congresso Sintético – Cidade, País.
+      modelo_sem_vinculos: MODELO SINTÉTICO em {{INSTITUICAO}}
+    - id: 4.4.2
+      data: "2023-02-30"
+      descricao: “Palestra sintética com data impossível” em Encontro Sintético.
+      modelo_sem_vinculos: MODELO SINTÉTICO
+  participacoes:
+    - id: 7.5.1
+      periodo:
+        inicio: 2024-11-18
+        fim: 2024-11-20
+      descricao: “Simpósio Sintético” (Participação). Cidade, País.
+      modelo_sem_vinculos: MODELO SINTÉTICO
+  fonte: 0.Fonte-privada.docx
+financiamentos_e_grants:
+  - id: reconhecimento_1
+    data: 2019-07-01
+    tipo: Subsídio sintético de projeto de pesquisa (co-autor)
+    instituicao: Agência Sintética [Projeto 000]
+    tema: “Tema sintético financiado”
+    valor_e_condicoes: € 123.456,00 (sintético).
+    fonte: 0.Fonte-privada.docx
+    modelo_sem_vinculos: MODELO SINTÉTICO
+premios_e_honrarias:
+  - id: reconhecimento_2
+    data: 2016-12-09
+    tipo: Melhor publicação sintética
+    instituicao: Faculdade Sintética
+    tema: “Tema sintético premiado”
+    valor_e_condicoes: € 123.456,00 (sintético).
+    fonte: 0.Fonte-privada.docx
+    modelo_sem_vinculos: MODELO SINTÉTICO
+experiencia_docente:
+  - id: 3.2.1
+    atividade_e_instituicao: Docência em Universidade Sintética
+    disciplina_e_codigo: “Disciplina Sintética” (SIN101).
+    periodo:
+      inicio: 2024-06-01
+      fim: "{{3_2_1_FIM}}"
+    semestres: Um (1+) semestre.
+    carga_horaria: "{{CARGA_HORARIA_3_2_1}}"
+    modelo_sem_vinculos: MODELO SINTÉTICO
+  - id: 3.2.2
+    atividade_e_instituicao: Docência em Universidade Sintética
+    disciplina_e_codigo: “Outra Disciplina Sintética” (SIN102).
+    periodo:
+      inicio: 2021-03-01
+      fim: 2021-07-31
+    semestres: Um (1) semestre.
+    carga_horaria: "{{CARGA_HORARIA_3_2_2}}"
+    modelo_sem_vinculos: MODELO SINTÉTICO
+mentoria_e_orientacao:
+  fonte: 0.Fonte-privada.docx
+  criterio: Não presumir orientação principal ou vínculo formal.
+  registros:
+    - id: 3.1.1
+      orientando: Orientanda Sintética Privada
+      instituicao: Universidade Sintética
+      nivel: Doutorado
+      tema: Tema sintético de orientação
+      periodo:
+        inicio: 2023-03-01
+        fim: "{{3_1_1_FIM}}"
+      avaliacao_final: 9.99 (sintético).
+      modelo_sem_vinculos: MODELO SINTÉTICO de Orientanda Sintética Privada
+servico_e_lideranca:
+  fonte: 0.Fonte-privada.docx
+  administracao:
+    - id: "6.1"
+      funcao: Chefe Sintético de Coordenadoria
+      instituicao: Universidade Sintética – Cidade, País
+      periodo:
+        inicio: 2023-01-17
+        fim: 2023-12-18
+      modelo_sem_vinculos: MODELO SINTÉTICO
+  bancas_academicas:
+    - id: 7.1.1
+      data: 2024-04-10
+      atividade: Banca sintética de doutorado
+      instituicao: Centro Sintético, Cidade, País
+      titulo: Título público sintético de tese
+      modelo_sem_vinculos: MODELO SINTÉTICO
+  avaliacao_de_projetos:
+    - id: 7.2.1
+      data: 2024-01-10
+      atividade: Avaliação sintética de pedido de subsídio
+      instituicao: Agência Sintética
+      titulo: Título confidencial sintético
+      modelo_sem_vinculos: MODELO SINTÉTICO
+  revisao_por_pares:
+    - id: 7.3.1
+      atividade: Revisor na revista “Periódico Sintético”.
+      periodo:
+        inicio: 2019-08-07
+        fim: "{{7_3_1_FIM}}"
+  organizacao_de_eventos: []
+extensao:
+  - id: 4.5.1
+    atividade_e_instituicao: Projeto de Extensão com apoio da Universidade Sintética
+    projeto: Ensino sintético de fundamentos
+    periodo:
+      inicio: 2024-01-15
+      fim: "{{4_5_1_FIM}}"
+    carga_horaria_declarada: 84h sintéticas.
+    modelo_sem_vinculos: MODELO SINTÉTICO
+formacao_complementar:
+  - id: 7.4.1
+    periodo:
+      inicio: 2024-09-23
+      fim: 2024-09-23
+    curso_carga_e_instituicao: “Curso Sintético” (50h). Unidade Sintética.
+    modelo_sem_vinculos: MODELO SINTÉTICO
+habilidades_tecnicas:
+  pesquisa:
+    metodos:
+      - Método sintético um
+      - Método sintético dois
+    fontes:
+      - 0.Fonte-privada.docx
+    observacao: Não atribuir tecnologias a vínculos específicos sem evidência.
+  conhecimentos_a_classificar:
+    linguagens:
+      - Linguagem não confirmada sintética
+    nivel: "{{NIVEL_CONHECIMENTOS}}"
+  conhecimentos_basicos_a_confirmar:
+    topicos:
+      - Tópico não confirmado sintético
+    nivel: "{{NIVEL_BASICO}}"
+  industria:
+    - competencia: "{{COMPETENCIA_INDUSTRIA}}"
+      nivel: "{{NIVEL_COMPETENCIA_INDUSTRIA}}"
+      evidencia: "{{EVIDENCIA_COMPETENCIA_INDUSTRIA}}"
+software_e_metodos:
+  - nome: FERRAMENTA
+    descricao: Descrição breve sintética que não substitui a do site.
+    evidencia:
+      - 4.1.1
+      - 4.2.1
+    repositorio: "{{URL_FERRAMENTA}}"
+certificacoes:
+  - situacao: Rascunho; não contabilizar como certificação obtida
+    nome: "{{CERTIFICACAO}}"
+    emissor: "{{INSTITUICAO}}"
+    data: "{{DATA_CERTIFICACAO}}"
+    credencial: "{{URL_CREDENCIAL}}"
+    modelo_sem_vinculos: MODELO SINTÉTICO
+  - id: cert_1
+    nome: Certificação Sintética
+    emissor: Emissor Sintético
+    data: 2022-05
+    credencial: https://example.org/credencial/sintetica
+    modelo_sem_vinculos: MODELO SINTÉTICO
+declaracoes:
+  pesquisa:
+    fonte: 0.Fonte-privada.docx
+    texto_sem_vinculos: DECLARAÇÃO SINTÉTICA PRIVADA sobre {{TEMA}}.
+cartas_de_apresentacao:
+  academica:
+    fonte: 0.Fonte-privada.docx
+    texto_sem_vinculos: CARTA SINTÉTICA PRIVADA para {{INSTITUICAO}}.
+referencias:
+  criterio: Confirmar contatos e autorização antes de incluí-los em candidatura.
+  pessoas:
+    - id: ref_1
+      nome: Prof. Dr. Referência Privada Sintética
+      relacao_historica: Supervisão sintética
+      instituicao_historica: Universidade Sintética
+      email_historico: referencia.privada@example.org
+      contato_atual_e_autorizacao: "{{CONTATO_REF_1}}"
+      modelo_sem_vinculos: MODELO SINTÉTICO — {{EMAIL_REFERENCIA}}
+topicos_master_sugeridos:
+  - TÓPICO SINTÉTICO PRIVADO um
+placeholders_pendentes:
+  - marcadores:
+      - "{{EXP_1_FIM}}"
+    contexto: Término ou continuidade do vínculo
+    fonte: 0.Fonte-privada.docx
+    motivo: MOTIVO SINTÉTICO PRIVADO; telefone histórico +00 00 0000-0000.

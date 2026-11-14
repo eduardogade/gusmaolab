@@ -15,6 +15,10 @@
  *   repository is public, so nothing confidential belongs in a record at all.
  * - Unknown fields are rejected. A fact that is not known is left out, never guessed.
  * - Dates keep the precision they were written with (dates.ts).
+ * - A fact that its source states only as one line of text (an author list, an institution
+ *   with its place) may be kept as that text, exactly as written, instead of being split
+ *   into structured fields or turned into a reference (P11-A01, D-091). Splitting is a
+ *   deliberate later step, never a guess.
  */
 import { z } from "astro/zod"
 import { isPartialDate, endsBeforeStart, PRESENT } from "./dates.ts"
@@ -122,6 +126,11 @@ const provenance = z.strictObject({
   status: z.enum(PROVENANCE_STATUSES),
   /** Where the facts come from, in the owner's words: a document, a page, a person. */
   source: text.optional(),
+  /**
+   * The record's identifier in its source document, exactly as written there ("4.1.1").
+   * It traces the record back to its source; it is never the record's own ID.
+   */
+  sourceId: text.optional(),
   /** A public page that supports the record. */
   url: url.optional(),
   /** When the owner last confirmed the record. */
@@ -274,6 +283,7 @@ const project = z.strictObject({
 export const PUBLICATION_TYPES = [
   "journal-article",
   "conference-paper",
+  "conference-abstract",
   "preprint",
   "book-chapter",
   "dataset",
@@ -330,7 +340,20 @@ const publication = z
     type: z.enum(PUBLICATION_TYPES),
     status: z.enum(PUBLICATION_STATUSES),
     /** Ordered. Never sorted, never deduplicated silently. */
-    authors: z.array(author).min(1),
+    authors: z.array(author).min(1).optional(),
+    /**
+     * The author line exactly as printed, instead of `authors`, when the source gives it
+     * as one line. Order, initials and marks such as a co-first-author asterisk are kept;
+     * the line is never split into names.
+     */
+    authorsText: text.optional(),
+    /** What a mark in the author line means, such as "* co-first authors". */
+    authorshipNote: text.optional(),
+    /**
+     * Registered people among the authors of an output whose author list is kept as text:
+     * it says whose work this is without parsing the line.
+     */
+    creditedTo: idList("people"),
     /** The publication date, as precisely as it is known: often only a year. */
     date: partialDate.optional(),
     /** The journal, conference, book or repository. */
@@ -338,6 +361,11 @@ const publication = z
     volume: text.optional(),
     issue: text.optional(),
     pages: text.optional(),
+    /**
+     * Venue, volume, pages and year as one line, exactly as the source prints them, instead
+     * of the four fields above.
+     */
+    details: text.optional(),
     doi: doi.optional(),
     /** The official page, when there is no DOI or it differs. */
     url: url.optional(),
@@ -366,7 +394,19 @@ const publication = z
       data.date === undefined
     )
       issue("date", `a ${data.status} output needs its date, at least the year`)
-    const people = data.authors.flatMap((entry) =>
+    if ((data.authors === undefined) === (data.authorsText === undefined))
+      issue(
+        "authors",
+        "give the authors either as a list (authors) or as the printed line (authorsText)",
+      )
+    if (data.creditedTo.length > 0 && data.authorsText === undefined)
+      issue("creditedTo", "creditedTo is only for an author list kept as text")
+    if (
+      data.details !== undefined &&
+      [data.venue, data.volume, data.issue, data.pages].some((x) => x !== undefined)
+    )
+      issue("details", "give either details or venue, volume, issue and pages")
+    const people = (data.authors ?? []).flatMap((entry) =>
       "personId" in entry ? [entry.personId] : [],
     )
     if (!unique(people)) issue("authors", "a person is listed twice among the authors")
@@ -380,6 +420,7 @@ export const APPOINTMENT_TYPES = [
   "employment",
   "academic",
   "visiting",
+  "consulting",
   "affiliation",
   "other",
 ] as const
@@ -394,7 +435,11 @@ const appointment = z
     id: idOf("appointments"),
     ...base,
     personId: idOf("people"),
-    organizationId: idOf("organizations"),
+    organizationId: idOf("organizations").optional(),
+    /** The institution and place as written, when there is no organization record. */
+    institution: text.optional(),
+    /** The department, unit or regime, as written. */
+    department: text.optional(),
     type: z.enum(APPOINTMENT_TYPES),
     title: text.optional(),
     period: period.optional(),
@@ -408,6 +453,13 @@ const appointment = z
         code: "custom",
         path: ["title"],
         message: `an ${data.type} appointment needs its title`,
+      })
+    if ((data.organizationId === undefined) === (data.institution === undefined))
+      context.addIssue({
+        code: "custom",
+        path: ["organizationId"],
+        message:
+          "an appointment names its organization either by ID (organizationId) or as written (institution)",
       })
   })
 
@@ -427,21 +479,32 @@ const education = z
     id: idOf("education"),
     ...base,
     personId: idOf("people"),
-    institutionId: idOf("organizations"),
+    institutionId: idOf("organizations").optional(),
+    /** The institution and place as written, when there is no organization record. */
+    institution: text.optional(),
     /** The qualification as awarded, such as "PhD in Computer Science". */
     qualification: text,
     level: z.enum(EDUCATION_LEVELS),
-    status: z.enum(EDUCATION_STATUSES),
+    /** Left out when the source does not state it: it is never inferred from a date. */
+    status: z.enum(EDUCATION_STATUSES).optional(),
     field: text.optional(),
     startDate: partialDate.optional(),
     completionDate: partialDate.optional(),
     thesisTitle: text.optional(),
     supervisorIds: idList("people"),
+    /** The supervisors as written, when they have no person records. */
+    supervision: text.optional(),
   })
   .superRefine((data, context) => {
     const issue = (path: string, message: string) =>
       context.addIssue({ code: "custom", path: [path], message })
-    if (data.status !== "completed" && data.completionDate !== undefined)
+    if (data.institutionId !== undefined && data.institution !== undefined)
+      issue("institution", "give the institution either by ID or as written, not both")
+    if (
+      data.status !== undefined &&
+      data.status !== "completed" &&
+      data.completionDate !== undefined
+    )
       issue(
         "completionDate",
         `a qualification that is ${data.status} has no completion date`,
@@ -461,23 +524,32 @@ const education = z
 export const ACTIVITY_TYPES = [
   "teaching",
   "presentation",
+  "participation",
   "mentoring",
   "award",
+  "funding",
   "service",
   "outreach",
+  "training",
+  "certification",
 ] as const
 export type ActivityType = (typeof ACTIVITY_TYPES)[number]
 
-/** What every activity has: whose it is, and an optional note. */
+/** What every activity has: whose it is, where it took place, and an optional note. */
 const activityBase = {
   id: idOf("activities"),
   ...base,
   personId: idOf("people"),
+  /**
+   * The role and institution, or the setting, in one line as written in the source, when
+   * they are not separate facts there ("Teaching at Example University").
+   */
+  context: text.optional(),
   summary: text.optional(),
 }
 
 /**
- * Academic and professional activities: six small shapes, told apart by `type`, each with
+ * Academic and professional activities: ten small shapes, told apart by `type`, each with
  * only the fields that kind of activity has.
  */
 const activity = z.discriminatedUnion("type", [
@@ -489,20 +561,17 @@ const activity = z.discriminatedUnion("type", [
     role: text.optional(),
     organizationId: idOf("organizations").optional(),
     period: period.optional(),
+    /** How long it ran, as written, such as "Two semesters". */
+    duration: text.optional(),
     resources: z.array(z.strictObject({ label: text, url })).default([]),
   }),
   z.strictObject({
     ...activityBase,
     type: z.literal("presentation"),
     title: text,
-    presentationType: z.enum([
-      "invited",
-      "keynote",
-      "contributed",
-      "poster",
-      "seminar",
-      "other",
-    ]),
+    presentationType: z
+      .enum(["invited", "keynote", "contributed", "poster", "seminar", "other"])
+      .optional(),
     event: text.optional(),
     date: partialDate.optional(),
     location: text.optional(),
@@ -511,8 +580,16 @@ const activity = z.discriminatedUnion("type", [
   }),
   z.strictObject({
     ...activityBase,
+    /** Attending an event, with or without presenting. */
+    type: z.literal("participation"),
+    event: text,
+    period: period.optional(),
+  }),
+  z.strictObject({
+    ...activityBase,
     type: z.literal("mentoring"),
-    mentorshipType: z.enum(["supervision", "co-supervision", "mentoring"]),
+    /** Left out when the source does not say which kind: it is never presumed. */
+    mentorshipType: z.enum(["supervision", "co-supervision", "mentoring"]).optional(),
     level: z
       .enum(["undergraduate", "masters", "doctorate", "postdoctoral", "other"])
       .optional(),
@@ -532,6 +609,20 @@ const activity = z.discriminatedUnion("type", [
     type: z.literal("award"),
     name: text,
     grantorId: idOf("organizations").optional(),
+    /** Who granted it, as written, when there is no organization record. */
+    grantor: text.optional(),
+    /** What it was given for. */
+    topic: text.optional(),
+    date: partialDate.optional(),
+  }),
+  z.strictObject({
+    ...activityBase,
+    /** A grant, scholarship or travel award. The name says what kind, as written. */
+    type: z.literal("funding"),
+    name: text,
+    grantorId: idOf("organizations").optional(),
+    grantor: text.optional(),
+    topic: text.optional(),
     date: partialDate.optional(),
   }),
   z.strictObject({
@@ -543,9 +634,13 @@ const activity = z.discriminatedUnion("type", [
       "organizing",
       "editorial",
       "advisory",
+      "administration",
+      "examination",
       "other",
     ]),
     role: text,
+    /** What was examined or reviewed, such as a thesis title, when it is public. */
+    subject: text.optional(),
     /** The committee, journal, conference or body served, when it is not an organization record. */
     body: text.optional(),
     organizationId: idOf("organizations").optional(),
@@ -557,7 +652,23 @@ const activity = z.discriminatedUnion("type", [
     title: text,
     event: text.optional(),
     date: partialDate.optional(),
+    period: period.optional(),
     organizationId: idOf("organizations").optional(),
+    url: url.optional(),
+  }),
+  z.strictObject({
+    ...activityBase,
+    /** A course or other complementary training. */
+    type: z.literal("training"),
+    title: text,
+    period: period.optional(),
+  }),
+  z.strictObject({
+    ...activityBase,
+    type: z.literal("certification"),
+    name: text,
+    issuer: text.optional(),
+    date: partialDate.optional(),
     url: url.optional(),
   }),
 ])

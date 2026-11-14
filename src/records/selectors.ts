@@ -92,8 +92,11 @@ export const compareEducation = (a: Education, b: Education): number =>
 export function activityPeriod(activity: Activity): Period | undefined {
   switch (activity.type) {
     case "teaching":
+    case "participation":
     case "mentoring":
     case "service":
+    case "outreach":
+    case "training":
       return activity.period
     default:
       return undefined
@@ -105,8 +108,11 @@ export function activityDate(activity: Activity): string | undefined {
   switch (activity.type) {
     case "presentation":
     case "award":
-    case "outreach":
+    case "funding":
+    case "certification":
       return activity.date
+    case "outreach":
+      return activity.date ?? activity.period?.start
     default:
       return activity.period?.start
   }
@@ -224,8 +230,11 @@ export function publicationsByPerson(
   personId: string,
   audience?: Audience,
 ): Publication[] {
-  return publications(records, audience).filter((p) =>
-    p.authors.some((author) => "personId" in author && author.personId === personId),
+  return publications(records, audience).filter(
+    (p) =>
+      (p.authors ?? []).some(
+        (author) => "personId" in author && author.personId === personId,
+      ) || p.creditedTo.includes(personId),
   )
 }
 
@@ -298,7 +307,7 @@ export function collaboratorsOf(
     for (const participant of project.participants) ids.add(participant.personId)
   }
   for (const publication of publicationsByPerson(records, personId, audience)) {
-    for (const author of publication.authors) {
+    for (const author of publication.authors ?? []) {
       if ("personId" in author) ids.add(author.personId)
     }
   }

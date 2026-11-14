@@ -5,7 +5,9 @@
  * pages.
  *
  * - Authors stay in the order printed. A registered author is named as on the work
- *   (`as`), else by their citation name, else their display name.
+ *   (`as`), else by their citation name, else their display name. An author line kept as
+ *   text (`authorsText`) is printed exactly as written, marks included, with its note.
+ * - Venue details kept as one line (`details`) are printed as written; no year is added.
  * - Nothing is filled in: a missing venue, year or DOI is simply absent from the text.
  * - The status is stated unless the output is published, so a submitted manuscript or a
  *   preprint never reads as a published, peer-reviewed work.
@@ -28,7 +30,14 @@ export interface Citation {
   readonly status: Publication["status"]
   /** "Submitted", "In press" or "Preprint"; undefined for a published output. */
   readonly statusLabel?: string
+  /** Empty when the author line is kept as text (`authorsText`). */
   readonly authors: readonly CitationAuthor[]
+  /** The author line exactly as printed, when the record keeps it as text. */
+  readonly authorsText?: string
+  /** What a mark in the author line means, such as "* co-first authors". */
+  readonly authorshipNote?: string
+  /** Venue, volume, pages and year as one line, when the record keeps them as text. */
+  readonly details?: string
   readonly date?: string
   readonly year?: number
   readonly venue?: string
@@ -63,7 +72,7 @@ export function isPeerReviewed(publication: Publication): boolean {
 const sentence = (text: string): string => (/[.!?]$/.test(text) ? text : `${text}.`)
 
 export function citationOf(records: Records, publication: Publication): Citation {
-  const authors = publication.authors.map((author): CitationAuthor => {
+  const authors = (publication.authors ?? []).map((author): CitationAuthor => {
     if (!("personId" in author)) return { name: author.name }
     const person = records.get("people", author.personId)
     const name = author.as ?? person.citationName ?? person.displayName
@@ -71,9 +80,12 @@ export function citationOf(records: Records, publication: Publication): Citation
   })
   const statusLabel = STATUS_LABELS[publication.status]
   const year = publication.date === undefined ? undefined : yearOf(publication.date)
-  const { venue, volume, issue, pages, doi } = publication
+  const { venue, volume, issue, pages, doi, details, authorsText, authorshipNote } =
+    publication
   let where = ""
-  if (venue !== undefined) {
+  if (details !== undefined) {
+    where = details
+  } else if (venue !== undefined) {
     where = venue
     if (volume !== undefined) where += ` ${volume}`
     if (issue !== undefined) where += `(${issue})`
@@ -81,12 +93,14 @@ export function citationOf(records: Records, publication: Publication): Citation
       where += `${volume !== undefined || issue !== undefined ? ":" : ", "}${pages}`
   }
   // The year follows the venue in parentheses; alone, it stands as it is.
-  if (year !== undefined) where = where === "" ? String(year) : `${where} (${year})`
+  if (year !== undefined && details === undefined)
+    where = where === "" ? String(year) : `${where} (${year})`
   const parts = [
-    sentence(authors.map((author) => author.name).join(", ")),
+    sentence(authorsText ?? authors.map((author) => author.name).join(", ")),
     sentence(publication.title),
     where === "" ? undefined : sentence(where),
     statusLabel === undefined ? undefined : sentence(statusLabel),
+    authorshipNote === undefined ? undefined : sentence(authorshipNote),
   ]
   const link = doi !== undefined ? doiUrl(doi) : publication.url
   return {
@@ -96,6 +110,9 @@ export function citationOf(records: Records, publication: Publication): Citation
     status: publication.status,
     ...(statusLabel === undefined ? {} : { statusLabel }),
     authors,
+    ...(authorsText === undefined ? {} : { authorsText }),
+    ...(authorshipNote === undefined ? {} : { authorshipNote }),
+    ...(details === undefined ? {} : { details }),
     ...(publication.date === undefined ? {} : { date: publication.date, year }),
     ...(venue === undefined ? {} : { venue }),
     ...(volume === undefined ? {} : { volume }),

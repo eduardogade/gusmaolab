@@ -2,6 +2,67 @@
 
 Newest entry first.
 
+## P11-A01 — The Author's Versioned CV YAML as the Canonical Professional Source of Truth — 2026-11-14
+
+**Agent:** Claude Code. **Branch:** `development`. **Result:** completed. The CV is recognised as the source of the owner's professional history, a read-only path from it to the P11 records exists and is tested, and **nothing of the CV is published**: no version is approved, no ID is assigned, no snapshot was generated. The owner's CV file is byte-for-byte unchanged. Nothing was pushed, `main` was not touched, and P12 was not started.
+
+### Starting state (verified)
+
+- **HEAD:** `development` at `0ff702f` (the P11 records commit). Working tree: the other agent's CV-01 sections in `development/current-state.md` and this log, the untracked `cv/codex-yaml/` and the untracked `clean`.
+- **The CV file is not where the brief says.** The brief names `cv/CV.proposta.yaml`; the file is `cv/codex-yaml/CV.proposta.yaml` (117,100 bytes, last modified 2026-11-12 18:17). It was read there and not moved. Beside it are `CV.yaml`, `CV.entrega.md` and thirteen `.docx` source documents, none of which was opened.
+- **Tracking:** the file was untracked and **not ignored**; `git log --all -- cv` shows only the first commit's two empty files. It has never been committed or pushed. The repository is public (`origin` on GitHub).
+- **Other agents:** the Codex desktop app was running, and the directory's modification time changed at 04:05 while the file's own did not. The file's SHA-256 was recorded at the start (`8e402f27…4e49`) and compared after every read.
+- **P11 as it stood:** eight empty typed lists in `src/data/records/`, loaded by `createRecords`; nothing in them overlapped the CV, so there was nothing to migrate or delete. The synthetic fixture and the study were kept.
+
+### What the file is
+
+- Valid YAML, 22 top-level sections, all 22 the ones the brief lists; 186 records in 21 lists; 967 placeholder occurrences (158 distinct); `metadados.versao` 0.1.0, `fonte_de_verdade: true`, `situacao: Proposta para revisão do autor`.
+- Most facts are single lines of text (`instituicao_e_local`, `autores`, `veiculo_e_detalhes`, `descricao`), identifiers follow the old documents' section numbers (`4.1.1`, `exp_1`), two records are drafts without identifiers, and the three software entries are named, not numbered.
+- It holds a telephone number, an email address and eight references with historical email addresses.
+
+### Done
+
+- **Records model (D-091):** `src/records/schema.ts` gained `provenance.sourceId`; on outputs `authorsText`, `authorshipNote`, `creditedTo`, `details` and the type `conference-abstract`; on appointments `institution`, `department` and the type `consulting`; on education `institution`, `supervision` and an optional `status`; on activities `context`, four new types (`participation`, `funding`, `training`, `certification`), two service types, and optional `mentorshipType` and `presentationType`. `registry.ts`, `selectors.ts`, `projections.ts` and `citation.ts` follow: the CV projection has four more sections and shows an institution kept as text; the citation prints an author line and a venue line as written.
+- **`src/cv/` (new):** `source.ts` (YAML, sections, record lists, authoring validation), `versions.ts`, `manifest.ts` (approval rules), `adapter.ts` (the allowlist and the mapping), `snapshot.ts` (snapshot shape, checks, `mergeRecords`), `site.ts` (`siteCv`).
+- **`scripts/cv.mjs` (new):** `check` and `snapshot`; `npm run cv:check`, `npm run cv:snapshot`.
+- **Data:** `src/data/records/independent.ts` (the hand-written lists), `index.ts` now merges them with `src/data/cv/snapshot.ts` (`null`).
+- **`cv/`:** `manifest.json` (working file named, nothing approved, publication off), `identities.json` (empty), `README.md`.
+- **Dependency:** `yaml` 2.9.1 as a development dependency (D-089), installed offline: it was already in `node_modules` through Astro, and the lockfile gained one line.
+- **Safeguards (D-093):** `.gitignore` now ignores `/cv/codex-yaml/` and `/cv/CV*.yaml`; `.prettierignore` excludes the CV files from `npm run format`.
+- **Tests:** `tests/cv.mjs` (CV-001 to CV-020) with the synthetic fixture `tests/fixtures/cv/CV.fixture.yaml`; `tests/records.mjs` updated for the optional references, five new conditional cases and the development dependency.
+- **Documents:** `planning/content-model.md` (record fields; new section "The author's CV"), `planning/architecture.md`, `planning/information-architecture.md`, `development/decisions.md` (D-089 to D-093), `development/roadmap.md`, `development/acceptance-matrix.md`, `debugging/known-limitations.md` (KL-52 to KL-58), `AGENTS.md`, `README.md`, this log and the current state.
+
+### Decisions taken while implementing
+
+- **A committed, generated snapshot** rather than reading the CV at build time: the file is private and absent from GitHub Actions (D-092).
+- **Text as written** rather than splitting: the P11 schemas were extended instead of the adapter guessing organizations and authors (D-091).
+- **Software yields relationships, not projects,** so the CV cannot overwrite the site's description of a project (D-092).
+- **An explicit identity map, empty,** rather than IDs derived from section numbers (D-091). No ID was assigned for the owner, not even the owner's own.
+- **Funding as an activity type,** not a ninth family: in the CV it has the shape of an award.
+- **The Git ignore rule** is Claude Code's addition, not the brief's (D-093). Reason: one `git add -A` would publish private details irreversibly. To be confirmed by the owner.
+- **Left out of the allowlist** beyond the brief's list: mentees' names and grades, amounts of money, unconfirmed teaching hours, `tecnologias`, `experiencia_declarada`, and the titles of proposals reviewed in confidence.
+
+### Checks
+
+- **Before any change:** nothing to re-verify beyond P11's own final state (`0ff702f`, verified in the previous prompt).
+- **`npm run verify`:** passes. `astro check` 0 errors in 88 files; 40 pages; `dist/` 45 files, 1,176,165 bytes, the same as before P11-A01; 23 navigation, 10 folder, 9 route, 11 preview, 8 responsive, 4 transition, 8 Bearnard, 10 archive, 17 editorial model, 14 editorial build, 26 record and 20 CV checks.
+- **`npm run test:browser`:** 12, 17, 12 and 8 checks pass in headless Chrome 157. The folders' interaction was not changed; run for regressions.
+- **Mutation checks:** six safeguards were broken one at a time and restored: an unknown end shown as "present" (CV-002, CV-011, CV-012 failed), a mentee's name projected (CV-014, CV-017), the fingerprint not compared (CV-008), co-first-author marks dropped (CV-010), a private section read (CV-013), a hand-written fact of the owner accepted (CV-012).
+- **The real file:** `npm run cv:check` reads it (22 sections, 186 records, 967 placeholders; "Publication: NOT approved"). An in-memory run with throwaway IDs and a pretend approval mapped 181 of the 186 list records (35 outputs, 14 appointments, 3 degrees, 129 activities) and the owner's person record, all valid, with no placeholder, email address, telephone number, template or source-document name in the result. Nothing of that run was written anywhere. CV-018 searched the built site for 539 texts of the real file: none found.
+- **Preservation:** the CV file's SHA-256 is unchanged; nothing under `cv/codex-yaml/` was written, staged or renamed; 352 of 352 Bearnard checksums match; `git diff --check` is clean; no file under `src/styles/`, `src/navigation/`, `src/components/` or `src/pages/` changed.
+- **Not tested:** a real approval and a real snapshot (there is none); Safari, Firefox and real devices (nothing visible changed); the tool on a machine without the CV file other than through the fixture.
+
+### Found
+
+- Of the real file's 186 list records, the in-memory run left out five: two drafts (`industria`, `certificacoes`) and the three software entries, which name no project the site has yet. Those three become relationships once the site has the project records.
+- **`npm run format` would have rewritten the CV file** (Prettier's pattern includes `**/*.yaml`). It was not run; the file is now excluded.
+- A P11 test (REC-024) forbade any path containing `cv/` in the record modules; it now forbids YAML files and `codex-yaml` instead, since `src/data/records/index.ts` legitimately imports `src/cv/snapshot.ts`.
+
+### Git
+
+- Commit on `development`: see the current state. No push (D-082): integration code only, no content, and `origin` was not contacted.
+- The other agent's CV-01 sections in this log and in the current state were left in the working tree and out of the commit, as before.
+
 ## P11 — Canonical Research, Publication, People & Professional Records — 2026-11-13
 
 **Agent:** Claude Code. **Branch:** `development`. **Result:** completed. The canonical record system exists, is validated and tested, and holds **no real record**: the site's eight lists are empty, and everything was proved with a synthetic fixture. Nothing was pushed or deployed, `main` was not touched, and P12 was not started.

@@ -214,7 +214,8 @@ Not built, on purpose: the differentiated reading layouts (P12), Quarto and MDX 
 
 | Item | Where |
 | --- | --- |
-| The site's records: eight typed lists, all empty | `src/data/records/` |
+| The hand-written (independent) records: eight typed lists, all empty | `src/data/records/` (`independent.ts`) |
+| The site's dataset: those, joined with the CV snapshot's records (P11-A01) | `src/data/records/index.ts` |
 | Schemas, families, ID patterns (Zod through `astro/zod`) | `src/records/schema.ts` |
 | Partial dates and periods | `src/records/dates.ts` |
 | Dataset validation and the frozen store | `src/records/registry.ts` |
@@ -230,7 +231,7 @@ Not built, on purpose: the differentiated reading layouts (P12), Quarto and MDX 
 
 Built:
 
-- **Eight families:** people, organizations, research areas, projects, scholarly outputs, appointments, education, activities (teaching, presentation, mentoring, award, service, outreach). IDs carry their family (`project-…`) and are unique across all records.
+- **Eight families:** people, organizations, research areas, projects, scholarly outputs, appointments, education, activities (teaching, presentation, participation, mentoring, award, funding, service, outreach, training, certification; four of them added in P11-A01). IDs carry their family (`project-…`) and are unique across all records.
 - **Validation at load:** each record against its schema, then the dataset as a whole (unique IDs, references that exist and name the right family, no loop of parent organizations, no synthetic record in the site's data). Every problem is listed with the record's ID; an invalid dataset fails the build.
 - **Dates keep their precision** (`2022`, `2022-06`, `2022-06-14`); `end: "present"` marks an ongoing period; a missing end is never shown as present.
 - **Relationships are stored on one side** and derived on the other; authors are ordered and may be registered people or external names.
@@ -240,6 +241,39 @@ Built:
 
 Also fixed: the P10 entry component used an undefined token (`--font-size-lg`), so an entry's description fell back to the inherited size. Found when the editorial components were added to the token check; it now uses `--font-size-lead`.
 
+## The author's CV as the source (P11-A01)
+
+**CV YAML → validated canonical records → pages and document generators** (D-089 to D-093). The owner's versioned CV YAML is the source of truth for the owner's professional history. The integration exists and is tested; **nothing of the CV is published**, and the owner's file is unchanged.
+
+| Item | Where |
+| --- | --- |
+| The working proposal (private, ignored by Git, 22 sections, 186 records, 967 placeholders, version 0.1.0) | `cv/codex-yaml/CV.proposta.yaml` |
+| Which file is the working file, and which version is approved: none | `cv/manifest.json` |
+| Source identifier → permanent record ID: none assigned | `cv/identities.json` |
+| How to publish a version, step by step | `cv/README.md` |
+| Reading the YAML; authoring validation (tool side) | `src/cv/source.ts` |
+| Approval and version rules | `src/cv/manifest.ts`, `src/cv/versions.ts` |
+| The adapter: the allowlist, CV sections to record shapes (tool side) | `src/cv/adapter.ts` |
+| The public snapshot's shape and checks; `mergeRecords` | `src/cv/snapshot.ts` |
+| The generated snapshot: `null` | `src/data/cv/snapshot.ts` |
+| What pages read: `siteCv` (published or not, version, owner, profile) | `src/cv/site.ts` |
+| The tool: `npm run cv:check`, `npm run cv:snapshot` | `scripts/cv.mjs` |
+| Synthetic CV fixture | `tests/fixtures/cv/` |
+| Rules, states, mapping | `planning/content-model.md`, "The author's CV" |
+| Checks | `tests/cv.mjs` (CV-001 to CV-020) |
+
+Built:
+
+- **A read-only path** from the CV to the P11 record families. The tool's only write is the snapshot module; no code writes, formats, renames or moves a CV file.
+- **Explicit version selection and approval.** Nothing is published unless `cv/manifest.json` switches publication on and names a `CV-vX.Y.yaml` file with its version, SHA-256 and approval date. `fonte_de_verdade: true`, the review status, the file name and the newest file decide nothing.
+- **Two validation layers.** Authoring validation accepts the draft as it is, placeholders included. Publication validation leaves out unresolved fields, records without a required field, drafts and records without an assigned ID, and never turns an unknown end into "present".
+- **Text as written.** The record schemas were extended so that an author line (with co-first-author marks), an institution or a venue line is kept whole; statuses the CV does not state are left out.
+- **An allowlist.** Letters, statements, references, plans, the placeholder inventory, writing templates, internal source notes, email, telephone, location, mentees' names and grades, amounts and confidential titles are never read.
+- **A generated public snapshot** is what a build reads; a build never needs the CV file. Without a snapshot the site builds with no CV data, as now.
+- **One source per fact.** `src/data/records/` is for independent records only; a hand-written fact of the owner's CV fails the build once a snapshot exists. The CV relates outputs to the site's projects and never describes a project.
+- **The real file was read, not changed** (SHA-256 `8e402f27…4e49` before and after). In memory only, with throwaway IDs and a pretend approval, 181 of its 186 list records mapped and validated, with the owner's person record; the other five are two drafts and the three software entries, which name no project the site has. Nothing of that run was written.
+- **Not done, on purpose:** no version approved; no ID assigned; no snapshot generated; no CV page, export or download; no translation of the CV's Portuguese text; no structuring of author lines or institutions.
+
 ## Toolchain
 
 | Item | Value |
@@ -248,20 +282,20 @@ Also fixed: the P10 entry component used an undefined token (`--font-size-lg`), 
 | Local Node.js | v26.12.0. Compatible, but it predates the first 26 LTS release (v26.13.0) and lacks the v26.12.1 security release. |
 | Package manager | npm 11.20.0. `package-lock.json` is committed; install with `npm ci`. |
 | Dependencies | `astro` 7.4.8. P03–P05 added none. |
-| Dev dependencies | `@astrojs/check` 0.9.12, `typescript` 6.0.3, `prettier` 3.6.2 (range `^3.6.2`) |
+| Dev dependencies | `@astrojs/check` 0.9.12, `typescript` 6.0.3, `prettier` 3.6.2 (range `^3.6.2`), `yaml` 2.9.1 (P11-A01, D-089: the CV tool and its tests only; already installed through Astro) |
 | TypeScript | `astro/tsconfigs/strict` with `erasableSyntaxOnly` |
 | Astro config | `site: "https://www.gusmaolab.org"`, `output: "static"`, no `base`, no adapter |
 | Local preview | `.claude/launch.json`: `astro-preview` (built site, port 4322) and `astro-dev` (port 4321) |
 
 ## npm scripts
 
-`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro` and `format`. `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs`, `tests/responsive.mjs`, `tests/transitions.mjs`, `tests/bearnard.mjs`, `tests/categories.mjs`, `tests/content.mjs`, `tests/editorial-build.mjs` and `tests/records.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs`, `tests/responsive-browser.mjs`, `tests/transitions-browser.mjs` and `tests/categories-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
+`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro`, `format`, and `cv:check` and `cv:snapshot` (the CV tool, run by hand, never by a build). `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs`, `tests/responsive.mjs`, `tests/transitions.mjs`, `tests/bearnard.mjs`, `tests/categories.mjs`, `tests/content.mjs`, `tests/editorial-build.mjs`, `tests/records.mjs` and `tests/cv.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs`, `tests/responsive-browser.mjs`, `tests/transitions-browser.mjs` and `tests/categories-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
 
 ## Build status
 
 `npm run verify` passes:
 
-- `astro check`: 0 errors, 0 warnings, 0 hints across 78 files.
+- `astro check`: 0 errors, 0 warnings, 0 hints across 88 files.
 - Build: 40 pages. `dist/` holds 45 files, 1,176,165 bytes in all: the site's pages and stylesheets (702,682 bytes), the design studies (231,463) and the two Bearnard derivatives (242,020), each under its own ceiling (D-074, KL-30, KL-42, KL-51). No script file: the 37 pages with folders each inline one module (4.1 KB: previews and rows; at Vite's inlining limit, KL-36); the P03 specimen, the Bearnard study and the records study have no script.
 - Token checks pass (43 primitives, 213 tokens; 5 categories with 5 colour tokens each, 4 environments with 10 typography and texture tokens each). Contrast checks pass: 245 of 245 enforced pairings, 260 in all, across the five categories.
 - Navigation: 23 of 23 model tests pass (NAV-001 to NAV-021, NAV-025, NAV-033), for 11 sections and 36 folders.
@@ -276,6 +310,7 @@ Also fixed: the P10 entry component used an undefined token (`--font-size-lg`), 
 - Editorial model: 17 of 17 checks pass (CONT-001 to CONT-015, CONT-017, CONT-019), for 8 collections.
 - Editorial builds: 14 of 14 checks pass (CONT-004 to CONT-016, CONT-018 and CONT-020, built), in 6 throwaway builds.
 - Records: 26 of 26 checks pass (REC-001 to REC-026), for 8 families and 29 synthetic records; the site's own records number 0.
+- CV: 20 of 20 checks pass (CV-001 to CV-020), on 27 synthetic records derived from the fixture and one throwaway build; CV-001, CV-003 and CV-018 also read the real working file where it is present, and say so where it is not.
 
 `npm run test:browser` passes separately in headless Chrome 157: 12 of 12 preview checks (PREV-005, PREV-008 to PREV-014), 17 of 17 responsive checks (RESP-001 to RESP-017), 12 of 12 navigation-continuity checks (TRANS-001 to TRANS-012) and 8 of 8 colour and navigation checks (CAT-011 to CAT-018).
 
@@ -288,8 +323,8 @@ Also fixed: the P10 entry component used an undefined token (`--font-size-lg`), 
 | Recovery tag | `pre-astro-checkpoint` → `6eedf02`, local only |
 | `main` | `6036137`, the same tree as the checkpoint |
 | `origin/main` | `e28d43a`, two commits ahead of local `main`: a fetch at 08:22 on 2026-11-11, not run by Claude Code, brought in a merge (pull request 125) that adds seven files under `__frag8/`, unrelated to this work. Noticed at the end of P09; nothing was fetched, merged or pushed in response. No `development` branch exists on `origin`. |
-| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, public. Nothing was pushed in P01–P11: the decisions are recorded in D-082 and D-087. `origin/main` was still `e28d43a` and `origin` still had no `development` branch when checked on 2026-11-13 with `git ls-remote`. |
-| Untracked | `clean`, a byte-identical copy of `clean.sh` that appeared at 18:01 on 2026-11-10. Claude Code did not create it, and left it alone at the owner's instruction. Also untracked: `cv/codex-yaml/`, another agent's CV task (CV-01), which Claude Code did not create, stage or change. |
+| Remote | `origin` = `git@github.com:eduardogade/GusmaoLab.git`, public. Nothing was pushed in P01–P11 or P11-A01: the decisions are recorded in D-082, D-087 and D-093. `origin/main` was still `e28d43a` and `origin` still had no `development` branch when checked on 2026-11-13 with `git ls-remote`. |
+| Untracked | `clean`, a byte-identical copy of `clean.sh` that appeared at 18:01 on 2026-11-10. Claude Code did not create it, and left it alone at the owner's instruction. Also on disk and, since P11-A01, ignored by Git (D-093): `cv/codex-yaml/`, the author's CV working folder (the CV-01 task), which Claude Code did not create, stage or change; P11-A01 read `CV.proposta.yaml` there and nothing else. |
 
 ## Assets
 
@@ -302,7 +337,7 @@ Unchanged since P03; P05 to P09-A01 did not touch it. ISSUE-0003 stays open: the
 
 ## Completed prompts
 
-P01 to P11, including P09's Addendum 01 (the Chromatic Archive). P08's real-device checks are pending. P09 is technically completed; two owner reviews are pending (G-P09-A6, G-P09-B7); the third, G-P09-C7, was closed by D-076. P10 is completed (D-077 to D-082), and so is P11 (D-083 to D-088), with empty production records; P12 has not started.
+P01 to P11, including P09's Addendum 01 (the Chromatic Archive) and P11's Addendum 01 (the CV as the source of the owner's records, D-089 to D-093). P08's real-device checks are pending. P09 is technically completed; two owner reviews are pending (G-P09-A6, G-P09-B7); the third, G-P09-C7, was closed by D-076. P10 is completed (D-077 to D-082), and so is P11 (D-083 to D-088), with empty production records; P12 has not started.
 
 ## Blockers
 
@@ -315,6 +350,7 @@ None.
 - **Look at the Chromatic Archive on the running site** and on real screens (G-A01-23, KL-39). Two points for the owner's eye, neither changed because the values are locked: Core's and Research's cardstocks are the closest pair on the global row (question 25), and Forest Teal cannot be a link colour on the shell or directly on the three darker Level 1 cardstocks (question 26, KL-38).
 - Optional refinements to the folders, the Overview tab, the previews and small screens, if wanted: `planning/design-system.md` section 10, questions 13, 14, 16, 18 and 20–22.
 - A concurrent task: another agent (CV-01) appended a section to the working copies of this file and of the implementation log, and created the folder `cv/codex-yaml/`. P09-A01 left all three unchanged and out of its commit; the owner decides when they are committed.
+- **The CV** (P11-A01), in order: (1) confirm or undo the Git ignore rule for the CV files (D-093); (2) say where the CV files are to live, since the brief names `cv/CV.proposta.yaml` and the file is in `cv/codex-yaml/`; (3) when the CV is reviewed, create `cv/CV-vX.Y.yaml`, assign the record IDs in `cv/identities.json` and approve the version in `cv/manifest.json` (`cv/README.md`); (4) decide which contact links to release; (5) decide how the CV's Portuguese text appears on an English site (KL-54); (6) look at the names of thesis candidates and supervisors in the first snapshot's diff (KL-57); (7) keep a backup of the CV files, which Git no longer sees (KL-55).
 - **Records** (P11): the system is empty. To fill it, the owner supplies or confirms the facts: which people, organizations, projects, outputs, positions, degrees and activities are to be public; whether the proposed CV in `cv/codex-yaml/` is to become their source once verified, and through what review (`planning/content-model.md`, "The CV workflow"); whether a YAML source is preferred to the TypeScript lists; whether funding should be a family; which collaborators may have a profile (KL-46).
 - **Editorial decisions** (P10): whether to write the first entries; the Kosmos structure, including the order of the works and any work and chapter URLs (KL-44); whether `heroImage`, `mascot`, `related` and `featured` are wanted (`planning/content-model.md`); whether a push of `development` is wanted as a backup (D-082).
 - **Assign Bearnard illustrations to roles**, or leave them empty for now (G-P09-B7; question 23).

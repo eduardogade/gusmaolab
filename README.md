@@ -18,11 +18,13 @@ Source for [www.gusmaolab.org](https://www.gusmaolab.org), Eduardo Gade Gusmao's
 | `npm run check` | Run Astro and TypeScript diagnostics |
 | `npm run build` | Build the static site into `dist/` |
 | `npm run preview` | Serve the built `dist/` locally (port 4321 by default) |
-| `npm test` | Check the design tokens, color contrast and navigation model, then smoke-test the built output, the folder components, the generated pages, the folder previews' markup, the responsive rules, the page transition, the Bearnard illustrations, the five category palettes, the editorial collections and the canonical records (run `npm run build` first) |
+| `npm test` | Check the design tokens, color contrast and navigation model, then smoke-test the built output, the folder components, the generated pages, the folder previews' markup, the responsive rules, the page transition, the Bearnard illustrations, the five category palettes, the editorial collections, the canonical records and the CV integration (run `npm run build` first) |
 | `npm run test:browser` | Check the folder previews, the responsive layout (pointer, keyboard, touch, scrolling rows, widths from 320 to 2560 px) the cross-fade between pages and the painted category colours in a local headless Chrome (run `npm run build` first; set `CHROME_PATH` if Chrome is elsewhere). Not part of `verify`. |
 | `npm run verify` | Run `check`, `build` and `test` in one go |
 | `npm run dev` | Serve the site with live reload. Editorial drafts are previewed here, at their future URLs, and nowhere else |
 | `node tests/contrast.mjs --markdown` | Print every contrast ratio as Markdown tables |
+| `npm run cv:check` | Report which CV file is selected, whether it can be read and whether a version is approved. Prints counts and identifiers, never the CV's text. Add `-- --verbose` to list what would be left out. See [`cv/README.md`](cv/README.md). |
+| `npm run cv:snapshot` | Write the public CV snapshot (`src/data/cv/snapshot.ts`) from the version approved in `cv/manifest.json`. Refuses, and changes nothing, without an approval. Not part of a build. |
 
 To try the site, run `npm run build` and `npm run preview`, then open the address it prints and click through the folder tabs. Add `/_design/tokens/` for the design specimen, `/_design/folders/` for the folder study, `/_design/bearnard/` for the Bearnard illustrations and `/_design/records/` for the canonical records (synthetic data). The design tokens and folder styles live in `src/styles/` and are described in [`planning/design-system.md`](planning/design-system.md).
 

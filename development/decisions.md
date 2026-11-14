@@ -90,8 +90,14 @@ Statuses: **Approved**, **Provisional**, **Experimental**, **Deferred**, **Super
 | D-084 | Record identity and time: family-prefixed stable IDs; dates at the precision known (`YYYY`, `YYYY-MM`, `YYYY-MM-DD`); `end: "present"` for ongoing, a missing end never shown as present | Approved (P11 brief) | 2026-11-13 |
 | D-085 | Relationships by ID, stored on one side and derived on the other; referential integrity checked for the whole dataset; ordered authors, registered or external | Approved (P11 brief) | 2026-11-13 |
 | D-086 | Selectors, projections (CV, Portfolio, Lab) and one citation format; a record is shown only if public and verified; visibility is not a security boundary | Approved (P11 brief) | 2026-11-13 |
-| D-087 | The site's records stay empty until the owner supplies verified ones; a synthetic fixture and a development-only study prove the system; nothing imported from the CV workflow or the Pelican archive | Approved (P11 brief) | 2026-11-13 |
+| D-087 | The site's records stay empty until the owner supplies verified ones; a synthetic fixture and a development-only study prove the system; nothing imported from the CV workflow or the Pelican archive | Approved (P11 brief); its "import boundary" for the CV is superseded by D-089 | 2026-11-13 |
 | D-088 | Editorial entries may reference records with `relatedRecords`; the build checks the IDs exist; the dependency runs one way | Approved (P11 brief) | 2026-11-13 |
+
+| D-089 | The author's versioned CV YAML is the source of truth for the owner's professional history; the P11 records for it are derived, never hand-written; `src/data/records/` holds independent records only; `yaml` added as a development dependency | Approved (P11-A01 brief) | 2026-11-14 |
+| D-090 | Source authority is not publication approval: an explicit manifest names the working file and the approved version (file, version, fingerprint, date); nothing is selected automatically; two validation layers | Approved (P11-A01 brief) | 2026-11-14 |
+| D-091 | Records may keep a source's text as written (author line, institution, venue details); statuses the source does not state are left out; an explicit identity map links CV identifiers to record IDs | Approved (P11-A01 brief) | 2026-11-14 |
+| D-092 | A read-only adapter with an allowlist, and a generated public snapshot: builds never read the CV; the CV relates outputs to the site's projects and never describes them | Approved (P11-A01 brief) | 2026-11-14 |
+| D-093 | The CV files stay out of the public repository: ignored by Git and by the formatter; email, telephone, location, references, templates, mentees' names and grades, amounts and confidential titles are never projected | Approved (P11-A01 brief); the Git ignore rule is Claude Code's safeguard, for the owner to confirm | 2026-11-14 |
 
 ## Details
 
@@ -418,3 +424,57 @@ This replaces the "no client-side JavaScript" clause of D-054 and of the archite
 - **No push** (D-082): P11 is an internal data-architecture milestone with no production content; `origin/main` is unchanged at `e28d43a`.
 
 **D-088. Entries may reference records.** The common editorial metadata gains the optional `relatedRecords`: a list of record IDs, default none, each well formed and listed once. The editorial loader fails the build for an ID that does not exist in the site's records, drafts included. The entry remains an entry of its collection and the record a record; the reverse relation is derived (`entriesAbout`). The editorial code depends on the record store, never the other way, so there is no cycle. No rendering was added: P12 decides how related records appear on a reading page.
+
+**D-089. The CV is the source of the owner's professional history.** Decided in the P11-A01 brief ("Approved architectural direction").
+
+- **CV YAML → validated canonical records → website pages and document generators.** The owner's versioned CV YAML is authoritative for the owner's identity, education, positions, research experience, publications, teaching, mentoring, activities, awards, grants and skills.
+- **P11 is kept, with a changed role.** Its schemas, registry, selectors, projections and citation consume the CV; they are not a second CV database. For the owner's own facts this replaces D-083's "written by hand in `src/data/records/`" and D-087's "import boundary" (a one-way conversion into hand-kept records).
+- **Field-level ownership.** The CV owns the facts of the owner's career. The site owns independent resources (projects, software documentation, research areas, datasets, organizations, other people, editorial entries). Where they overlap, an explicit relationship is stored and the richer independent record is never overwritten.
+- **Enforced:** `mergeRecords` fails the build for a record ID on both sides and for a hand-written education, appointment, activity, output or person record of the owner, once a snapshot names the owner.
+- **The author's format is accepted as it is:** 22 sections, Portuguese field names, placeholders, section-numbered identifiers. The integration adapts to it; the author rewrites nothing.
+- **Dependency:** `yaml` 2.9.1, exact, as a development dependency. It was already installed through Astro, Vite and the language server, so the lockfile gained one line and nothing was downloaded. Only `src/cv/source.ts` imports it, and only the CV tool and its tests load that module. A hand-written YAML reader was rejected: the CV uses block scalars, anchors and quoting that a partial reader would get wrong, silently.
+- **Path.** The brief names `cv/CV.proposta.yaml`; the file is at `cv/codex-yaml/CV.proposta.yaml`. It was not moved. `cv/manifest.json` records where it is.
+
+**D-090. Authoring and publication are separate.**
+
+- **Five states:** working proposal; versioned working document; author-reviewed version; approved public snapshot; published projection. Only an explicit act of the owner moves a CV from one to the next.
+- **`fonte_de_verdade: true` and `situacao` are the file's statements about itself.** They are reported by the tool and read by no code that decides publication. Neither is the file name, nor how complete the file looks.
+- **`cv/manifest.json`** names `workingFile`, `published` and `publishEnabled`. JSON, because it is read by the tool and by tests without a parser, and the repository's hooks already check JSON.
+- **An approval** needs all of: `publishEnabled: true`; a file named `CV-vX.Y.yaml` that is not the working file; its SHA-256; its version, equal to `metadados.versao`; the approval date. A file edited after approval no longer matches its fingerprint and is refused.
+- **No automatic selection.** No code lists a directory; the newest file is never picked; a working file is never promoted; nothing is renamed, and no version metadata is altered to match a name.
+- **Version consistency** between a file name and `metadados.versao` is a warning for the owner. `1.0` and `1.0.0` agree. The version is read from the file's text, because a parser turns an unquoted `1.0` into the number 1.
+- **Two validation layers.** Authoring validation tolerates everything a draft has and reports only what stops the file from being read. Publication validation decides field by field and record by record. The file is never rejected whole because placeholders remain.
+- **Today:** `published: null`, `publishEnabled: false`. Nothing of the CV is published.
+
+**D-091. Text as written; explicit identity.**
+
+- **The CV states many facts as one line** (`instituicao_e_local`, `autores`, `veiculo_e_detalhes`, `curso_carga_e_instituicao`). Splitting them would be guessing, so the record schemas gained fields that hold such a line unchanged: `authorsText`, `authorshipNote`, `creditedTo` and `details` on outputs; `institution` and `department` on appointments; `institution` and `supervision` on education; `context` on every activity; `grantor`, `topic`, `duration`, `subject` where an activity needs them.
+- **Either the structured form or the text, never both:** `authors` or `authorsText`; `organizationId` or `institution`; `venue`, `volume`, `issue`, `pages` or `details`.
+- **Author lines are never split.** Order, initials and co-first-author asterisks are kept, with their note. `creditedTo` says whose output it is without parsing the line.
+- **Statuses the CV does not state are not stated:** an education's `status`, a mentorship's kind and a presentation's kind became optional. A degree's dates are its period as written.
+- **New values:** output type `conference-abstract`; appointment type `consulting`; activity types `participation`, `funding`, `training` and `certification`; service types `administration` and `examination`. Funding is an activity, not a ninth family: the CV's grants have the same shape as its awards.
+- **Identity.** The CV's identifiers (`4.1.1`, `exp_1`) follow its numbering and may change. They are kept in `provenance.sourceId` and never rewritten. Permanent record IDs are assigned by hand in `cv/identities.json` (`<list>/<source id>` → record ID), validated for family and uniqueness. An ID is never derived from a position, a title or a DOI; a record without one is not projected. Deriving IDs from the section numbers was rejected for the reason the brief gives: section order can change.
+- **Structuring later** (authors into people, institutions into organizations) is a deliberate, reviewed conversion, not part of this.
+
+**D-092. Adapter and snapshot.**
+
+- **The adapter** (`src/cv/adapter.ts`) is a pure function from the parsed CV to P11 record shapes and the owner's profile. It changes none of its input. Every kept record is checked against its family's schema.
+- **Publication rules:** an unresolved placeholder leaves an optional field out and a record without a required field out; an unknown end is no end and is never "present"; an impossible date is left out, never corrected; an unresolved identifier is not a DOI; a draft (`situacao: Rascunho…`) and a record without an identity are left out. Everything left out is reported, by identifier.
+- **Unapproved output is hidden and unreviewed:** without an approval the adapter's records could not be shown even if they were loaded. With one they are `public` and `verified`, and name the approved version.
+- **Software** (`software_e_metodos`) yields relationships only: its `evidencia` adds the site's project to those outputs' `projectIds`. The CV does not create or describe a project, so a short CV sentence cannot replace the site's own description.
+- **The snapshot** (`src/data/cv/snapshot.ts`) is what a build reads: derived records, profile, version, approval date and the file's SHA-256. It is generated by `npm run cv:snapshot`, never edited, and re-validated when the site loads. It is a derivative, not a second source.
+- **Why a committed snapshot:** the CV is private and absent from GitHub Actions, and a build must be reproducible without it. A build-time read of the CV was rejected for that reason.
+- **Not generated in P11-A01.** `CV_SNAPSHOT` is `null`; the site builds without CV data. The real file was adapted only in memory, with throwaway IDs, to confirm that its structure is handled: 181 of its 186 list records map and validate, with the owner's person record; the other five are two drafts and three software entries that name no project the site has. Nothing of that run was written.
+- **Skills, languages and keywords** are a profile (`siteCv.profile`), not records. Skill groups the author still marks as to be classified or confirmed are left out.
+- **The tool is not part of a build.** `cv:check` and `cv:snapshot` are run by hand. Their output carries counts, identifiers and reasons, never the CV's text.
+
+**D-093. Privacy.**
+
+- **The repository is public.** A file that Astro does not publish is still public once committed. The CV files were untracked, not ignored, and have never been committed or pushed.
+- **Ignored by Git:** `/cv/codex-yaml/` and `/cv/CV*.yaml`. This is Claude Code's safeguard, not in the brief: the working file holds a telephone number, an email address and third parties' historical email addresses, and one `git add -A` by any agent would publish them irreversibly. It changes no file of the CV workflow. If the owner wants a CV file in Git after all, they record that decision and remove the line; CV-020 says so when it fails.
+- **Ignored by Prettier**, so `npm run format` cannot rewrite a CV file.
+- **Tracked in `cv/`:** `manifest.json`, `identities.json`, `README.md` and the two empty files from the first commit. CV-020 fails for anything else.
+- **Never projected:** the sections `declaracoes`, `cartas_de_apresentacao`, `referencias`, `topicos_master_sugeridos`, `placeholders_pendentes`; `modelo_sem_vinculos` and `texto_sem_vinculos` (writing templates, not statements); `fonte` and `fonte_identificador` (they name private documents); `email`, `telefone`, `localizacao`; `orientando` and `avaliacao_final` (another person's name and grade); `valor_e_condicoes`; unconfirmed teaching hours; `tecnologias`; `experiencia_declarada`; the title of a proposal reviewed in confidence.
+- **Contact** is released field by field in the approval, and only public profile links can be released: `orcid`, `lattes`, `linkedin`, `github`, `google_scholar`, `site`, `researchgate`. An email address, a telephone number and a location cannot be published through this path at all; the Contact page is a separate decision.
+- **For the owner's review at approval:** the names of candidates in examination boards and of supervisors are projected, as is usual in an academic CV. The snapshot's diff shows every one before it is committed.
+- **No push** (D-082): P11-A01 adds integration code and no content; `origin` was not contacted.

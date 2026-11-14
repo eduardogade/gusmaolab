@@ -190,16 +190,7 @@ const REQUIRED = {
     "organizationId",
     "type",
   ],
-  education: [
-    "id",
-    "visibility",
-    "provenance",
-    "personId",
-    "institutionId",
-    "qualification",
-    "level",
-    "status",
-  ],
+  education: ["id", "visibility", "provenance", "personId", "qualification", "level"],
   activities: ["id", "visibility", "provenance", "personId", "type", "name"],
 }
 
@@ -319,6 +310,34 @@ await test("REC-003", "Missing required fields are reported usefully", (check) =
       "a published output needs its date",
     ],
     [(d) => (d.publications[0].authors = []), "authors"],
+    // P11-A01: a fact kept as its source wrote it replaces the structured field, never
+    // joins it.
+    [
+      (d) => (d.publications[0].authorsText = "External, O.*"),
+      "either as a list (authors) or as the printed line (authorsText)",
+    ],
+    [
+      (d) => {
+        delete d.publications[0].authors
+        d.publications[0].creditedTo = ["person-min"]
+      },
+      "creditedTo is only for an author list kept as text",
+    ],
+    [
+      (d) => {
+        d.publications[0].venue = "Journal (fixture)"
+        d.publications[0].details = "Journal (fixture), 1(2): 3, 2020."
+      },
+      "either details or venue",
+    ],
+    [
+      (d) => (d.appointments[0].institution = "Institute (fixture) – City"),
+      "either by ID (organizationId) or as written (institution)",
+    ],
+    [
+      (d) => (d.education[0].institution = "Institute (fixture) – City"),
+      "either by ID or as written, not both",
+    ],
     [(d) => (d.projects[0].extra = true), 'Unrecognized key: "extra"'],
     [(d) => (d.people[0].provenance = { status: "certain" }), "provenance.status"],
   ]
@@ -1722,7 +1741,7 @@ await test("REC-024", "The record system needs nothing outside src/", async (che
       }
     }
     check(
-      !/node:|fetch\(|readFile|cv\/|codex-yaml|brand\/|_backup/.test(text),
+      !/node:|fetch\(|readFile|codex-yaml|\.ya?ml|brand\/|_backup/.test(text),
       `${relative(repo, file)} reads from outside`,
     )
   }
@@ -1733,7 +1752,9 @@ await test("REC-024", "The record system needs nothing outside src/", async (che
   )
   check(
     json(Object.keys(manifest.devDependencies).sort()) ===
-      json(["@astrojs/check", "prettier", "typescript"]),
+      // `yaml` reads the author's CV for the CV tool and its tests only (D-089); no
+      // record module and no page imports it, which the loop above checks.
+      json(["@astrojs/check", "prettier", "typescript", "yaml"]),
     "a dev dependency was added",
   )
 })

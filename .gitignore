@@ -262,3 +262,10 @@ _reports/
 
 # Bearnard Image Studies
 brand/bearnard/
+
+# The author's CV sources (P11-A01, D-093). This repository is public, and the CV files
+# hold private details (contacts, references). They stay on the author's machine; the
+# site reads only the generated snapshot in src/data/cv/. To commit a CV file after all,
+# record the decision first, then remove its line here.
+/cv/codex-yaml/
+/cv/CV*.yaml

@@ -322,6 +322,27 @@ P11 added the data that the research sections will present, and no navigation: t
 - A record never becomes a tab. If a project or a person gets a page, it will be a content route owned by a folder (section 8), added by a recorded decision.
 - Until verified records exist, these pages keep their development scaffolding. The projections are shown, with invented data, only at `/_design/records/`.
 
+### The CV behind the CV section (P11-A01)
+
+The author's versioned CV YAML is the source of the owner's professional history (D-089). It changes no navigation: no tab, folder, URL or page was added, and the CV section's nine pages are as they were.
+
+| Folder of the CV section | Reads, once a version is approved |
+| --- | --- |
+| CV (Overview) | The profile (`siteCv.profile`), education and appointments |
+| Research | Appointments, funding |
+| Publications | Outputs, cited through `citationOf` |
+| Teaching | Teaching activities |
+| Talks | Presentations and participation in events |
+| Mentoring | Mentoring activities |
+| Awards | Awards |
+| Service | Service activities |
+| Outreach | Outreach activities |
+
+- This table is a reading contract, not a design: which section shows what is decided when the CV pages are built.
+- Training, certifications and skills have no folder of their own; where they appear is open (question below).
+- A downloadable CV, academic or industry, will be another presentation of the same records. None exists.
+- Nothing of the CV is on the site today: no version is approved (`cv/manifest.json`).
+
 ## Open questions
 
 - The third-level folders (section 3).

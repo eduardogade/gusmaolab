@@ -247,6 +247,8 @@ To retire an entry without breaking its link, set `status: archived`. To take on
 
 **All eight families are empty.** P11 built and tested the system with a synthetic fixture; no real record was written, imported or inferred (D-087).
 
+**Two sources, and no fact in both** (P11-A01, D-089). The owner's own professional history (their person record, education, appointments, activities and scholarly outputs) is owned by the author's CV and reaches the site as records derived from an approved version: see "The author's CV" below. Everything else (projects, research areas, organizations, other people) is written by hand in `src/data/records/`.
+
 ### Families
 
 | Family | ID prefix | What it is |
@@ -255,18 +257,19 @@ To retire an entry without breaking its link, set `status: archived`. To take on
 | `organizations` | `organization-` | A university, institute, laboratory, company, public institution or consortium. |
 | `researchAreas` | `area-` | A research area. Its projects and outputs are derived. |
 | `projects` | `project-` | A research or engineering project (research, software, platform, infrastructure). |
-| `publications` | `publication-` | A scholarly output: article, conference paper, preprint, chapter, dataset, software, report, thesis. |
+| `publications` | `publication-` | A scholarly output: article, conference paper, conference abstract, preprint, chapter, dataset, software, report, thesis. |
 | `appointments` | `appointment-` | A position a person holds or held at an organization. |
 | `education` | `education-` | A degree or formal qualification. |
-| `activities` | `activity-` | Teaching, presentations, mentoring, awards, service and outreach, told apart by `type`. |
+| `activities` | `activity-` | Teaching, presentations, participation in events, mentoring, awards, funding, service, outreach, training and certifications, told apart by `type`. |
 
-Funding and grants are not a family yet: nothing in P11 needed them (see "Extension points").
+Funding and grants are an activity type since P11-A01 (`funding`), not a family of their own.
 
 ### Where things are
 
 | Concern | File |
 | --- | --- |
-| The site's records: one typed list per family, all empty | `src/data/records/` (`people.ts`, `organizations.ts`, `research-areas.ts`, `projects.ts`, `publications.ts`, `appointments.ts`, `education.ts`, `activities.ts`, `index.ts`) |
+| The hand-written (independent) records: one typed list per family, all empty | `src/data/records/` (`people.ts`, `organizations.ts`, `research-areas.ts`, `projects.ts`, `publications.ts`, `appointments.ts`, `education.ts`, `activities.ts`, joined in `independent.ts`) |
+| The site's dataset: the independent records and those derived from the CV snapshot | `src/data/records/index.ts` (`PRODUCTION_RECORDS`) |
 | Schemas, families, ID patterns, types | `src/records/schema.ts` |
 | Partial dates and periods | `src/records/dates.ts` |
 | Validation across records, and the frozen store | `src/records/registry.ts` |
@@ -308,7 +311,7 @@ Every record has three things:
 | --- | --- | --- |
 | `id` | `<prefix>-<lowercase-kebab-name>` | Stable, unique across all records, independent of any title, of the record's position in its list and of anything private (never an email). Renaming a thing never changes its ID. |
 | `visibility` | `public`, `hidden` | Whether the record may be shown. Explicit: there is no default. |
-| `provenance.status` | `verified`, `imported`, `unreviewed`, `synthetic` | How far the facts have been checked. Optional `source` (where they come from, in the owner's words), `url` (a public page that supports them) and `reviewedAt` (`YYYY-MM-DD`). |
+| `provenance.status` | `verified`, `imported`, `unreviewed`, `synthetic` | How far the facts have been checked. Optional `source` (where they come from, in the owner's words), `sourceId` (the record's identifier in its source document, exactly as written there, such as `4.1.1`; never the record's own ID), `url` (a public page that supports them) and `reviewedAt` (`YYYY-MM-DD`). |
 
 - **A record is shown only if it is `public` and `verified`.** `imported` (brought in, not yet confirmed) and `unreviewed` (legacy or draft) records can sit in the data and are never rendered. `synthetic` is for tests and studies: the site's dataset refuses it outright.
 - **Neither field is a security boundary.** The repository is public, and so is everything in `src/data/records/`, shown or not. Nothing confidential belongs in a record: no private contact detail, no unpublished manuscript's content, no student's personal history.
@@ -318,6 +321,8 @@ Every record has three things:
 
 Unknown fields are rejected. A fact that is not known is left out; no field has a guessing default.
 
+**Text as written** (P11-A01, D-091). Where a source states a fact only as one line of text (an author list, an institution with its place), the record may keep that line exactly as written, in the fields marked "as written" below, instead of structured fields or a reference. Such a line is never split, sorted or corrected. Structuring it is a deliberate later step.
+
 **People.** `displayName` (required); `sortName`, `citationName` (how the name is printed in author lists), `professionalTitle`, `shortBiography`, `orcid` (checked, including its check digit; never generated), `links` (`label`, `url`), `researchAreaIds`, `profile` (`none` by default, `public` only when a dedicated profile has been agreed). No email, no portrait. Affiliations are not stored on the person: they are the person's appointments.
 
 **Organizations.** `name`, `type` (`university`, `research-institute`, `laboratory`, `company`, `public-institution`, `consortium`, `other`) required; `shortName`, `website`, `location`, `parentId` (the one hierarchy: it may not loop), `relations` (`member-of`, `partner-of`, `hosted-by` another organization; these need not form a tree and may be mutual).
@@ -326,29 +331,35 @@ Unknown fields are rejected. A fact that is not known is left out; no field has 
 
 **Projects.** `title`, `kind` (`research`, `software`, `platform`, `infrastructure`, `other`), `status` (`planned`, `active`, `completed`, `archived`) required; `shortDescription`, `period`, `researchAreaIds`, `participants` (`personId`, optional `role`), `organizationIds`, `links` (`repository`, `documentation`, `website`), `slug`. A status is stated, never inferred from a repository or a last commit.
 
-**Scholarly outputs.** `title`, `type`, `status`, `authors` (at least one) required; `date`, `venue`, `volume`, `issue`, `pages`, `doi`, `url`, `projectIds`, `researchAreaIds`, `related`.
+**Scholarly outputs.** `title`, `type`, `status` and the authors required, as either `authors` (a list, at least one) or `authorsText` (the author line as written), never both; `authorshipNote`, `creditedTo`, `date`, `venue`, `volume`, `issue`, `pages`, `details`, `doi`, `url`, `projectIds`, `researchAreaIds`, `related`.
 
 - `status`: `submitted` (under review), `accepted` (in press), `preprint` (public, not reviewed), `published`. A `preprint`-type output has the status `preprint` and nothing else has; a published or preprint output needs its date, at least the year.
 - `authors` is an ordered list and is never sorted. Each author is either `{ personId, as? }` (a registered person; `as` is the name exactly as printed on this work) or `{ name }` (an external credit, which needs no person record). A person appears once.
+- `authorsText` is the author line exactly as printed: order, initials and marks such as a co-first-author asterisk are kept, and `authorshipNote` says what a mark means. `creditedTo` lists the registered people among those authors, so that the output is theirs without the line being parsed; it is allowed only with `authorsText`.
+- `details` is venue, volume, pages and year as one line, as written, instead of `venue`, `volume`, `issue` and `pages`. The citation prints it unchanged and adds no year.
 - `doi` is stored in one form, the bare lowercase identifier (`10.1234/abc`): a pasted `https://doi.org/…` or `doi:…` is reduced to it, and the link is generated. No metadata is fetched.
 - `related` ties outputs together (`preprint-of`, `version-of`, `supplement-to`). A preprint and its article are two records; nothing merges outputs by title.
 
-**Appointments.** `personId`, `organizationId`, `type` (`employment`, `academic`, `visiting`, `affiliation`, `other`) required; `title` (required unless the type is `affiliation`: a tie without a post), `period`, `summary`, `location`, `projectIds`. Titles are kept as given. Positions may overlap.
+**Appointments.** `personId`, `type` (`employment`, `academic`, `visiting`, `consulting`, `affiliation`, `other`) and the organization required, as either `organizationId` or `institution` (the institution and place as written), never both; `title` (required unless the type is `affiliation`: a tie without a post), `department` (as written), `period`, `summary`, `location`, `projectIds`. Titles are kept as given. Positions may overlap.
 
-**Education.** `personId`, `institutionId`, `qualification`, `level` (`undergraduate`, `masters`, `doctorate`, `other`), `status` (`completed`, `in-progress`, `incomplete`) required; `field`, `startDate`, `completionDate` (only when completed), `thesisTitle`, `supervisorIds`. Several qualifications at one level are fine; no date is inferred from a sequence of degrees.
+**Education.** `personId`, `qualification`, `level` (`undergraduate`, `masters`, `doctorate`, `other`) required; `institutionId` or `institution` (as written; not both), `status` (`completed`, `in-progress`, `incomplete`; left out when the source does not state it, never inferred from a date), `field`, `startDate`, `completionDate` (not allowed when the status is in progress or incomplete; with no status it is the end of the period as recorded), `thesisTitle`, `supervisorIds`, `supervision` (the supervisors as written). Several qualifications at one level are fine; no date is inferred from a sequence of degrees.
 
 **Activities.** `personId` and `type` required, plus:
 
 | `type` | Required | Optional |
 | --- | --- | --- |
-| `teaching` | `title` (the course) | `role`, `organizationId`, `period`, `resources` |
-| `presentation` | `title`, `presentationType` (`invited`, `keynote`, `contributed`, `poster`, `seminar`, `other`) | `event`, `date`, `location`, `publicationIds`, `projectIds` |
-| `mentoring` | `mentorshipType` (`supervision`, `co-supervision`, `mentoring`) | `level`, `menteeId`, `topic`, `organizationId`, `period`, `projectIds` |
-| `award` | `name` | `grantorId`, `date` |
-| `service` | `serviceType` (`committee`, `review`, `organizing`, `editorial`, `advisory`, `other`), `role` | `body`, `organizationId`, `period` |
-| `outreach` | `title` | `event`, `date`, `organizationId`, `url` |
+| `teaching` | `title` (the course) | `role`, `organizationId`, `period`, `duration` (as written, such as "Two semesters"), `resources` |
+| `presentation` | `title` | `presentationType` (`invited`, `keynote`, `contributed`, `poster`, `seminar`, `other`), `event`, `date`, `location`, `publicationIds`, `projectIds` |
+| `participation` | `event` | `period` |
+| `mentoring` | | `mentorshipType` (`supervision`, `co-supervision`, `mentoring`; left out when the source does not say, never presumed), `level`, `menteeId`, `topic`, `organizationId`, `period`, `projectIds` |
+| `award` | `name` | `grantorId` or `grantor` (as written), `topic`, `date` |
+| `funding` | `name` (the kind of grant, as written) | `grantorId` or `grantor`, `topic`, `date` |
+| `service` | `serviceType` (`committee`, `review`, `organizing`, `editorial`, `advisory`, `administration`, `examination`, `other`), `role` | `body`, `subject` (what was examined, when it is public), `organizationId`, `period` |
+| `outreach` | `title` | `event`, `date`, `period`, `organizationId`, `url` |
+| `training` | `title` | `period` |
+| `certification` | `name` | `issuer`, `date`, `url` |
 
-Every activity may carry a `summary`. A mentoring record does not have to name anyone, and a mentee is named on a page only if their own record may be shown.
+Every activity may carry a `summary` and a `context`: the role and institution, or the setting, in one line as written, when the source does not separate them. A mentoring record does not have to name anyone, and a mentee is named on a page only if their own record may be shown.
 
 ### Dates
 
@@ -390,26 +401,160 @@ relatedRecords:
 
 ### Adding real records
 
+Only independent records are written by hand: projects, research areas, organizations, people other than the owner. A fact of the owner's CV is never written here. It is changed in the CV file and reaches the site through the snapshot; `mergeRecords` fails the build for a hand-written education, appointment, activity or output of the owner once a snapshot exists.
+
 1. Write the record in its family's file in `src/data/records/`, with an ID that will never need to change.
 2. Give only the facts that are known, at the precision they are known. Leave the rest out.
 3. Set `provenance`: `verified` once the owner has confirmed it, with a `source`; `imported` or `unreviewed` until then (the record then stays off every page).
 4. Set `visibility`. Remember that the file itself is public either way.
 5. Run `npm run verify`: a broken reference or an impossible date names the record.
 
-### The CV workflow in `cv/codex-yaml/`
-
-A separate, concurrent task keeps a proposed master CV there as YAML. P11 did not read its contents into any record, and changed nothing in that directory. It is an unverified proposal with pending placeholders, and it holds contact details and references that do not belong in a public data file.
-
-Its section names suggest an eventual mapping, as an **import boundary**, not as work done: education to `education`; professional experience to `appointments`; publications to `publications` (and `people` for registered co-authors); presentations, teaching, mentoring, awards, service and outreach to `activities`; funding to a future family. An import would be a reviewed, one-way conversion into `src/data/records/`, record by record, landing as `imported` until the owner verifies each one. Nothing would be read from it at build time.
-
 ### Extension points
 
-- **Funding and grants:** a ninth family, when the CV needs it.
+- **Funding as a family of its own,** with amounts and roles, if a page ever needs more than the `funding` activity.
 - **Entity pages:** a project or profile page would be a content route owned by a folder (Portfolio, Lab), built from the store through a projection; `slug` already reserves the address. None exists.
 - **Narrative text** for an area or a project: Markdown beside the record, keeping identity and relationships structured.
 - **Portraits:** through the same kind of registry as Bearnard's illustrations, never a path in a record.
 - **Author roles** (corresponding, equal contribution) and further bibliographic fields, when a real bibliography needs them.
-- **A YAML or JSON source,** if the owner prefers it for authoring: the same schemas would validate it; only the loader would change.
+- **Structured authors and organizations for CV-derived records:** a deliberate conversion of `authorsText` into `authors`, or of `institution` into organization records, reviewed by the owner. Never an automatic split.
+
+## The author's CV
+
+**CV YAML → validated canonical records → website pages and document generators** (P11-A01, D-089 to D-093). The owner keeps one comprehensive, versioned YAML file of their professional history. It is the source of truth for that history. The P11 records are how the site reads it, never a second copy of it.
+
+### Ownership
+
+| Fact | Owner | Where it is written |
+| --- | --- | --- |
+| The owner's identity, education, positions, publications, presentations, teaching, mentoring, service, outreach, awards, funding, training, skills | The CV | The author's CV file |
+| Projects, software documentation, research areas, datasets, organizations, other people | The site | `src/data/records/` |
+| Editorial entries | The site | `src/content/` |
+| Which outputs belong to a project | The CV names them (`software_e_metodos.evidencia`); the site owns the project | Derived: the output's `projectIds` |
+
+- When both describe the same thing, the richer, independently maintained record wins and the CV adds only a relationship. The CV's one-line description of a software project never overwrites the site's project record: the CV does not create project records at all.
+- A fact is never stated on both sides. `mergeRecords` (`src/cv/snapshot.ts`) refuses a record ID present in both, and a hand-written record that states a fact of the owner's CV.
+
+### Files and states
+
+| Path | In Git | Role |
+| --- | --- | --- |
+| `cv/codex-yaml/CV.proposta.yaml` | no | The working proposal the author is editing (22 sections, Portuguese field names). The P11-A01 brief gives its path as `cv/CV.proposta.yaml`; it is where the manifest says. |
+| `cv/CV-vX.Y.yaml` | no | Versions the author creates explicitly. None exists yet. |
+| `cv/manifest.json` | yes | Which file is the working file, and which version is approved for publication |
+| `cv/identities.json` | yes | The permanent record ID of each CV entry |
+| `src/data/cv/snapshot.ts` | yes | The generated public snapshot; `null` until a version is approved |
+
+A CV passes through five states, and only an explicit act of the owner moves it from one to the next:
+
+1. **Working proposal:** being written; may hold any number of placeholders.
+2. **Versioned working document:** saved by the author as `CV-vX.Y.yaml`.
+3. **Author-reviewed version:** the author has checked its facts.
+4. **Approved public snapshot:** the owner names the version, its fingerprint and the approval date in `cv/manifest.json` and switches publication on; the tool then generates the snapshot.
+5. **Published projection:** the snapshot is committed and pages render its records.
+
+**Source authority is not publication approval.** `metadados.fonte_de_verdade: true` and `metadados.situacao` are the file's statements about itself. No code that decides publication reads them, the file name or how complete the file looks (CV-006, CV-007).
+
+### Version selection
+
+`cv/manifest.json`:
+
+```json
+{
+  "workingFile": "codex-yaml/CV.proposta.yaml",
+  "published": null,
+  "publishEnabled": false
+}
+```
+
+- Nothing lists a directory. The newest file is never picked, a working file is never promoted, and no file is renamed (CV-008).
+- An approval (`published`) names `file` (must be named `CV-vX.Y.yaml` and is never the working file), `version` (equal to the file's `metadados.versao`), `sha256` (the file's fingerprint: a file edited after approval is refused until approved again), `approvedOn` and `contact` (the profile links released, none by default).
+- `publishEnabled: false` keeps every CV fact off the site whatever else is set.
+- A file name and a `metadados.versao` that disagree are a warning for the owner (`1.0` and `1.0.0` agree). Nothing is renamed or rewritten.
+
+### Two validation layers
+
+| Layer | Question | Placeholders | Code |
+| --- | --- | --- | --- |
+| A. Authoring | Can the file be understood? | Allowed, counted, never changed | `authoringIssues` in `src/cv/source.ts` |
+| B. Publication | Is this field or record approved and complete enough to show? | Never shown | `adaptCv` in `src/cv/adapter.ts`, then `snapshotIssues` |
+
+Layer A reports as errors only what stops the file from being read: invalid YAML, a record list that is not a list, an identifier used twice in one list. Unknown sections, missing sections and records without an identifier are notes.
+
+Layer B, record by record:
+
+- An unresolved placeholder (`{{EXP_1_FIM}}`) in a field the record can do without leaves the field out. In a field it cannot do without (a title, a name), it leaves the record out. Both are reported.
+- **An unknown end is no end.** It is never turned into "present", and a role is never treated as current without the author saying so.
+- An impossible date (`2023-02-30`) is left out, never corrected. An unresolved identifier is not a DOI.
+- A record marked as a draft (`situacao: Rascunho…`) is left out.
+- A record without an identity in `cv/identities.json` is left out.
+- Every kept record is then checked against its family's schema, and the whole dataset for referential integrity.
+
+### Identity
+
+The CV's own identifiers (`4.1.1`, `exp_1`, `formacao_1`) follow the document's numbering and may change. They are kept, exactly as written, in `provenance.sourceId`, and never rewritten. The site's permanent IDs are assigned by hand in `cv/identities.json`:
+
+```json
+{
+  "owner": "person-…",
+  "records": {
+    "publicacoes.artigos/4.1.1": "publication-…",
+    "formacao_academica/formacao_1": "education-…"
+  }
+}
+```
+
+- The key is the list and the source identifier; the value must be an ID of that list's family, and no ID is given twice (CV-009).
+- An ID is never derived from a position in a list, a title or a DOI. A record without an entry is not projected.
+- The file is empty today (`owner: null`): assigning IDs is the owner's step.
+
+### Mapping
+
+| CV section | Becomes | Fields read (the allowlist) |
+| --- | --- | --- |
+| `identidade_profissional` | The owner's person record and profile | `nome`, `nome_exterior`, `titulo_profissional`, `resumo`, `areas_de_especialidade`, `palavras_chave`, `idiomas` |
+| `contato` | The person's `orcid` and `links` | Only the fields the approval releases, from: `orcid`, `lattes`, `linkedin`, `github`, `google_scholar`, `site`, `researchgate` |
+| `formacao_academica` | `education` | `grau`, `instituicao_e_local`, `supervisao`, `periodo`, `titulo_trabalho` |
+| `experiencia_profissional` (`academica_e_pesquisa`, `consultoria_industrial_documentada`, `industria`) | `appointments` (`academic`, `consulting`, `employment`) | `cargo`, `instituicao_e_local` or `empresa`, `departamento_e_regime`, `periodo`, `responsabilidades` |
+| `publicacoes` (`artigos`, `anais_completos`, `resumos_em_anais`, `capitulos`, `preprints`) | `publications` (`journal-article`, `conference-paper`, `conference-abstract`, `book-chapter`, `preprint`) | `autores`, `nota_autoria`, `titulo`, `veiculo_e_detalhes`, `ano`, `doi_ou_url` |
+| `apresentacoes_e_eventos` (`palestras`, `participacoes`) | `presentation` and `participation` activities | `descricao`, `data` or `periodo` |
+| `financiamentos_e_grants` | `funding` activities | `tipo`, `instituicao`, `tema`, `data` |
+| `premios_e_honrarias` | `award` activities | `tipo`, `instituicao`, `tema`, `data` |
+| `experiencia_docente` | `teaching` activities | `disciplina_e_codigo`, `atividade_e_instituicao`, `periodo`, `semestres` |
+| `mentoria_e_orientacao.registros` | `mentoring` activities | `nivel`, `tema`, `instituicao`, `periodo` |
+| `servico_e_lideranca` (`administracao`, `bancas_academicas`, `avaliacao_de_projetos`, `revisao_por_pares`, `organizacao_de_eventos`) | `service` activities (`administration`, `examination`, `review`, `review`, `organizing`) | `funcao` or `atividade`, `instituicao`, `periodo` or `data`; `titulo` for examination boards only |
+| `extensao` | `outreach` activities | `projeto`, `atividade_e_instituicao`, `periodo` |
+| `formacao_complementar` | `training` activities | `curso_carga_e_instituicao`, `periodo` |
+| `certificacoes` | `certification` activities | `nome`, `emissor`, `data`, `credencial` |
+| `habilidades_tecnicas` | The profile's skills | `pesquisa.metodos`, `industria[].competencia`. Groups still named `…_a_classificar` or `…_a_confirmar` are not skills yet. |
+| `software_e_metodos` | Relationships: the outputs in `evidencia` name a project the site already has | `nome`, `evidencia` |
+
+- Composite fields stay whole: `instituicao_e_local` becomes `institution`, `autores` becomes `authorsText`, `veiculo_e_detalhes` becomes `details`. Nothing is split on commas.
+- Author order, initials and co-first-author asterisks are kept, with their note (CV-010).
+- A degree's level is read from the first word of `grau` (Doutorado, Mestrado, Bacharelado); its status is not stated in the CV and is left out.
+- The text stays in the CV's language. The profile records it (`language`, from `metadados.idioma`).
+
+**Never read, whatever they hold:** the sections `declaracoes`, `cartas_de_apresentacao`, `referencias`, `topicos_master_sugeridos` and `placeholders_pendentes`; the writing templates `modelo_sem_vinculos` and `texto_sem_vinculos`, which are not biographical statements; the internal source notes `fonte` and `fonte_identificador`, which name private documents; `email`, `telefone` and `localizacao`; the name and grade of a person mentored (`orientando`, `avaliacao_final`); amounts of money (`valor_e_condicoes`); teaching hours still to be confirmed; `tecnologias`; `experiencia_declarada`; and the title of a proposal reviewed in confidence. This is an allowlist: a field that no builder names is not read, so a new field in the CV is private until it is added here by a decision.
+
+### The public snapshot
+
+- The CV files are private and are not in the repository, so a build, GitHub Actions included, cannot and does not read them.
+- `npm run cv:snapshot` writes `src/data/cv/snapshot.ts` from the approved version: the derived records, the profile, the version, the approval date and the file's SHA-256. It refuses unless every condition of an approval holds, and then it leaves the file as it was.
+- The snapshot is a generated derivative, never edited by hand and never a second source. To change a fact: change the CV, approve a version, generate again.
+- It is committed only after the owner has read its diff, which is public.
+- The site re-checks it when it loads (`snapshotIssues`): an approval, only public and verified records that name their source, no placeholder, no field of the raw file.
+- Until then it is `null`, the site has no CV data, and it builds (CV-015). No snapshot was generated in P11-A01.
+
+### Future consumers
+
+All of these are selections and presentations of the same records. None is a database of its own, and none exists yet.
+
+| Consumer | Reads |
+| --- | --- |
+| Website CV (the CV section's folders) | `cvProjection(siteRecords, siteCv.ownerId)` and `siteCv.profile` |
+| Academic CV export | The same projection, complete |
+| Industry CV export | A targeted selection of the same records; profile-specific wording may be authored separately, and must add no unverified claim |
+| Portfolio | `portfolioProjection`, with outputs related through `software_e_metodos` |
+| Lab | `labProjection` |
 
 ## Authoring
 

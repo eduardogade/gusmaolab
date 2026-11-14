@@ -158,9 +158,10 @@ function references(family: Family, record: AnyRecord): [string, string, Family]
       const r = record as Publication
       many(
         "authors",
-        r.authors.flatMap((a) => ("personId" in a ? [a.personId] : [])),
+        (r.authors ?? []).flatMap((a) => ("personId" in a ? [a.personId] : [])),
         "people",
       )
+      many("creditedTo", r.creditedTo, "people")
       many("projectIds", r.projectIds, "projects")
       many("researchAreaIds", r.researchAreaIds, "researchAreas")
       many(
@@ -193,7 +194,8 @@ function references(family: Family, record: AnyRecord): [string, string, Family]
       if (r.type === "presentation")
         many("publicationIds", r.publicationIds, "publications")
       if (r.type === "mentoring") one("menteeId", r.menteeId, "people")
-      if (r.type === "award") one("grantorId", r.grantorId, "organizations")
+      if (r.type === "award" || r.type === "funding")
+        one("grantorId", r.grantorId, "organizations")
       break
     }
   }

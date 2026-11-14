@@ -83,10 +83,14 @@ export interface CvProjection {
   readonly publications: readonly Citation[]
   readonly teaching: readonly CvEntry[]
   readonly presentations: readonly CvEntry[]
+  readonly participations: readonly CvEntry[]
   readonly mentoring: readonly CvEntry[]
   readonly awards: readonly CvEntry[]
+  readonly funding: readonly CvEntry[]
   readonly service: readonly CvEntry[]
   readonly outreach: readonly CvEntry[]
+  readonly training: readonly CvEntry[]
+  readonly certifications: readonly CvEntry[]
 }
 
 const entry = (
@@ -120,8 +124,9 @@ export function cvProjection(records: Records, personId: string): CvProjection {
         a.id,
         a.title ?? "Affiliation",
         formatPeriod(a.period),
-        organizationName(records, a.organizationId),
-        join(a.location, a.summary),
+        // A registered organization, else the institution as its source wrote it.
+        organizationName(records, a.organizationId) ?? a.institution,
+        join(a.department, a.location, a.summary),
       ),
     ),
     education: educationOf(records, personId).map((e) =>
@@ -133,10 +138,11 @@ export function cvProjection(records: Records, personId: string): CvProjection {
           : e.startDate === undefined
             ? when(e.completionDate)
             : formatPeriod({ start: e.startDate, end: e.completionDate }),
-        organizationName(records, e.institutionId),
+        organizationName(records, e.institutionId) ?? e.institution,
         join(
           e.field,
           e.thesisTitle === undefined ? undefined : `Thesis: ${e.thesisTitle}`,
+          e.supervision === undefined ? undefined : `Supervision: ${e.supervision}`,
           e.status === "incomplete" ? "not completed" : undefined,
         ),
       ),
@@ -158,8 +164,8 @@ export function cvProjection(records: Records, personId: string): CvProjection {
         a.id,
         a.title,
         formatPeriod(a.period),
-        organizationName(records, a.organizationId),
-        join(a.role, a.summary),
+        organizationName(records, a.organizationId) ?? a.context,
+        join(a.role, a.duration, a.summary),
       ),
     ),
     presentations: activitiesOf(records, personId, "presentation").map((a) =>
@@ -167,16 +173,20 @@ export function cvProjection(records: Records, personId: string): CvProjection {
         a.id,
         a.title,
         when(a.date),
-        undefined,
+        a.context,
         join(a.presentationType, a.event, a.location),
       ),
+    ),
+    participations: activitiesOf(records, personId, "participation").map((a) =>
+      entry(a.id, a.event, formatPeriod(a.period), a.context, a.summary),
     ),
     mentoring: activitiesOf(records, personId, "mentoring").map((a) =>
       entry(
         a.id,
-        a.level === undefined ? a.mentorshipType : `${a.mentorshipType}, ${a.level}`,
+        // The kind of mentorship is stated only when the record states it.
+        join(a.mentorshipType ?? "mentoring", a.level) ?? "mentoring",
         formatPeriod(a.period),
-        organizationName(records, a.organizationId),
+        organizationName(records, a.organizationId) ?? a.context,
         // The mentee is named only if their own record may be shown.
         join(personName(records, a.menteeId), a.topic),
       ),
@@ -186,8 +196,17 @@ export function cvProjection(records: Records, personId: string): CvProjection {
         a.id,
         a.name,
         when(a.date),
-        organizationName(records, a.grantorId),
-        a.summary,
+        organizationName(records, a.grantorId) ?? a.grantor,
+        join(a.topic, a.summary),
+      ),
+    ),
+    funding: activitiesOf(records, personId, "funding").map((a) =>
+      entry(
+        a.id,
+        a.name,
+        when(a.date),
+        organizationName(records, a.grantorId) ?? a.grantor,
+        join(a.topic, a.summary),
       ),
     ),
     service: activitiesOf(records, personId, "service").map((a) =>
@@ -195,18 +214,24 @@ export function cvProjection(records: Records, personId: string): CvProjection {
         a.id,
         a.role,
         formatPeriod(a.period),
-        organizationName(records, a.organizationId),
-        join(a.serviceType, a.body),
+        organizationName(records, a.organizationId) ?? a.context,
+        join(a.serviceType, a.body, a.subject),
       ),
     ),
     outreach: activitiesOf(records, personId, "outreach").map((a) =>
       entry(
         a.id,
         a.title,
-        when(a.date),
-        organizationName(records, a.organizationId),
+        a.date === undefined ? formatPeriod(a.period) : when(a.date),
+        organizationName(records, a.organizationId) ?? a.context,
         join(a.event, a.summary),
       ),
+    ),
+    training: activitiesOf(records, personId, "training").map((a) =>
+      entry(a.id, a.title, formatPeriod(a.period), a.context, a.summary),
+    ),
+    certifications: activitiesOf(records, personId, "certification").map((a) =>
+      entry(a.id, a.name, when(a.date), a.issuer ?? a.context, a.summary),
     ),
   }
 }

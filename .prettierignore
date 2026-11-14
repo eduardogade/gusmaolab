@@ -10,3 +10,7 @@ _reports/
 dist/
 .astro/
 package-lock.json
+
+# The author's CV files are never reformatted (P11-A01)
+cv/codex-yaml/
+cv/**/*.yaml

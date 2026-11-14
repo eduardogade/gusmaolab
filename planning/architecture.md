@@ -174,7 +174,39 @@ src/design/                 2. records against each     selectors.ts      derive
 - **No routes.** A record creates no page; no route file reads the store except the design study at `/_design/records/`, which shows the synthetic fixture. Entity pages, when approved, will be content routes owned by a folder.
 - **Editorial entries may point at records** (`relatedRecords`). The editorial loader asks the store whether each ID exists (`recordReferenceIssues`); the dependency runs one way, editorial → records, so there is no import cycle.
 - **Build time only.** Nothing about records runs in the browser: no fetching, no client-side store, no script.
+- **Two sources since P11-A01.** `PRODUCTION_RECORDS` is the hand-written records joined with those derived from the CV snapshot (see "The author's CV as a source").
 - **Tests.** `tests/records.mjs` (REC-001 to REC-026): schemas, references, projections, immutability, and that neither synthetic nor hidden records reach a page.
+
+## The author's CV as a source (P11-A01)
+
+The owner's professional history is written once, in the author's versioned CV YAML, and the P11 records are derived from it (D-089 to D-093). Fields, states and the mapping are in `planning/content-model.md`, "The author's CV"; this is how the parts join.
+
+```text
+ON THE AUTHOR'S MACHINE ONLY (private, ignored by Git)          IN THE REPOSITORY (public)
+cv/codex-yaml/CV.proposta.yaml   working proposal
+cv/CV-vX.Y.yaml                  explicit versions              cv/manifest.json     which file, which approval
+        │                                                       cv/identities.json   source ID → record ID
+        ▼  npm run cv:check / cv:snapshot  (scripts/cv.mjs: the only code that opens a CV file)
+  src/cv/source.ts     parse YAML; layer A: can it be understood? placeholders allowed
+  src/cv/manifest.ts   is a version approved? (switch, version file, fingerprint, version, date)
+  src/cv/adapter.ts    layer B: the allowlist; CV sections → P11 record shapes, text kept as written
+        │
+        ▼  only with an approval
+  src/data/cv/snapshot.ts ───────► mergeRecords() ──► PRODUCTION_RECORDS ──► createRecords() ──► siteRecords
+  (generated; null today)          (src/cv/snapshot.ts)   ▲                                         │
+                                                          │                                         ▼
+  src/data/records/independent.ts ────────────────────────┘                      selectors · citation · projections
+  (hand-written: projects, areas, organizations, other people)                   (unchanged from P11)
+```
+
+- **One direction, read-only.** Nothing writes to a CV file: the tool's single write is the snapshot module (CV-003).
+- **Two sides.** `src/cv/source.ts` and `adapter.ts` run only in the tool and the tests; they alone load the YAML parser. The site imports `src/cv/snapshot.ts` and `site.ts`, which have no parser and read no file (CV-018). `yaml` 2.9.1 is a development dependency for that reason; it was already installed through Astro.
+- **A build never needs the CV.** GitHub Actions has no CV file and needs none: it reads the committed snapshot, or nothing (CV-015, CV-017). The tool is not part of `build`, `dev` or `verify`.
+- **Publication is explicit.** `publicationDecision` reads `cv/manifest.json` and the approved file's fingerprint and version. It reads nothing the CV says about itself.
+- **An allowlist, checked twice.** The adapter reads only the fields its builders name; the site re-checks the snapshot on load (`snapshotIssues`).
+- **One source per fact.** `mergeRecords` refuses an ID on both sides and a hand-written fact of the owner's CV. The CV never creates a project record: it relates outputs to projects the site describes.
+- **P11 is unchanged in kind.** Schemas, registry, selectors, projections and the citation still do the work. P11-A01 extended the schemas so that a record may keep a source's text as written (D-091).
+- **Tests.** `tests/cv.mjs` (CV-001 to CV-020), on a synthetic fixture in `tests/fixtures/cv/`, with one throwaway build.
 
 ## Colour architecture (P09-A01)
 
@@ -209,7 +241,11 @@ environments.css  ten typography and texture tokens per [data-environment]; no c
 | --- | --- |
 | `src/content/` | The editorial collections: one directory per collection, one Markdown file per entry (D-078). Empty of entries since P10. |
 | `src/content.config.ts` | Astro's content configuration: the eight collections, their loaders and schemas |
-| `src/data/records/` | The site's canonical records: one typed list per family (D-083). Empty since P11. |
+| `src/data/records/` | The hand-written (independent) canonical records: one typed list per family (D-083), joined with the CV snapshot in `index.ts` (D-089). Empty since P11. |
+| `src/data/cv/` | `snapshot.ts`: the generated public CV snapshot (D-092); `null` until the owner approves a version |
+| `src/cv/` | The CV integration: `source.ts` and `adapter.ts` (tool side: YAML, authoring validation, the allowlist), `manifest.ts`, `versions.ts`, `snapshot.ts` and `site.ts` (site side); pure |
+| `scripts/cv.mjs` | The CV tool: `check` and `snapshot`. The only code that opens a CV file; never part of a build |
+| `cv/` | `manifest.json`, `identities.json`, `README.md` (tracked); the author's CV files (ignored by Git, D-093) |
 | `src/records/` | The record model: schemas, dates, registry, selectors, projections, citation; pure. Not `src/lib/`, which the root `.gitignore` would hide. |
 | `src/editorial/` | The editorial model: collection registry, schemas, routing rules, date guard (pure), and `site.ts` (Astro) |
 | `src/components/editorial/` | `EditorialEntry` and `CollectionIndex` |
