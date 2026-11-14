@@ -1,0 +1,26 @@
+---
+// Temporary P13 design study: the ordinary Markdown counterpart of the Quarto specimen. The
+// same Greenhouse layout and the same shell, from a SYNTHETIC Markdown file that Astro renders
+// as it renders every entry: Quarto is not involved, and nothing about it changes.
+import FolderPage from "../../../layouts/FolderPage.astro"
+import EditorialStudyBanner from "../../../design/EditorialStudyBanner.astro"
+import { EDITORIAL_LAYOUTS } from "../../../layouts/editorial/layouts.ts"
+import { readingContext } from "../../../editorial/reading.ts"
+import { SYNTHETIC_ENTRIES, rebaseContext } from "../../../design/editorial-fixture.ts"
+import * as body from "../../../design/editorial/greenhouse-long.md"
+
+export function getStaticPaths() {
+  return [{ params: { design: "_design" } }]
+}
+
+const record = SYNTHETIC_ENTRIES.find((e) => e.data.slug === "synthetic-long-tutorial")!
+const context = rebaseContext(readingContext(record, SYNTHETIC_ENTRIES))
+const Layout = EDITORIAL_LAYOUTS.greenhouse
+---
+
+<FolderPage path="/lecture-notes/greenhouse/" title="Markdown counterpart (study) · GusmaoLab">
+  <EditorialStudyBanner />
+  <Layout collection="greenhouse" data={record.data} context={context} headings={body.getHeadings()}>
+    <body.Content />
+  </Layout>
+</FolderPage>

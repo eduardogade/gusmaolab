@@ -11,8 +11,15 @@
  *
  * A level-1 heading in the Markdown would be a second `<h1>`, since the title is the first:
  * it fails the build, naming the entry.
+ *
+ * A scientific entry (P13): when the manifest has a document for this entry, its body is the
+ * article fragment that scripts/science.mjs made from a Quarto source, and its headings are
+ * those of that fragment. The entry's own Markdown file holds only its metadata. Everything else
+ * is unchanged: the same layout, the same routes, the same publication state.
  */
 import { render } from "astro:content"
+import { collectionById } from "../../editorial/collections.ts"
+import { scientificEntry } from "../../science/index.ts"
 import type { CollectionEntry, CollectionKey } from "astro:content"
 import type { CollectionId } from "../../editorial/collections.ts"
 import type { CommonData } from "../../editorial/schema.ts"
@@ -26,7 +33,9 @@ interface Props {
 
 const { collection, entry } = Astro.props
 const data = entry.data as CommonData
-const { Content, headings } = await render(entry)
+const science = scientificEntry(collectionById(collection).directory, entry.id)
+const rendered = science === undefined ? await render(entry) : undefined
+const headings = science?.headings ?? rendered!.headings
 if (headings.some((heading) => heading.depth === 1)) {
   throw new Error(
     `${collection}/${entry.id}: the Markdown has a level-1 heading; the title is the page's <h1>, so sections start at ##`,
@@ -37,5 +46,5 @@ const Layout = EDITORIAL_LAYOUTS[collection]
 ---
 
 <Layout collection={collection} data={data} context={context} headings={headings}>
-  <Content />
+  {science ? <Fragment set:html={science.html} /> : rendered && <rendered.Content />}
 </Layout>

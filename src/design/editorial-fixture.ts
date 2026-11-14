@@ -241,6 +241,10 @@ export const SYNTHETIC_ENTRIES: readonly SyntheticEntry[] = [
 
 export const STUDY_ROOT = "/_design/editorial/"
 
+/** The Quarto study (P13): a scientific article, and an ordinary Markdown one beside it. */
+export const QUARTO_STUDY = "/_design/quarto/"
+export const QUARTO_STUDY_MARKDOWN = "/_design/quarto/markdown/"
+
 /** The study's address for a collection's index, or for one of its entries. */
 export const studyPath = (collection: CollectionId, slug?: string): string =>
   `${STUDY_ROOT}${collectionById(collection).directory}/${slug === undefined ? "" : `${slug}/`}`
@@ -249,6 +253,8 @@ export const studyPath = (collection: CollectionId, slug?: string): string =>
 export function studyPaths(): string[] {
   return [
     STUDY_ROOT,
+    QUARTO_STUDY,
+    QUARTO_STUDY_MARKDOWN,
     ...COLLECTION_IDS.map((id) => studyPath(id)),
     ...SYNTHETIC_ENTRIES.filter((e) => e.data.status !== "draft").map((e) =>
       studyPath(e.collection, e.data.slug),

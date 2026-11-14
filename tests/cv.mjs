@@ -1341,7 +1341,9 @@ for (const file of distFiles.filter((f) => TEXT_FILE.test(f)))
 
 await test("CV-015", "No approved CV data does not break the build", (check) => {
   const pages = [...distText.keys()].filter((f) => f.endsWith(".html"))
-  const site = pages.filter((f) => !f.startsWith("_design/editorial/"))
+  const site = pages.filter(
+    (f) => !f.startsWith("_design/editorial/") && !f.startsWith("_design/quarto/"),
+  )
   check(site.length === 40, `the build has ${site.length} pages, not 40`)
   check(pages.includes("cv/index.html"), "the CV folder's page is not built")
   check(CV_SNAPSHOT === null, "the build was not made without a snapshot")
@@ -1487,7 +1489,9 @@ await test(
       `the build failed: ${built.build.stderr.slice(-600)}`,
     )
     const pages = built.files.filter((f) => f.endsWith(".html"))
-    const site = pages.filter((f) => !f.startsWith("_design/editorial/"))
+    const site = pages.filter(
+      (f) => !f.startsWith("_design/editorial/") && !f.startsWith("_design/quarto/"),
+    )
     check(site.length === 40, `${site.length} pages: a record made or lost a page`)
     for (const [file, text] of built.text) {
       for (const marker of PRIVATE_MARKERS)

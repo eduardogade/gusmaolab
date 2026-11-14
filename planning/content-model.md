@@ -581,6 +581,18 @@ How each collection's metadata becomes a reading experience (D-094 to D-096). Th
 - **Archived** entries keep their listing and are marked "Archived" in every index and by a notice on the page.
 - **Separate from the CV:** editorial layouts read no CV file and no CV record (D-089 to D-093).
 
+## Scientific articles (P13)
+
+**Two ways to write an entry.** Markdown (`src/content/<dir>/<name>.md`) is the default and is unchanged. Quarto (`science/<dir>/<name>.qmd`) is chosen when an article needs numbered equations, figures and tables with cross-references, citations with a bibliography, or computed figures. Quarto is accepted for The Greenhouse and Bearnard's Trail; Berries and Timber Logs could follow by adding their directory to the tool; the literary collections never use it.
+
+- **One entry.** A `.qmd` produces exactly one entry, `src/content/<dir>/<name>.md`, whose ID is the file name and whose URL is `<folder path><slug>/`, as for any entry. It is generated, says so in its body, and holds only metadata. It is in no way a second page: a build has one page for it, and the Greenhouse index lists it once.
+- **Metadata** is written once, in the `.qmd` front matter. Every key that is not a Quarto option (`bibliography`, `csl`, `engine`, `jupyter`, `execute`, `lang`, `link-citations`, `format`) is the entry's P10 metadata and is validated against that collection's schema; the entry file and the manifest's copy are derived from it. A Quarto document keeps its references in its bibliography, so the Greenhouse `references` list must be empty. Technical facts (the source, the fingerprints, the versions of Quarto and Python) are in `src/science/manifest.json`, not in the front matter.
+- **Publication state** is the P10 `status` key. A draft Quarto document is rendered and committed like any other, and has no page (routes follow state, not the index).
+- **Citations and bibliographies.** `[@key]` resolves against the document's `.bib`; a missing key fails the render. The reference list is the article's own and ends the body under a `References` heading (id `references`). The style is Pandoc's default author-date; a `.csl` file may be added later. A bibliography is not a record of the owner's work: it cites external literature, and nothing in it is imported into or checked against the canonical records (P11). A future explicit mapping from a citation key to a publication record is possible and not built.
+- **Headings and contents.** The article starts at `##`. The headings P12's contents list shows are the rendered article's own (`h2` and `h3`, with their ids, stored in the manifest), so cross-references and contents links share one set of anchors; `References` and `Footnotes` are among them.
+- **Where a document can fail:** an unknown metadata field, a missing field, a bad date, an unresolved reference or citation, an image without alt text, a figure that is not a local file, a script or a style, or a code change after the last execution.
+- **Not a Quarto website:** no Quarto page, listing or search reaches the site; Quarto's output is read, cleaned and discarded.
+
 ## Authoring
 
 Markdown-first, with Python and Quarto for scientific content when appropriate. The editorial workflow is above; Quarto is P13.

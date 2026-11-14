@@ -1,0 +1,19 @@
+---
+title: "SYNTHETIC FIXTURE: a draft Quarto lesson"
+status: draft
+slug: fixture-draft-lesson
+seriesId: fixture-series
+position: 1
+---
+
+## A heading
+
+A draft lesson with an equation $a = b$. It must never get a page.
+
+## Another heading
+
+More.
+
+## A third
+
+Text.

@@ -1,0 +1,8 @@
+# The Python packages Quarto's Jupyter engine needs to execute the scientific articles
+# (P13, D-099). The articles themselves use only the standard library, so nothing else is
+# required. Versions are those the demonstration was run with; see science/README.md.
+ipykernel
+jupyter_core
+nbformat
+nbclient
+pyyaml

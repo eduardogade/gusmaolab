@@ -571,6 +571,8 @@ test("NAV-032", "Every approved route is a static page", (check) => {
         "[design]/editorial/[collection]/index.astro",
         "[design]/editorial/index.astro",
         "[design]/folders.astro",
+        "[design]/quarto/index.astro",
+        "[design]/quarto/markdown.astro",
         "[design]/records.astro",
         "[design]/tokens.astro",
         "[section]/[folder]/[subfolder]/index.astro",

@@ -640,6 +640,18 @@ The eight editorial collections read differently without becoming eight sites (D
 
 Syntax colours inside code blocks are Shiki's own (only the block's background is the archive's). Whether to keep them, and how formulas and figures are numbered, belongs to P13.
 
+## 13. Scientific content (P13)
+
+Quarto articles are drawn in the approved Greenhouse (section 12): the same header, measure, contents list, type and colours. Only what Markdown cannot say is added, with rules in `src/styles/editorial.css` (section 6) that use the existing tokens. No Quarto, Bootstrap or Pandoc stylesheet reaches the site, and no script.
+
+- **Mathematics** is MathML, set in the page's own math face (`--font-math`). A displayed equation sits in its own line with its number, and scrolls inside the column when it is wider than it; inline mathematics keeps the text's line. Nothing is loaded for a page without mathematics.
+- **Figures** are centred image files in a `<figure>` with a numbered caption below, in the small label type; they never exceed the column. Alt text is required. Figures are drawn as images, so their ink is the image's own, not the page's.
+- **Tables** keep their header cells (`scope="col"`), the page's table styling, a numbered caption above, and scroll inside their own box when wider than the column; column alignment is a class.
+- **Callouts** are a bordered note on the callout surface with the kind printed as a small uppercase word before the title (Note, Tip, Warning…), so colour is never the only signal; warnings, important and caution notes have a thicker border. No icon, no neon, no Bootstrap look.
+- **Code** is the site's code block, scrolling inside its box; a computed result is a block with a rule on its left. Quarto's token colours are not carried over (KL-66).
+- **Citations and references:** in-text citations are ordinary links to their entry; the reference list is small text with a hanging indent that wraps long addresses; footnotes are an ordered list after a rule, with a backlink to the place they came from.
+- **Responsive:** checked at 320, 390, 768, 1280 and 1440 px: no page scrolls sideways, equations, tables, code and references stay in the column, the contents list is beside the text from a wide paper and above it on a narrow one.
+
 ## Legacy material
 
 - `docs/design-system.md` is an empty placeholder from the Pelican era.

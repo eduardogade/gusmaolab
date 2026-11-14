@@ -23,6 +23,13 @@ const sha256 = (bytes) => createHash("sha256").update(bytes).digest("hex")
 const json = (value) => JSON.stringify(value)
 
 const manifest = JSON.parse(await read("assets/bearnard/derivatives.json"))
+// The scientific articles' figures (P13), as public addresses.
+const figures = new Set(
+  Object.values(JSON.parse(await read("src/science/manifest.json")).documents).flatMap(
+    (d) =>
+      d.output.assets.map((n) => `/${d.output.assetDir.replace(/^public\//, "")}/${n}`),
+  ),
+)
 const inventory = new Map(
   (await read("assets/bearnard/inventory.csv"))
     .toString()
@@ -276,7 +283,12 @@ await test(
         `dist/${file} contains a local path`,
       )
       for (const [, src] of text.matchAll(/<img[^>]+src="([^"]+)"/g)) {
-        check(src.startsWith("/illustrations/"), `dist/${file}: image ${src}`)
+        // Bearnard's derivatives, or a scientific article's own figure (P13): a file the
+        // science manifest names, which is no illustration of Bearnard.
+        check(
+          src.startsWith("/illustrations/") || figures.has(src),
+          `dist/${file}: image ${src}`,
+        )
       }
       for (const [, set] of text.matchAll(/srcset="([^"]+)"/g)) {
         check(

@@ -1,0 +1,30 @@
+---
+// Temporary P13 design study: a SYNTHETIC scientific article written in Quarto
+// (science/design/synthetic-specimen.qmd), prepared by scripts/science.mjs and drawn with the
+// production Greenhouse layout, inside the Greenhouse folder. The page runs no Quarto and no
+// code: it reads the article that was prepared. Not a page of the website; nothing is published.
+import FolderPage from "../../../layouts/FolderPage.astro"
+import EditorialStudyBanner from "../../../design/EditorialStudyBanner.astro"
+import { EDITORIAL_LAYOUTS } from "../../../layouts/editorial/layouts.ts"
+import { readingContext } from "../../../editorial/reading.ts"
+import type { CommonData } from "../../../editorial/schema.ts"
+import { scientificDocument } from "../../../science/index.ts"
+
+export function getStaticPaths() {
+  return [{ params: { design: "_design" } }]
+}
+
+const article = scientificDocument("design/synthetic-specimen")
+if (article === undefined) throw new Error("run npm run science:render -- design/synthetic-specimen")
+const data = { tags: [], relatedRecords: [], related: [], ...article.metadata } as unknown as CommonData
+const record = { collection: "greenhouse" as const, id: "synthetic-specimen", data }
+const context = readingContext(record, [record])
+const Layout = EDITORIAL_LAYOUTS.greenhouse
+---
+
+<FolderPage path="/lecture-notes/greenhouse/" title="Quarto specimen (study) · GusmaoLab">
+  <EditorialStudyBanner />
+  <Layout collection="greenhouse" data={data} context={context} headings={article.headings}>
+    <Fragment set:html={article.html} />
+  </Layout>
+</FolderPage>

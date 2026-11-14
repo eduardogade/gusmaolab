@@ -1,0 +1,85 @@
+<h2 id="first-section">First section</h2>
+<p>Inline <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>x</mi><mn>2</mn></msup><annotation encoding="application/x-tex">x^2</annotation></semantics></math>, a citation <span class="citation" data-cites="fixture2020">(<a href="#ref-fixture2020" role="doc-biblioref">Fixture 2020</a>)</span>, and a note.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> See <a href="#eq-sum" class="quarto-xref">Equation&nbsp;1</a>, <a href="#fig-bar" class="quarto-xref">Figure&nbsp;1</a> and <a href="#tbl-vals" class="quarto-xref">Table&nbsp;1</a>.</p>
+<p><span id="eq-sum"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>S</mi><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mi>i</mi><mspace width="2.0em"></mspace><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+S = \sum_{i=1}^{n} i
+ \qquad(1)</annotation></semantics></math></span></p>
+
+
+<h2 id="computed-results">Computed results</h2>
+<div id="cell-fig-bar" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python"><code class="sourceCode python"><span><span class="im">import</span> random</span>
+<span><span class="im">from</span> IPython.display <span class="im">import</span> SVG, display</span>
+<span>random.seed(<span class="dv">1</span>)</span>
+<span>h <span class="op">=</span> <span class="dv">20</span> <span class="op">+</span> random.randrange(<span class="dv">40</span>)</span>
+<span>display(SVG(<span class="ss">f'&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 80" width="100" height="80"&gt;&lt;rect x="10" y="</span><span class="sc">{</span><span class="dv">80</span> <span class="op">-</span> h<span class="sc">}</span><span class="ss">" width="30" height="</span><span class="sc">{</span>h<span class="sc">}</span><span class="ss">" fill="currentColor"/&gt;&lt;/svg&gt;'</span>))</span></code></pre></div>
+<div class="cell-output cell-output-display">
+<div id="fig-bar" class="quarto-float quarto-figure quarto-figure-center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-bar-caption">
+<img src="/assets/scientific/greenhouse/fixture-quarto/fig-bar-output-1.svg" class="img-fluid figure-img" alt="One filled bar.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-bar-caption">
+Figure&nbsp;1: A synthetic bar. Not data.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<div class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span><span class="im">from</span> IPython.display <span class="im">import</span> Markdown, display</span>
+<span>display(Markdown(<span class="st">"| a | b |</span><span class="ch">\n</span><span class="st">|---|---|</span><span class="ch">\n</span><span class="st">| 1 | 2 |"</span>))</span></code></pre></div>
+<div id="tbl-vals" class="cell quarto-float quarto-figure quarto-figure-center" data-execution_count="2">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-vals-caption">
+Table&nbsp;1: Two synthetic values.
+</figcaption>
+<div aria-describedby="tbl-vals-caption">
+<div class="cell-output cell-output-display cell-output-markdown">
+<table class="cell caption-top table table-sm table-striped small">
+<thead>
+<tr class="header">
+<th scope="col">a</th>
+<th scope="col">b</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td>2</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Fixture
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Nothing here is data.</p>
+</div>
+</div>
+
+
+<h2 id="last-section">Last section</h2>
+<p>Closing words.</p>
+
+
+
+
+<h2 class="anchored quarto-appendix-heading" id="references">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-fixture2020" class="csl-entry" role="listitem">
+Fixture, Synthetic. 2020. <span>“An Invented Reference.”</span> <em>Journal of Nothing</em>.
+</div>
+</div><section class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading" id="footnotes">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>A fixture footnote.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>

@@ -1,0 +1,50 @@
+---
+title: "SYNTHETIC FIXTURE: a Quarto article"
+description: "A synthetic Quarto document used only by the build tests."
+status: published
+slug: fixture-quarto
+publishedAt: 2026-11-01
+tags: [fixture]
+bibliography: fixture-quarto.bib
+engine: jupyter
+jupyter: python3
+---
+
+## First section
+
+Inline $x^2$, a citation [@fixture2020], and a note.[^1] See @eq-sum, @fig-bar and @tbl-vals.
+
+$$
+S = \sum_{i=1}^{n} i
+$$ {#eq-sum}
+
+[^1]: A fixture footnote.
+
+## Computed results
+
+```{python}
+#| label: fig-bar
+#| fig-cap: "A synthetic bar. Not data."
+#| fig-alt: "One filled bar."
+import random
+from IPython.display import SVG, display
+random.seed(1)
+h = 20 + random.randrange(40)
+display(SVG(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 80" width="100" height="80"><rect x="10" y="{80 - h}" width="30" height="{h}" fill="currentColor"/></svg>'))
+```
+
+```{python}
+#| label: tbl-vals
+#| tbl-cap: "Two synthetic values."
+from IPython.display import Markdown, display
+display(Markdown("| a | b |\n|---|---|\n| 1 | 2 |"))
+```
+
+::: {.callout-tip}
+## Fixture
+Nothing here is data.
+:::
+
+## Last section
+
+Closing words.

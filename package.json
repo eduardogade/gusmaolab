@@ -12,13 +12,17 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "node scripts/science.mjs verify && astro build",
     "preview": "astro preview",
     "check": "astro check",
-    "test": "node tests/design-tokens.mjs && node tests/contrast.mjs && node tests/navigation.mjs && node tests/smoke-test.mjs && node tests/folders.mjs && node tests/routes.mjs && node tests/previews.mjs && node tests/responsive.mjs && node tests/transitions.mjs && node tests/bearnard.mjs && node tests/categories.mjs && node tests/content.mjs && node tests/editorial-build.mjs && node tests/editorial-layouts.mjs && node tests/records.mjs && node tests/cv.mjs",
-    "test:browser": "node tests/previews-browser.mjs && node tests/responsive-browser.mjs && node tests/transitions-browser.mjs && node tests/categories-browser.mjs && node tests/editorial-browser.mjs",
+    "test": "node tests/design-tokens.mjs && node tests/contrast.mjs && node tests/navigation.mjs && node tests/smoke-test.mjs && node tests/folders.mjs && node tests/routes.mjs && node tests/previews.mjs && node tests/responsive.mjs && node tests/transitions.mjs && node tests/bearnard.mjs && node tests/categories.mjs && node tests/content.mjs && node tests/editorial-build.mjs && node tests/editorial-layouts.mjs && node tests/science.mjs && node tests/science-execute.mjs && node tests/records.mjs && node tests/cv.mjs",
+    "test:browser": "node tests/previews-browser.mjs && node tests/responsive-browser.mjs && node tests/transitions-browser.mjs && node tests/categories-browser.mjs && node tests/editorial-browser.mjs && node tests/science-browser.mjs",
     "verify": "npm run check && npm run build && npm test",
     "astro": "astro",
+    "science:check": "node scripts/science.mjs check",
+    "science:verify": "node scripts/science.mjs verify",
+    "science:render": "node scripts/science.mjs render",
+    "science:execute": "node scripts/science.mjs execute",
     "cv:check": "node scripts/cv.mjs check",
     "cv:snapshot": "node scripts/cv.mjs snapshot",
     "format": "prettier --write \"**/*.{md,markdown,yml,yaml,json,mjs,ts,css}\""
@@ -41,6 +45,7 @@
     "@astrojs/check": "0.9.12",
     "prettier": "^3.6.2",
     "typescript": "6.0.3",
+    "ultrahtml": "1.7.0",
     "yaml": "2.9.1"
   },
   "allowScripts": {

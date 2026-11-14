@@ -666,6 +666,33 @@ Checked by `tests/cv.mjs` (CV-001 to CV-020) in `npm run verify`, on a synthetic
 | EDIT-B02 Reading widths and sizes | same | Pass |
 | EDIT-B03 Literary and compact layouts on a phone | same | Pass |
 
+## P13 gates — Quarto and scientific publishing
+
+| ID | Gate | Status |
+| --- | --- | --- |
+| G-P13-01 | Astro stays the only website framework; Markdown stays the default | **Passed** (QTO-001, QTO-029) |
+| G-P13-02 | A Quarto source is one ordinary entry with one URL and one metadata location | **Passed** (QTO-002 to QTO-004, throwaway build) |
+| G-P13-03 | Drafts and the synthetic fixtures are not published | **Passed** (QTO-005, EDIT-019) |
+| G-P13-04 | Equations, figure and table references, citations, bibliography, footnotes, callouts | **Passed** on a synthetic document (QTO-007 to QTO-014, QTO-030B) |
+| G-P13-05 | Contents list and anchors follow the P12 Greenhouse | **Passed** (QTO-015, QTO-030C, QTO-030D) |
+| G-P13-06 | Builds execute nothing; computation is explicit | **Passed** (QTO-016, QTO-017) |
+| G-P13-07 | Reproducibility, as defined: two executions, identical results | **Passed** for the synthetic seeded code (QTO-018). Not shown: real analyses, other machines |
+| G-P13-08 | Stale or hand-edited derivatives fail the build | **Passed** (QTO-019) |
+| G-P13-09 | Works without Quarto for Markdown work | **Passed** (QTO-020) |
+| G-P13-10 | Figures resolve; no caches or sources published | **Passed** (QTO-021, QTO-022) |
+| G-P13-11 | P10, P11, P12, the CV, the palettes and the folders unchanged | **Passed** (QTO-023 to QTO-028) |
+| G-P13-12 | Scientific content fits at 320 to 1440 px, Chromium | **Passed** (QTO-030) |
+| G-P13-13 | The owner reviews the scientific layout | **Pending**: `/_design/quarto/` |
+| G-P13-14 | Safari, Firefox, screen readers, MathML in other engines | **Untested** (KL-65) |
+
+### Scientific-article tests (P13)
+
+| Test | Where | Status |
+| --- | --- | --- |
+| QTO-001 to QTO-016, QTO-019 to QTO-029 | `tests/science.mjs` (27 checks, one throwaway build) | Pass |
+| QTO-017 Explicit computation, QTO-018 Reproducibility | `tests/science-execute.mjs` | Pass with Quarto 1.10.19 and Python 3.12.13; reported SKIPPED, never passed, where either is missing |
+| QTO-030 Browser validation (30, 30B, 30C, 30D) | `tests/science-browser.mjs` | Pass (headless Chromium) |
+
 ## Future gates
 
 | ID | Gate | Source | Status |

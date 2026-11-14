@@ -1,0 +1,12 @@
+{
+  "hash": "08cf3244926699ec28a83f60461b9562",
+  "result": {
+    "engine": "jupyter",
+    "markdown": "---\ntitle: \"SYNTHETIC FIXTURE: a Quarto article\"\ndescription: \"A synthetic Quarto document used only by the build tests.\"\nstatus: published\nslug: fixture-quarto\npublishedAt: 2026-11-01\ntags: [fixture]\nbibliography: fixture-quarto.bib\nengine: jupyter\njupyter: python3\n---\n\n## First section\n\nInline $x^2$, a citation [@fixture2020], and a note.[^1] See @eq-sum, @fig-bar and @tbl-vals.\n\n$$\nS = \\sum_{i=1}^{n} i\n$$ {#eq-sum}\n\n[^1]: A fixture footnote.\n\n## Computed results\n\n::: {#cell-fig-bar .cell execution_count=1}\n``` {.python .cell-code}\nimport random\nfrom IPython.display import SVG, display\nrandom.seed(1)\nh = 20 + random.randrange(40)\ndisplay(SVG(f'<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 100 80\" width=\"100\" height=\"80\"><rect x=\"10\" y=\"{80 - h}\" width=\"30\" height=\"{h}\" fill=\"currentColor\"/></svg>'))\n```\n\n::: {.cell-output .cell-output-display}\n![A synthetic bar. Not data.](fixture-quarto_files/figure-html/fig-bar-output-1.svg){#fig-bar fig-alt='One filled bar.'}\n:::\n:::\n\n\n::: {#tbl-vals .cell tbl-cap='Two synthetic values.' execution_count=2}\n``` {.python .cell-code}\nfrom IPython.display import Markdown, display\ndisplay(Markdown(\"| a | b |\\n|---|---|\\n| 1 | 2 |\"))\n```\n\n::: {.cell-output .cell-output-display .cell-output-markdown}\n| a | b |\n|---|---|\n| 1 | 2 |\n:::\n:::\n\n\n::: {.callout-tip}\n## Fixture\nNothing here is data.\n:::\n\n## Last section\n\nClosing words.\n\n",
+    "supporting": [
+      "fixture-quarto_files"
+    ],
+    "filters": [],
+    "includes": {}
+  }
+}

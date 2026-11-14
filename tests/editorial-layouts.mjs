@@ -39,14 +39,7 @@ import {
   studyPaths,
 } from "../src/design/editorial-fixture.ts"
 import { siteNavigation } from "../src/navigation/index.ts"
-import {
-  elements,
-  hasClass,
-  labelOf,
-  layersOf,
-  parse,
-  selectedOf,
-} from "./html-tree.mjs"
+import { elements, labelOf, layersOf, parse, selectedOf } from "./html-tree.mjs"
 
 const repo = new URL("../", import.meta.url)
 const root = fileURLToPath(repo)
@@ -781,7 +774,8 @@ await test(
     for (const file of importers)
       check(
         file.startsWith("src/design/") ||
-          file.startsWith("src/pages/[design]/editorial/"),
+          file.startsWith("src/pages/[design]/editorial/") ||
+          file.startsWith("src/pages/[design]/quarto/"),
         `${file} imports the study fixture`,
       )
     // The real collection pages and the home page carry none of it.
@@ -847,7 +841,7 @@ await test("EDIT-020", "The locked palettes are untouched", async (check) => {
     "editorial.css targets a category or an environment",
   )
   check(
-    !/transition|animation|scroll-behavior/.test(sheet),
+    !/transition|animation|(?<!over)scroll-behavior/.test(sheet),
     "editorial.css adds motion",
   )
   check(!/@font-face/.test(sheet), "editorial.css loads a font")

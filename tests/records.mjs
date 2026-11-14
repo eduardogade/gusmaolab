@@ -1756,7 +1756,8 @@ await test("REC-024", "The record system needs nothing outside src/", async (che
     json(Object.keys(manifest.devDependencies).sort()) ===
       // `yaml` reads the author's CV for the CV tool and its tests only (D-089); no
       // record module and no page imports it, which the loop above checks.
-      json(["@astrojs/check", "prettier", "typescript", "yaml"]),
+      // `ultrahtml` cleans Quarto's HTML for the scientific-article tool only (D-100).
+      json(["@astrojs/check", "prettier", "typescript", "ultrahtml", "yaml"]),
     "a dev dependency was added",
   )
 })
@@ -1782,7 +1783,8 @@ await test("REC-025", "Hidden and synthetic records are not emitted", async (che
       check(!html.includes(marker), `${name} shows "${marker}"`)
     if (page === study) continue
     // The editorial study's own fixture is synthetic too, and has nothing to do with records.
-    if (name.startsWith("_design/editorial/")) continue
+    if (name.startsWith("_design/editorial/") || name.startsWith("_design/quarto/"))
+      continue
     check(
       !/-synthetic-|Synthetic (Lead|Collaborator|Atlas|Toolkit|University|Institute)|Journal of Synthetic Results/.test(
         html,

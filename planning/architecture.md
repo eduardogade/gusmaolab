@@ -219,6 +219,57 @@ cv/CV-vX.Y.yaml                  explicit versions              cv/manifest.json
 - **Fixtures (D-097):** the synthetic fixture is `src/design/editorial-fixture.ts` and `src/design/editorial/*.md`, imported only by the study pages under `src/pages/[design]/editorial/`. `import.meta.glob` renders the fixture's Markdown with Astro's own pipeline. The study is excluded from nothing today; it lives under `dist/_design/`, which the deployment decision (D-005) may leave out whole.
 - **Layers kept apart:** no editorial file imports `src/cv/` or names a CV file (EDIT-021).
 
+## Quarto and Astro (P13)
+
+**Astro owns the website; Quarto prepares scientific documents for it (D-098).** Quarto owns no URL, no navigation, no page shell, no stylesheet and no deployment. A Quarto source becomes an ordinary P10 entry, with one address, one publication state and one metadata record.
+
+### Strategy chosen, and the alternatives tried (D-099)
+
+The same small document (equations, a figure, a table, a citation, a footnote, a callout, code) was rendered both ways.
+
+| | Quarto to HTML, the body taken | Quarto to GFM Markdown |
+| --- | --- | --- |
+| Equations | MathML, numbered, anchored (`<span id="eq-…">`) | `$$` text; needs a Markdown math plugin and a math runtime |
+| Figures and tables | `<figure>` with `<figcaption>`, numbered, anchored | a `<div>` with the caption as a paragraph; no figure semantics |
+| Cross-references and citations | links to anchors; `#ref-…` entries | links survive as raw HTML; citations as plain text |
+| Callouts | structured `div.callout` | GitHub alerts, which Astro does not render |
+| Footnotes | `doc-endnotes` section with backlinks | Markdown footnotes (kept) |
+| Code output | cells with output blocks | fenced blocks, output lost |
+
+**Selected: Quarto to HTML**, the article body extracted with a real HTML parser. GFM lost the scientific semantics the task needs. `minimal: true` was tried and rejected: it turns callouts into bare blockquotes and drops the page structure, so the default HTML is rendered and cleaned instead. Native MathML means there is **no math library at all** (no MathJax, no KaTeX, no CDN, no script), so pages without mathematics cost nothing and pages with it cost nothing extra.
+
+### The pipeline
+
+```
+science/<dir>/<name>.qmd  ──(explicit, trusted)──►  quarto render  ──►  science/_build/…html (ignored)
+        │                                                                     │
+        │  science:execute runs the code once and freezes the results         │ science-html.mjs: parse, allowlist,
+        │  into science/_freeze/ (committed); science:render never computes   │ drop chrome, move ids, check links
+        ▼                                                                     ▼
+ front matter (the one place metadata is written)         src/science/<dir>/<name>.html   the article (committed)
+        └──► validated with the collection's schema ──►   src/content/<dir>/<name>.md     the entry (metadata only)
+                                                          public/assets/scientific/…      figures (committed)
+                                                          src/science/manifest.json       fingerprints (committed)
+```
+
+- **Build stages:** `npm run build` = `science:verify` (offline: hashes, no Quarto, no Python) then `astro build`. Astro then loads the entry as it loads any entry, finds the manifest's document for it (`src/science/index.ts`) and gives the layout the fragment instead of rendered Markdown (`EditorialEntry.astro`). There is no cycle: Quarto never runs inside Astro, and Astro never reads a source.
+- **Missing or outdated derivative:** `verify` fails the build and names the command to run. Missing Quarto affects only `render` and `execute`; editing Markdown needs nothing.
+- **Execution policy (D-102):** code runs only through `npm run science:execute -- <dir>/<name>`, one named document, in the owner's environment. `render` passes `--use-freezer` (or `--no-execute` for a document without code) and succeeds with no Python at all (tested). Quarto's `freeze` is not relied on as a barrier; the tool's own gate refuses to render a document whose code changed since it was executed. Processes start with an argument list, never a shell string, and a document is named `<dir>/<name>` with a fixed pattern.
+- **Artifact policy (D-103):** sources, bibliographies and `_quarto.yml` are authoritative; `_freeze/` (results) and the generated article, entry, figures and manifest are committed, so CI builds without the toolchain; `_build/` and `.quarto/` are ignored. The manifest holds SHA-256 fingerprints of the inputs, of the code cells, of the frozen results and of every output, plus the Quarto and Python versions of the last execution; it holds no timestamp. Staleness is a changed fingerprint, never a clock.
+- **Reproducibility:** the demonstration is seeded standard-library Python. Two independent executions in clean directories give byte-identical articles, entries and figures, and match the committed fixture (QTO-017, QTO-018). That shows the pipeline is deterministic for this code on this toolchain; it does not show that any real analysis is reproducible.
+
+### Trust boundary (D-100)
+
+Sources are the owner's, rendered on the owner's machine. `scripts/science-html.mjs` still treats Quarto's output as untrusted: it keeps an allowlist of tags, attributes and MathML, drops scripts, styles, buttons and Quarto's page chrome (the title block, the copy button, anchor scripts), removes `style` attributes (a table column's alignment becomes a class), allows only `#fragment`, `http(s)` and `mailto` links, and only a figure file inside the document's own build folder as an image source (no external image, no `..`, no absolute path, a size cap, no script or external reference inside an SVG). Inline SVG, iframes and objects are refused. Anything else in the page fails the render with the reason. `verify` runs the same checks again on the stored article, and the stored article must come back unchanged, so markup added later is caught.
+
+### Assets and ids
+
+Figures go to `public/assets/scientific/<dir>/<name>/` (a namespace per document, so names never collide) and the article refers to them by that absolute path. Pandoc's section ids move to their headings, so the ids that P12's contents list links to are on the headings; Quarto's random figure-caption identifiers are removed so the output is the same every time; duplicate ids, links without a target and unresolved cross-references or citations fail the render. The article's ids may not use the ones the page owns.
+
+### Dependencies
+
+One development dependency, `ultrahtml` 1.7.0, pinned exactly: the HTML parser Astro itself uses, already installed (D-100). It is imported by the tool and its tests only; no page does. Quarto and Python are not dependencies of the repository.
+
 ## Colour architecture (P09-A01)
 
 Colour is the Chromatic Archive: five locked category palettes and four shared colours (D-076; `planning/design-system.md`, section 7).

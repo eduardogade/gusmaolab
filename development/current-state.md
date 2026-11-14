@@ -1,18 +1,19 @@
 # Current state
 
-Last updated: P12, 2026-11-14. Verified facts only.
+Last updated: P13, 2026-11-14. Verified facts only.
 
 ## Framework
 
 - **Astro 7.4.8**, static output. The repository root is the Astro project.
-- **70 pages:**
+- **72 pages:**
   - **36 folder pages**, one for every registered folder, generated from the navigation registry (P06). Each shows the physical folders with working tab links, folder previews (P07) and **temporary development content only**.
-  - **34 temporary design studies**, not part of the website (four studies of one page each, and the editorial study of 30):
+  - **36 pages of temporary design studies**, not part of the website (four studies of one page each, the editorial study of 30 and the Quarto study of 2):
     - the **P03 tokens specimen** at `/_design/tokens/` (`src/pages/[design]/tokens.astro`; it was `/` until P06);
     - the **P05 folder study** at `/_design/folders/` (`src/pages/[design]/folders.astro`);
     - the **P09 Bearnard study** at `/_design/bearnard/` (`src/pages/[design]/bearnard.astro`);
     - the **P11 records study** at `/_design/records/` (`src/pages/[design]/records.astro`): the canonical records, with invented data.
   - the **P12 editorial study** at `/_design/editorial/` (`src/pages/[design]/editorial/`): 30 pages, an overview and an index and article pages for each of the eight collections, drawn with the production components from a synthetic fixture (D-097). It is the fifth study.
+  - the **P13 Quarto study** at `/_design/quarto/` (a synthetic scientific article written in Quarto) and `/_design/quarto/markdown/` (its ordinary Markdown counterpart), both in the Greenhouse folder with the P12 layout (`src/pages/[design]/quarto/`, D-098 to D-103).
   - The P09 environments study (`/_design/environments-v2/`) was removed in P09-A01 (D-076).
 - **Editorial entries (P10):** none. The eight collections exist and are empty, so every build page is a folder page or a study; an entry would add one page below its owning folder (see "Editorial collections").
 - **Not implemented:** real section content, the homepage composition, Bearnard on any site page (the foundation exists, below) and a designed 404 page.
@@ -255,6 +256,21 @@ Each of the eight collections has its own reading layout and index on one shared
 - **Waiting for the owner:** visual approval of the eight layouts (G-P12-13).
 - **Not done, by design:** Quarto, a citation processor, equation numbering and a code-copy button (P13); real entries; Bearnard on article pages; the order of the Kosmos works.
 
+## Scientific articles (P13)
+
+Quarto is an optional way to write an entry that needs equations, numbered figures and tables, citations or computed figures (D-098 to D-103; `science/README.md` is the guide; `planning/architecture.md`, "Quarto and Astro"). Astro stays the only site framework.
+
+- **Real content:** none. No Quarto article is published; only the synthetic specimen (study) and the test fixture exist.
+- **Tool:** `scripts/science.mjs` (`check`, `verify`, `render`, `execute`) and `scripts/science-html.mjs` (Quarto's HTML to a checked article fragment). `npm run build` runs only the offline `verify`.
+- **Sources and outputs:** `science/` (Quarto project, specimen source and bibliography, frozen results `_freeze/`, `environment.txt`); generated and committed: `src/science/` (manifest, articles), `src/design/quarto/` (the study's article), `public/_design/quarto/assets/` (its figure), and, for a real entry, `src/content/<dir>/<name>.md` and `public/assets/scientific/`.
+- **Site side:** `src/science/index.ts` reads the manifest and the articles; `EditorialEntry.astro` uses an entry's article in place of rendered Markdown. P12's layouts, indexes and routes are unchanged.
+- **Tested with:** Quarto 1.10.19, Pandoc 3.10.0, Python 3.12.13 (ipykernel 7.3.0, jupyter_core 5.9.1, nbformat 5.10.4, nbclient 0.11.0, pyyaml 6.0.3, from an existing conda environment chosen with `SCIENCE_PYTHON`). Nothing was installed.
+- **Features shown by the specimen:** inline and numbered display equations (MathML, no script), a computed figure and table with numbers and cross-references, citations and a reference list, a footnote with its backlink, callouts, a code listing with output, the Greenhouse contents list.
+- **Tests:** `tests/science.mjs` (QTO-001 to QTO-016, QTO-019 to QTO-029: 27 checks, one throwaway build), `tests/science-execute.mjs` (QTO-017, QTO-018: SKIPPED without Quarto and Jupyter), `tests/science-browser.mjs` (QTO-030). Existing tests were updated for the new pages, figures and dependency.
+- **Verified:** `npm run verify` and `npm run test:browser` pass; the specimen was looked at in the browser pane at 1440 and 390 px. Not looked at: Safari, Firefox, screen readers, other MathML engines.
+- **Waiting for the owner:** review of `/_design/quarto/` (G-P13-13).
+- **Not done, by design:** the authoring CLI (P14), PDF output, R or Julia, a citation import or mapping to records, any real scientific content.
+
 ## The author's CV as the source (P11-A01)
 
 **CV YAML → validated canonical records → pages and document generators** (D-089 to D-093). The owner's versioned CV YAML is the source of truth for the owner's professional history. The integration exists and is tested; **nothing of the CV is published**, and the owner's file is unchanged.
@@ -296,21 +312,21 @@ Built:
 | Local Node.js | v26.12.0. Compatible, but it predates the first 26 LTS release (v26.13.0) and lacks the v26.12.1 security release. |
 | Package manager | npm 11.20.0. `package-lock.json` is committed; install with `npm ci`. |
 | Dependencies | `astro` 7.4.8. P03–P05 added none. |
-| Dev dependencies | `@astrojs/check` 0.9.12, `typescript` 6.0.3, `prettier` 3.6.2 (range `^3.6.2`), `yaml` 2.9.1 (P11-A01, D-089: the CV tool and its tests only; already installed through Astro) |
+| Dev dependencies | `@astrojs/check` 0.9.12, `typescript` 6.0.3, `prettier` 3.6.2 (range `^3.6.2`), `yaml` 2.9.1 (P11-A01, D-089: the CV tool and its tests only; already installed through Astro), `ultrahtml` 1.7.0 (P13, D-100: the scientific-article tool and its tests only; already installed through Astro) |
 | TypeScript | `astro/tsconfigs/strict` with `erasableSyntaxOnly` |
 | Astro config | `site: "https://www.gusmaolab.org"`, `output: "static"`, no `base`, no adapter |
 | Local preview | `.claude/launch.json`: `astro-preview` (built site, port 4322) and `astro-dev` (port 4321) |
 
 ## npm scripts
 
-`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro`, `format`, and `cv:check` and `cv:snapshot` (the CV tool, run by hand, never by a build). `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs`, `tests/responsive.mjs`, `tests/transitions.mjs`, `tests/bearnard.mjs`, `tests/categories.mjs`, `tests/content.mjs`, `tests/editorial-build.mjs`, `tests/records.mjs` and `tests/cv.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs`, `tests/responsive-browser.mjs`, `tests/transitions-browser.mjs` and `tests/categories-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
+`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro`, `format`, and `science:check`, `science:verify`, `science:render` and `science:execute` (the scientific-article tool; `build` runs `science:verify` first, and nothing else runs the others), and `cv:check` and `cv:snapshot` (the CV tool, run by hand, never by a build). `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs`, `tests/responsive.mjs`, `tests/transitions.mjs`, `tests/bearnard.mjs`, `tests/categories.mjs`, `tests/content.mjs`, `tests/editorial-build.mjs`, `tests/records.mjs` and `tests/cv.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs`, `tests/responsive-browser.mjs`, `tests/transitions-browser.mjs` and `tests/categories-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
 
 ## Build status
 
 `npm run verify` passes:
 
-- `astro check`: 0 errors, 0 warnings, 1 hint across 122 files.
-- Build: 70 pages (40 and the 30 of the editorial study). `dist/` holds 76 files, 1,646,743 bytes in all: the site's pages and stylesheets (624,983 bytes), the design studies (779,740) and the two Bearnard derivatives (242,020), each under its own ceiling (D-074, KL-30, KL-42, KL-51). No script file: the 37 pages with folders each inline one module (4.1 KB: previews and rows; at Vite's inlining limit, KL-36); the P03 specimen, the Bearnard study and the records study have no script.
+- `astro check`: 0 errors, 0 warnings, 0 hints across 131 files.
+- Build: 72 pages (40, the 30 of the editorial study and the 2 of the Quarto study). `dist/` holds 79 files, 1,712,818 bytes in all: the site's pages and stylesheets (627,252 bytes), the design studies (843,546, with the Quarto study's one figure) and the two Bearnard derivatives (242,020), each under its own ceiling (D-074, KL-30, KL-42, KL-51). No script file: the 37 pages with folders each inline one module (4.1 KB: previews and rows; at Vite's inlining limit, KL-36); the P03 specimen, the Bearnard study and the records study have no script.
 - Token checks pass (43 primitives, 213 tokens; 5 categories with 5 colour tokens each, 4 environments with 10 typography and texture tokens each). Contrast checks pass: 245 of 245 enforced pairings, 260 in all, across the five categories.
 - Navigation: 23 of 23 model tests pass (NAV-001 to NAV-021, NAV-025, NAV-033), for 11 sections and 36 folders.
 - Smoke test passes. The built pages are exactly the 36 registered destinations and the declared `/_design/` studies (the four of one page and the editorial study's 30), and the only other files are stylesheets and the registered derivatives.

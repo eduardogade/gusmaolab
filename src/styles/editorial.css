@@ -894,3 +894,143 @@
   padding-block: var(--space-2xs);
   border-block-start: var(--border-width-hairline) solid var(--color-folder-border);
 }
+
+/* 6. Scientific articles (P13, D-098) ------------------------------------------------------
+ *
+ * The body of a Quarto article is rendered by Quarto and cleaned by scripts/science-html.mjs;
+ * these rules dress what is left in the approved Greenhouse. No Quarto or Bootstrap stylesheet
+ * reaches the site, and no script: mathematics is native MathML, drawn in the page's own math
+ * face (global.css). Nothing here is loaded for an article without it, beyond these rules.
+ */
+
+/* Equations: a display formula, and the span that names it, scroll inside the column. */
+.ed__body math {
+  font-size: 1.08em;
+}
+
+.ed__body span[id^="eq-"] {
+  display: block;
+  max-inline-size: 100%;
+  overflow-x: auto;
+  padding-block: var(--space-2xs);
+  overscroll-behavior-inline: contain;
+}
+
+/* Figures and tables carry their number and caption. */
+.ed__body .quarto-float {
+  margin-block: var(--space-m);
+}
+
+.ed__body .quarto-float figure {
+  margin: 0;
+}
+
+.ed__body .quarto-float-fig img {
+  display: block;
+  margin-inline: auto;
+  max-inline-size: 100%;
+  block-size: auto;
+}
+
+.ed__body .quarto-float-caption {
+  margin-block-end: var(--space-2xs);
+  color: var(--color-text-secondary);
+  font-family: var(--font-label);
+  font-size: var(--font-size-sm);
+}
+
+.ed__body .quarto-float-caption-bottom {
+  margin-block: var(--space-2xs) 0;
+}
+
+.ed__body .align-right {
+  text-align: end;
+}
+
+.ed__body .align-center {
+  text-align: center;
+}
+
+/* Callouts: a bordered note whose title says what it is, so colour is never the only signal. */
+.ed__body .callout {
+  padding: var(--space-xs) var(--space-s);
+  border-inline-start: var(--border-width-thick) solid var(--color-callout-border);
+  background-color: var(--color-surface-callout);
+}
+
+.ed__body .callout-warning,
+.ed__body .callout-important,
+.ed__body .callout-caution {
+  border-inline-start-width: calc(2 * var(--border-width-thick));
+}
+
+.ed__body .callout-title-container {
+  font-family: var(--font-label);
+  font-weight: var(--font-weight-semibold);
+}
+
+.ed__body .screen-reader-only {
+  position: absolute;
+  overflow: hidden;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* The kind of callout is a word, shown: "Warning", "Note", "Tip". */
+.ed__body .callout-title-container .screen-reader-only {
+  position: static;
+  display: inline-block;
+  inline-size: auto;
+  block-size: auto;
+  margin: 0 var(--space-xs) 0 0;
+  clip-path: none;
+  overflow: visible;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+}
+
+.ed__body .callout-body > * + * {
+  margin-block-start: 0.5em;
+}
+
+/* Code and its output. */
+.ed__body .sourceCode {
+  max-inline-size: 100%;
+}
+
+.ed__body .cell-output pre {
+  border-inline-start: var(--border-width-thick) solid var(--color-folder-border);
+}
+
+/* Citations, references and notes. */
+.ed__body .references {
+  font-size: var(--font-size-sm);
+}
+
+.ed__body .csl-entry {
+  padding-inline-start: 1.5em;
+  text-indent: -1.5em;
+  overflow-wrap: anywhere;
+}
+
+.ed__body .csl-entry + .csl-entry {
+  margin-block-start: var(--space-2xs);
+}
+
+.ed__body .footnotes {
+  margin-block-start: var(--space-reading-section);
+  padding-block-start: var(--space-s);
+  border-block-start: var(--border-width-hairline) solid var(--color-folder-border);
+  font-size: var(--font-size-sm);
+}
+
+.ed__body .footnotes ol {
+  padding-inline-start: 1.5em;
+}

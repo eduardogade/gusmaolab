@@ -1,0 +1,84 @@
+{
+  "version": 1,
+  "documents": {
+    "design/synthetic-specimen": {
+      "kind": "study",
+      "source": "science/design/synthetic-specimen.qmd",
+      "inputs": {
+        "science/_quarto.yml": "0599a9c9121f17820f8c737b586cbcfd8efaee5b3ddcdd3ce19eae030b4f3486",
+        "science/design/synthetic-specimen.bib": "ee211be07b8566dd132478264ced11f1de83a99014c7dedc78cc21189fb5ccfa",
+        "science/design/synthetic-specimen.qmd": "326018911e6b59e4f1a4901dd6fd359df440caa1d0e17003818dd9757f59ffa4"
+      },
+      "quarto": "1.10.19",
+      "execution": {
+        "codeSha256": "ddf3d0fe9593daa69ff3112058b6d7a4bb16f0c853ad7091b8e7350fbdbae562",
+        "freezeSha256": "c507b6a553fcd859989f97d5b4c34ad96086ad975cf1c844afdc1e5f31cbf441",
+        "python": "3.12.13"
+      },
+      "output": {
+        "fragment": "src/design/quarto/synthetic-specimen.html",
+        "fragmentSha256": "24b3db2ba28e8c184c2e298ca87ac8f42ddcb2682d53111aa71cf868d519b8ea",
+        "stub": null,
+        "stubSha256": null,
+        "assetDir": "public/_design/quarto/assets/synthetic-specimen",
+        "assetsSha256": "779c92834d7f74dbac57f215ef71a429a47162d443021ef5c2a0ea390c4bd081",
+        "assets": [
+          "fig-spread-output-1.svg"
+        ]
+      },
+      "metadata": {
+        "title": "Synthetic specimen: the standard error of a mean",
+        "description": "A synthetic Quarto article, written only to exercise the scientific reading layout: equations, a computed figure and table, cross-references, a citation, a footnote and a callout. Its data are invented.",
+        "status": "published",
+        "slug": "synthetic-quarto-specimen",
+        "publishedAt": "2026-11-14",
+        "tags": [
+          "statistics",
+          "reproducibility"
+        ],
+        "difficulty": "introductory",
+        "prerequisites": [
+          "Reading simple Python",
+          "The idea of an average"
+        ]
+      },
+      "headings": [
+        {
+          "depth": 2,
+          "slug": "why-a-standard-error",
+          "text": "Why a standard error"
+        },
+        {
+          "depth": 2,
+          "slug": "a-synthetic-experiment",
+          "text": "A synthetic experiment"
+        },
+        {
+          "depth": 2,
+          "slug": "what-this-shows-and-what-it-does-not",
+          "text": "What this shows, and what it does not"
+        },
+        {
+          "depth": 2,
+          "slug": "references",
+          "text": "References"
+        },
+        {
+          "depth": 2,
+          "slug": "footnotes",
+          "text": "Footnotes"
+        }
+      ],
+      "features": {
+        "math": 7,
+        "figures": 1,
+        "tables": 1,
+        "citations": 2,
+        "footnotes": 1,
+        "callouts": 2,
+        "code": 4,
+        "equations": 1
+      }
+    }
+  }
+}

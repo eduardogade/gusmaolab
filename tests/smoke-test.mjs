@@ -35,6 +35,17 @@ const derivatives = JSON.parse(
   ),
 ).derivatives.flatMap((d) => d.outputs)
 const expectedImages = new Map(derivatives.map((o) => [o.url.slice(1), o]))
+// The scientific articles' figures (P13): exactly the files the manifest names, nothing else.
+const scientific = JSON.parse(
+  await readFile(new URL("../src/science/manifest.json", import.meta.url), "utf8"),
+).documents
+const expectedFigures = new Set(
+  Object.values(scientific).flatMap((d) =>
+    d.output.assets.map(
+      (name) => `${d.output.assetDir.replace(/^public\//, "")}/${name}`,
+    ),
+  ),
+)
 const specimenFile = fileOf("/_design/tokens/")
 const studyFile = fileOf("/_design/folders/")
 
@@ -96,7 +107,8 @@ const unexpected = files.filter(
   (file) =>
     !expectedPages.includes(file) &&
     !expectedAsset.test(file) &&
-    !expectedImages.has(file),
+    !expectedImages.has(file) &&
+    !expectedFigures.has(file),
 )
 check(unexpected.length === 0, `unexpected files in dist/: ${unexpected.join(", ")}`)
 for (const page of expectedPages) check(files.includes(page), `missing page: ${page}`)
@@ -151,6 +163,8 @@ check(
 check(studyBytes < 1_000_000, `the design studies total ${studyBytes} bytes`)
 check(imageBytes < 600_000, `the illustrations total ${imageBytes} bytes`)
 for (const file of expectedImages.keys()) check(files.includes(file), `missing ${file}`)
+for (const file of expectedFigures)
+  check(files.includes(file), `missing figure ${file}`)
 
 // 3. Every page: document basics, and no script except the folder previews (P07), once,
 //    on pages with folders. Then the temporary P03 specimen.

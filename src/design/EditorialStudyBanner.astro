@@ -5,7 +5,7 @@
  * the page's one `<h1>` is the production layout's.
  */
 import { COLLECTIONS } from "../editorial/collections.ts"
-import { STUDY_ROOT, studyPath } from "./editorial-fixture.ts"
+import { QUARTO_STUDY, QUARTO_STUDY_MARKDOWN, STUDY_ROOT, studyPath } from "./editorial-fixture.ts"
 ---
 
 <aside class="study-banner" role="note" data-editorial-study>
@@ -24,6 +24,10 @@ import { STUDY_ROOT, studyPath } from "./editorial-fixture.ts"
         </>
       ))
     }
+    {" · "}
+    <a href={QUARTO_STUDY}>Quarto specimen</a>
+    {" · "}
+    <a href={QUARTO_STUDY_MARKDOWN}>Markdown counterpart</a>
   </p>
 </aside>
 

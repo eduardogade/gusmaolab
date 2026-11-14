@@ -269,3 +269,8 @@ brand/bearnard/
 # record the decision first, then remove its line here.
 /cv/codex-yaml/
 /cv/CV*.yaml
+
+# Quarto's own working files for the scientific articles (P13, D-099): its page for each
+# document and its project state. The computed results, science/_freeze/, are committed.
+/science/_build/
+/science/.quarto/

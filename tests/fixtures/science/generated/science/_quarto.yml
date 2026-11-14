@@ -1,0 +1,31 @@
+# The Quarto project of the scientific articles (P13, D-098). Quarto prepares scientific
+# documents for Astro; it is never the website. Every setting here exists to make Quarto's
+# HTML a plain article body: no copy button, no hover scripts, no math runtime (MathML is
+# native). `minimal: true` is NOT used: it turns callouts into bare blockquotes and drops the
+# structure the site keeps (tests/science.mjs, QTO-014); the page chrome is removed by
+# scripts/science-html.mjs instead.
+project:
+  type: default
+  output-dir: _build
+
+format:
+  html:
+    html-math-method: mathml
+    embed-resources: false
+    toc: false
+    code-copy: false
+    code-fold: false
+    anchor-sections: false
+    link-external-newwindow: false
+    citations-hover: false
+    footnotes-hover: false
+    crossref-hover: false
+    default-image-extension: svg
+    fig-format: svg
+    echo: true
+    warning: false
+
+execute:
+  # Rendering never recomputes (scripts/science.mjs passes --no-execute or --use-freezer);
+  # only `npm run science:execute` does.
+  freeze: auto

@@ -11,6 +11,8 @@
     "_books",
     "_papers",
     "_references",
-    "_reports"
+    "_reports",
+    "science/_build",
+    "science/.quarto"
   ]
 }

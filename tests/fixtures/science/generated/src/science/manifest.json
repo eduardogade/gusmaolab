@@ -1,0 +1,131 @@
+{
+  "version": 1,
+  "documents": {
+    "greenhouse/fixture-quarto": {
+      "kind": "entry",
+      "source": "science/greenhouse/fixture-quarto.qmd",
+      "inputs": {
+        "science/_quarto.yml": "0599a9c9121f17820f8c737b586cbcfd8efaee5b3ddcdd3ce19eae030b4f3486",
+        "science/greenhouse/fixture-quarto.bib": "0d52df35a29af38ce37cfc02520513303d0a51866b80ac456bbc80a5bbfb533c",
+        "science/greenhouse/fixture-quarto.qmd": "088c02eba9d1e1807b7b26728dced648b9869d64b4322132f0c2cd4625698063"
+      },
+      "quarto": "1.10.19",
+      "execution": {
+        "codeSha256": "60fec5ec5ab080df56e0cc4e7c3149af4158ff463d9c46679a10601583b0776d",
+        "freezeSha256": "3b7298be6ea7ec03d529da6b9a578e863b6cb9a35faea717581077f164b42a40",
+        "python": "3.12.13"
+      },
+      "output": {
+        "fragment": "src/science/greenhouse/fixture-quarto.html",
+        "fragmentSha256": "c28295a4244a04ce2b23ed689563a52f49a745fec52fdeec20093f5bba82bb9e",
+        "stub": "src/content/greenhouse/fixture-quarto.md",
+        "stubSha256": "fab24426de38d3061e5171f33dd498bafa71f327db8f4e6a1b8249bf13efd250",
+        "assetDir": "public/assets/scientific/greenhouse/fixture-quarto",
+        "assetsSha256": "17d7e2b7df09df5a63ab95d8ee747f26ee5e24ad26f865ebb92f2c57bb1f66f7",
+        "assets": [
+          "fig-bar-output-1.svg"
+        ]
+      },
+      "metadata": {
+        "title": "SYNTHETIC FIXTURE: a Quarto article",
+        "description": "A synthetic Quarto document used only by the build tests.",
+        "status": "published",
+        "slug": "fixture-quarto",
+        "publishedAt": "2026-11-01",
+        "tags": [
+          "fixture"
+        ]
+      },
+      "headings": [
+        {
+          "depth": 2,
+          "slug": "first-section",
+          "text": "First section"
+        },
+        {
+          "depth": 2,
+          "slug": "computed-results",
+          "text": "Computed results"
+        },
+        {
+          "depth": 2,
+          "slug": "last-section",
+          "text": "Last section"
+        },
+        {
+          "depth": 2,
+          "slug": "references",
+          "text": "References"
+        },
+        {
+          "depth": 2,
+          "slug": "footnotes",
+          "text": "Footnotes"
+        }
+      ],
+      "features": {
+        "math": 2,
+        "figures": 1,
+        "tables": 1,
+        "citations": 1,
+        "footnotes": 1,
+        "callouts": 1,
+        "code": 2,
+        "equations": 1
+      }
+    },
+    "trail/fixture-draft-lesson": {
+      "kind": "entry",
+      "source": "science/trail/fixture-draft-lesson.qmd",
+      "inputs": {
+        "science/_quarto.yml": "0599a9c9121f17820f8c737b586cbcfd8efaee5b3ddcdd3ce19eae030b4f3486",
+        "science/trail/fixture-draft-lesson.qmd": "f13793d81e9b1bddefc0604cbb82a117ba4ddbcc115875ad31434aa5035f0493"
+      },
+      "quarto": "1.10.19",
+      "execution": null,
+      "output": {
+        "fragment": "src/science/trail/fixture-draft-lesson.html",
+        "fragmentSha256": "6b98e3eb3f19c283f5c4b695dfdf7b953a7206506cc967f77ce8b6320d719c3e",
+        "stub": "src/content/trail/fixture-draft-lesson.md",
+        "stubSha256": "2b1727c11d26ea2057b410ae0dc8c4ae4b906e5a54a7a36782b641b010d5c1ed",
+        "assetDir": "public/assets/scientific/trail/fixture-draft-lesson",
+        "assetsSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "assets": []
+      },
+      "metadata": {
+        "title": "SYNTHETIC FIXTURE: a draft Quarto lesson",
+        "status": "draft",
+        "slug": "fixture-draft-lesson",
+        "seriesId": "fixture-series",
+        "position": 1
+      },
+      "headings": [
+        {
+          "depth": 2,
+          "slug": "a-heading",
+          "text": "A heading"
+        },
+        {
+          "depth": 2,
+          "slug": "another-heading",
+          "text": "Another heading"
+        },
+        {
+          "depth": 2,
+          "slug": "a-third",
+          "text": "A third"
+        }
+      ],
+      "features": {
+        "math": 1,
+        "figures": 0,
+        "tables": 0,
+        "citations": 0,
+        "footnotes": 0,
+        "callouts": 0,
+        "code": 0,
+        "equations": 0
+      }
+    }
+  }
+}

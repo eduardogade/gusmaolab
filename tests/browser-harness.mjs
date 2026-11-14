@@ -40,6 +40,10 @@ export async function startBrowser({ ids, timeout = 180_000 }) {
     ".html": "text/html; charset=utf-8",
     ".css": "text/css; charset=utf-8",
     ".js": "text/javascript; charset=utf-8",
+    // Figures (P13): served with their own type, as GitHub Pages does, or an <img> will not draw them.
+    ".svg": "image/svg+xml",
+    ".png": "image/png",
+    ".webp": "image/webp",
   }
   // `serve.withoutInitialTarget`: serve the stylesheets without `scroll-initial-target`,
   // as a browser that lacks it reads them, to test the script that stands in for it (P08).
