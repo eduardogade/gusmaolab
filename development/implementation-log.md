@@ -60,7 +60,8 @@ Newest entry first.
 
 ### Git
 
-- Commit on `development`: see the current state. No push (D-082): integration code only, no content, and `origin` was not contacted.
+- Commit on `development`: `92bf5d3 feat(cv): derive the owner's records from the versioned CV (P11-A01) [P11]`, then a records commit that only notes this hash. No push (D-082): integration code only, no content, and `origin` was not contacted.
+- The first attempt to commit was stopped by the `check-yaml` hook, correctly: the fixture held an unquoted impossible date (`2023-02-30`), which that hook's YAML 1.1 reader turns into a date. The fixture now quotes it; the adapter still leaves it out (CV-005). No hook was bypassed.
 - The other agent's CV-01 sections in this log and in the current state were left in the working tree and out of the commit, as before.
 
 ## P11 — Canonical Research, Publication, People & Professional Records — 2026-11-13
