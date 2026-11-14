@@ -1,0 +1,45 @@
+---
+/**
+ * Timber Logs (P12): the field journal. The reporting period leads, in the author's own
+ * `YYYY-MM`, above the title; the body keeps a ruled margin and its section headings are
+ * quiet labels (Activities, Results, Next). The author decides which sections a log has.
+ * The page claims nothing about being an official report: it says what the log is and
+ * when it was written.
+ */
+import EditorialArticle from "../../components/editorial/EditorialArticle.astro"
+import { dateMeta, monthName } from "../../editorial/reading.ts"
+import type { Heading, ReadingContext } from "../../editorial/reading.ts"
+import type { CollectionId } from "../../editorial/collections.ts"
+import type { CommonData } from "../../editorial/schema.ts"
+
+interface Props {
+  collection: CollectionId
+  data: CommonData
+  context: ReadingContext
+  headings: readonly Heading[]
+}
+
+const { collection, data, context } = Astro.props
+const period = typeof data.period === "string" ? data.period : undefined
+---
+
+<EditorialArticle
+  collection={collection}
+  data={data}
+  context={context}
+  meta={dateMeta(data)}
+>
+  {
+    period && (
+      <p class="ed__period" slot="before">
+        <span class="ed__period-label">Reporting period</span>
+        <span class="ed__period-value">
+          <time datetime={period}>
+            {monthName(period)} {period.slice(0, 4)}
+          </time>
+        </span>
+      </p>
+    )
+  }
+  <slot />
+</EditorialArticle>

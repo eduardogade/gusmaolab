@@ -251,6 +251,50 @@ export interface IndexItem {
   readonly status: EntryStatus
   /** The publication date (YYYY-MM-DD), or the period (YYYY-MM) for monthly collections. */
   readonly when: string | undefined
+  /** What a collection's own index shows besides the title (P12); only what the entry states. */
+  readonly details: IndexDetails
+}
+
+/** Optional metadata an index may show. Each field is the entry's own, never derived. */
+export interface IndexDetails {
+  readonly kind?: string
+  readonly tags: readonly string[]
+  readonly difficulty?: string
+  readonly seriesId?: string
+  readonly seriesTitle?: string
+  readonly position?: number
+  readonly workId?: string
+  readonly chapterNumber?: number
+  readonly chapterLabel?: string
+  readonly bookTitle?: string
+  readonly bookAuthor?: string
+  readonly sessionDate?: string
+}
+
+const optionalText = (value: unknown): string | undefined =>
+  typeof value === "string" && value !== "" ? value : undefined
+const optionalNumber = (value: unknown): number | undefined =>
+  typeof value === "number" ? value : undefined
+
+/** The index details of an entry, leaving out every field it does not state. */
+export function indexDetails(data: CommonData): IndexDetails {
+  const details: Record<string, unknown> = {
+    kind: optionalText(data.kind),
+    tags: data.tags ?? [],
+    difficulty: optionalText(data.difficulty),
+    seriesId: optionalText(data.seriesId),
+    seriesTitle: optionalText(data.seriesTitle),
+    position: optionalNumber(data.position),
+    workId: optionalText(data.workId),
+    chapterNumber: optionalNumber(data.chapterNumber),
+    chapterLabel: optionalText(data.chapterLabel),
+    bookTitle: optionalText(data.bookTitle),
+    bookAuthor: optionalText(data.bookAuthor),
+    sessionDate: optionalText(data.sessionDate),
+  }
+  return Object.fromEntries(
+    Object.entries(details).filter(([, value]) => value !== undefined),
+  ) as unknown as IndexDetails
 }
 
 /**
@@ -272,6 +316,7 @@ export function indexItems(
     description: record.data.description,
     status: record.data.status,
     when: str(record.data.period) || record.data.publishedAt,
+    details: indexDetails(record.data),
   }))
 }
 

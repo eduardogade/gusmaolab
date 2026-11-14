@@ -617,6 +617,55 @@ Checked by `tests/cv.mjs` (CV-001 to CV-020) in `npm run verify`, on a synthetic
 | CV-019 The Chromatic Archive and the folders are unchanged | Pass |
 | CV-020 The raw CV is not tracked, formatted or served (added by Claude Code) | Pass |
 
+## P12 gates — Editorial reading layouts
+
+| ID | Gate | Status |
+| --- | --- | --- |
+| G-P12-01 | Eight distinct reading layouts on one shell | **Passed** (EDIT-001 to EDIT-003, EDIT-003B); looked at in Chromium on the study. Visual approval is the owner's |
+| G-P12-02 | Articles stay in their owning folder; no fourth row | **Passed** (EDIT-004, EDIT-005, CONT-012) |
+| G-P12-03 | Drafts have no page and are never listed or linked | **Passed** (EDIT-006, EDIT-003B, EDIT-018) |
+| G-P12-04 | Empty collections say so | **Passed** (EDIT-007, CONT-015) |
+| G-P12-05 | Each collection orders by its own metadata | **Passed** (EDIT-008 to EDIT-011, EDIT-017) |
+| G-P12-06 | Contents from real headings; none for a short article | **Passed** (EDIT-012, EDIT-013, EDIT-012B in a browser) |
+| G-P12-07 | Code and tables stay inside the page, 320 to 1440 px | **Passed** in headless Chromium (EDIT-014, EDIT-015, EDIT-B01) |
+| G-P12-08 | One `<h1>` per page; a level-1 heading in Markdown fails the build | **Passed** (EDIT-016, EDIT-016B, EDIT-016B browser) |
+| G-P12-09 | Related entries resolve and exclude drafts | **Passed** (EDIT-018, EDIT-018B) |
+| G-P12-10 | Synthetic fixtures are never published entries | **Passed** (EDIT-019) |
+| G-P12-11 | Palettes, folders, tabs and transitions unchanged | **Passed** (EDIT-020, EDIT-022, the P06 to P09 suites) |
+| G-P12-12 | The CV is untouched and absent from output | **Passed** (EDIT-021, CV-018) |
+| G-P12-13 | The owner approves the reading layouts | **Pending**: the owner reviews `/_design/editorial/` |
+| G-P12-14 | Screen readers, Safari, Firefox and real phones | **Untested**: Chromium with emulated viewports only |
+
+### Editorial tests (P12)
+
+| Test | Where | Status |
+| --- | --- | --- |
+| EDIT-001 Eight layouts | `tests/editorial-layouts.mjs` | Pass |
+| EDIT-002 Shared components | same | Pass |
+| EDIT-003 Layout identity (study) / EDIT-003B (real entries, built) | same / `tests/editorial-build.mjs` | Pass |
+| EDIT-004 Folder ownership | `tests/editorial-layouts.mjs` | Pass |
+| EDIT-005 No extra folder row | same | Pass |
+| EDIT-006 Drafts | same | Pass |
+| EDIT-007 Empty collections | same | Pass |
+| EDIT-008 Blog ordering | same | Pass |
+| EDIT-009 Trail ordering | same | Pass |
+| EDIT-010 Timber Logs grouping | same | Pass |
+| EDIT-011 Kosmos ordering | same | Pass |
+| EDIT-012 Contents from headings / EDIT-012B anchors in a browser | same / `tests/editorial-browser.mjs` | Pass |
+| EDIT-013 No empty contents | `tests/editorial-layouts.mjs` | Pass |
+| EDIT-014 Code containment | `tests/editorial-browser.mjs` | Pass (headless Chromium) |
+| EDIT-015 Table containment | same | Pass (headless Chromium) |
+| EDIT-016 Heading semantics / EDIT-016B (built diagnostic; browser) | `tests/editorial-layouts.mjs`, `tests/editorial-build.mjs`, `tests/editorial-browser.mjs` | Pass |
+| EDIT-017 Previous and next / EDIT-017B Back and Forward, keyboard focus | `tests/editorial-layouts.mjs`, `tests/editorial-browser.mjs` | Pass |
+| EDIT-018 Related entries / EDIT-018B (built) | `tests/editorial-layouts.mjs`, `tests/editorial-build.mjs` | Pass |
+| EDIT-019 Fixture isolation | `tests/editorial-layouts.mjs` | Pass |
+| EDIT-020 Palettes untouched | same | Pass |
+| EDIT-021 No CV in output | same | Pass |
+| EDIT-022 Folders and tabs unchanged | same, and the P06 to P09 suites | Pass |
+| EDIT-B01 No sideways scroll, 39 pages at 320, 390, 768, 1280, 1440 px | `tests/editorial-browser.mjs` | Pass |
+| EDIT-B02 Reading widths and sizes | same | Pass |
+| EDIT-B03 Literary and compact layouts on a phone | same | Pass |
+
 ## Future gates
 
 | ID | Gate | Source | Status |

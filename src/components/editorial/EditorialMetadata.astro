@@ -1,0 +1,27 @@
+---
+/**
+ * The small facts under an article's title: dates, a level, a period (P12). One shared
+ * component, so a date is formatted in one place (formatWhen) and every collection marks
+ * time the same way: a `<time>` element with the machine-readable value.
+ */
+import type { MetaItem } from "../../editorial/reading.ts"
+
+interface Props {
+  items: readonly MetaItem[]
+}
+
+const { items } = Astro.props
+---
+
+{
+  items.length > 0 && (
+    <p class="ed__meta">
+      {items.map((item) => (
+        <span>
+          {item.label && <span class="ed__meta-label">{item.label} </span>}
+          {item.datetime ? <time datetime={item.datetime}>{item.value}</time> : item.value}
+        </span>
+      ))}
+    </p>
+  )
+}

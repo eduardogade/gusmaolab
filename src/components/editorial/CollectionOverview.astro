@@ -1,0 +1,27 @@
+---
+/**
+ * The Overview of a collection's folder (P12): the page a visitor reaches by opening the
+ * folder. The collection's name is the page's one heading, its one-line identity follows,
+ * then its index or, while nothing is published, an intentional empty state. It replaces
+ * the P06 scaffolding on exactly the folders that own a collection.
+ */
+import "../../styles/editorial.css"
+import type { CollectionId } from "../../editorial/collections.ts"
+import type { IndexItem } from "../../editorial/model.ts"
+import CollectionIndex from "./CollectionIndex.astro"
+
+interface Props {
+  collection: CollectionId
+  label: string
+  identity: string
+  items: readonly IndexItem[]
+}
+
+const { collection, label, identity, items } = Astro.props
+---
+
+<div class="gl-prose" data-editorial-overview={collection}>
+  <h1>{label}</h1>
+  <p class="ed__lede">{identity}</p>
+</div>
+<CollectionIndex collection={collection} items={items} />

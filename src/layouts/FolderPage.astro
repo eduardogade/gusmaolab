@@ -19,15 +19,26 @@ import FolderStack from "../components/folders/FolderStack.astro"
 import { getSiteNavigation } from "../editorial/site.ts"
 // A short cross-fade between folder pages, where the browser supports it (P09).
 import "../styles/view-transitions.css"
+// The editorial reading styles (P12): on every folder page, so that all pages share one
+// stylesheet set (RESP-013). Its classes are used only by editorial components.
+import "../styles/editorial.css"
 
 interface Props {
   /** The document title. Default: the open folders, deepest first, then "GusmaoLab". */
   title?: string
   description?: string
+  /**
+   * Draw the folders of this registered URL instead of the page's own. Only the design
+   * studies use it, to show content inside the folders it would live in while the study
+   * itself is not a registered page (P12, D-097).
+   */
+  path?: string
 }
 
 // The folders plus the entries' pages (P10): an entry resolves to its owning folder.
-const result = (await getSiteNavigation()).resolve(Astro.url.pathname)
+const result = (await getSiteNavigation()).resolve(
+  Astro.props.path ?? Astro.url.pathname,
+)
 if (!result.found) {
   throw new Error(`FolderPage: ${result.path} is not a registered page`)
 }

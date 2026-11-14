@@ -1,0 +1,41 @@
+---
+/**
+ * The Kosmos Series index (P12): a shelf of works. Each work is a heading (a link to its own
+ * page when it has one), its description, and its chapters in the author's reading order,
+ * each with the author's own mark. A work with chapters but no page of its own is named by
+ * its identifier and gets no page.
+ */
+import { chapterMark } from "../../../editorial/reading.ts"
+import type { IndexGroup } from "../../../editorial/reading.ts"
+import ChapterList from "./../ChapterList.astro"
+
+interface Props {
+  groups: readonly IndexGroup[]
+}
+
+const { groups } = Astro.props
+---
+
+<div class="ed-index ed-index--kosmos" data-editorial-index="kosmos">
+  {
+    groups.map((group) => (
+      <section class="ed-index__group ed-work" id={group.id} aria-labelledby={`${group.id}-heading`}>
+        <h2 class="ed-index__group-heading" id={`${group.id}-heading`}>
+          {group.lead ? <a href={group.lead.path}>{group.heading}</a> : group.heading}
+        </h2>
+        {group.lead?.description && <p class="ed-work__summary">{group.lead.description}</p>}
+        {group.items.length > 0 && (
+          <ChapterList
+            label={`Chapters of ${group.heading}`}
+            chapters={group.items.map((item) => ({
+              path: item.path,
+              title: item.title,
+              ...(item.status === "archived" ? { archived: true } : {}),
+              ...(chapterMark(item.details) === undefined ? {} : { mark: chapterMark(item.details) }),
+            }))}
+          />
+        )}
+      </section>
+    ))
+  }
+</div>

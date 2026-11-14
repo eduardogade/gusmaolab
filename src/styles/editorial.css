@@ -1,0 +1,896 @@
+/*
+ * Editorial reading layouts (P12, D-094). One shared article shell (`.ed`), one shared
+ * index shell (`.ed-index`), and a small variant for each of the eight collections
+ * (`.ed--blog`, `.ed--trail`, … and `.ed-index--blog`, …).
+ *
+ * What differs between collections is composition: how a header is arranged, how wide a
+ * line is, how an index groups its entries, which ornament marks a section break. What
+ * never differs: colour, which is the page's category (a collection only ever reads the
+ * semantic tokens), and typeface, which is the section's environment. No collection
+ * brings a font, a palette, an animation or a script.
+ *
+ * Semantic tokens only (tests/design-tokens.mjs). Layout responds to the width of the
+ * paper it is on, through container queries, not to the window: the folders already change
+ * the width of that paper (P08).
+ */
+
+/* 1. The article shell -------------------------------------------------------------- */
+
+.ed {
+  --_measure: var(--measure-reading-technical);
+  container-type: inline-size;
+  container-name: ed;
+  min-inline-size: 0;
+}
+
+.ed[data-measure="note"] {
+  --_measure: var(--measure-reading-note);
+}
+
+.ed[data-measure="literary"] {
+  --_measure: var(--measure-reading-literary);
+}
+
+.ed__header > * + * {
+  margin-block-start: var(--space-xs);
+}
+
+.ed__overline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3xs) var(--space-xs);
+  color: var(--color-text-muted);
+  font-family: var(--font-label);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+}
+
+.ed__title {
+  max-inline-size: calc(var(--_measure) * 1.15);
+}
+
+.ed__lede {
+  max-inline-size: var(--_measure);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lead);
+}
+
+.ed__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3xs) var(--space-m);
+  color: var(--color-text-muted);
+  font-family: var(--font-label);
+  font-size: var(--font-size-sm);
+}
+
+.ed__meta-label {
+  font-weight: var(--font-weight-semibold);
+}
+
+.ed__notice {
+  max-inline-size: var(--_measure);
+  padding: var(--space-xs) var(--space-s);
+  border-inline-start: var(--border-width-thick) solid var(--color-quote-rule);
+  background-color: var(--color-surface-callout);
+  color: var(--color-text-primary);
+  font-family: var(--font-label);
+  font-size: var(--font-size-sm);
+}
+
+.ed__tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3xs) var(--space-xs);
+  padding: 0;
+  list-style: none;
+  font-family: var(--font-label);
+  font-size: var(--font-size-sm);
+}
+
+.ed__tags li {
+  padding: 0 0.5em;
+  border: var(--border-width-hairline) solid var(--color-surface-card-border);
+  border-radius: var(--radius-control);
+  color: var(--color-text-secondary);
+}
+
+.ed__layout {
+  margin-block-start: var(--space-reading-section);
+}
+
+/* 2. The body: rendered Markdown carries no classes, so its elements are set from here. */
+
+.ed__body {
+  min-inline-size: 0;
+  max-inline-size: var(--_measure);
+}
+
+.ed__body > * + * {
+  margin-block-start: var(--space-reading-paragraph);
+}
+
+.ed__body :is(h2, h3, h4) {
+  margin-block-start: 1.8em;
+  scroll-margin-block-start: var(--space-m);
+}
+
+.ed__body :is(h2, h3, h4) + * {
+  margin-block-start: 0.6em;
+}
+
+.ed__body :is(ul, ol) {
+  padding-inline-start: 1.5em;
+}
+
+.ed__body li + li {
+  margin-block-start: 0.35em;
+}
+
+.ed__body a {
+  overflow-wrap: anywhere;
+}
+
+.ed__body img {
+  block-size: auto;
+  max-inline-size: 100%;
+}
+
+.ed__body figure > * + figcaption {
+  margin-block-start: var(--space-2xs);
+}
+
+.ed__body figcaption {
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+/* Long code and wide tables scroll inside their own box, never the page. */
+.ed__body pre {
+  max-inline-size: 100%;
+  overflow-x: auto;
+}
+
+.ed__body .astro-code {
+  /* Shiki writes its own background into the element; the code surface is the archive's. */
+  background-color: var(--color-surface-code) !important;
+}
+
+.ed__body :not(pre) > code {
+  overflow-wrap: anywhere;
+}
+
+.ed__body table {
+  display: block;
+  max-inline-size: 100%;
+  overflow-x: auto;
+}
+
+.ed__body hr {
+  margin-block: var(--space-m);
+}
+
+/* A table of contents beside or above a long article. */
+.ed__toc {
+  padding: var(--space-xs) var(--space-s);
+  border: var(--border-width-hairline) solid var(--color-surface-card-border);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface-card);
+  font-family: var(--font-label);
+  font-size: var(--font-size-sm);
+}
+
+.ed__toc-title {
+  color: var(--color-text-muted);
+  font-family: var(--font-label);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+}
+
+.ed__toc ol {
+  margin: var(--space-2xs) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ed__toc li + li {
+  margin-block-start: var(--space-3xs);
+}
+
+.ed__toc li[data-depth="3"] {
+  padding-inline-start: var(--space-s);
+}
+
+.ed__toc a {
+  overflow-wrap: anywhere;
+}
+
+/* 3. After the body: references, the way on, related entries ------------------------- */
+
+.ed__references {
+  max-inline-size: var(--_measure);
+  margin-block-start: var(--space-reading-section);
+  padding-block-start: var(--space-m);
+  border-block-start: var(--border-width-hairline) solid var(--color-folder-border);
+}
+
+.ed__references ol {
+  margin: var(--space-xs) 0 0;
+  padding-inline-start: 1.75em;
+  font-size: var(--font-size-sm);
+}
+
+.ed__references li + li {
+  margin-block-start: var(--space-2xs);
+}
+
+.ed__references li {
+  overflow-wrap: anywhere;
+}
+
+.ed__pagination {
+  display: grid;
+  gap: var(--space-xs);
+  max-inline-size: var(--_measure);
+  margin-block-start: var(--space-reading-section);
+  padding-block-start: var(--space-m);
+  border-block-start: var(--border-width-hairline) solid var(--color-folder-border);
+}
+
+.ed__step {
+  display: block;
+  padding: var(--space-xs) var(--space-s);
+  border: var(--border-width-hairline) solid var(--color-surface-card-border);
+  border-radius: var(--radius-card);
+  color: var(--color-text-primary);
+  text-decoration: none;
+}
+
+.ed__step:hover {
+  background-color: var(--color-state-hover);
+}
+
+.ed__step-label {
+  display: block;
+  color: var(--color-text-muted);
+  font-family: var(--font-label);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+}
+
+.ed__step-title {
+  display: block;
+  color: var(--color-text-link);
+  text-decoration: underline;
+  text-decoration-thickness: 0.075em;
+  text-underline-offset: 0.2em;
+}
+
+.ed__step--next {
+  text-align: end;
+}
+
+.ed__return {
+  font-family: var(--font-label);
+  font-size: var(--font-size-sm);
+}
+
+.ed__related {
+  max-inline-size: var(--_measure);
+  margin-block-start: var(--space-reading-section);
+}
+
+.ed__related h2 {
+  font-size: var(--font-size-h3);
+}
+
+.ed__related ul {
+  margin: var(--space-xs) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ed__related li + li {
+  margin-block-start: var(--space-2xs);
+}
+
+.ed__related-collection {
+  color: var(--color-text-muted);
+  font-family: var(--font-label);
+  font-size: var(--font-size-sm);
+}
+
+@container ed (min-width: 34rem) {
+  .ed__pagination {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .ed__pagination > .ed__step--next {
+    grid-column: 2;
+  }
+
+  .ed__pagination > .ed__return {
+    grid-column: 1 / -1;
+  }
+}
+
+/* A long technical article: contents beside the text when the paper is wide enough. */
+@container ed (min-width: 60rem) {
+  .ed--greenhouse .ed__layout[data-has-toc] {
+    display: grid;
+    grid-template-columns: minmax(0, var(--_measure)) var(--size-reading-aside);
+    gap: var(--space-reading-gap);
+    align-items: start;
+  }
+
+  .ed--greenhouse .ed__layout[data-has-toc] > .ed__toc {
+    grid-column: 2;
+    grid-row: 1;
+    position: sticky;
+    inset-block-start: var(--space-m);
+    max-block-size: calc(100vh - 2 * var(--space-m));
+    overflow-y: auto;
+  }
+
+  .ed--greenhouse .ed__layout[data-has-toc] > .ed__body {
+    grid-column: 1;
+    grid-row: 1;
+  }
+}
+
+.ed--greenhouse .ed__toc {
+  margin-block-end: var(--space-m);
+}
+
+@container ed (min-width: 60rem) {
+  .ed--greenhouse .ed__toc {
+    margin-block-end: 0;
+  }
+}
+
+/* 4. The eight collections ------------------------------------------------------------ */
+
+/* Blog: the news desk. Compact, dated, direct. */
+.ed--blog .ed__title {
+  font-size: var(--font-size-h2);
+}
+
+.ed--blog .ed__header {
+  padding-block-end: var(--space-s);
+  border-block-end: var(--border-width-hairline) solid var(--color-folder-border);
+}
+
+.ed--blog .ed__layout {
+  margin-block-start: var(--space-m);
+}
+
+/* Bearnard's Trail: a path through a subject. */
+.ed__sequence {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-3xs) var(--space-s);
+  max-inline-size: var(--_measure);
+  padding: var(--space-2xs) var(--space-s);
+  border-inline-start: var(--border-width-thick) solid var(--color-accent);
+  background-color: var(--color-surface-callout);
+  font-family: var(--font-label);
+  font-size: var(--font-size-sm);
+}
+
+.ed__sequence-name {
+  font-weight: var(--font-weight-semibold);
+}
+
+.ed__prerequisites {
+  max-inline-size: var(--_measure);
+  padding: var(--space-xs) var(--space-s);
+  border: var(--border-width-hairline) dashed var(--color-folder-border);
+  border-radius: var(--radius-card);
+  font-size: var(--font-size-sm);
+}
+
+.ed__prerequisites h2 {
+  color: var(--color-text-muted);
+  font-family: var(--font-label);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+}
+
+.ed__prerequisites ul {
+  margin: var(--space-2xs) 0 0;
+  padding-inline-start: 1.25em;
+}
+
+/* The Greenhouse: rigorous and spacious. */
+.ed--greenhouse .ed__header > * + * {
+  margin-block-start: var(--space-s);
+}
+
+.ed--greenhouse .ed__body {
+  --space-reading-paragraph: 1.1em;
+}
+
+/* Berries: one small, complete idea, kept on its own small sheet. */
+.ed--berries .ed__title {
+  font-size: var(--font-size-h2);
+}
+
+.ed--berries .ed__lede {
+  font-size: var(--font-size-body);
+}
+
+.ed--berries .ed__layout {
+  margin-block-start: var(--space-m);
+  padding: var(--space-s) var(--space-m);
+  border: var(--border-width-hairline) solid var(--color-surface-card-border);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface-card);
+}
+
+/* Timber Logs: the field journal. A ruled margin, labelled sections, a reporting period. */
+.ed__period {
+  display: inline-flex;
+  flex-direction: column;
+  padding: var(--space-3xs) var(--space-s);
+  border-inline-start: var(--border-width-thick) solid var(--color-folder-border);
+  font-family: var(--font-code);
+}
+
+.ed__period-label {
+  color: var(--color-text-muted);
+  font-family: var(--font-label);
+  font-size: var(--font-size-xs);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+}
+
+.ed__period-value {
+  font-size: var(--font-size-h3);
+}
+
+.ed--timber-logs .ed__body {
+  padding-inline-start: var(--space-m);
+  border-inline-start: var(--border-width-thin) solid var(--color-folder-border);
+}
+
+.ed--timber-logs .ed__body h2 {
+  font-family: var(--font-label);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+}
+
+/* The literary collections: Months' Original, Kosmos Series, Book Club. */
+.ed--months-original .ed__body,
+.ed--kosmos .ed__body,
+.ed--book-club .ed__body {
+  --space-reading-paragraph: var(--space-reading-paragraph-literary);
+  hyphens: manual;
+}
+
+.ed--months-original .ed__header > * + *,
+.ed--kosmos .ed__header > * + * {
+  margin-block-start: var(--space-s);
+}
+
+.ed--months-original .ed__lede,
+.ed--kosmos .ed__lede {
+  font-style: italic;
+}
+
+.ed--months-original .ed__layout,
+.ed--kosmos .ed__layout {
+  margin-block-start: var(--space-l);
+}
+
+.ed--months-original .ed__body hr,
+.ed--kosmos .ed__body hr {
+  inline-size: 100%;
+  margin-block: var(--space-l);
+  border: 0;
+  text-align: center;
+}
+
+.ed--months-original .ed__body hr::after,
+.ed--kosmos .ed__body hr::after {
+  content: var(--editorial-section-mark);
+  color: var(--color-text-muted);
+  letter-spacing: 0.4em;
+}
+
+.ed--months-original .ed__body blockquote,
+.ed--kosmos .ed__body blockquote,
+.ed--book-club .ed__body blockquote {
+  padding: 0 0 0 var(--space-m);
+  background: none;
+}
+
+.ed__epigraph {
+  max-inline-size: var(--_measure);
+  font-family: var(--font-editorial);
+  font-style: italic;
+}
+
+.ed__epigraph blockquote {
+  padding: 0 0 0 var(--space-m);
+  border-inline-start: var(--border-width-thin) solid var(--color-quote-rule);
+  background: none;
+}
+
+.ed__epigraph figcaption {
+  margin-block-start: var(--space-2xs);
+  padding-inline-start: var(--space-m);
+  color: var(--color-text-muted);
+  font-family: var(--font-label);
+  font-size: var(--font-size-sm);
+  font-style: normal;
+}
+
+/* Kosmos Series: a work and its chapters. The chapter label is the author's. */
+.ed--kosmos[data-part="chapter"] .ed__header {
+  text-align: center;
+}
+
+.ed--kosmos[data-part="chapter"] :is(.ed__overline, .ed__meta) {
+  justify-content: center;
+}
+
+.ed--kosmos[data-part="chapter"] :is(.ed__title, .ed__lede, .ed__epigraph) {
+  margin-inline: auto;
+}
+
+.ed--kosmos[data-part="chapter"] .ed__epigraph {
+  text-align: start;
+}
+
+.ed__chapter-label {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h3);
+  font-style: var(--font-heading-style);
+}
+
+.ed__work-name {
+  font-family: var(--font-label);
+  font-size: var(--font-size-sm);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+}
+
+.ed__chapters {
+  margin-block-start: var(--space-reading-section);
+}
+
+/* Book Club: the reading room. A book plate at the head of each discussion. */
+.ed__plate {
+  display: inline-block;
+  max-inline-size: 100%;
+  padding: var(--space-xs) var(--space-m);
+  border: var(--border-width-hairline) solid var(--color-surface-card-border);
+  border-block-start: var(--border-width-thick) solid var(--color-accent);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface-card);
+  font-family: var(--font-label);
+  font-size: var(--font-size-sm);
+}
+
+.ed__plate > * + * {
+  margin-block-start: var(--space-3xs);
+}
+
+.ed__plate-title {
+  font-family: var(--font-editorial);
+  font-size: var(--font-size-lead);
+  font-style: italic;
+  overflow-wrap: anywhere;
+}
+
+/* 5. Indexes ---------------------------------------------------------------------------- */
+
+.ed-index {
+  container-type: inline-size;
+  container-name: ed-index;
+  margin-block-start: var(--space-l);
+}
+
+.ed-index__label {
+  color: var(--color-text-muted);
+  font-family: var(--font-label);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+}
+
+.ed-index__list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ed-index__title {
+  font-size: var(--font-size-h4);
+  line-height: var(--line-height-ui);
+}
+
+.ed-index__title a {
+  overflow-wrap: anywhere;
+}
+
+.ed-index__summary {
+  margin-block-start: var(--space-3xs);
+  max-inline-size: var(--measure-reading-note);
+  color: var(--color-text-secondary);
+}
+
+.ed-index__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 var(--space-s);
+  margin-block-start: var(--space-3xs);
+  color: var(--color-text-muted);
+  font-family: var(--font-label);
+  font-size: var(--font-size-sm);
+}
+
+.ed-index__empty {
+  max-inline-size: var(--measure-reading-note);
+  padding: var(--space-s) var(--space-m);
+  border: var(--border-width-hairline) dashed var(--color-folder-border);
+  border-radius: var(--radius-card);
+  color: var(--color-text-secondary);
+}
+
+.ed-index__group + .ed-index__group {
+  margin-block-start: var(--space-xl);
+}
+
+.ed-index__group-heading {
+  font-size: var(--font-size-h2);
+  scroll-margin-block-start: var(--space-m);
+}
+
+/* Blog: a plain chronological stream, date first. */
+.ed-index--blog .ed-index__list > li {
+  display: grid;
+  gap: var(--space-3xs) var(--space-m);
+  padding-block: var(--space-xs);
+  border-block-end: var(--border-width-hairline) solid var(--color-folder-border);
+}
+
+.ed-index--blog .ed-index__when {
+  color: var(--color-text-muted);
+  font-family: var(--font-label);
+  font-size: var(--font-size-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+@container ed-index (min-width: 34rem) {
+  .ed-index--blog .ed-index__list > li {
+    grid-template-columns: 9rem minmax(0, 1fr);
+  }
+}
+
+/* The Trail: numbered lessons on a line that joins them. */
+.ed-path {
+  margin: var(--space-s) 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.ed-path__step {
+  position: relative;
+  padding-block: 0 var(--space-m);
+  padding-inline-start: 3.25rem;
+}
+
+.ed-path__step:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  inset-block: 2.4rem 0;
+  inset-inline-start: 1.2rem;
+  border-inline-start: var(--border-width-thin) dotted var(--color-folder-border);
+}
+
+.ed-path__marker {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  display: grid;
+  place-items: center;
+  inline-size: 2.4rem;
+  block-size: 2.4rem;
+  border: var(--border-width-thin) solid var(--color-accent);
+  border-radius: 50%;
+  background-color: var(--color-surface-card);
+  font-family: var(--font-label);
+  font-weight: var(--font-weight-semibold);
+  font-variant-numeric: tabular-nums;
+}
+
+.ed-path__step[data-unplaced] .ed-path__marker {
+  border-style: dashed;
+  border-color: var(--color-folder-border);
+}
+
+/* The Greenhouse: roomy rows for longer reading. */
+.ed-index--greenhouse .ed-index__list > li {
+  padding-block: var(--space-m);
+  border-block-end: var(--border-width-hairline) solid var(--color-folder-border);
+}
+
+.ed-index--greenhouse .ed-index__title {
+  font-size: var(--font-size-h3);
+}
+
+/* Berries: a handful of small tiles. */
+.ed-tiles {
+  display: grid;
+  gap: var(--space-s);
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 14rem), 1fr));
+}
+
+.ed-tile {
+  position: relative;
+  padding: var(--space-s);
+  border: var(--border-width-hairline) solid var(--color-surface-card-border);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface-card);
+}
+
+.ed-tile a::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+}
+
+.ed-tile:focus-within {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: var(--focus-ring-offset);
+}
+
+.ed-tile :focus-visible {
+  outline: none;
+}
+
+.ed-tile:hover {
+  background-color: var(--color-state-hover);
+}
+
+/* Timber Logs: a logbook, by year and month, down a ruled spine. */
+.ed-logbook__entry {
+  display: grid;
+  gap: 0 var(--space-m);
+  padding: var(--space-xs) 0 var(--space-xs) var(--space-s);
+  border-inline-start: var(--border-width-thin) solid var(--color-folder-border);
+  border-block-end: var(--border-width-hairline) dashed var(--color-folder-border);
+}
+
+.ed-logbook__month {
+  color: var(--color-text-muted);
+  font-family: var(--font-code);
+  font-size: var(--font-size-sm);
+  text-transform: uppercase;
+}
+
+@container ed-index (min-width: 34rem) {
+  .ed-logbook__entry {
+    grid-template-columns: 8rem minmax(0, 1fr);
+  }
+}
+
+/* Months' Original: an unhurried literary archive. */
+.ed-index--months-original .ed-index__list > li {
+  padding-block: var(--space-s);
+}
+
+.ed-index--months-original .ed-index__title {
+  font-size: var(--font-size-h3);
+}
+
+.ed-index--months-original .ed-index__summary {
+  font-family: var(--font-editorial);
+  font-style: italic;
+}
+
+.ed-index__month {
+  color: var(--color-text-muted);
+  font-family: var(--font-label);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: var(--letter-spacing-label);
+  text-transform: uppercase;
+}
+
+/* Kosmos Series: works as shelves, chapters in reading order with a dotted leader. */
+.ed-work {
+  padding-inline-start: var(--space-m);
+  border-inline-start: 0.5rem solid var(--color-folder-border);
+}
+
+.ed-work__summary {
+  max-inline-size: var(--measure-reading-literary);
+  margin-block-start: var(--space-2xs);
+  font-family: var(--font-editorial);
+  font-style: italic;
+}
+
+.ed-chapters {
+  margin: var(--space-s) 0 0;
+  padding: 0;
+  max-inline-size: var(--measure-reading-literary);
+  list-style: none;
+}
+
+.ed-chapters li + li {
+  margin-block-start: var(--space-2xs);
+}
+
+.ed-chapters__row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2xs);
+}
+
+.ed-chapters__label {
+  min-inline-size: 2.5rem;
+  color: var(--color-text-muted);
+  font-family: var(--font-heading);
+  font-style: var(--font-heading-style);
+}
+
+.ed-chapters__fill {
+  flex: 1 1 1rem;
+  min-inline-size: 1rem;
+  border-block-end: var(--border-width-thin) dotted var(--color-folder-border);
+  transform: translateY(-0.3em);
+}
+
+/* Book Club: one panel for each book, a bookmark at its head. */
+.ed-shelf {
+  position: relative;
+  padding: var(--space-s) var(--space-m) var(--space-m);
+  border: var(--border-width-hairline) solid var(--color-surface-card-border);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface-card);
+}
+
+.ed-shelf::before {
+  content: "";
+  position: absolute;
+  inset-block-start: -1px;
+  inset-inline-start: var(--space-m);
+  inline-size: 1.25rem;
+  block-size: 0.75rem;
+  background-color: var(--color-accent);
+}
+
+.ed-shelf__title {
+  font-family: var(--font-editorial);
+  font-size: var(--font-size-h3);
+  font-style: italic;
+  overflow-wrap: anywhere;
+}
+
+.ed-shelf__author {
+  color: var(--color-text-muted);
+  font-family: var(--font-label);
+  font-size: var(--font-size-sm);
+}
+
+.ed-shelf .ed-index__list {
+  margin-block-start: var(--space-s);
+}
+
+.ed-shelf .ed-index__list > li {
+  padding-block: var(--space-2xs);
+  border-block-start: var(--border-width-hairline) solid var(--color-folder-border);
+}

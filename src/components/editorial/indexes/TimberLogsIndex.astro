@@ -1,0 +1,43 @@
+---
+/**
+ * The Timber Logs index (P12): a logbook, a heading for each year and an entry for each
+ * month that has one, newest first, by the author's own `YYYY-MM` period. A month with no
+ * log does not appear.
+ */
+import { monthName } from "../../../editorial/reading.ts"
+import type { IndexGroup } from "../../../editorial/reading.ts"
+
+interface Props {
+  groups: readonly IndexGroup[]
+}
+
+const { groups } = Astro.props
+---
+
+<div class="ed-index ed-index--timber-logs" data-editorial-index="timberLogs">
+  {
+    groups.map((group) => (
+      <section class="ed-index__group" id={group.id} aria-labelledby={`${group.id}-heading`}>
+        <h2 class="ed-index__group-heading" id={`${group.id}-heading`}>
+          {group.heading}
+        </h2>
+        <ol class="ed-index__list">
+          {group.items.map((item) => (
+            <li class="ed-logbook__entry">
+              <span class="ed-logbook__month">
+                {item.when && <time datetime={item.when}>{monthName(item.when)}</time>}
+              </span>
+              <div>
+                <h3 class="ed-index__title">
+                  <a href={item.path}>{item.title}</a>
+                </h3>
+                {item.description && <p class="ed-index__summary">{item.description}</p>}
+                {item.status === "archived" && <p class="ed-index__meta">Archived</p>}
+              </div>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))
+  }
+</div>

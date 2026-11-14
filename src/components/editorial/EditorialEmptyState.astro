@@ -1,0 +1,11 @@
+---
+/**
+ * What an index says when a collection has no published entry (P12). A deliberate state,
+ * not an error: every collection starts here, and nothing is invented to fill it.
+ */
+interface Props {
+  text: string
+}
+---
+
+<p class="ed-index__empty" data-editorial-empty>{Astro.props.text}</p>

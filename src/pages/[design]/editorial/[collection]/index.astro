@@ -1,0 +1,34 @@
+---
+// Temporary P12 design study: one collection's Overview, drawn with the production index
+// from SYNTHETIC entries, inside the folder the collection really lives in.
+import FolderPage from "../../../../layouts/FolderPage.astro"
+import EditorialStudyBanner from "../../../../design/EditorialStudyBanner.astro"
+import CollectionOverview from "../../../../components/editorial/CollectionOverview.astro"
+import { COLLECTIONS, collectionPrefix } from "../../../../editorial/collections.ts"
+import { indexItems } from "../../../../editorial/model.ts"
+import { SYNTHETIC_ENTRIES, rebaseItems } from "../../../../design/editorial-fixture.ts"
+
+export function getStaticPaths() {
+  return COLLECTIONS.map((collection) => ({
+    params: { design: "_design", collection: collection.directory },
+    props: { id: collection.id },
+  }))
+}
+
+const { id } = Astro.props
+const definition = COLLECTIONS.find((c) => c.id === id)!
+const items = rebaseItems(indexItems(id, SYNTHETIC_ENTRIES))
+---
+
+<FolderPage
+  path={collectionPrefix(definition)}
+  title={`${definition.label} (study) · GusmaoLab`}
+>
+  <EditorialStudyBanner />
+  <CollectionOverview
+    collection={id}
+    label={definition.label}
+    identity={definition.identity}
+    items={items}
+  />
+</FolderPage>

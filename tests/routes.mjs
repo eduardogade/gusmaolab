@@ -8,6 +8,7 @@
 import { readdir, readFile } from "node:fs/promises"
 import { join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
+import { studyPaths } from "../src/design/editorial-fixture.ts"
 import { ROUTE_PARAMS, overviewTabId, siteNavigation } from "../src/navigation/index.ts"
 import {
   childrenOf,
@@ -30,9 +31,11 @@ const STUDIES = [
   "/_design/folders/",
   "/_design/bearnard/",
   "/_design/records/",
+  ...studyPaths(),
 ]
-// Studies that show folders, and so carry the folders' one script.
-const STUDIES_WITH_FOLDERS = ["/_design/folders/"]
+// Studies that show folders, and so carry the folders' one script. The editorial study
+// (P12) draws every page inside its collection's folders.
+const STUDIES_WITH_FOLDERS = ["/_design/folders/", ...studyPaths()]
 const fileOf = (path) => join(dist, `${path.slice(1)}index.html`)
 
 async function listFiles(dir) {
@@ -564,6 +567,9 @@ test("NAV-032", "Every approved route is a static page", (check) => {
     json(routeFiles) ===
       json([
         "[design]/bearnard.astro",
+        "[design]/editorial/[collection]/[entry].astro",
+        "[design]/editorial/[collection]/index.astro",
+        "[design]/editorial/index.astro",
         "[design]/folders.astro",
         "[design]/records.astro",
         "[design]/tokens.astro",

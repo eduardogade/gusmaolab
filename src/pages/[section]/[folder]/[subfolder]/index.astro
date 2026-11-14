@@ -5,7 +5,7 @@
 import FolderPage from "../../../../layouts/FolderPage.astro"
 import ScaffoldContent from "../../../../components/scaffold/ScaffoldContent.astro"
 import EditorialEntry from "../../../../components/editorial/EditorialEntry.astro"
-import CollectionIndex from "../../../../components/editorial/CollectionIndex.astro"
+import CollectionOverview from "../../../../components/editorial/CollectionOverview.astro"
 import { collectionIndexFor, pageStaticPaths } from "../../../../editorial/site.ts"
 
 export function getStaticPaths() {
@@ -23,9 +23,16 @@ const index = entry === undefined ? await collectionIndexFor(Astro.url.pathname)
     </FolderPage>
   ) : (
     <FolderPage>
-      <ScaffoldContent path={Astro.url.pathname}>
-        {index && <CollectionIndex label={index.label} items={index.items} />}
-      </ScaffoldContent>
+      {index ? (
+        <CollectionOverview
+          collection={index.id}
+          label={index.label}
+          identity={index.identity}
+          items={index.items}
+        />
+      ) : (
+        <ScaffoldContent path={Astro.url.pathname} />
+      )}
     </FolderPage>
   )
 }

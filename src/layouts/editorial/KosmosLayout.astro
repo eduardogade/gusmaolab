@@ -1,0 +1,79 @@
+---
+/**
+ * Kosmos Series (P12): the literary bookshelf. A work's own entry is its landing page: title,
+ * description, epigraph, the author's text and the chapter list in reading order. A chapter
+ * names its work, shows the author's own chapter mark ("IV", "§", "Interlude") and
+ * otherwise "Chapter N", and offers the previous and next chapter and the way back to the
+ * work. Section labels inside a chapter are the author's Markdown and are never rewritten.
+ * Nothing here decides the order of the works, the chapters or their titles.
+ */
+import EditorialArticle from "../../components/editorial/EditorialArticle.astro"
+import EditorialEpigraph from "../../components/editorial/EditorialEpigraph.astro"
+import ChapterList from "../../components/editorial/ChapterList.astro"
+import { chapterMark, dateMeta } from "../../editorial/reading.ts"
+import type { Heading, ReadingContext } from "../../editorial/reading.ts"
+import type { CollectionId } from "../../editorial/collections.ts"
+import type { CommonData } from "../../editorial/schema.ts"
+
+interface Props {
+  collection: CollectionId
+  data: CommonData
+  context: ReadingContext
+  headings: readonly Heading[]
+}
+
+const { collection, data, context } = Astro.props
+const sequence = context.sequence
+const isWork = data.position === undefined && data.chapterNumber === undefined
+const mark = chapterMark(data)
+const heading =
+  typeof data.chapterLabel === "string" && data.chapterLabel !== ""
+    ? data.chapterLabel
+    : typeof data.chapterNumber === "number"
+      ? `Chapter ${data.chapterNumber}`
+      : undefined
+const epigraph = typeof data.epigraph === "string" ? data.epigraph : undefined
+const source = typeof data.epigraphSource === "string" ? data.epigraphSource : undefined
+---
+
+<EditorialArticle
+  collection={collection}
+  data={data}
+  context={context}
+  part={isWork ? "work" : "chapter"}
+  meta={dateMeta(data, { updated: false })}
+  returns={!isWork && sequence
+    ? [{ href: sequence.overviewPath, label: `Return to ${sequence.title ?? "the work"}` }]
+    : []}
+>
+  {
+    !isWork && (
+      <Fragment slot="before">
+        {sequence?.title && (
+          <p class="ed__work-name">
+            <a href={sequence.overviewPath}>{sequence.title}</a>
+          </p>
+        )}
+        {heading && (
+          <p class="ed__chapter-label" data-chapter-mark={mark}>
+            {heading}
+          </p>
+        )}
+      </Fragment>
+    )
+  }
+  {epigraph && <EditorialEpigraph slot="header" text={epigraph} source={source} />}
+  <slot />
+  {
+    isWork && (
+      <section class="ed__chapters" slot="after" aria-labelledby="ed-chapters-title">
+        <h2 id="ed-chapters-title">Chapters</h2>
+        {context.chapters.length > 0 ? (
+          <ChapterList chapters={context.chapters} label="Chapters in reading order" />
+        ) : (
+          <p>No chapters are published yet.</p>
+        )}
+      </section>
+    )
+  }
+</EditorialArticle>

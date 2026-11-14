@@ -1,0 +1,44 @@
+---
+/**
+ * Bearnard's Trail index (P12): one path for each learning series, its lessons numbered by
+ * the author's own positions and joined by a line. A lesson without a position stands
+ * dashed and unnumbered: the order is never guessed from dates. Nothing marks a lesson as
+ * done: no progress is stored.
+ */
+import type { IndexGroup } from "../../../editorial/reading.ts"
+
+interface Props {
+  groups: readonly IndexGroup[]
+}
+
+const { groups } = Astro.props
+---
+
+<div class="ed-index ed-index--trail" data-editorial-index="trail">
+  {
+    groups.map((group) => (
+      <section class="ed-index__group" id={group.id} aria-labelledby={`${group.id}-heading`}>
+        <h2 class="ed-index__group-heading" id={`${group.id}-heading`}>
+          {group.heading}
+        </h2>
+        <ol class="ed-path">
+          {group.items.map((item) => (
+            <li class="ed-path__step" data-unplaced={item.details.position === undefined ? "" : undefined}>
+              <span class="ed-path__marker" aria-hidden="true">
+                {item.details.position ?? "·"}
+              </span>
+              <h3 class="ed-index__title">
+                {item.details.position !== undefined && (
+                  <span class="gl-visually-hidden">Lesson {item.details.position}: </span>
+                )}
+                <a href={item.path}>{item.title}</a>
+              </h3>
+              {item.description && <p class="ed-index__summary">{item.description}</p>}
+              {item.status === "archived" && <p class="ed-index__meta">Archived</p>}
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))
+  }
+</div>

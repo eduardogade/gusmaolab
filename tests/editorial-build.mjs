@@ -30,6 +30,8 @@ import { tmpdir } from "node:os"
 import { join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
 import { siteNavigation } from "../src/navigation/index.ts"
+import { studyPaths } from "../src/design/editorial-fixture.ts"
+import { PRESENTATIONS } from "../src/editorial/reading.ts"
 import {
   elements,
   hasClass,
@@ -48,6 +50,7 @@ const designStudies = [
   "/_design/folders/",
   "/_design/bearnard/",
   "/_design/records/",
+  ...studyPaths(),
 ]
 
 const results = []
@@ -198,7 +201,10 @@ await test(
     const extra = pages.filter((f) => !expected.has(f))
     check(extra.length === 0, `unexpected pages: ${extra.join(", ")}`)
     check(!pages.some((f) => f.startsWith("external/")), "an External page was built")
-    check(pages.length === 36 + 4 + 7, `${pages.length} pages, expected 47`)
+    check(
+      pages.length === 36 + 4 + studyPaths().length + 7,
+      `${pages.length} pages, expected ${36 + 4 + studyPaths().length + 7}`,
+    )
     // One route per entry: no page is generated twice under another name.
     check(
       !good.files.some((f) => /fixture-published\/.+\//.test(f)),
@@ -221,12 +227,13 @@ await test(
       "no archived notice",
     )
     check(
-      /Updated <time datetime="2026-02-01"[^>]*>1 February 2026/.test(html),
+      /Updated <\/span><time datetime="2026-02-01"[^>]*>1 February 2026/.test(html),
       "no update date",
     )
     const index = await htmlOf("/lecture-notes/berries/")
     check(
-      /fixture-archived\/"/.test(index) && /· archived/.test(index),
+      /fixture-archived\/"/.test(index) &&
+        /archived/i.test(index.slice(index.indexOf("fixture-archived"))),
       "the index omits the archived entry or its mark",
     )
   },
@@ -309,7 +316,8 @@ await test("CONT-012", "An entry builds no fourth row (built)", async (check) =>
     const layers = layersOf(parse(html)).layers
     check(layers.length <= 3, `${path}: ${layers.length} rows`)
     check(
-      (html.match(/<nav /g) ?? []).length === layers.length,
+      // The article's own navigation (contents, previous and next) is not a row of tabs.
+      (html.match(/<nav (?![^>]*class="ed__)/g) ?? []).length === layers.length,
       `${path}: a navigation landmark is not a row`,
     )
   }
@@ -330,30 +338,38 @@ await test(
   "CONT-015",
   "Empty collections show an intentional message (built)",
   async (check) => {
-    const message = "This collection has no published entries yet."
     const has = async (path, className) =>
       elements(await treeOf(path)).some(hasClass(className))
-    for (const path of [
-      "/lecture-notes/bearnards-trail/",
-      "/lecture-notes/greenhouse/",
-      "/writing/months-original/",
-      "/writing/book-club/",
+    for (const [path, id] of [
+      ["/lecture-notes/bearnards-trail/", "trail"],
+      ["/lecture-notes/greenhouse/", "greenhouse"],
+      ["/writing/months-original/", "monthsOriginal"],
+      ["/writing/book-club/", "bookClub"],
     ]) {
-      check((await htmlOf(path)).includes(message), `${path} has no empty message`)
-      check(await has(path, "gl-index"), `${path} has no index section`)
-      check(!(await has(path, "gl-index__list")), `${path} lists entries`)
+      const html = await htmlOf(path)
+      check(
+        html.includes(PRESENTATIONS[id].emptyText.replace(/'/g, "&#39;")),
+        `${path} has no empty message`,
+      )
+      check(await has(path, "ed-index__empty"), `${path} has no empty state`)
+      check(!(await has(path, "ed-index__list")), `${path} lists entries`)
     }
     check(
-      !(await htmlOf("/lecture-notes/berries/")).includes(message),
+      !(await htmlOf("/lecture-notes/berries/")).includes(
+        PRESENTATIONS.berries.emptyText.replace(/'/g, "&#39;"),
+      ),
       "a collection with entries shows the empty message",
     )
     check(
-      await has("/lecture-notes/berries/", "gl-index__list"),
+      await has("/lecture-notes/berries/", "ed-index__list"),
       "berries lists nothing",
     )
     // Folders without a collection show no index.
-    check(!(await has("/cv/", "gl-index")), "/cv/ shows an index")
-    check(!(await has("/lecture-notes/", "gl-index")), "/lecture-notes/ shows an index")
+    check(!(await has("/cv/", "ed-index__list")), "/cv/ shows an index")
+    check(
+      !(await has("/lecture-notes/", "ed-index__list")),
+      "/lecture-notes/ shows an index",
+    )
   },
 )
 
@@ -361,8 +377,18 @@ await test(
   "CONT-014",
   "Built indexes list entries in the collection's order (built)",
   async (check) => {
-    const links = async (path) =>
-      [...(await htmlOf(path)).matchAll(/<li[^>]*><a href="([^"]+)"/g)].map((m) => m[1])
+    // The index's own links, in order: after the page's tabs, under the collection's prefix.
+    const links = async (path) => {
+      const html = await htmlOf(path)
+      const body = html.slice(html.indexOf("data-editorial-index-collection"))
+      return [
+        ...new Set(
+          [...body.matchAll(/<a[^>]*href="([^"]+)"/g)]
+            .map((m) => m[1])
+            .filter((href) => href.startsWith(path) && href !== path),
+        ),
+      ]
+    }
     check(
       json(await links("/blog/")) ===
         json([FIXTURE_PAGES.post, FIXTURE_PAGES.olderPost]),
@@ -513,6 +539,73 @@ await test(
       `no broken reference reported in:\n${bad.output.slice(-900)}`,
     )
     check(!bad.files.some((f) => f.includes("fixture-")), "pages were produced")
+  },
+)
+
+await test(
+  "EDIT-016B",
+  "A level-1 heading in an entry's Markdown fails the build, naming the entry (built)",
+  async (check) => {
+    const bad = await buildScenario("bad-body-heading")
+    check(!bad.ok, "the build succeeded")
+    check(
+      bad.output.includes("level-1 heading") && bad.output.includes("heading"),
+      `no clear diagnostic in:\n${bad.output.slice(-900)}`,
+    )
+    check(
+      bad.output.includes("berries/heading"),
+      `the entry is not named in:\n${bad.output.slice(-900)}`,
+    )
+    check(!bad.files.some((f) => f.includes("fixture-heading")), "a page was produced")
+  },
+)
+
+await test(
+  "EDIT-018B",
+  "A related entry that does not exist fails the build, even on a draft (built)",
+  async (check) => {
+    const bad = await buildScenario("bad-related-entry")
+    check(!bad.ok, "the build succeeded")
+    check(
+      bad.output.includes(
+        "relates to greenhouse/fixture-does-not-exist, which does not exist",
+      ),
+      `no broken reference reported in:\n${bad.output.slice(-900)}`,
+    )
+    check(!bad.files.some((f) => f.includes("fixture-")), "pages were produced")
+  },
+)
+
+await test(
+  "EDIT-003B",
+  "Real entries render in their own collection's reading layout (built)",
+  async (check) => {
+    const cases = [
+      [FIXTURE_PAGES.published, "berries", "ed--berries"],
+      [FIXTURE_PAGES.post, "blog", "ed--blog"],
+      [FIXTURE_PAGES.chapter, "kosmos", "ed--kosmos"],
+      [FIXTURE_PAGES.log, "timberLogs", "ed--timber-logs"],
+    ]
+    for (const [path, collection, className] of cases) {
+      const html = await htmlOf(path)
+      check(
+        html.includes(`data-editorial-layout="${collection}"`) &&
+          html.includes(className),
+        `${path} is not drawn with the ${collection} layout`,
+      )
+      check((html.match(/<h1[ >]/g) ?? []).length === 1, `${path} has not one <h1>`)
+      check(
+        !html.includes("data-toc"),
+        `${path} has a table of contents it does not need`,
+      )
+      check(!html.includes("synthetic-sequence"), `${path} carries study content`)
+    }
+    // A draft has no page at all, so none of its text is anywhere (EDIT-006).
+    for (const file of good.files.filter((f) => f.endsWith(".html")))
+      check(
+        !(await good.read(file)).includes("fixture-draft"),
+        `${file} mentions a draft`,
+      )
   },
 )
 

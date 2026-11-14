@@ -1,0 +1,18 @@
+---
+/**
+ * An epigraph the author wrote in the entry's metadata: a quotation with its source, as a
+ * figure. It is semantic only where the author wrote one; nothing is turned into a quotation
+ * for appearance (P12).
+ */
+interface Props {
+  text: string
+  source?: string
+}
+
+const { text, source } = Astro.props
+---
+
+<figure class="ed__epigraph">
+  <blockquote><p>{text}</p></blockquote>
+  {source && <figcaption>{source}</figcaption>}
+</figure>

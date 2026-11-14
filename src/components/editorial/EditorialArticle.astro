@@ -1,0 +1,115 @@
+---
+/**
+ * The shared shell of an editorial article (P12, D-094): one `<article>` with its
+ * header, the Markdown body, an optional table of contents, what follows the body, the way
+ * on and related entries. The eight collection layouts (src/layouts/editorial/) fill its
+ * slots with what is particular to them; nothing here is particular to one collection.
+ *
+ * Landmarks and headings: the page's `<main>` is FolderPage's, so this draws none. The entry's
+ * title is the page's one `<h1>`; the folders are navigation and carry no heading. Section
+ * headings in the Markdown start at `##` (EditorialEntry refuses a `#`).
+ *
+ * Slots: `before` (above the title), `header` (below the description), the default slot (the
+ * rendered Markdown), `after` (below the body, such as references or a chapter list).
+ *
+ * The data-editorial-* attributes say what the page is; the smoke test reads them to accept
+ * only entries that are published or archived.
+ */
+import "../../styles/editorial.css"
+import { collectionById } from "../../editorial/collections.ts"
+import type { CollectionId } from "../../editorial/collections.ts"
+import { PRESENTATIONS } from "../../editorial/reading.ts"
+import type { MetaItem, ReadingContext, TocItem } from "../../editorial/reading.ts"
+import type { CommonData } from "../../editorial/schema.ts"
+import EditorialMetadata from "./EditorialMetadata.astro"
+import EditorialPagination from "./EditorialPagination.astro"
+import EditorialRelated from "./EditorialRelated.astro"
+import EditorialToc from "./EditorialToc.astro"
+
+interface Props {
+  collection: CollectionId
+  data: CommonData
+  context: ReadingContext
+  /** Words after the collection's name in the small line above the title. */
+  overline?: readonly string[]
+  meta?: readonly MetaItem[]
+  /** Show the entry's tags under its title. */
+  tags?: boolean
+  toc?: readonly TocItem[]
+  /** Which part of a collection's structure the entry is (Kosmos: "work" or "chapter"). */
+  part?: string
+  /** Links back besides the collection's own, such as "Return to the work". */
+  returns?: readonly { href: string; label: string }[]
+  /** Draw no pagination at all (a collection whose entries have no sequence still has "back"). */
+  relatedHeading?: string
+}
+
+const {
+  collection,
+  data,
+  context,
+  overline = [],
+  meta = [],
+  tags = false,
+  toc = [],
+  part,
+  returns = [],
+  relatedHeading,
+} = Astro.props
+const definition = collectionById(collection)
+const presentation = PRESENTATIONS[collection]
+---
+
+<article
+  class={`ed ed--${definition.directory}`}
+  data-editorial-collection={collection}
+  data-editorial-layout={presentation.layout}
+  data-editorial-status={data.status}
+  data-editorial-slug={data.slug}
+  data-measure={presentation.measure}
+  data-part={part}
+>
+  <header class="ed__header">
+    <slot name="before" />
+    <p class="ed__overline">
+      <span>{definition.label}</span>
+      {overline.map((word) => <span>{word}</span>)}
+    </p>
+    <h1 class="ed__title">{data.title}</h1>
+    {data.description && <p class="ed__lede">{data.description}</p>}
+    <slot name="header" />
+    <EditorialMetadata items={meta} />
+    {
+      tags && data.tags.length > 0 && (
+        <ul class="ed__tags" aria-label="Tags">
+          {data.tags.map((tag) => (
+            <li>{tag}</li>
+          ))}
+        </ul>
+      )
+    }
+    {
+      data.status === "archived" && (
+        <p class="ed__notice" role="note">
+          Archived: this entry is kept for the record and may be out of date.
+        </p>
+      )
+    }
+    {
+      data.status === "draft" && (
+        <p class="ed__notice" role="note">
+          Draft preview: this entry is not published, and a production build leaves it out.
+        </p>
+      )
+    }
+  </header>
+  <div class="ed__layout" data-has-toc={toc.length > 0 ? "" : undefined}>
+    <EditorialToc items={toc} />
+    <div class="ed__body" data-editorial-body>
+      <slot />
+    </div>
+  </div>
+  <slot name="after" />
+  <EditorialPagination context={context} returns={returns} />
+  <EditorialRelated items={context.related} heading={relatedHeading} />
+</article>

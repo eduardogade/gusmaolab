@@ -1,0 +1,87 @@
+---
+// Temporary P12 design study: the eight editorial collections side by side, drawn with the
+// production components from a SYNTHETIC fixture (src/design/editorial-fixture.ts). Not a
+// page of the website: nothing here is a real entry, and the site's own collections are empty.
+import FolderPage from "../../../layouts/FolderPage.astro"
+import EditorialStudyBanner from "../../../design/EditorialStudyBanner.astro"
+import { COLLECTIONS } from "../../../editorial/collections.ts"
+import { PRESENTATIONS } from "../../../editorial/reading.ts"
+import { SYNTHETIC_ENTRIES, studyPath } from "../../../design/editorial-fixture.ts"
+
+export function getStaticPaths() {
+  return [{ params: { design: "_design" } }]
+}
+
+const rows = COLLECTIONS.map((collection) => ({
+  collection,
+  entries: SYNTHETIC_ENTRIES.filter(
+    (e) => e.collection === collection.id && e.data.status !== "draft",
+  ),
+  measure: PRESENTATIONS[collection.id].measure,
+}))
+---
+
+<FolderPage path="/lecture-notes/" title="Editorial study · GusmaoLab">
+  <EditorialStudyBanner />
+  <div class="gl-prose" data-editorial-study-overview>
+    <h1>Editorial reading experiences</h1>
+    <p>
+      Eight collections, one publishing system. Each has an index and article pages of its own; open
+      them to compare. All content is invented.
+    </p>
+  </div>
+  <ul class="gallery">
+    {
+      rows.map(({ collection, entries, measure }) => (
+        <li class="gallery__item" data-study-collection={collection.id}>
+          <h2>
+            <a href={studyPath(collection.id)}>{collection.label}</a>
+          </h2>
+          <p>{collection.identity}</p>
+          <p class="gallery__meta">Reading measure: {measure}</p>
+          <ul>
+            {entries.map((entry) => (
+              <li>
+                <a href={studyPath(entry.collection, entry.data.slug)}>{entry.data.title}</a>
+              </li>
+            ))}
+          </ul>
+        </li>
+      ))
+    }
+  </ul>
+</FolderPage>
+
+<style>
+  .gallery {
+    display: grid;
+    gap: var(--space-m);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 19rem), 1fr));
+    margin: var(--space-l) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .gallery__item {
+    padding: var(--space-s) var(--space-m);
+    border: var(--border-width-hairline) solid var(--color-surface-card-border);
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface-card);
+  }
+
+  .gallery__item h2 {
+    font-size: var(--font-size-h3);
+  }
+
+  .gallery__item ul {
+    margin: var(--space-2xs) 0 0;
+    padding-inline-start: 1.25em;
+    font-size: var(--font-size-sm);
+  }
+
+  .gallery__meta {
+    color: var(--color-text-muted);
+    font-family: var(--font-label);
+    font-size: var(--font-size-sm);
+  }
+</style>

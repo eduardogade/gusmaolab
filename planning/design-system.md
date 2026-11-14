@@ -610,6 +610,36 @@ A role is a place in the site that may show Bearnard. An illustration is assigne
 - It loads lazily unless `loading="eager"` is passed, for an illustration at the top of a page.
 - No animation, no hover effect, no speech bubbles in CSS: expression comes from approved artwork.
 
+## 12. Editorial reading layouts (P12)
+
+The eight editorial collections read differently without becoming eight sites (D-094). One stylesheet, `src/styles/editorial.css`, serves them all.
+
+### Shared rules
+
+- **Colour and type are not the collection's to choose.** The page's category colours the paper; the section's environment sets the typefaces (Lecture Notes: interface type; Writing: editorial type with italic headings). No collection adds a font, a colour, a texture, a transition or a script.
+- **Reading measure** (tokens in `tokens.css`): technical long-form `72ch`, short notes `64ch`, literary prose `60ch`. The body never exceeds its measure, however wide the folder paper is. Body text is at least 16 px with a line height of 1.45 or more.
+- **Tokens:** `--measure-reading-technical|note|literary`, `--size-reading-aside`, `--space-reading-gap|section|paragraph|paragraph-literary`, `--editorial-section-mark`. Sizes only.
+- **Metadata** is one line of small label type under the title: `Published`, `Updated`, `Level`. A collection shows what it needs and no more.
+- **Responsive:** layout follows the width of the paper (container queries), not the window. Code blocks and tables scroll inside their own box; figures and images fit the column; long words, URLs and inline code wrap. No page scrolls sideways at 320 px.
+- **Restraint:** delicate rules, small uppercase labels, a bookmark, a dotted leader, a three-dot section mark. No heavy texture behind prose, no shadows, no cards for articles.
+
+### The eight
+
+| Collection | Index | Article | Distinct features |
+| --- | --- | --- | --- |
+| Blog | A dated stream, newest first, date before title | Compact header with the kind of post; plain measure | Smaller title; rule under the header |
+| Bearnard's Trail | One path for each series; numbered lessons on a dotted line | Series and lesson number above the title; prerequisites box; previous and next lesson | No progress is stored or implied |
+| The Greenhouse | Roomy rows: summary, date, level, tags | Strong header; contents beside (wide) or above (narrow) the text; references | Sticky contents, only when there are three or more headings |
+| Berries | Small tiles, one link each | Narrow measure on a small sheet; no contents | Minimal metadata |
+| Timber Logs | A logbook: year, then month | The reporting period leads; ruled margin; labelled sections | Looks like a field journal, claims nothing official |
+| Months' Original | Year and month, title, the author's subtitle | Month above the title; epigraph; generous paragraphs; section mark in place of a rule | Italic subtitle |
+| Kosmos Series | A shelf of works; chapters in reading order with leader dots | Chapter header centred, work name, the author's chapter mark, epigraph | Marks and section labels are the author's |
+| Book Club | A panel for each book with a bookmark | Book plate (book, author, session date); spoiler note | Spoilers are a visible note, never hidden |
+
+### Not decided
+
+Syntax colours inside code blocks are Shiki's own (only the block's background is the archive's). Whether to keep them, and how formulas and figures are numbered, belongs to P13.
+
 ## Legacy material
 
 - `docs/design-system.md` is an empty placeholder from the Pelican era.

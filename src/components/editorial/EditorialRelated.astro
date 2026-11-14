@@ -1,0 +1,30 @@
+---
+/**
+ * Entries the author related to this one on purpose (P12, D-095). Only published entries
+ * reach it (reading.ts); with none, nothing is drawn.
+ */
+import type { RelatedLink } from "../../editorial/reading.ts"
+
+interface Props {
+  items: readonly RelatedLink[]
+  heading?: string
+}
+
+const { items, heading = "Related" } = Astro.props
+---
+
+{
+  items.length > 0 && (
+    <aside class="ed__related" aria-labelledby="ed-related-title">
+      <h2 id="ed-related-title">{heading}</h2>
+      <ul>
+        {items.map((item) => (
+          <li>
+            <a href={item.path}>{item.title}</a>{" "}
+            <span class="ed__related-collection">· {item.collection}</span>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  )
+}

@@ -208,6 +208,17 @@ cv/CV-vX.Y.yaml                  explicit versions              cv/manifest.json
 - **P11 is unchanged in kind.** Schemas, registry, selectors, projections and the citation still do the work. P11-A01 extended the schemas so that a record may keep a source's text as written (D-091).
 - **Tests.** `tests/cv.mjs` (CV-001 to CV-020), on a synthetic fixture in `tests/fixtures/cv/`, with one throwaway build.
 
+## Editorial reading layouts (P12)
+
+- **One shell, eight thin layouts (D-094).** `EditorialArticle` draws the article; `src/layouts/editorial/<Name>Layout.astro` supplies what is particular (slots `before`, `header`, body, `after`). `layouts.ts` maps collection to layout once, for the routes and for the study. Index components for each collection are in `src/components/editorial/indexes/`, chosen by `CollectionIndex`.
+- **Reading logic (D-096)** is pure, in `src/editorial/reading.ts`, and runs in Node, so the build and the tests share it. `site.ts` supplies the real entries (`readingContextFor`, `collectionIndexFor`).
+- **Markdown** is rendered by Astro (`render(entry)`); its heading list builds the contents. There is no second parser. A level-1 heading fails the build.
+- **Static rendering:** every page is a static file; the only client script is still the folder previews. Contents, previous and next, spoiler notes and chapter lists are plain HTML.
+- **Folder integration:** the three route files render `EditorialEntry` for an entry and `CollectionOverview` for a folder that owns a collection; `FolderPage` resolves an entry's URL to its owner folder, so an article adds no row of tabs (CONT-012, EDIT-005).
+- **CSS:** `src/styles/editorial.css`, imported by `FolderPage`, so all pages share one stylesheet set; tokens at the end of the space section of `tokens.css`.
+- **Fixtures (D-097):** the synthetic fixture is `src/design/editorial-fixture.ts` and `src/design/editorial/*.md`, imported only by the study pages under `src/pages/[design]/editorial/`. `import.meta.glob` renders the fixture's Markdown with Astro's own pipeline. The study is excluded from nothing today; it lives under `dist/_design/`, which the deployment decision (D-005) may leave out whole.
+- **Layers kept apart:** no editorial file imports `src/cv/` or names a CV file (EDIT-021).
+
 ## Colour architecture (P09-A01)
 
 Colour is the Chromatic Archive: five locked category palettes and four shared colours (D-076; `planning/design-system.md`, section 7).

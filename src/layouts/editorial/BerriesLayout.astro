@@ -1,0 +1,31 @@
+---
+/**
+ * Berries (P12): one small, complete idea. A narrow measure on a small sheet of its own,
+ * the description as a one-sentence framing, minimal metadata, no table of contents, and
+ * a way back to the berries. A berry is short by convention; nothing here limits it.
+ */
+import EditorialArticle from "../../components/editorial/EditorialArticle.astro"
+import { dateMeta } from "../../editorial/reading.ts"
+import type { Heading, ReadingContext } from "../../editorial/reading.ts"
+import type { CollectionId } from "../../editorial/collections.ts"
+import type { CommonData } from "../../editorial/schema.ts"
+
+interface Props {
+  collection: CollectionId
+  data: CommonData
+  context: ReadingContext
+  headings: readonly Heading[]
+}
+
+const { collection, data, context } = Astro.props
+---
+
+<EditorialArticle
+  collection={collection}
+  data={data}
+  context={context}
+  meta={dateMeta(data)}
+  relatedHeading="Read on"
+>
+  <slot />
+</EditorialArticle>

@@ -1,0 +1,44 @@
+---
+/**
+ * The Book Club index (P12): a reading room with a panel for each book, the book most
+ * recently discussed first, its discussions listed by session date. Titles, authors and
+ * dates are the entries' own; no cover is fetched.
+ */
+import { formatWhen } from "../../../editorial/model.ts"
+import type { IndexGroup } from "../../../editorial/reading.ts"
+
+interface Props {
+  groups: readonly IndexGroup[]
+}
+
+const { groups } = Astro.props
+---
+
+<div class="ed-index ed-index--book-club" data-editorial-index="bookClub">
+  {
+    groups.map((group) => (
+      <section class="ed-index__group ed-shelf" id={group.id} aria-labelledby={`${group.id}-heading`}>
+        <h2 class="ed-shelf__title" id={`${group.id}-heading`}>
+          {group.heading}
+        </h2>
+        {group.byline && <p class="ed-shelf__author">by {group.byline}</p>}
+        <ol class="ed-index__list">
+          {group.items.map((item) => (
+            <li>
+              <h3 class="ed-index__title">
+                <a href={item.path}>{item.title}</a>
+              </h3>
+              {item.description && <p class="ed-index__summary">{item.description}</p>}
+              {item.status === "archived" && <p class="ed-index__meta">Archived</p>}
+              <p class="ed-index__meta">
+                {item.details.sessionDate && (
+                  <time datetime={item.details.sessionDate}>{formatWhen(item.details.sessionDate)}</time>
+                )}
+              </p>
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))
+  }
+</div>

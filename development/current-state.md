@@ -1,17 +1,18 @@
 # Current state
 
-Last updated: P11, 2026-11-13. Verified facts only.
+Last updated: P12, 2026-11-14. Verified facts only.
 
 ## Framework
 
 - **Astro 7.4.8**, static output. The repository root is the Astro project.
-- **40 pages:**
+- **70 pages:**
   - **36 folder pages**, one for every registered folder, generated from the navigation registry (P06). Each shows the physical folders with working tab links, folder previews (P07) and **temporary development content only**.
-  - **4 temporary design studies**, not part of the website:
+  - **34 temporary design studies**, not part of the website (four studies of one page each, and the editorial study of 30):
     - the **P03 tokens specimen** at `/_design/tokens/` (`src/pages/[design]/tokens.astro`; it was `/` until P06);
     - the **P05 folder study** at `/_design/folders/` (`src/pages/[design]/folders.astro`);
     - the **P09 Bearnard study** at `/_design/bearnard/` (`src/pages/[design]/bearnard.astro`);
     - the **P11 records study** at `/_design/records/` (`src/pages/[design]/records.astro`): the canonical records, with invented data.
+  - the **P12 editorial study** at `/_design/editorial/` (`src/pages/[design]/editorial/`): 30 pages, an overview and an index and article pages for each of the eight collections, drawn with the production components from a synthetic fixture (D-097). It is the fifth study.
   - The P09 environments study (`/_design/environments-v2/`) was removed in P09-A01 (D-076).
 - **Editorial entries (P10):** none. The eight collections exist and are empty, so every build page is a folder page or a study; an entry would add one page below its owning folder (see "Editorial collections").
 - **Not implemented:** real section content, the homepage composition, Bearnard on any site page (the foundation exists, below) and a designed 404 page.
@@ -241,6 +242,19 @@ Built:
 
 Also fixed: the P10 entry component used an undefined token (`--font-size-lg`), so an entry's description fell back to the inherited size. Found when the editorial components were added to the token check; it now uses `--font-size-lead`.
 
+## Editorial reading layouts (P12)
+
+Each of the eight collections has its own reading layout and index on one shared shell (D-094 to D-097; `planning/design-system.md` section 12, `planning/content-model.md`, `planning/architecture.md`).
+
+- **Real content:** still none. Every collection's folder shows its name, its identity and an empty state. No entry was added.
+- **Code:** `src/editorial/reading.ts` (presentation table, contents, neighbours, related entries, index groups), `src/components/editorial/` (shell, metadata, contents, pagination, related, epigraph, chapter list, overview, eight indexes), `src/layouts/editorial/` (eight layouts and `layouts.ts`), `src/styles/editorial.css`, editorial tokens in `tokens.css`.
+- **Schemas:** six optional fields (D-095); nothing required changed.
+- **Study:** `/_design/editorial/` (overview), `/_design/editorial/<collection directory>/` (index) and `/_design/editorial/<collection directory>/<slug>/` (article), with 21 synthetic entries and 10 synthetic Markdown bodies (`src/design/`). The pages sit in the real folders of each collection (`FolderPage`'s `path`).
+- **Tests:** `tests/editorial-layouts.mjs` (EDIT-001 to EDIT-022 without a browser), `tests/editorial-browser.mjs` (EDIT-012B, EDIT-014, EDIT-015, EDIT-016B, EDIT-017B, EDIT-B01 to EDIT-B03 in headless Chromium), and EDIT-003B, EDIT-016B, EDIT-018B in `tests/editorial-build.mjs`. The older tests were updated for the study's pages and the new index markup.
+- **Verified:** `npm run verify` and `npm run test:browser` pass; the layouts were looked at in the app's browser pane at 1440 and 390 px (all eight articles, six indexes, the contents, the Kosmos chapter on a phone) and the five widths 320, 390, 768, 1280 and 1440 px by script. Not looked at: Safari, Firefox, real devices, screen readers.
+- **Waiting for the owner:** visual approval of the eight layouts (G-P12-13).
+- **Not done, by design:** Quarto, a citation processor, equation numbering and a code-copy button (P13); real entries; Bearnard on article pages; the order of the Kosmos works.
+
 ## The author's CV as the source (P11-A01)
 
 **CV YAML → validated canonical records → pages and document generators** (D-089 to D-093). The owner's versioned CV YAML is the source of truth for the owner's professional history. The integration exists and is tested; **nothing of the CV is published**, and the owner's file is unchanged.
@@ -295,11 +309,11 @@ Built:
 
 `npm run verify` passes:
 
-- `astro check`: 0 errors, 0 warnings, 0 hints across 88 files.
-- Build: 40 pages. `dist/` holds 45 files, 1,176,165 bytes in all: the site's pages and stylesheets (702,682 bytes), the design studies (231,463) and the two Bearnard derivatives (242,020), each under its own ceiling (D-074, KL-30, KL-42, KL-51). No script file: the 37 pages with folders each inline one module (4.1 KB: previews and rows; at Vite's inlining limit, KL-36); the P03 specimen, the Bearnard study and the records study have no script.
+- `astro check`: 0 errors, 0 warnings, 1 hint across 122 files.
+- Build: 70 pages (40 and the 30 of the editorial study). `dist/` holds 76 files, 1,646,743 bytes in all: the site's pages and stylesheets (624,983 bytes), the design studies (779,740) and the two Bearnard derivatives (242,020), each under its own ceiling (D-074, KL-30, KL-42, KL-51). No script file: the 37 pages with folders each inline one module (4.1 KB: previews and rows; at Vite's inlining limit, KL-36); the P03 specimen, the Bearnard study and the records study have no script.
 - Token checks pass (43 primitives, 213 tokens; 5 categories with 5 colour tokens each, 4 environments with 10 typography and texture tokens each). Contrast checks pass: 245 of 245 enforced pairings, 260 in all, across the five categories.
 - Navigation: 23 of 23 model tests pass (NAV-001 to NAV-021, NAV-025, NAV-033), for 11 sections and 36 folders.
-- Smoke test passes. The built pages are exactly the 36 registered destinations and the 4 declared `/_design/` studies, and the only other files are stylesheets and the registered derivatives.
+- Smoke test passes. The built pages are exactly the 36 registered destinations and the declared `/_design/` studies (the four of one page and the editorial study's 30), and the only other files are stylesheets and the registered derivatives.
 - Folders: 10 of 10 tests pass (FOLD-001 to FOLD-010).
 - Routes: 9 of 9 tests pass (NAV-022, NAV-023, NAV-026 to NAV-032). NAV-024 passed in the browser.
 - Previews: 11 of 11 checks pass without a browser (PREV-001 to PREV-007, and the markup of PREV-004, PREV-013, PREV-014 and PREV-015).

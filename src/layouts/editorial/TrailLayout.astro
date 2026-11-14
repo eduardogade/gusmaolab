@@ -1,0 +1,60 @@
+---
+/**
+ * Bearnard's Trail (P12): a path through a subject. When a lesson belongs to a series the
+ * header says which, and which lesson it is (the author's own number); "of N" appears only
+ * when the published lessons are numbered 1 to N without a gap, so a path is never
+ * overstated. The way on is the previous and the next lesson by position, and a way back
+ * to the sequence in the collection's index. Prerequisites are the author's, as written.
+ * No progress is stored or implied.
+ */
+import EditorialArticle from "../../components/editorial/EditorialArticle.astro"
+import { dateMeta } from "../../editorial/reading.ts"
+import type { Heading, ReadingContext } from "../../editorial/reading.ts"
+import type { CollectionId } from "../../editorial/collections.ts"
+import type { CommonData } from "../../editorial/schema.ts"
+
+interface Props {
+  collection: CollectionId
+  data: CommonData
+  context: ReadingContext
+  headings: readonly Heading[]
+}
+
+const { collection, data, context } = Astro.props
+const sequence = context.sequence
+const lesson =
+  sequence?.number === undefined
+    ? undefined
+    : `Lesson ${sequence.number}${sequence.count > 1 && sequence.complete ? ` of ${sequence.count}` : ""}`
+const prerequisites = (data.prerequisites as string[] | undefined) ?? []
+---
+
+<EditorialArticle
+  collection={collection}
+  data={data}
+  context={context}
+  meta={dateMeta(data)}
+  returns={sequence ? [{ href: sequence.overviewPath, label: "Back to the sequence" }] : []}
+>
+  {
+    sequence && (
+      <div class="ed__sequence" slot="before">
+        <span class="ed__sequence-name">{sequence.title ?? sequence.id}</span>
+        {lesson && <span>{lesson}</span>}
+      </div>
+    )
+  }
+  {
+    prerequisites.length > 0 && (
+      <aside class="ed__prerequisites" slot="header" aria-labelledby="ed-prerequisites">
+        <h2 id="ed-prerequisites">Before you start</h2>
+        <ul>
+          {prerequisites.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      </aside>
+    )
+  }
+  <slot />
+</EditorialArticle>

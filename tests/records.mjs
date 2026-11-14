@@ -18,6 +18,7 @@ import {
 import { COLLECTION_IDS } from "../src/editorial/collections.ts"
 import { entriesAbout, recordReferenceIssues } from "../src/editorial/model.ts"
 import { schemaFor } from "../src/editorial/schema.ts"
+import { studyPaths } from "../src/design/editorial-fixture.ts"
 import { siteNavigation } from "../src/navigation/index.ts"
 import {
   compareDates,
@@ -1558,7 +1559,8 @@ await test("REC-022", "A record creates no page", async (check) => {
   const pages = (await listFiles(dist))
     .map((f) => relative(dist, f))
     .filter((f) => f.endsWith(".html"))
-  const expected = siteNavigation.pagePaths().length + 4
+  // The pages of the site, the four studies of P03 to P11 and the editorial study (P12).
+  const expected = siteNavigation.pagePaths().length + 4 + studyPaths().length
   check(
     pages.length === expected,
     `${pages.length} pages are built, expected ${expected}`,
@@ -1779,6 +1781,8 @@ await test("REC-025", "Hidden and synthetic records are not emitted", async (che
     for (const marker of WITHHELD)
       check(!html.includes(marker), `${name} shows "${marker}"`)
     if (page === study) continue
+    // The editorial study's own fixture is synthetic too, and has nothing to do with records.
+    if (name.startsWith("_design/editorial/")) continue
     check(
       !/-synthetic-|Synthetic (Lead|Collaborator|Atlas|Toolkit|University|Institute)|Journal of Synthetic Results/.test(
         html,

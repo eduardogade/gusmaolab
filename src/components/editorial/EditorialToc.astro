@@ -1,0 +1,32 @@
+---
+/**
+ * An article's table of contents (P12): a navigation landmark over the headings Astro found
+ * in the article's own Markdown, never over a second parse of it. The caller passes
+ * `tableOfContents(headings)`, which leaves out the title, the deep headings and any list
+ * too short to be worth reading; an empty list draws nothing.
+ */
+import type { TocItem } from "../../editorial/reading.ts"
+
+interface Props {
+  items: readonly TocItem[]
+}
+
+const { items } = Astro.props
+---
+
+{
+  items.length > 0 && (
+    <nav class="ed__toc" aria-labelledby="ed-toc-title" data-toc>
+      <p class="ed__toc-title" id="ed-toc-title">
+        On this page
+      </p>
+      <ol>
+        {items.map((item) => (
+          <li data-depth={item.depth}>
+            <a href={`#${item.slug}`}>{item.text}</a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}

@@ -894,6 +894,18 @@ Not done, by design: no Astro installation, no dependencies, no masters copied (
 
 The pre-commit hooks also run when the records commit is made.
 
+## P12 and P12-A01 — Editorial reading layouts (2026-11-14)
+
+P12 was interrupted by a usage limit with the shell, the logic, the layouts and the styles written and checked (`astro check`, build) but no study, tests, browser check, records or commit. P12-A01 resumed from the uncommitted tree.
+
+- **Recovered:** schemas (six optional fields), `reading.ts`, the shell, the eight layouts, the eight indexes, the overview, `editorial.css`, tokens, `FolderPage`'s `path`, the three route files. All present and connected; `astro check` 0 errors on resume.
+- **Added:** `layouts.ts` (one map, so the study and the routes cannot differ), the synthetic fixture and ten Markdown bodies, `EditorialStudyBanner`, the three study route files, "Archived" marks in every index, centred chapter header lines, the study's pages in the smoke, route, build, records and CV tests (`studyPaths()`), a 1,000,000-byte ceiling for studies in the smoke test (was 600,000), `editorial.css` imported by `FolderPage` (RESP-013 compares stylesheet sets).
+- **Test changes:** the P10 index assertions read the new markup (`ed-index…`); the "pages built" counts exclude the study where they meant the site's 40 pages (CV-015, CV-017); REC-025 skips the study's own fixture; CONT-012 ignores the article's own `<nav>`s; CONT-014 reads the index's links by prefix; REC-022 adds the study's pages.
+- **Defects found by running it:** the Back button skipped entries made by a script click (Chrome's history intervention), so EDIT-017B uses real pointer clicks; the last contents heading cannot reach the top of the page (EDIT-012B only asks that it be visible); the Kosmos chapter's overline and metadata were not centred.
+- **Looked at in the browser pane:** the study overview, Blog, Trail, Berries, Timber Logs, Months' Original, Kosmos and Book Club pages at 1440 px, the Greenhouse with contents at 1440 px, and the Kosmos chapter and Greenhouse code at 390 px.
+- **Checks:** `npm run verify`, `npm run test:browser`, `git diff --check`: pass (see the completion report in the conversation for the counts).
+- **Not touched:** `cv/`, the palettes, the registry, the folders, Bearnard, the deployment files. Nothing pushed.
+
 ## Bearnard WhatsApp preparation — Prompt 1/3 (2026-11-10)
 
 Local derivatives are complete in `brand/bearnard/expressions2/_all/`: 204 static transparent 512 × 512 WebPs, each ≤100,000 bytes (79,210–99,996 bytes; total 18,872,908 bytes). All exports pass decode, static-frame, dimensions, alpha, margin and size checks. All 210 protected source/reference/prompt files retain their hashes. Nine existing side-edge contacts are documented and preserved. Every sticker received overview QA; 18 representative/edge cases received larger previews. Ready for emotional categorization; no packs or app were created. Script, manifest, preparation report and QA previews are local ignored assets.

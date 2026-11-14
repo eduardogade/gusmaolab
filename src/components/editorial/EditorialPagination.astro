@@ -1,0 +1,49 @@
+---
+/**
+ * The way on from an article (P12): the entry before and after it, by the collection's own
+ * order (reading.ts), and the way back. Plain links inside the page body: they are editorial
+ * navigation and add no folder tab. Only published entries are ever passed in.
+ */
+import type { ReadingContext } from "../../editorial/reading.ts"
+
+interface Props {
+  context: ReadingContext
+  /** Links back, such as "Return to the work"; the collection's own link comes last. */
+  returns?: readonly { href: string; label: string }[]
+}
+
+const { context, returns = [] } = Astro.props
+const back = [
+  ...returns,
+  { href: context.collectionPath, label: `All of ${context.collectionLabel}` },
+]
+---
+
+<nav class="ed__pagination" aria-label={`More in ${context.collectionLabel}`}>
+  {
+    context.previous && (
+      <a class="ed__step ed__step--previous" href={context.previous.path} rel="prev">
+        <span class="ed__step-label">{context.previousLabel}</span>
+        <span class="ed__step-title">{context.previous.title}</span>
+      </a>
+    )
+  }
+  {
+    context.next && (
+      <a class="ed__step ed__step--next" href={context.next.path} rel="next">
+        <span class="ed__step-label">{context.nextLabel}</span>
+        <span class="ed__step-title">{context.next.title}</span>
+      </a>
+    )
+  }
+  <p class="ed__return">
+    {
+      back.map((link, index) => (
+        <>
+          {index > 0 && " · "}
+          <a href={link.href}>{link.label}</a>
+        </>
+      ))
+    }
+  </p>
+</nav>

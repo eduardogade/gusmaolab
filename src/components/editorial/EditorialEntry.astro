@@ -1,22 +1,23 @@
 ---
 /**
- * One editorial entry on its owning folder's paper (P10, D-080): title, description,
- * dates, and the Markdown body rendered by Astro. The minimum a Markdown entry needs to
- * read well; each collection's own reading layout belongs to P12.
+ * One editorial entry (P12): renders its Markdown with Astro, finds what surrounds it (the
+ * entries before and after it, its sequence, the entries the author related to it) and hands
+ * both to the collection's own reading layout. The layout is picked by one explicit map
+ * (src/layouts/editorial/layouts.ts), which tests/editorial-layouts.mjs checks against the
+ * presentation table (src/editorial/reading.ts).
  *
- * The page's folders come from FolderPage, which resolves the entry's URL to its owner,
- * so this component draws no folders, tabs or colours of its own: it uses the global
- * typography and the category's reading paper.
+ * The page's folders come from FolderPage, which resolves the entry's URL to its owner, so
+ * this component draws no folders, tabs or colours of its own.
  *
- * The data-editorial-* attributes say what the page is. The smoke test reads them to
- * accept only entries that are published or archived.
+ * A level-1 heading in the Markdown would be a second `<h1>`, since the title is the first:
+ * it fails the build, naming the entry.
  */
 import { render } from "astro:content"
 import type { CollectionEntry, CollectionKey } from "astro:content"
-import { collectionById } from "../../editorial/collections.ts"
 import type { CollectionId } from "../../editorial/collections.ts"
-import { formatWhen } from "../../editorial/model.ts"
 import type { CommonData } from "../../editorial/schema.ts"
+import { readingContextFor } from "../../editorial/site.ts"
+import { EDITORIAL_LAYOUTS } from "../../layouts/editorial/layouts.ts"
 
 interface Props {
   collection: CollectionId
@@ -25,119 +26,16 @@ interface Props {
 
 const { collection, entry } = Astro.props
 const data = entry.data as CommonData
-const { Content } = await render(entry)
-const period = typeof data.period === "string" ? data.period : undefined
+const { Content, headings } = await render(entry)
+if (headings.some((heading) => heading.depth === 1)) {
+  throw new Error(
+    `${collection}/${entry.id}: the Markdown has a level-1 heading; the title is the page's <h1>, so sections start at ##`,
+  )
+}
+const context = await readingContextFor(collection, entry.id)
+const Layout = EDITORIAL_LAYOUTS[collection]
 ---
 
-<article
-  class="gl-prose gl-article"
-  data-editorial-collection={collection}
-  data-editorial-status={data.status}
-  data-editorial-slug={data.slug}
->
-  <header class="gl-article__header">
-    <p class="gl-article__overline">{collectionById(collection).label}</p>
-    <h1>{data.title}</h1>
-    {data.description && <p class="gl-article__description">{data.description}</p>}
-    <p class="gl-article__meta">
-      {period && <span>{formatWhen(period)}</span>}
-      {
-        data.publishedAt && (
-          <span>
-            Published <time datetime={data.publishedAt}>{formatWhen(data.publishedAt)}</time>
-          </span>
-        )
-      }
-      {
-        data.updatedAt && (
-          <span>
-            Updated <time datetime={data.updatedAt}>{formatWhen(data.updatedAt)}</time>
-          </span>
-        )
-      }
-    </p>
-    {
-      data.status === "archived" && (
-        <p class="gl-article__notice" role="note">
-          Archived: this entry is kept for the record and may be out of date.
-        </p>
-      )
-    }
-    {
-      data.status === "draft" && (
-        <p class="gl-article__notice" role="note">
-          Draft preview: this entry is not published, and a production build leaves it out.
-        </p>
-      )
-    }
-  </header>
-  <div class="gl-article__body">
-    <Content />
-  </div>
-</article>
-
-<style>
-  .gl-article__overline,
-  .gl-article__meta,
-  .gl-article__notice {
-    color: var(--color-text-muted);
-    font-family: var(--font-label);
-    font-size: var(--font-size-sm);
-  }
-
-  .gl-article__overline {
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    letter-spacing: var(--letter-spacing-label);
-    text-transform: uppercase;
-  }
-
-  .gl-article__description {
-    font-size: var(--font-size-lead);
-    color: var(--color-text-secondary);
-  }
-
-  .gl-article__meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2xs) var(--space-s);
-  }
-
-  .gl-article__notice {
-    padding: var(--space-xs) var(--space-s);
-    border-inline-start: var(--border-width-thick) solid var(--color-quote-rule);
-    background-color: var(--color-surface-callout);
-    color: var(--color-text-primary);
-  }
-
-  .gl-article__header > * + * {
-    margin-block-start: var(--space-xs);
-  }
-
-  /* Rendered Markdown carries no classes, so its elements are styled from here. */
-  .gl-article__body :global(h2),
-  .gl-article__body :global(h3),
-  .gl-article__body :global(h4) {
-    margin-block-start: 1.5em;
-  }
-
-  .gl-article__body :global(img) {
-    block-size: auto;
-    max-inline-size: 100%;
-  }
-
-  .gl-article__body :global(pre),
-  .gl-article__body :global(table) {
-    max-inline-size: 100%;
-    overflow-x: auto;
-  }
-
-  .gl-article__body :global(table) {
-    display: block;
-  }
-
-  .gl-article__body :global(ul),
-  .gl-article__body :global(ol) {
-    padding-inline-start: 1.5em;
-  }
-</style>
+<Layout collection={collection} data={data} context={context} headings={headings}>
+  <Content />
+</Layout>

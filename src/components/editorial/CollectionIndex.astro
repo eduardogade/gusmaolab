@@ -1,67 +1,42 @@
 ---
 /**
- * The list of a collection's published and archived entries, on the collection folder's
- * own page (P10, D-081). A foundation, not the final index: it lists title, date and
- * description with a link, in the collection's own order, and says so plainly when there
- * is nothing yet. Drafts never reach it.
+ * The index of a collection's published and archived entries (P12, D-094): the collection's
+ * own presentation of its entries, in its own order, or a plain statement that there are none
+ * yet. Drafts never reach it. Each collection's index is a component of its own
+ * (src/components/editorial/indexes/), chosen by one explicit map, and shares the shell's
+ * stylesheet.
  */
-import { formatWhen } from "../../editorial/model.ts"
+import "../../styles/editorial.css"
+import type { CollectionId } from "../../editorial/collections.ts"
 import type { IndexItem } from "../../editorial/model.ts"
+import { groupIndex, PRESENTATIONS } from "../../editorial/reading.ts"
+import EditorialEmptyState from "./EditorialEmptyState.astro"
+import BerriesIndex from "./indexes/BerriesIndex.astro"
+import BlogIndex from "./indexes/BlogIndex.astro"
+import BookClubIndex from "./indexes/BookClubIndex.astro"
+import GreenhouseIndex from "./indexes/GreenhouseIndex.astro"
+import KosmosIndex from "./indexes/KosmosIndex.astro"
+import MonthsOriginalIndex from "./indexes/MonthsOriginalIndex.astro"
+import TimberLogsIndex from "./indexes/TimberLogsIndex.astro"
+import TrailIndex from "./indexes/TrailIndex.astro"
 
 interface Props {
-  label: string
+  collection: CollectionId
   items: readonly IndexItem[]
 }
 
-const { label, items } = Astro.props
+const { collection, items } = Astro.props
+const groups = groupIndex(collection, items)
 ---
 
-<section class="gl-index" data-editorial-index={label}>
-  <h2>Entries</h2>
-  {
-    items.length === 0 ? (
-      <p class="gl-index__empty">This collection has no published entries yet.</p>
-    ) : (
-      <ul class="gl-index__list">
-        {items.map((item) => (
-          <li>
-            <a href={item.path}>{item.title}</a>
-            {item.when && (
-              <span class="gl-index__meta">
-                {" "}
-                · <time datetime={item.when}>{formatWhen(item.when)}</time>
-              </span>
-            )}
-            {item.status === "archived" && <span class="gl-index__meta"> · archived</span>}
-            {item.description && <p class="gl-index__description">{item.description}</p>}
-          </li>
-        ))}
-      </ul>
-    )
-  }
-</section>
-
-<style>
-  .gl-index {
-    margin-block-start: var(--space-l);
-  }
-
-  .gl-index__list {
-    padding-inline-start: 0;
-    list-style: none;
-  }
-
-  .gl-index__list > li + li {
-    margin-block-start: var(--space-s);
-  }
-
-  .gl-index__meta,
-  .gl-index__empty {
-    color: var(--color-text-muted);
-  }
-
-  .gl-index__description {
-    margin-block-start: var(--space-3xs);
-    color: var(--color-text-secondary);
-  }
-</style>
+<div data-editorial-index-collection={collection}>
+  {items.length === 0 && <EditorialEmptyState text={PRESENTATIONS[collection].emptyText} />}
+  {items.length > 0 && collection === "blog" && <BlogIndex items={items} />}
+  {items.length > 0 && collection === "trail" && <TrailIndex groups={groups} />}
+  {items.length > 0 && collection === "greenhouse" && <GreenhouseIndex items={items} />}
+  {items.length > 0 && collection === "berries" && <BerriesIndex items={items} />}
+  {items.length > 0 && collection === "timberLogs" && <TimberLogsIndex groups={groups} />}
+  {items.length > 0 && collection === "monthsOriginal" && <MonthsOriginalIndex groups={groups} />}
+  {items.length > 0 && collection === "kosmos" && <KosmosIndex groups={groups} />}
+  {items.length > 0 && collection === "bookClub" && <BookClubIndex groups={groups} />}
+</div>

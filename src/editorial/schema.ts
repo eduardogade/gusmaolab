@@ -76,6 +76,19 @@ const text = z.string().trim().min(1)
 const positiveInteger = z.number().int().positive()
 const period = z.string().regex(PERIOD_PATTERN, "write a period as YYYY-MM")
 
+/**
+ * A reference to another entry (P12, D-095): `<collection directory>/<slug>`, such as
+ * `greenhouse/reading-a-vcf`. The build checks that the entry exists (model.ts).
+ */
+export const ENTRY_REFERENCE_PATTERN =
+  /^[a-z0-9]+(?:-[a-z0-9]+)*\/[a-z0-9]+(?:-[a-z0-9]+)*$/
+const entryReference = z
+  .string()
+  .regex(
+    ENTRY_REFERENCE_PATTERN,
+    "not an entry reference: write <collection directory>/<slug>, such as greenhouse/my-tutorial",
+  )
+
 /** Fields every collection has. */
 const common = {
   title: text,
@@ -95,6 +108,11 @@ const common = {
       z.string().regex(RECORD_ID_PATTERN, "not a record ID, such as project-example"),
     )
     .default([]),
+  /**
+   * Entries the author relates to this one on purpose (P12, D-095): a Berry to its
+   * Greenhouse tutorial, a lesson to its prerequisite. Never derived from shared tags.
+   */
+  related: z.array(entryReference).default([]),
 }
 
 /** What each collection adds (D-079). Berries add nothing: the shared tags are enough. */
@@ -106,6 +124,8 @@ const extensions = {
   },
   trail: {
     seriesId: slug.optional(),
+    /** The sequence's name, shown with its lessons (P12). Without it the page shows the seriesId. */
+    seriesTitle: text.optional(),
     position: positiveInteger.optional(),
     prerequisites: z.array(text).default([]),
   },
@@ -116,16 +136,29 @@ const extensions = {
   },
   berries: {},
   timberLogs: { period },
-  monthsOriginal: { period },
+  monthsOriginal: {
+    period,
+    epigraph: text.optional(),
+    epigraphSource: text.optional(),
+  },
   kosmos: {
     workId: slug,
     chapterNumber: positiveInteger.optional(),
+    /**
+     * How the author labels this chapter: "IV", "§", "Interlude". Shown as written, in place of
+     * "Chapter <number>" (P12). Never derived from `chapterNumber`.
+     */
+    chapterLabel: text.optional(),
     position: positiveInteger.optional(),
+    epigraph: text.optional(),
+    epigraphSource: text.optional(),
   },
   bookClub: {
     bookTitle: text,
     bookAuthor: text.optional(),
     sessionDate: calendarDate.optional(),
+    /** True when the discussion gives away the book's plot: the page then says so (P12). */
+    spoilers: z.boolean().default(false),
   },
 } satisfies Record<CollectionId, z.ZodRawShape>
 
@@ -139,6 +172,8 @@ export interface CommonData {
   slug: string
   tags: string[]
   relatedRecords: string[]
+  /** Entry references (P12); absent in older plain records, treated as none. */
+  related?: string[]
   [extension: string]: unknown
 }
 
@@ -171,6 +206,9 @@ export function schemaFor(collection: CollectionId) {
       const related = data.relatedRecords as string[]
       if (new Set(related).size !== related.length)
         issue("relatedRecords", "a record is listed twice")
+      const entries = data.related as string[]
+      if (new Set(entries).size !== entries.length)
+        issue("related", "an entry is listed twice")
       if (
         collection === "trail" &&
         data.position !== undefined &&
@@ -183,5 +221,17 @@ export function schemaFor(collection: CollectionId) {
         data.workId === undefined
       )
         issue("chapterNumber", "a chapter belongs to a work: add workId")
+      if (
+        (collection === "kosmos" || collection === "monthsOriginal") &&
+        data.epigraphSource !== undefined &&
+        data.epigraph === undefined
+      )
+        issue("epigraphSource", "a source belongs to an epigraph: add epigraph")
+      if (
+        collection === "trail" &&
+        data.seriesTitle !== undefined &&
+        data.seriesId === undefined
+      )
+        issue("seriesTitle", "a series title belongs to a series: add seriesId")
     })
 }

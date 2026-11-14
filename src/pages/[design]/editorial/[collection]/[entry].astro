@@ -1,0 +1,46 @@
+---
+// Temporary P12 design study: one SYNTHETIC entry, drawn with the production reading layout
+// of its collection, from a real Markdown file rendered by Astro, inside the folder the
+// collection really lives in.
+import FolderPage from "../../../../layouts/FolderPage.astro"
+import EditorialStudyBanner from "../../../../design/EditorialStudyBanner.astro"
+import { EDITORIAL_LAYOUTS } from "../../../../layouts/editorial/layouts.ts"
+import { collectionById, collectionPrefix } from "../../../../editorial/collections.ts"
+import { readingContext } from "../../../../editorial/reading.ts"
+import {
+  SYNTHETIC_ENTRIES,
+  rebaseContext,
+} from "../../../../design/editorial-fixture.ts"
+
+export function getStaticPaths() {
+  return SYNTHETIC_ENTRIES.filter((e) => e.data.status !== "draft").map((e) => ({
+    params: {
+      design: "_design",
+      collection: collectionById(e.collection).directory,
+      entry: e.data.slug,
+    },
+    props: { slug: e.data.slug, collection: e.collection },
+  }))
+}
+
+type Body = { Content: any; getHeadings: () => { depth: number; slug: string; text: string }[] }
+const bodies = import.meta.glob<Body>("../../../../design/editorial/*.md", { eager: true })
+
+const { slug, collection } = Astro.props
+const record = SYNTHETIC_ENTRIES.find((e) => e.collection === collection && e.data.slug === slug)!
+const body = bodies[`../../../../design/editorial/${record.body}.md`]!
+const headings = body.getHeadings()
+if (headings.some((h) => h.depth === 1)) throw new Error(`${slug}: a level-1 heading in the body`)
+const context = rebaseContext(readingContext(record, SYNTHETIC_ENTRIES))
+const Layout = EDITORIAL_LAYOUTS[collection]
+---
+
+<FolderPage
+  path={collectionPrefix(collectionById(collection))}
+  title={`${record.data.title} (study) · GusmaoLab`}
+>
+  <EditorialStudyBanner />
+  <Layout collection={collection} data={record.data} context={context} headings={headings}>
+    <body.Content />
+  </Layout>
+</FolderPage>

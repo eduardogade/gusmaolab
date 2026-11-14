@@ -1,0 +1,58 @@
+---
+/**
+ * Book Club (P12): the reading room. A book plate heads each discussion: the book, its
+ * author and the session date, only as far as the entry states them. A discussion that
+ * gives away the plot says so in a visible note, before the text; there is no hidden
+ * content and no script. Other discussions of the same book are the way on.
+ */
+import EditorialArticle from "../../components/editorial/EditorialArticle.astro"
+import { dateMeta, type MetaItem } from "../../editorial/reading.ts"
+import { formatWhen } from "../../editorial/model.ts"
+import type { Heading, ReadingContext } from "../../editorial/reading.ts"
+import type { CollectionId } from "../../editorial/collections.ts"
+import type { CommonData } from "../../editorial/schema.ts"
+
+interface Props {
+  collection: CollectionId
+  data: CommonData
+  context: ReadingContext
+  headings: readonly Heading[]
+}
+
+const { collection, data, context } = Astro.props
+const book = typeof data.bookTitle === "string" ? data.bookTitle : undefined
+const author = typeof data.bookAuthor === "string" ? data.bookAuthor : undefined
+const session = typeof data.sessionDate === "string" ? data.sessionDate : undefined
+const spoilers = data.spoilers === true
+const meta: MetaItem[] = dateMeta(data, { updated: false })
+---
+
+<EditorialArticle collection={collection} data={data} context={context} meta={meta}>
+  <Fragment slot="header">
+    {
+      book && (
+        <div class="ed__plate">
+          <p class="ed__plate-title">
+            <cite>{book}</cite>
+          </p>
+          {author && <p>by {author}</p>}
+          {
+            session && (
+              <p>
+                Discussed on <time datetime={session}>{formatWhen(session)}</time>
+              </p>
+            )
+          }
+        </div>
+      )
+    }
+    {
+      spoilers && (
+        <p class="ed__notice" role="note" data-spoilers>
+          <strong>Spoilers.</strong> This discussion gives away parts of the book's plot.
+        </p>
+      )
+    }
+  </Fragment>
+  <slot />
+</EditorialArticle>

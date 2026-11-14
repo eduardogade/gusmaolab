@@ -1,0 +1,45 @@
+---
+/**
+ * The Blog's index (P12): a plain chronological stream, newest first, date before title.
+ * No cards: it has to scan quickly.
+ */
+import { formatWhen } from "../../../editorial/model.ts"
+import type { IndexItem } from "../../../editorial/model.ts"
+
+interface Props {
+  items: readonly IndexItem[]
+}
+
+const { items } = Astro.props
+const KINDS: Record<string, string> = {
+  announcement: "Announcement",
+  update: "Update",
+  news: "News",
+  microblog: "Note",
+}
+---
+
+<section class="ed-index ed-index--blog" aria-labelledby="ed-index-label" data-editorial-index="blog">
+  <h2 class="ed-index__label" id="ed-index-label">Posts · newest first</h2>
+  <ol class="ed-index__list">
+    {
+      items.map((item) => (
+        <li>
+          <span class="ed-index__when">
+            {item.when && <time datetime={item.when}>{formatWhen(item.when)}</time>}
+            {item.status === "archived" && " · archived"}
+          </span>
+          <div>
+            <h3 class="ed-index__title">
+              <a href={item.path}>{item.title}</a>
+            </h3>
+            {item.description && <p class="ed-index__summary">{item.description}</p>}
+            {item.details.kind && item.details.kind !== "post" && (
+              <p class="ed-index__meta">{KINDS[item.details.kind]}</p>
+            )}
+          </div>
+        </li>
+      ))
+    }
+  </ol>
+</section>

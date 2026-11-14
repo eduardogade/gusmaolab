@@ -1,0 +1,70 @@
+---
+/**
+ * The Greenhouse (P12): serious technical long-form. A strong header (summary, level,
+ * prerequisites, dates, tags), a table of contents drawn from the article's own headings
+ * (beside the text on a wide paper, above it on a narrow one, and absent from an article
+ * too short to need one), long code and wide tables that scroll inside their boxes, and a
+ * reserved list of references at the end. The references are the author's own text; there
+ * is no citation processor (P13 builds on this).
+ */
+import EditorialArticle from "../../components/editorial/EditorialArticle.astro"
+import { dateMeta, tableOfContents } from "../../editorial/reading.ts"
+import type { Heading, MetaItem, ReadingContext } from "../../editorial/reading.ts"
+import type { CollectionId } from "../../editorial/collections.ts"
+import type { CommonData } from "../../editorial/schema.ts"
+
+interface Props {
+  collection: CollectionId
+  data: CommonData
+  context: ReadingContext
+  headings: readonly Heading[]
+}
+
+const { collection, data, context, headings } = Astro.props
+const references = (data.references as string[] | undefined) ?? []
+const prerequisites = (data.prerequisites as string[] | undefined) ?? []
+const level = typeof data.difficulty === "string" ? data.difficulty : undefined
+const meta: MetaItem[] = [
+  ...dateMeta(data),
+  ...(level ? [{ label: "Level", value: level }] : []),
+]
+const toc = tableOfContents(
+  headings,
+  references.length > 0 ? [{ depth: 2, slug: "references", text: "References" }] : [],
+)
+---
+
+<EditorialArticle
+  collection={collection}
+  data={data}
+  context={context}
+  meta={meta}
+  tags
+  toc={toc}
+>
+  {
+    prerequisites.length > 0 && (
+      <aside class="ed__prerequisites" slot="header" aria-labelledby="ed-prerequisites">
+        <h2 id="ed-prerequisites">Prerequisites</h2>
+        <ul>
+          {prerequisites.map((item) => (
+            <li>{item}</li>
+          ))}
+        </ul>
+      </aside>
+    )
+  }
+  <slot />
+  {
+    references.length > 0 && (
+      <section class="ed__references" slot="after" aria-labelledby="references">
+        <h2 id="references">References</h2>
+        <ol>
+          {references.map((reference) => (
+            <li>{reference}</li>
+          ))}
+        </ol>
+      </section>
+    )
+  }
+</EditorialArticle>

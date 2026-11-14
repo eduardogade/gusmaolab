@@ -1,0 +1,37 @@
+---
+/**
+ * The Greenhouse index (P12): longer technical articles in roomy rows: title, summary,
+ * date, the level and prerequisites where the author stated them, topic tags. A level is
+ * never assumed.
+ */
+import { formatWhen } from "../../../editorial/model.ts"
+import type { IndexItem } from "../../../editorial/model.ts"
+
+interface Props {
+  items: readonly IndexItem[]
+}
+
+const { items } = Astro.props
+---
+
+<section class="ed-index ed-index--greenhouse" aria-labelledby="ed-index-label" data-editorial-index="greenhouse">
+  <h2 class="ed-index__label" id="ed-index-label">Articles · newest first</h2>
+  <ol class="ed-index__list">
+    {
+      items.map((item) => (
+        <li>
+          <h3 class="ed-index__title">
+            <a href={item.path}>{item.title}</a>
+          </h3>
+          {item.description && <p class="ed-index__summary">{item.description}</p>}
+          <p class="ed-index__meta">
+            {item.when && <time datetime={item.when}>{formatWhen(item.when)}</time>}
+            {item.details.difficulty && <span>Level: {item.details.difficulty}</span>}
+            {item.details.tags.length > 0 && <span>{item.details.tags.join(" · ")}</span>}
+            {item.status === "archived" && <span>Archived</span>}
+          </p>
+        </li>
+      ))
+    }
+  </ol>
+</section>

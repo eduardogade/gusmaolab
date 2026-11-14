@@ -1,0 +1,41 @@
+---
+/**
+ * The Months' Original index (P12): an unhurried literary archive by year and month,
+ * newest first. The title, and the subtitle as the author wrote it; nothing is excerpted
+ * automatically.
+ */
+import { monthName } from "../../../editorial/reading.ts"
+import type { IndexGroup } from "../../../editorial/reading.ts"
+
+interface Props {
+  groups: readonly IndexGroup[]
+}
+
+const { groups } = Astro.props
+---
+
+<div class="ed-index ed-index--months-original" data-editorial-index="monthsOriginal">
+  {
+    groups.map((group) => (
+      <section class="ed-index__group" id={group.id} aria-labelledby={`${group.id}-heading`}>
+        <h2 class="ed-index__group-heading" id={`${group.id}-heading`}>
+          {group.heading}
+        </h2>
+        <ol class="ed-index__list">
+          {group.items.map((item) => (
+            <li>
+              <p class="ed-index__month">
+                {item.when && <time datetime={item.when}>{monthName(item.when)}</time>}
+              </p>
+              <h3 class="ed-index__title">
+                <a href={item.path}>{item.title}</a>
+              </h3>
+              {item.description && <p class="ed-index__summary">{item.description}</p>}
+              {item.status === "archived" && <p class="ed-index__meta">Archived</p>}
+            </li>
+          ))}
+        </ol>
+      </section>
+    ))
+  }
+</div>

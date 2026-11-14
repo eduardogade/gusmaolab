@@ -1,0 +1,30 @@
+---
+/**
+ * A work's chapters in reading order, each with the author's own mark ("IV", "3", "§") and
+ * a dotted leader to its title (P12). Used on a work's page and in the Kosmos index. A mark
+ * is shown as written and never rewritten into Arabic numerals.
+ */
+import type { ReadingLink } from "../../editorial/reading.ts"
+
+interface Props {
+  chapters: readonly ReadingLink[]
+  label: string
+}
+
+const { chapters, label } = Astro.props
+---
+
+<ol class="ed-chapters" aria-label={label}>
+  {
+    chapters.map((chapter) => (
+      <li>
+        <a class="ed-chapters__row" href={chapter.path}>
+          {chapter.mark && <span class="ed-chapters__label">{chapter.mark}</span>}
+          <span class="ed-chapters__title">{chapter.title}</span>
+          {chapter.archived && <span class="ed-index__meta">Archived</span>}
+          <span class="ed-chapters__fill" aria-hidden="true" />
+        </a>
+      </li>
+    ))
+  }
+</ol>

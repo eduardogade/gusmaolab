@@ -1,0 +1,33 @@
+---
+/**
+ * The Berries index (P12): small tiles, one idea each, on the folder's own paper: a title,
+ * the one-sentence framing and the tags. Each tile is one link.
+ */
+import type { IndexItem } from "../../../editorial/model.ts"
+
+interface Props {
+  items: readonly IndexItem[]
+}
+
+const { items } = Astro.props
+---
+
+<section class="ed-index ed-index--berries" aria-labelledby="ed-index-label" data-editorial-index="berries">
+  <h2 class="ed-index__label" id="ed-index-label">Berries · newest first</h2>
+  <ul class="ed-tiles ed-index__list">
+    {
+      items.map((item) => (
+        <li class="ed-tile">
+          <h3 class="ed-index__title">
+            <a href={item.path}>{item.title}</a>
+          </h3>
+          {item.description && <p class="ed-index__summary">{item.description}</p>}
+          {item.status === "archived" && <p class="ed-index__meta">Archived</p>}
+          {item.details.tags.length > 0 && (
+            <p class="ed-index__meta">{item.details.tags.join(" · ")}</p>
+          )}
+        </li>
+      ))
+    }
+  </ul>
+</section>

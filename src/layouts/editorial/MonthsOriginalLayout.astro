@@ -1,0 +1,37 @@
+---
+/**
+ * Months' Original (P12): an intimate literary essay. The month above the title, the
+ * description as a quiet subtitle, an epigraph where the author wrote one, a measure for
+ * long prose, generous paragraph spacing and a plain section mark in place of a rule.
+ * The author's paragraphs, italics, quotations and punctuation are untouched.
+ */
+import EditorialArticle from "../../components/editorial/EditorialArticle.astro"
+import EditorialEpigraph from "../../components/editorial/EditorialEpigraph.astro"
+import { dateMeta, monthName } from "../../editorial/reading.ts"
+import type { Heading, ReadingContext } from "../../editorial/reading.ts"
+import type { CollectionId } from "../../editorial/collections.ts"
+import type { CommonData } from "../../editorial/schema.ts"
+
+interface Props {
+  collection: CollectionId
+  data: CommonData
+  context: ReadingContext
+  headings: readonly Heading[]
+}
+
+const { collection, data, context } = Astro.props
+const period = typeof data.period === "string" ? data.period : undefined
+const epigraph = typeof data.epigraph === "string" ? data.epigraph : undefined
+const source = typeof data.epigraphSource === "string" ? data.epigraphSource : undefined
+---
+
+<EditorialArticle
+  collection={collection}
+  data={data}
+  context={context}
+  overline={period ? [`${monthName(period)} ${period.slice(0, 4)}`] : []}
+  meta={dateMeta(data, { updated: false })}
+>
+  {epigraph && <EditorialEpigraph slot="header" text={epigraph} source={source} />}
+  <slot />
+</EditorialArticle>

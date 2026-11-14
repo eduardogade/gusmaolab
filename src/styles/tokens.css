@@ -244,6 +244,23 @@
   --size-shell-max: 80rem;
 }
 
+/*
+ * Editorial reading (P12, D-094). Widths, spacing and ornament for the eight collections'
+ * reading layouts (src/styles/editorial.css). Sizes only: colour stays with the category
+ * and typefaces with the environment, so nothing here can change a palette or add a font.
+ */
+:root {
+  --measure-reading-technical: 72ch;
+  --measure-reading-note: 64ch;
+  --measure-reading-literary: 60ch;
+  --size-reading-aside: 15rem;
+  --space-reading-gap: clamp(1.5rem, 1rem + 2vw, 3rem);
+  --space-reading-section: clamp(2rem, 1.5rem + 2vw, 3.5rem);
+  --space-reading-paragraph: 1em;
+  --space-reading-paragraph-literary: 1.15em;
+  --editorial-section-mark: "· · ·";
+}
+
 /* 6. Geometry and depth ------------------------------------------------------------ */
 
 :root {

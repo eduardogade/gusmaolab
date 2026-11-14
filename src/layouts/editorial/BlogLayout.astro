@@ -1,0 +1,38 @@
+---
+/**
+ * Blog (P12): the archive's news desk. A compact header with the kind of post and its date,
+ * a plain reading width, and a way to the older and the newer post. A short update stays
+ * short: no table of contents, no sidebar.
+ */
+import EditorialArticle from "../../components/editorial/EditorialArticle.astro"
+import { dateMeta } from "../../editorial/reading.ts"
+import type { Heading, ReadingContext } from "../../editorial/reading.ts"
+import type { CollectionId } from "../../editorial/collections.ts"
+import type { CommonData } from "../../editorial/schema.ts"
+
+interface Props {
+  collection: CollectionId
+  data: CommonData
+  context: ReadingContext
+  headings: readonly Heading[]
+}
+
+const { collection, data, context } = Astro.props
+const KINDS: Record<string, string> = {
+  announcement: "Announcement",
+  update: "Update",
+  news: "News",
+  microblog: "Note",
+}
+const kind = typeof data.kind === "string" ? KINDS[data.kind] : undefined
+---
+
+<EditorialArticle
+  collection={collection}
+  data={data}
+  context={context}
+  overline={kind ? [kind] : []}
+  meta={dateMeta(data)}
+>
+  <slot />
+</EditorialArticle>

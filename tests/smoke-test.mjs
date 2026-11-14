@@ -8,6 +8,7 @@ import { CATEGORIES, ENVIRONMENTS } from "../src/design/contract.mjs"
 import { readTokens } from "../src/design/css-tokens.mjs"
 import { collectionById, collectionPrefix } from "../src/editorial/collections.ts"
 import { siteNavigation } from "../src/navigation/index.ts"
+import { studyPaths } from "../src/design/editorial-fixture.ts"
 
 // Temporary design studies. They live under /_design/, which no registry path can reach
 // (slugs never start with "_"), and are the only pages allowed outside the navigation
@@ -17,6 +18,7 @@ const designStudies = [
   "/_design/folders/",
   "/_design/bearnard/",
   "/_design/records/",
+  ...studyPaths(),
 ]
 const fileOf = (path) => `${path.slice(1)}index.html`
 // Pages the build must produce (P06): every registered destination, and the studies.
@@ -145,7 +147,8 @@ check(
   siteBytes < 1_000_000,
   `the site's files total ${siteBytes} bytes, more than expected`,
 )
-check(studyBytes < 600_000, `the design studies total ${studyBytes} bytes`)
+// P12: the editorial study adds 30 pages (D-097); the ceiling is for the whole of /_design/.
+check(studyBytes < 1_000_000, `the design studies total ${studyBytes} bytes`)
 check(imageBytes < 600_000, `the illustrations total ${imageBytes} bytes`)
 for (const file of expectedImages.keys()) check(files.includes(file), `missing ${file}`)
 

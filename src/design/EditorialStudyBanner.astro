@@ -1,0 +1,44 @@
+---
+/**
+ * The note at the head of every editorial study page (P12): what this page is, that its
+ * content is invented, and the way to the study's other pages. It is a note, not a heading:
+ * the page's one `<h1>` is the production layout's.
+ */
+import { COLLECTIONS } from "../editorial/collections.ts"
+import { STUDY_ROOT, studyPath } from "./editorial-fixture.ts"
+---
+
+<aside class="study-banner" role="note" data-editorial-study>
+  <p>
+    <strong>Design study, not a page of the website.</strong> Everything below is a synthetic
+    fixture, drawn by the production editorial components. Nothing in it was written by anyone,
+    and none of it is published.
+  </p>
+  <p>
+    <a href={STUDY_ROOT}>All collections</a>
+    {
+      COLLECTIONS.map((collection) => (
+        <>
+          {" · "}
+          <a href={studyPath(collection.id)}>{collection.label}</a>
+        </>
+      ))
+    }
+  </p>
+</aside>
+
+<style>
+  .study-banner {
+    margin-block-end: var(--space-l);
+    padding: var(--space-xs) var(--space-s);
+    border: var(--border-width-hairline) dashed var(--color-folder-border);
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface-callout);
+    font-family: var(--font-label);
+    font-size: var(--font-size-sm);
+  }
+
+  .study-banner p + p {
+    margin-block-start: var(--space-2xs);
+  }
+</style>

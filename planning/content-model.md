@@ -556,6 +556,31 @@ All of these are selections and presentations of the same records. None is a dat
 | Portfolio | `portfolioProjection`, with outputs related through `software_e_metodos` |
 | Lab | `labProjection` |
 
+## Reading layouts (P12)
+
+How each collection's metadata becomes a reading experience (D-094 to D-096). The code is `src/editorial/reading.ts`; the layouts are in `src/layouts/editorial/`.
+
+| Collection | Layout | Index order | Index grouping | Previous and next | Contents |
+| --- | --- | --- | --- | --- | --- |
+| Blog | `BlogLayout` | newest `publishedAt` first | none | older and newer post | never |
+| Bearnard's Trail | `TrailLayout` | by `seriesId`, then `position`; unplaced last; standalone after every series | by series (`seriesTitle`, else `seriesId`) | previous and next `position` in the series; none without a position | never |
+| The Greenhouse | `GreenhouseLayout` | newest first | none | none | when the Markdown has three or more `##` or `###` headings (references count) |
+| Berries | `BerriesLayout` | newest first | none | none | never |
+| Timber Logs | `TimberLogLayout` | newest `period`, then publication | by year, then month | earlier and later period (a month without a log is not there) | never |
+| Months' Original | `MonthsOriginalLayout` | newest `period`, then publication | by year | earlier and later month | never |
+| Kosmos Series | `KosmosLayout` | by `workId`, then `position` or `chapterNumber` (the work's own entry first) | by work | previous and next chapter; the work's own page lists its chapters | never |
+| Book Club | `BookClubLayout` | newest `sessionDate`, then publication | by book, the most recently discussed first | earlier and later discussion of the same book | never |
+
+- **Fields that control display:** `title`, `description` (the lede), `publishedAt`, `updatedAt`, `tags` (Greenhouse articles only), `kind` (Blog), `seriesId`, `seriesTitle`, `position`, `prerequisites` (Trail, Greenhouse), `difficulty`, `references` (Greenhouse), `period` (Timber Logs, Months' Original), `workId`, `chapterNumber`, `chapterLabel`, `epigraph`, `epigraphSource` (Kosmos, Months' Original), `bookTitle`, `bookAuthor`, `sessionDate`, `spoilers` (Book Club). Nothing is shown that the entry does not state.
+- **New optional fields (D-095):** `related`, `seriesTitle`, `chapterLabel`, `epigraph`, `epigraphSource`, `spoilers`. None is required; no existing entry changes.
+- **Related entries:** `related: ["greenhouse/some-slug"]`, `<collection directory>/<slug>`. A reference to an entry that does not exist, to a collection that does not exist or to the entry itself fails the build, drafts included. Only published entries are linked. A tag never relates two entries.
+- **Neighbours** are computed from the collection's own order over published entries only. A lesson is "Lesson N of M" only when the published lessons are numbered 1 to M without a gap; otherwise "Lesson N".
+- **Contents:** built from Astro's own heading list (depths 2 and 3, never the title), at least three entries, in document order, linking to Astro's anchors.
+- **Headings:** Markdown starts at `##`. A `#` in an entry's body fails the build.
+- **Empty states:** a collection with no published entry shows its name, its one-line identity and a sentence saying what will appear, never a fabricated entry. The sentences are in `PRESENTATIONS`.
+- **Archived** entries keep their listing and are marked "Archived" in every index and by a notice on the page.
+- **Separate from the CV:** editorial layouts read no CV file and no CV record (D-089 to D-093).
+
 ## Authoring
 
 Markdown-first, with Python and Quarto for scientific content when appropriate. The editorial workflow is above; Quarto is P13.

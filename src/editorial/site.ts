@@ -23,6 +23,8 @@ import {
   routableRecords,
 } from "./model.ts"
 import type { EditorialRecord, IndexItem } from "./model.ts"
+import { entryReferenceIssues, readingContext } from "./reading.ts"
+import type { ReadingContext } from "./reading.ts"
 import { SECTIONS } from "../navigation/registry.ts"
 import {
   createNavigation,
@@ -67,6 +69,7 @@ async function loadEntries(): Promise<LoadedEntry[]> {
   const issues = [
     ...collectionIssues(entries),
     ...recordReferenceIssues(entries, (id) => siteRecords.byId.has(id)),
+    ...entryReferenceIssues(entries),
   ]
   if (issues.length > 0) throw new EditorialConfigError(issues)
   return entries
@@ -124,15 +127,33 @@ export async function pageStaticPaths(depth: 1 | 2 | 3): Promise<PagePath[]> {
 }
 
 /** The index of the collection a folder page lists, or null for a folder with none. */
-export async function collectionIndexFor(
-  path: string,
-): Promise<{ label: string; items: IndexItem[] } | null> {
+export async function collectionIndexFor(path: string): Promise<{
+  id: CollectionId
+  label: string
+  identity: string
+  items: IndexItem[]
+} | null> {
   const folder = siteNavigation.resolve(normalizePath(path))
   if (!folder.found || folder.state.page.kind !== "folder") return null
   const collection = collectionOwnedBy(folder.state.page.node.id)
   if (collection === undefined) return null
   return {
+    id: collection.id,
     label: collection.label,
+    identity: collection.identity,
     items: indexItems(collection.id, await entries()),
   }
+}
+
+/** What a reader of one entry is offered besides its text (reading.ts), from the real entries. */
+export async function readingContextFor(
+  collection: CollectionId,
+  entryId: string,
+): Promise<ReadingContext> {
+  const all = await entries()
+  const record = all.find(
+    (candidate) => candidate.collection === collection && candidate.id === entryId,
+  )
+  if (record === undefined) throw new Error(`no ${collection} entry "${entryId}"`)
+  return readingContext(record, all)
 }
