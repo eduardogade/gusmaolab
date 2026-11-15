@@ -693,6 +693,34 @@ Checked by `tests/cv.mjs` (CV-001 to CV-020) in `npm run verify`, on a synthetic
 | QTO-017 Explicit computation, QTO-018 Reproducibility | `tests/science-execute.mjs` | Pass with Quarto 1.10.19 and Python 3.12.13; reported SKIPPED, never passed, where either is missing |
 | QTO-030 Browser validation (30, 30B, 30C, 30D) | `tests/science-browser.mjs` | Pass (headless Chromium) |
 
+## P13-A01 gates — Environment and demonstrations
+
+| ID | Gate | Status |
+| --- | --- | --- |
+| G-P13A-01 | The tools the site depends on have recorded versions and still pass after the Homebrew upgrades | **Passed** (`development/scientific-environment.md`, P13A-001, P13A-002 by `npm run verify`) |
+| G-P13A-02 | An isolated Python environment is specified and restorable | **Passed** on macOS ARM64 (P13A-004, P13A-005, `science:restore-test`: P13A-005B). Not tested: other operating systems |
+| G-P13A-03 | Quarto runs the code with that interpreter | **Passed** (P13A-003, P13A-006) |
+| G-P13A-04 | Builds execute nothing; recomputation is explicit and deterministic | **Passed** (P13A-007, P13A-008, P13A-009, P13A-016) |
+| G-P13A-05 | Three real Greenhouse demonstrations exist and work | **Passed** (P13A-010 to P13A-017) |
+| G-P13A-06 | They are reachable by clicking from Home in the dev server | **Passed** (P13A-030) |
+| G-P13A-07 | A release holds no trace of them; a demonstration build never touches the release | **Passed** (P13A-018 to P13A-021) |
+| G-P13A-08 | P10, P11, P12, the CV, the palettes and the folders unchanged | **Passed** (P13A-022 to P13A-028; QTO-023 and QTO-024 name the additive changes) |
+| G-P13A-09 | The pages fit at 320 to 1440 px, Chromium | **Passed** (P13A-029, P13A-029B) |
+| G-P13A-10 | The owner reviews the demonstrations at localhost | **Pending** |
+| G-P13A-11 | Safari, Firefox, Android Chrome itself, screen readers | **Untested** |
+
+### Environment and demonstration tests (P13-A01)
+
+| Test | Where | Status |
+| --- | --- | --- |
+| P13A-001, P13A-003 to P13A-007, P13A-009, P13A-025, P13A-026, P13A-028 | `tests/science-env.mjs` | Pass; P13A-003 and P13A-006 are reported SKIPPED where Quarto or the environment is missing |
+| P13A-008 Explicit recomputation, P13A-016 Determinism | `tests/demo-execute.mjs` | Pass; SKIPPED without Quarto and Jupyter |
+| P13A-010 to P13A-015, P13A-017 to P13A-024, P13A-027 | `tests/demos.mjs` (four throwaway builds) | Pass |
+| P13A-005B, P13A-016B Restore from the specification | `tests/science-restore.mjs` (`npm run science:restore-test`; network, about two minutes; not in `npm test`) | Pass |
+| P13A-029B Five widths, demonstration build | `tests/demo-browser.mjs` | Pass (headless Chromium) |
+| P13A-030 Home to every demonstration by clicking, P13A-029 direct URLs | `tests/demo-dev-browser.mjs` (the real dev server) | Pass |
+| P13A-002 The main verification | `npm run verify` | Pass |
+
 ## Future gates
 
 | ID | Gate | Source | Status |

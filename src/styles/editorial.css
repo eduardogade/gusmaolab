@@ -610,6 +610,18 @@
   text-transform: uppercase;
 }
 
+.ed-index__intro {
+  margin-block-start: var(--space-3xs);
+  max-inline-size: var(--measure-reading-note);
+  color: var(--color-text-secondary);
+}
+
+[data-demo-section] {
+  margin-block-start: var(--space-xl);
+  padding-block-start: var(--space-s);
+  border-block-start: var(--border-width-hairline) dashed var(--color-folder-border);
+}
+
 .ed-index__list {
   margin: 0;
   padding: 0;

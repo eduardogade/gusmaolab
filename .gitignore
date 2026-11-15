@@ -274,3 +274,6 @@ brand/bearnard/
 # document and its project state. The computed results, science/_freeze/, are committed.
 /science/_build/
 /science/.quarto/
+
+# The demonstration build (P13-A01): a separate folder, never the release
+/dist-demo/

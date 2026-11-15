@@ -181,9 +181,18 @@ export interface CommonData {
  * The schema of one collection. Astro validates every entry against it while loading the
  * collection, so an invalid file fails the build with the file named.
  */
-export function schemaFor(collection: CollectionId) {
+export function schemaFor(
+  collection: CollectionId,
+  options: { readonly synthetic?: boolean } = {},
+) {
   return z
-    .strictObject({ ...common, ...extensions[collection] })
+    .strictObject({
+      ...common,
+      ...extensions[collection],
+      // Only a demonstration (src/demos/, P13-A01) states it is synthetic, and must. The real
+      // collections do not have the field, so an entry in src/content/ cannot claim it.
+      ...(options.synthetic === true ? { synthetic: z.literal(true) } : {}),
+    })
     .superRefine((data: Record<string, unknown>, context) => {
       const issue = (path: string, message: string) =>
         context.addIssue({ code: "custom", path: [path], message })

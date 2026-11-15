@@ -578,6 +578,8 @@ test("NAV-032", "Every approved route is a static page", (check) => {
         "[section]/[folder]/[subfolder]/index.astro",
         "[section]/[folder]/index.astro",
         "[section]/index.astro",
+        // P13-A01: the demonstrations' figures; it has static paths only in dev and demo mode.
+        "demo-assets/[name]/[file].svg.ts",
         "index.astro",
       ]),
     `unexpected route files: ${json(routeFiles)}`,

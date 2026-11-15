@@ -20,6 +20,12 @@
       "runtimeExecutable": "env",
       "runtimeArgs": ["ASTRO_TELEMETRY_DISABLED=1", "npm", "run", "dev"],
       "port": 4321
+    },
+    {
+      "name": "astro-demo-preview",
+      "runtimeExecutable": "env",
+      "runtimeArgs": ["ASTRO_TELEMETRY_DISABLED=1", "npm", "run", "demo:preview"],
+      "port": 4323
     }
   ]
 }

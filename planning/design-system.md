@@ -652,6 +652,10 @@ Quarto articles are drawn in the approved Greenhouse (section 12): the same head
 - **Citations and references:** in-text citations are ordinary links to their entry; the reference list is small text with a hanging indent that wraps long addresses; footnotes are an ordered list after a rule, with a backlink to the place they came from.
 - **Responsive:** checked at 320, 390, 768, 1280 and 1440 px: no page scrolls sideways, equations, tables, code and references stay in the column, the contents list is beside the text from a wide paper and above it on a narrow one.
 
+## 14. Demonstrations (P13-A01)
+
+A demonstration is drawn in the approved Greenhouse, unchanged: only two things say what it is. The **notice** under the header, a note in the existing `ed__notice` style (the callout surface and its rule, no new colour): "Development demonstration — synthetic content", then one sentence. And the **Overview section**: a dashed rule below the Greenhouse's real list, a small uppercase heading "Development Demonstrations", one sentence of explanation, then the Greenhouse index rows. Both use semantic tokens only. They add no tab, no row and no motion, and the global tabs keep their category colours.
+
 ## Legacy material
 
 - `docs/design-system.md` is an empty placeholder from the Pelican era.

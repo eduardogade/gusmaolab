@@ -25,7 +25,7 @@ export interface ScientificFeatures {
 
 export interface ScientificDocument {
   readonly doc: string
-  readonly kind: "entry" | "study"
+  readonly kind: "entry" | "study" | "demo"
   readonly html: string
   readonly headings: readonly Heading[]
   readonly features: ScientificFeatures
@@ -34,7 +34,7 @@ export interface ScientificDocument {
 }
 
 interface ManifestRecord {
-  readonly kind: "entry" | "study"
+  readonly kind: "entry" | "study" | "demo"
   readonly output: { readonly fragment: string }
   readonly headings: readonly Heading[]
   readonly features: ScientificFeatures
@@ -45,7 +45,7 @@ const manifest = manifestData as { documents: Record<string, ManifestRecord> }
 
 // Fragments are raw text; each is read only when it is the page's own.
 const fragments = import.meta.glob<string>(
-  ["/src/science/**/*.html", "/src/design/quarto/*.html"],
+  ["/src/science/**/*.html", "/src/design/quarto/*.html", "/src/demos/science/*.html"],
   { query: "?raw", import: "default", eager: true },
 )
 

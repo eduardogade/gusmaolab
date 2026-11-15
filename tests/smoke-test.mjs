@@ -39,12 +39,16 @@ const expectedImages = new Map(derivatives.map((o) => [o.url.slice(1), o]))
 const scientific = JSON.parse(
   await readFile(new URL("../src/science/manifest.json", import.meta.url), "utf8"),
 ).documents
+// Only figures under public/ are copied into a build. A demonstration's figures (P13-A01) are in
+// src/demos/ and are served by a route that a release build does not generate; tests/demos.mjs checks both.
 const expectedFigures = new Set(
-  Object.values(scientific).flatMap((d) =>
-    d.output.assets.map(
-      (name) => `${d.output.assetDir.replace(/^public\//, "")}/${name}`,
+  Object.values(scientific)
+    .filter((d) => d.output.assetDir.startsWith("public/"))
+    .flatMap((d) =>
+      d.output.assets.map(
+        (name) => `${d.output.assetDir.replace(/^public\//, "")}/${name}`,
+      ),
     ),
-  ),
 )
 const specimenFile = fileOf("/_design/tokens/")
 const studyFile = fileOf("/_design/folders/")

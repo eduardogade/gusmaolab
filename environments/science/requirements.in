@@ -1,0 +1,8 @@
+# The Python packages Quarto's Jupyter engine needs to execute the scientific articles
+# (P13, D-099), and nothing else: the articles use only the standard library. Edit this
+# file, then run `npm run science:env -- lock` and commit requirements.txt with it.
+ipykernel
+jupyter-core
+nbformat
+nbclient
+pyyaml

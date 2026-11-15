@@ -593,6 +593,10 @@ How each collection's metadata becomes a reading experience (D-094 to D-096). Th
 - **Where a document can fail:** an unknown metadata field, a missing field, a bad date, an unresolved reference or citation, an image without alt text, a figure that is not a local file, a script or a style, or a code change after the last execution.
 - **Not a Quarto website:** no Quarto page, listing or search reaches the site; Quarto's output is read, cleaned and discarded.
 
+## Demonstrations (P13-A01)
+
+A demonstration is a Greenhouse entry that is synthetic and never public: `src/demos/greenhouse/<name>.md` (and, for a Quarto one, the generated entry written from `science/demo/<name>.qmd`). It is validated by the Greenhouse schema with one more required field, `synthetic: true`, which no real collection accepts, and its slug starts with `demo-`. It may `related`-link only other demonstrations. It is routed only in a development or demonstration run, listed under "Development Demonstrations" in the Greenhouse Overview, read among the demonstrations, and carries a visible notice. See `development/demonstrations.md`.
+
 ## Authoring
 
 Markdown-first, with Python and Quarto for scientific content when appropriate. The editorial workflow is above; Quarto is P13.

@@ -12,7 +12,8 @@
  */
 import { getCollection } from "astro:content"
 import type { CollectionEntry, CollectionKey } from "astro:content"
-import { collectionOwnedBy, COLLECTION_IDS } from "./collections.ts"
+import { collectionById, collectionOwnedBy, COLLECTION_IDS } from "./collections.ts"
+import { demosEnabled } from "./demo.ts"
 import type { CollectionId } from "./collections.ts"
 import {
   collectionIssues,
@@ -48,9 +49,28 @@ export class EditorialConfigError extends Error {
   }
 }
 
+/** A demonstration must name no real entry, and a real entry no demonstration: they never mix. */
+function demonstrationIssues(entries: readonly LoadedEntry[]): string[] {
+  const issues: string[] = []
+  const byPath = new Map<string, LoadedEntry>(
+    entries.map((e) => [`${collectionById(e.collection).directory}/${e.data.slug}`, e]),
+  )
+  for (const e of entries)
+    for (const ref of e.data.related ?? []) {
+      const target = byPath.get(ref)
+      if (target !== undefined && target.demo !== e.demo)
+        issues.push(
+          `${e.collection}/${e.id}: related names ${ref}, which is ${target.demo ? "a demonstration" : "a real entry"}; demonstrations and real entries are never related`,
+        )
+    }
+  return issues
+}
+
 /** A loaded entry with everything a page needs: the record and Astro's own entry. */
 export interface LoadedEntry extends EditorialRecord {
   readonly entry: CollectionEntry<CollectionKey>
+  /** A demonstration (src/demos/): a synthetic Greenhouse entry, present only when demos are on. */
+  readonly demo: boolean
 }
 
 async function loadEntries(): Promise<LoadedEntry[]> {
@@ -61,15 +81,28 @@ async function loadEntries(): Promise<LoadedEntry[]> {
         id: entry.id,
         data: entry.data as CommonData,
         entry,
+        demo: false,
       })),
     ),
   )
-  const entries = loaded.flat()
+  // The demonstrations are Greenhouse entries like any other, once they are switched on; a
+  // production run never reads them, so nothing of them can reach its pages, indexes or links.
+  const demos = demosEnabled()
+    ? (await getCollection("greenhouseDemos")).map((entry) => ({
+        collection: "greenhouse" as const,
+        id: entry.id,
+        data: entry.data as CommonData,
+        entry,
+        demo: true,
+      }))
+    : []
+  const entries = [...loaded.flat(), ...demos]
   // Entries may name canonical records (P11): every ID must exist in the site's records.
   const issues = [
     ...collectionIssues(entries),
     ...recordReferenceIssues(entries, (id) => siteRecords.byId.has(id)),
     ...entryReferenceIssues(entries),
+    ...demonstrationIssues(entries),
   ]
   if (issues.length > 0) throw new EditorialConfigError(issues)
   return entries
@@ -132,16 +165,26 @@ export async function collectionIndexFor(path: string): Promise<{
   label: string
   identity: string
   items: IndexItem[]
+  /** The demonstrations of this collection (dev or demo build only; empty otherwise). */
+  demoItems: IndexItem[]
 } | null> {
   const folder = siteNavigation.resolve(normalizePath(path))
   if (!folder.found || folder.state.page.kind !== "folder") return null
   const collection = collectionOwnedBy(folder.state.page.node.id)
   if (collection === undefined) return null
+  const all = await entries()
   return {
     id: collection.id,
     label: collection.label,
     identity: collection.identity,
-    items: indexItems(collection.id, await entries()),
+    items: indexItems(
+      collection.id,
+      all.filter((record) => !record.demo),
+    ),
+    demoItems: indexItems(
+      collection.id,
+      all.filter((record) => record.demo),
+    ),
   }
 }
 
@@ -149,11 +192,20 @@ export async function collectionIndexFor(path: string): Promise<{
 export async function readingContextFor(
   collection: CollectionId,
   entryId: string,
+  demo = false,
 ): Promise<ReadingContext> {
   const all = await entries()
   const record = all.find(
-    (candidate) => candidate.collection === collection && candidate.id === entryId,
+    (candidate) =>
+      candidate.collection === collection &&
+      candidate.id === entryId &&
+      candidate.demo === demo,
   )
   if (record === undefined) throw new Error(`no ${collection} entry "${entryId}"`)
-  return readingContext(record, all)
+  // Demonstrations are read among themselves, real entries among themselves: a demonstration is
+  // never offered as the next article after a real one, nor the other way round.
+  return readingContext(
+    record,
+    all.filter((candidate) => candidate.demo === demo),
+  )
 }

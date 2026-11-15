@@ -40,6 +40,8 @@ const DROP_TAGS = new Set([
   "title",
   "button",
   "noscript",
+  // Column widths Quarto computes for a wide table are inline styles: the site owns presentation.
+  "colgroup",
 ])
 /** Wrappers that are dropped while their content stays. */
 const UNWRAP_CLASSES = new Set(["code-copy-outer-scaffold", "quarto-appendix-contents"])

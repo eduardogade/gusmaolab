@@ -29,6 +29,7 @@ const index = entry === undefined ? await collectionIndexFor(Astro.url.pathname)
           label={index.label}
           identity={index.identity}
           items={index.items}
+          demoItems={index.demoItems}
         />
       ) : (
         <ScaffoldContent path={Astro.url.pathname} />

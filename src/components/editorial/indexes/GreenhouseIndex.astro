@@ -9,13 +9,25 @@ import type { IndexItem } from "../../../editorial/model.ts"
 
 interface Props {
   items: readonly IndexItem[]
+  /** The heading, when it is not the ordinary one (the development demonstrations). */
+  heading?: string
+  /** A sentence under the heading. */
+  intro?: string
+  /** The heading's ID; unique when the page holds two indexes. */
+  labelId?: string
 }
 
-const { items } = Astro.props
+const {
+  items,
+  heading = "Articles · newest first",
+  intro,
+  labelId = "ed-index-label",
+} = Astro.props
 ---
 
-<section class="ed-index ed-index--greenhouse" aria-labelledby="ed-index-label" data-editorial-index="greenhouse">
-  <h2 class="ed-index__label" id="ed-index-label">Articles · newest first</h2>
+<section class="ed-index ed-index--greenhouse" aria-labelledby={labelId} data-editorial-index="greenhouse">
+  <h2 class="ed-index__label" id={labelId}>{heading}</h2>
+  {intro && <p class="ed-index__intro">{intro}</p>}
   <ol class="ed-index__list">
     {
       items.map((item) => (

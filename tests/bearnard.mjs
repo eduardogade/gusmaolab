@@ -25,10 +25,11 @@ const json = (value) => JSON.stringify(value)
 const manifest = JSON.parse(await read("assets/bearnard/derivatives.json"))
 // The scientific articles' figures (P13), as public addresses.
 const figures = new Set(
-  Object.values(JSON.parse(await read("src/science/manifest.json")).documents).flatMap(
-    (d) =>
+  Object.values(JSON.parse(await read("src/science/manifest.json")).documents)
+    .filter((d) => d.output.assetDir.startsWith("public/"))
+    .flatMap((d) =>
       d.output.assets.map((n) => `/${d.output.assetDir.replace(/^public\//, "")}/${n}`),
-  ),
+    ),
 )
 const inventory = new Map(
   (await read("assets/bearnard/inventory.csv"))

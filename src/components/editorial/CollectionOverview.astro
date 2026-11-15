@@ -4,20 +4,26 @@
  * folder. The collection's name is the page's one heading, its one-line identity follows,
  * then its index or, while nothing is published, an intentional empty state. It replaces
  * the P06 scaffolding on exactly the folders that own a collection.
+ *
+ * While developing (and in a demonstration build only), the Greenhouse also lists its synthetic
+ * demonstrations under their own heading, below the real, still empty, list (P13-A01).
  */
 import "../../styles/editorial.css"
 import type { CollectionId } from "../../editorial/collections.ts"
 import type { IndexItem } from "../../editorial/model.ts"
 import CollectionIndex from "./CollectionIndex.astro"
+import GreenhouseIndex from "./indexes/GreenhouseIndex.astro"
 
 interface Props {
   collection: CollectionId
   label: string
   identity: string
   items: readonly IndexItem[]
+  /** The synthetic demonstrations (P13-A01): present only in development and in a demo build. */
+  demoItems?: readonly IndexItem[]
 }
 
-const { collection, label, identity, items } = Astro.props
+const { collection, label, identity, items, demoItems = [] } = Astro.props
 ---
 
 <div class="gl-prose" data-editorial-overview={collection}>
@@ -25,3 +31,15 @@ const { collection, label, identity, items } = Astro.props
   <p class="ed__lede">{identity}</p>
 </div>
 <CollectionIndex collection={collection} items={items} />
+{
+  collection === "greenhouse" && demoItems.length > 0 && (
+    <div data-demo-section>
+      <GreenhouseIndex
+        items={demoItems}
+        heading="Development Demonstrations"
+        intro="These sample articles illustrate GusmaoLab's scientific publishing features. Their content is synthetic and not part of the public research archive. They appear only while developing and in a separate demonstration build."
+        labelId="ed-index-label-demo"
+      />
+    </div>
+  )
+}

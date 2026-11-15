@@ -270,6 +270,23 @@ Figures go to `public/assets/scientific/<dir>/<name>/` (a namespace per document
 
 One development dependency, `ultrahtml` 1.7.0, pinned exactly: the HTML parser Astro itself uses, already installed (D-100). It is imported by the tool and its tests only; no page does. Quarto and Python are not dependencies of the repository.
 
+
+## Scientific environment and demonstrations (P13-A01)
+
+Three toolchains, one owner each (D-104):
+
+```text
+GusmaoLab
+├── npm            Astro, TypeScript, CSS, tests          package.json + lockfile
+├── Quarto         document rendering (separate install)  science/_quarto.yml: quarto-required
+└── micromamba     environment gusmaolab-science          environments/science/environment.yml
+    └── uv         every Python package                   requirements.in -> requirements.txt (hashes)
+```
+
+`scripts/science-env.mjs` resolves the interpreter (SCIENCE_PYTHON, QUARTO_PYTHON, then the named micromamba environment, never the PATH's `python3`), checks it against the lock in both directions, and runs Quarto with `QUARTO_PYTHON` and the environment's own kernel directory. Building the site needs none of it (`science:verify` is offline). The full guide, versions and Homebrew notes are `development/scientific-environment.md`.
+
+Demonstrations (D-105, D-106) are synthetic Greenhouse entries in `src/demos/`, loaded as the Astro collection `greenhouseDemos` (the Greenhouse schema plus `synthetic: true`). They enter the site's entries only when Astro's mode is `development` or `demo` (`src/editorial/demo.ts`); with them in, everything else is the ordinary pipeline (`EditorialEntry`, the Greenhouse layout, routes under the Greenhouse folder). Demonstrations are read among themselves, never as the neighbours of a real entry, and the Greenhouse Overview lists them under "Development Demonstrations", below its real list. Figures of a Quarto demonstration are served by `src/pages/demo-assets/[name]/[file].svg.ts`, not copied from `public/`. Release: `scripts/public-build.mjs` (`npm run build`) builds in production mode in a cleaned environment and searches its output for any trace; demonstration build: `scripts/demo.mjs` (`npm run demo:build`) writes `dist-demo/`.
+
 ## Colour architecture (P09-A01)
 
 Colour is the Chromatic Archive: five locked category palettes and four shared colours (D-076; `planning/design-system.md`, section 7).

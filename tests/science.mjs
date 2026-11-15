@@ -156,7 +156,8 @@ await test(
   "Ordinary Markdown stays the default; Quarto is for the Greenhouse and the Trail",
   async (check) => {
     check(
-      json(DIRECTORIES) === json(["greenhouse", "trail", "design"]),
+      // P13-A01 added "demo": synthetic Greenhouse articles that are never published.
+      json(DIRECTORIES) === json(["greenhouse", "trail", "design", "demo"]),
       `directories ${json(DIRECTORIES)}`,
     )
     for (const dir of [
@@ -592,7 +593,8 @@ await test(
 await test("QTO-016", "Ordinary builds execute nothing", async (check) => {
   const pkg = JSON.parse(await read("package.json"))
   check(
-    pkg.scripts.build === "node scripts/science.mjs verify && astro build",
+    pkg.scripts.build ===
+      "node scripts/science.mjs verify && node scripts/public-build.mjs",
     `build is "${pkg.scripts.build}"`,
   )
   for (const name of ["check", "test", "verify", "dev", "preview"])
@@ -896,31 +898,78 @@ await test(
   },
 )
 
+/** The lines a file lost since a commit: what a purely additive change never does. */
+const removedSince = (commit, file) =>
+  git("diff", commit, "--", file)
+    .split("\n")
+    .filter((l) => l.startsWith("-") && !l.startsWith("---"))
+    .map((l) => l.slice(1).trim())
+
 await test("QTO-023", "The eight editorial collections are intact", async (check) => {
   check(COLLECTION_IDS.length === 8, "not eight collections")
   check(
-    unchangedSince(
-      "src/editorial/collections.ts",
-      "src/editorial/model.ts",
-      "src/content.config.ts",
-    ),
-    "the collections, routing or loaders changed",
+    unchangedSince("src/editorial/collections.ts", "src/editorial/model.ts"),
+    "the collections or routing changed",
   )
-  const schema = git("diff", P12, "--", "src/editorial/schema.ts")
-  check(schema.trim() === "", "a schema changed")
+  // P13-A01 made two additive changes, and only these lines may have gone: the loader takes its
+  // folder instead of a collection ID (so the demonstrations can have one), and the schema takes
+  // an optional second argument (so a demonstration can require `synthetic: true`).
+  const allowed = {
+    "src/content.config.ts": [
+      "const entries = (id: CollectionId) => {",
+      "base: `./src/content/${collectionById(id).directory}`,",
+      "defineCollection({ loader: entries(id), schema: schemaFor(id) })",
+    ],
+    "src/editorial/schema.ts": [
+      "export function schemaFor(collection: CollectionId) {",
+      ".strictObject({ ...common, ...extensions[collection] })",
+    ],
+  }
+  for (const [file, lines] of Object.entries(allowed))
+    for (const line of removedSince(P12, file))
+      check(lines.includes(line), `${file} lost "${line}" since P12`)
+  const config = await read("src/content.config.ts")
+  for (const id of COLLECTION_IDS)
+    check(
+      new RegExp(`${id}: collection\\("${id}"\\)`).test(config),
+      `${id} is no longer a collection`,
+    )
 })
 
 await test("QTO-024", "The P12 layouts and indexes are unchanged", async (check) => {
   check(
     unchangedSince(
       "src/layouts/editorial",
-      "src/components/editorial/indexes",
-      "src/components/editorial/EditorialArticle.astro",
       "src/components/editorial/CollectionIndex.astro",
-      "src/components/editorial/CollectionOverview.astro",
     ),
     "a P12 layout or index changed",
   )
+  // P13-A01 only added to the shell, the Overview and the Greenhouse index (a notice, a second
+  // list, an optional heading); what each of them drew before is still drawn.
+  const addedOnly = {
+    "src/components/editorial/EditorialArticle.astro": [],
+    "src/components/editorial/CollectionOverview.astro": [
+      "const { collection, label, identity, items } = Astro.props",
+    ],
+    "src/components/editorial/indexes/GreenhouseIndex.astro": [
+      "const { items } = Astro.props",
+      '<section class="ed-index ed-index--greenhouse" aria-labelledby="ed-index-label" data-editorial-index="greenhouse">',
+      '<h2 class="ed-index__label" id="ed-index-label">Articles · newest first</h2>',
+    ],
+  }
+  for (const file of [
+    "src/components/editorial/indexes/BerriesIndex.astro",
+    "src/components/editorial/indexes/BlogIndex.astro",
+    "src/components/editorial/indexes/BookClubIndex.astro",
+    "src/components/editorial/indexes/KosmosIndex.astro",
+    "src/components/editorial/indexes/MonthsOriginalIndex.astro",
+    "src/components/editorial/indexes/TimberLogsIndex.astro",
+    "src/components/editorial/indexes/TrailIndex.astro",
+  ])
+    addedOnly[file] = []
+  for (const [file, lines] of Object.entries(addedOnly))
+    for (const line of removedSince(P12, file))
+      check(lines.includes(line), `${file} lost "${line}" since P12`)
   const entry = git("diff", P12, "--", "src/components/editorial/EditorialEntry.astro")
   check(
     /scientificEntry/.test(entry),
@@ -929,7 +978,13 @@ await test("QTO-024", "The P12 layouts and indexes are unchanged", async (check)
   check(
     !entry
       .split("\n")
-      .some((l) => l.startsWith("-") && /EDITORIAL_LAYOUTS|readingContextFor/.test(l)),
+      // P13-A01 passes the entry's demo flag on to the reading context; the layout map is untouched.
+      .some(
+        (l) =>
+          l.startsWith("-") &&
+          /EDITORIAL_LAYOUTS|readingContextFor/.test(l) &&
+          l.trim() !== "-const context = await readingContextFor(collection, entry.id)",
+      ),
     "EditorialEntry changed how a layout is chosen",
   )
   const css = git("diff", P12, "--", "src/styles/editorial.css")

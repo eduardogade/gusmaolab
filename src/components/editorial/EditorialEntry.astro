@@ -16,6 +16,9 @@
  * article fragment that scripts/science.mjs made from a Quarto source, and its headings are
  * those of that fragment. The entry's own Markdown file holds only its metadata. Everything else
  * is unchanged: the same layout, the same routes, the same publication state.
+ *
+ * A demonstration (P13-A01, src/demos/) is the same component with the same layout; the only
+ * difference is that it is read among the demonstrations and states that it is synthetic.
  */
 import { render } from "astro:content"
 import { collectionById } from "../../editorial/collections.ts"
@@ -33,7 +36,9 @@ interface Props {
 
 const { collection, entry } = Astro.props
 const data = entry.data as CommonData
-const science = scientificEntry(collectionById(collection).directory, entry.id)
+// A demonstration (P13-A01) is read from src/demos/; its scientific document is `demo/<name>`.
+const demo = entry.collection === "greenhouseDemos"
+const science = scientificEntry(demo ? "demo" : collectionById(collection).directory, entry.id)
 const rendered = science === undefined ? await render(entry) : undefined
 const headings = science?.headings ?? rendered!.headings
 if (headings.some((heading) => heading.depth === 1)) {
@@ -41,7 +46,7 @@ if (headings.some((heading) => heading.depth === 1)) {
     `${collection}/${entry.id}: the Markdown has a level-1 heading; the title is the page's <h1>, so sections start at ##`,
   )
 }
-const context = await readingContextFor(collection, entry.id)
+const context = await readingContextFor(collection, entry.id, demo)
 const Layout = EDITORIAL_LAYOUTS[collection]
 ---
 

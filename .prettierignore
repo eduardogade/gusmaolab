@@ -18,3 +18,4 @@ science/_freeze/
 src/science/manifest.json
 src/science/**/*.html
 src/design/quarto/*.html
+dist-demo/

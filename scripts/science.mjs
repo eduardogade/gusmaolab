@@ -39,12 +39,16 @@ import { parseDocument } from "yaml"
 import { collectionById, COLLECTIONS } from "../src/editorial/collections.ts"
 import { schemaFor } from "../src/editorial/schema.ts"
 import { extractFragment, svgIssues } from "./science-html.mjs"
+import { resolvePython, sciencePythonEnv } from "./science-env.mjs"
 
 export const ROOT = fileURLToPath(new URL("../", import.meta.url))
 export const MANIFEST = "src/science/manifest.json"
 export const GENERATED_MARKER = "GENERATED from science/"
-/** Where a document may live: an entry's collection directory, or the design study. */
-export const DIRECTORIES = ["greenhouse", "trail", "design"]
+/**
+ * Where a document may live: an entry's collection directory, the design study, or the
+ * demonstrations (P13-A01: synthetic Greenhouse articles that are never published).
+ */
+export const DIRECTORIES = ["greenhouse", "trail", "design", "demo"]
 const NAME = /^[a-z0-9]+(?:-[a-z0-9]+)*$/
 /** What Quarto reads from a source's front matter besides the entry's own metadata. */
 export const QUARTO_KEYS = [
@@ -79,26 +83,44 @@ export function docInfo(doc) {
       `"${doc}" is not a document: write <dir>/<name> with <dir> one of ${DIRECTORIES.join(", ")} and a lowercase-hyphen name`,
     )
   const [, dir, name] = match
-  const study = dir === "design"
-  return {
+  const kind = dir === "design" ? "study" : dir === "demo" ? "demo" : "entry"
+  const base = {
     doc: `${dir}/${name}`,
     dir,
     name,
-    kind: study ? "study" : "entry",
-    collection: study ? "greenhouse" : COLLECTIONS.find((c) => c.directory === dir)?.id,
+    kind,
+    collection:
+      kind === "entry"
+        ? COLLECTIONS.find((c) => c.directory === dir)?.id
+        : "greenhouse",
     source: `science/${dir}/${name}.qmd`,
     built: `science/_build/${dir}/${name}.html`,
     freeze: `science/_freeze/${dir}/${name}`,
-    fragment: study
-      ? `src/design/quarto/${name}.html`
-      : `src/science/${dir}/${name}.html`,
-    stub: study ? null : `src/content/${dir}/${name}.md`,
-    assetDir: study
-      ? `public/_design/quarto/assets/${name}`
-      : `public/assets/scientific/${dir}/${name}`,
-    assetBase: study
-      ? `/_design/quarto/assets/${name}/`
-      : `/assets/scientific/${dir}/${name}/`,
+  }
+  if (kind === "study")
+    return {
+      ...base,
+      fragment: `src/design/quarto/${name}.html`,
+      stub: null,
+      assetDir: `public/_design/quarto/assets/${name}`,
+      assetBase: `/_design/quarto/assets/${name}/`,
+    }
+  // A demonstration is an ordinary Greenhouse entry that lives outside src/content/ and public/,
+  // so that only a development or demonstration run ever routes or serves it (src/editorial/demo.ts).
+  if (kind === "demo")
+    return {
+      ...base,
+      fragment: `src/demos/science/${name}.html`,
+      stub: `src/demos/greenhouse/${name}.md`,
+      assetDir: `src/demos/assets/${name}`,
+      assetBase: `/demo-assets/${name}/`,
+    }
+  return {
+    ...base,
+    fragment: `src/science/${dir}/${name}.html`,
+    stub: `src/content/${dir}/${name}.md`,
+    assetDir: `public/assets/scientific/${dir}/${name}`,
+    assetBase: `/assets/scientific/${dir}/${name}/`,
   }
 }
 
@@ -137,7 +159,9 @@ export function publicationMetadata(info, data) {
   const publication = Object.fromEntries(
     Object.entries(data).filter(([key]) => !QUARTO_KEYS.includes(key)),
   )
-  const parsed = schemaFor(info.collection).safeParse(publication)
+  const parsed = schemaFor(info.collection, {
+    synthetic: info.kind === "demo",
+  }).safeParse(publication)
   if (!parsed.success)
     throw new ScienceError(
       `${info.source}: the metadata is not valid for ${collectionById(info.collection).label}:\n` +
@@ -331,11 +355,14 @@ export async function verify(root = ROOT) {
       .map((d) => docInfo(d).stub)
       .filter(Boolean),
   )
-  for (const collection of COLLECTIONS) {
-    const folder = join(root, "src/content", collection.directory)
+  for (const base of [
+    ...COLLECTIONS.map((collection) => `src/content/${collection.directory}`),
+    "src/demos/greenhouse",
+  ]) {
+    const folder = join(root, base)
     for (const file of existsSync(folder) ? await readdir(folder) : []) {
       if (!file.endsWith(".md")) continue
-      const rel = `src/content/${collection.directory}/${file}`
+      const rel = `${base}/${file}`
       if (
         (await readFile(join(root, rel), "utf8")).includes(GENERATED_MARKER) &&
         !owned.has(rel)
@@ -346,7 +373,7 @@ export async function verify(root = ROOT) {
   const fragments = new Set(
     Object.keys(manifest.documents).map((d) => docInfo(d).fragment),
   )
-  for (const base of ["src/science", "src/design/quarto"])
+  for (const base of ["src/science", "src/design/quarto", "src/demos/science"])
     for (const file of await listFiles(join(root, base)))
       if (file.endsWith(".html") && !fragments.has(relative(root, file)))
         issues.push(`${relative(root, file)}: a generated article whose source is gone`)
@@ -355,17 +382,13 @@ export async function verify(root = ROOT) {
 
 // --- Quarto ----------------------------------------------------------------------------------
 
-/** The Python the tool is told to use: SCIENCE_PYTHON, else QUARTO_PYTHON, else none (empty counts as none). */
-const chosenPython = () =>
-  process.env.SCIENCE_PYTHON || process.env.QUARTO_PYTHON || undefined
-
-function environment() {
-  const env = { ...process.env }
-  const python = chosenPython()
-  if (python === undefined) delete env.QUARTO_PYTHON
-  else env.QUARTO_PYTHON = python
-  return env
-}
+/**
+ * The Python the tool uses (scripts/science-env.mjs): SCIENCE_PYTHON, else QUARTO_PYTHON, else the
+ * micromamba environment gusmaolab-science, else none (empty counts as none). Never a `python3`
+ * picked up from the PATH.
+ */
+const chosenPython = () => resolvePython().python
+const environment = () => sciencePythonEnv()
 
 /** Runs a command with an argument list (never a shell string); returns its result. */
 export function run(command, args, options = {}) {
@@ -374,7 +397,7 @@ export function run(command, args, options = {}) {
 
 export function toolchain() {
   const quarto = run("quarto", ["--version"])
-  const python = run(chosenPython() ?? "python3", [
+  const python = run(chosenPython() ?? "python3-not-configured", [
     "-c",
     "import sys; print(sys.version.split()[0]); import ipykernel, nbformat, nbclient, yaml, jupyter_core",
   ])
@@ -426,7 +449,7 @@ export async function buildDocument(root, doc, { execute = false } = {}) {
     )
   if (execute && chunks.length > 0 && !tools.jupyter)
     throw new ScienceError(
-      `Python with Jupyter is needed for ${info.doc}'s code (set SCIENCE_PYTHON to a Python that has the packages in science/environment.txt): ${tools.jupyterProblem}`,
+      `Python with Jupyter is needed for ${info.doc}'s code (create the environment with: npm run science:env -- create, or set SCIENCE_PYTHON to a Python that has the packages in environments/science/requirements.txt): ${tools.jupyterProblem}`,
     )
 
   await rm(join(root, "science/_build", info.dir, `${info.name}.html`), { force: true })

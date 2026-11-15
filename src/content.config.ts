@@ -24,10 +24,10 @@ import { schemaFor } from "./editorial/schema.ts"
  * checked before the YAML parser can silently correct an impossible date
  * (src/editorial/raw-dates.ts). Everything else is the loader as Astro ships it.
  */
-const entries = (id: CollectionId) => {
+const entries = (base: string) => {
   const loader = glob({
     pattern: "**/[^_]*.md",
-    base: `./src/content/${collectionById(id).directory}`,
+    base,
     generateId: ({ entry }) => entry.replace(/\.md$/, ""),
   })
   return {
@@ -46,7 +46,20 @@ const entries = (id: CollectionId) => {
 }
 
 const collection = (id: CollectionId) =>
-  defineCollection({ loader: entries(id), schema: schemaFor(id) })
+  defineCollection({
+    loader: entries(`./src/content/${collectionById(id).directory}`),
+    schema: schemaFor(id),
+  })
+
+/**
+ * The demonstrations (P13-A01, D-105): synthetic Greenhouse articles in src/demos/greenhouse/,
+ * validated by the Greenhouse schema plus the required `synthetic: true`. They are loaded like
+ * any collection but only routed when src/editorial/demo.ts says so; src/content/ never holds one.
+ */
+const demonstrations = defineCollection({
+  loader: entries("./src/demos/greenhouse"),
+  schema: schemaFor("greenhouse", { synthetic: true }),
+})
 
 export const collections = {
   blog: collection("blog"),
@@ -57,4 +70,5 @@ export const collections = {
   monthsOriginal: collection("monthsOriginal"),
   kosmos: collection("kosmos"),
   bookClub: collection("bookClub"),
+  greenhouseDemos: demonstrations,
 }

@@ -1,0 +1,10 @@
+# The interpreter-level part of GusmaoLab's scientific environment (P13-A01).
+# micromamba owns this: the environment, the Python interpreter and the uv tool.
+# uv owns every Python package, from requirements.in / requirements.txt in this folder.
+# Do not list Python libraries here: the same package must have one owner.
+name: gusmaolab-science
+channels:
+  - conda-forge
+dependencies:
+  - python=3.12.*
+  - uv

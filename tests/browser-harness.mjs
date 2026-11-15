@@ -20,9 +20,16 @@ export const json = (value) => JSON.stringify(value)
 
 /**
  * Starts the server and the browser, and returns the helpers the tests use. `ids` are the
- * test IDs reported NOT RUN when no browser can start.
+ * test IDs reported NOT RUN when no browser can start. `root` is the built folder to serve
+ * (dist/ by default; the demonstration build is dist-demo/, P13-A01). `external` is the origin of a
+ * server the caller runs itself (the dev server): nothing is served, and `root` is not read.
  */
-export async function startBrowser({ ids, timeout = 180_000 }) {
+export async function startBrowser({
+  ids,
+  timeout = 180_000,
+  root = "dist",
+  external,
+}) {
   function notRun(reason) {
     for (const id of ids) console.log(`NOT RUN ${id}`)
     console.error(
@@ -33,9 +40,9 @@ export async function startBrowser({ ids, timeout = 180_000 }) {
 
   // --- A static server for dist/ -------------------------------------------------------------
 
-  const dist = fileURLToPath(new URL("../dist/", import.meta.url))
-  if (!existsSync(join(dist, "index.html")))
-    notRun("dist/ is not built; run `npm run build`")
+  const dist = fileURLToPath(new URL(`../${root}/`, import.meta.url))
+  if (!external && !existsSync(join(dist, "index.html")))
+    notRun(`${root}/ is not built; run \`npm run ${root === "dist" ? "build" : "demo:build"}\``)
   const TYPES = {
     ".html": "text/html; charset=utf-8",
     ".css": "text/css; charset=utf-8",
@@ -48,7 +55,7 @@ export async function startBrowser({ ids, timeout = 180_000 }) {
   // `serve.withoutInitialTarget`: serve the stylesheets without `scroll-initial-target`,
   // as a browser that lacks it reads them, to test the script that stands in for it (P08).
   const serve = { withoutInitialTarget: false }
-  const server = createServer(async (request, response) => {
+  const server = external ? null : createServer(async (request, response) => {
     let path = decodeURIComponent(new URL(request.url, "http://localhost").pathname)
     if (path.endsWith("/")) path += "index.html"
     const file = normalize(join(dist, path))
@@ -69,8 +76,8 @@ export async function startBrowser({ ids, timeout = 180_000 }) {
       response.writeHead(404, { "content-type": "text/plain" }).end("Not found")
     }
   })
-  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve))
-  const origin = `http://127.0.0.1:${server.address().port}`
+  if (server) await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve))
+  const origin = external ?? `http://127.0.0.1:${server.address().port}`
 
   // --- Headless Chrome over the DevTools protocol -------------------------------------------
 
@@ -83,7 +90,7 @@ export async function startBrowser({ ids, timeout = 180_000 }) {
     "/usr/bin/chromium-browser",
   ].find((path) => path && existsSync(path))
   if (!chromePath) {
-    server.close()
+    server?.close()
     notRun("no Chrome or Chromium found; set CHROME_PATH")
   }
   const profile = await mkdtemp(join(tmpdir(), "gusmaolab-chrome-"))
@@ -107,7 +114,7 @@ export async function startBrowser({ ids, timeout = 180_000 }) {
       socket?.close()
     } catch {}
     chrome.kill()
-    server.close()
+    server?.close()
     await sleep(200)
     // Only the temporary profile this run created.
     await rm(profile, { recursive: true, force: true }).catch(() => {})

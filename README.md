@@ -26,7 +26,13 @@ Source for [www.gusmaolab.org](https://www.gusmaolab.org), Eduardo Gade Gusmao's
 | `npm run science:check` | Report the Quarto and Python the scientific-article tool finds. See [`science/README.md`](science/README.md). |
 | `npm run science:verify` | Offline check that every generated scientific article is current (no Quarto, no Python, nothing executed). `npm run build` runs it first. |
 | `npm run science:render -- <dir>/<name>` | Prepare one Quarto article from its frozen results; never computes. |
-| `npm run science:execute -- <dir>/<name>` | Run one Quarto article's code, freeze the results, then render. The only command that runs code; set `SCIENCE_PYTHON` to a Python with Jupyter. |
+| `npm run science:execute -- <dir>/<name>` | Run one Quarto article's code, freeze the results, then render. The only command that runs code. Uses the micromamba environment `gusmaolab-science` unless `SCIENCE_PYTHON` names another. |
+| `npm run science:env -- <command>` | The scientific environment: `resolve`, `check`, `create [--prefix <dir>]`, `sync`, `lock`. See [`development/scientific-environment.md`](development/scientific-environment.md). |
+| `npm run science:quarto -- <arguments>` | Run Quarto with `QUARTO_PYTHON` set to that environment's Python. |
+| `npm run science:restore-test` | Rebuild the environment from its specification in a temporary folder and run the demonstration there (network, about two minutes). Not part of `npm test`. |
+| `npm run demo:build` | Build the site with its synthetic demonstrations into `dist-demo/` (never `dist/`), then check it. `npm run build` never includes them. See [`development/demonstrations.md`](development/demonstrations.md). |
+| `npm run demo:preview` | Serve `dist-demo/` on port 4323. |
+| `npm run demo:verify` | Check that `dist-demo/` holds every demonstration, labelled as synthetic. |
 | `npm run cv:check` | Report which CV file is selected, whether it can be read and whether a version is approved. Prints counts and identifiers, never the CV's text. Add `-- --verbose` to list what would be left out. See [`cv/README.md`](cv/README.md). |
 | `npm run cv:snapshot` | Write the public CV snapshot (`src/data/cv/snapshot.ts`) from the version approved in `cv/manifest.json`. Refuses, and changes nothing, without an approval. Not part of a build. |
 

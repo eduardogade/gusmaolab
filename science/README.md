@@ -84,24 +84,37 @@ The design study at `/_design/quarto/` shows a finished example beside its Markd
 Code runs only when you ask, and only for the one document you name:
 
 ```bash
-export SCIENCE_PYTHON=/path/to/python   # a Python with the packages in science/environment.txt
+npm run science:env -- check                    # the isolated Python is the specified one
 npm run science:execute -- greenhouse/<name>
 ```
 
-`execute` runs the document's code, freezes the results in `science/_freeze/`, then renders. Run
-`npm run science:check` to see which Quarto and Python the tool finds. `render` never computes: if the
-code changed since the last execution it stops and tells you to execute. `npm run build`, `npm run check`
-and `npm test` run neither; the build only runs `npm run science:verify`, which needs no Quarto and no Python.
+`execute` runs the document's code, freezes the results in `science/_freeze/`, then renders. The tool
+finds the Python by itself: the micromamba environment `gusmaolab-science` (`environments/science/`),
+unless `SCIENCE_PYTHON` or `QUARTO_PYTHON` names another. Run `npm run science:check` to see which Quarto
+and Python it found, and `npm run science:quarto -- <arguments>` to run Quarto itself with that Python.
+`render` never computes: if the code changed since the last execution it stops and tells you to execute.
+`npm run build`, `npm run check` and `npm test` run neither; the build only runs `npm run science:verify`,
+which needs no Quarto and no Python.
 
-The environment: Quarto 1.10.19 (tested; any 1.10 release should do), Python 3.12 with `ipykernel`,
-`jupyter_core`, `nbformat`, `nbclient` and `pyyaml` (tested: 7.3.0, 5.9.1, 5.10.4, 0.11.0, 6.0.3). The
-demonstration uses only the standard library. Pin the Quarto version in any CI that renders; CI that only
-builds needs neither.
+The environment, its versions, how to create and update it, and what to do after a Homebrew upgrade are in
+`development/scientific-environment.md`. Quarto must satisfy `quarto-required` in `science/_quarto.yml`
+(`>=1.10.19 <2`; tested with 1.10.19 and 1.11.9). Pin it in any CI that renders; CI that only builds needs
+neither Quarto nor Python.
+
+## 5. Demonstrations
+
+`science/demo/` holds synthetic articles that are shown only while developing and in a separate demonstration
+build, never in a release (`development/demonstrations.md`). They are written and computed exactly like a
+real article, with `synthetic: true` in the front matter:
+
+```bash
+npm run science:execute -- demo/<name>
+```
 
 Only code you wrote is run, on your machine. Never execute a document from anyone else, and keep private
 data out of `science/`: nothing in it is excluded from Git except Quarto's working files.
 
-## 5. Check
+## 6. Check
 
 ```bash
 npm run science:verify
@@ -111,7 +124,7 @@ It fails when a source has no rendering, a source, bibliography or setting chang
 code changed after it was executed, the frozen results changed, a generated file was edited by hand, or
 a generated file has no source. Fix it by running the command it prints.
 
-## 6. Publish
+## 7. Publish
 
 Set `status: published` (and `publishedAt`), render, and run `npm run verify`. The entry is an ordinary
 P10 entry: it appears at `/lecture-notes/greenhouse/<slug>/`, in the Greenhouse index, with the

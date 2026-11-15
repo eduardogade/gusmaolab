@@ -1,5 +1,5 @@
 // Controlled computation and reproducibility (P13, D-099, D-102): QTO-017 and QTO-018. They run
-// the real tool, so they need Quarto and a Python that has Jupyter (science/environment.txt); set
+// the real tool, so they need Quarto and a Python that has Jupyter (environments/science/requirements.txt); set
 // SCIENCE_PYTHON to choose it. Without them each check is reported SKIPPED, never passed, and the
 // process still exits 0, so a machine that edits only Markdown can run `npm test`.
 //

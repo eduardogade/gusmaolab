@@ -1,19 +1,145 @@
 {
   "version": 1,
   "documents": {
+    "demo/demo-synthetic-signals": {
+      "kind": "demo",
+      "source": "science/demo/demo-synthetic-signals.qmd",
+      "inputs": {
+        "science/_quarto.yml": "893b136fb856310d0e2977e0c69c9ffbd4ce6e1bbc914770f53d60994833aa6e",
+        "science/demo/demo-synthetic-signals.bib": "ce93913bc783f56c7a1c213aaacc296e98760e24e5162ad2ec203d87e98a8736",
+        "science/demo/demo-synthetic-signals.qmd": "5bec9e8e981ab56b5bc2821799f26ae5ca18f6baf739690b64dcbd1685ffc23c"
+      },
+      "quarto": "1.11.9",
+      "execution": {
+        "codeSha256": "52d28cbb8eb10f680a2f67c5889fb95cac78e9f236cc427c6c96fed2efab70ae",
+        "freezeSha256": "23aea3edecae125a9fb4d315ac97dae59e0cec6e05ad68a7032aa2a197574c6a",
+        "python": "3.12.16"
+      },
+      "output": {
+        "fragment": "src/demos/science/demo-synthetic-signals.html",
+        "fragmentSha256": "fa4089a2a265af2dfad51899272848f597db633eb89fadcbe1c7ea383c9b036b",
+        "stub": "src/demos/greenhouse/demo-synthetic-signals.md",
+        "stubSha256": "faeae0cda9ad869f343ad9e8ec4bbaa6eb982cd95e0ae82501db29bb1436a87d",
+        "assetDir": "src/demos/assets/demo-synthetic-signals",
+        "assetsSha256": "4afe161ce0f895fc4410c104b7557656557465f4daf65a52a4c866ee2a9fe5d1",
+        "assets": [
+          "fig-signals-output-1.svg"
+        ]
+      },
+      "metadata": {
+        "title": "From Synthetic Signals to Reproducible Results",
+        "description": "A miniature scientific tutorial: two invented signals, controlled noise, a few summary statistics, and what it takes for someone else to get the same numbers again. Everything is synthetic.",
+        "status": "published",
+        "slug": "demo-synthetic-signals",
+        "publishedAt": "2026-11-14",
+        "tags": [
+          "reproducibility",
+          "simulation",
+          "statistics",
+          "demonstration"
+        ],
+        "difficulty": "intermediate",
+        "prerequisites": [
+          "Reading simple Python",
+          "Mean, standard deviation and the sine function"
+        ],
+        "related": [
+          "greenhouse/demo-scientific-markdown",
+          "greenhouse/demo-markdown-and-quarto"
+        ],
+        "synthetic": true
+      },
+      "headings": [
+        {
+          "depth": 2,
+          "slug": "motivation-and-context",
+          "text": "Motivation and context"
+        },
+        {
+          "depth": 3,
+          "slug": "what-we-will-do",
+          "text": "What we will do"
+        },
+        {
+          "depth": 2,
+          "slug": "reproducible-setup",
+          "text": "Reproducible setup"
+        },
+        {
+          "depth": 2,
+          "slug": "a-mathematical-model",
+          "text": "A mathematical model"
+        },
+        {
+          "depth": 2,
+          "slug": "synthetic-data-generation",
+          "text": "Synthetic-data generation"
+        },
+        {
+          "depth": 2,
+          "slug": "descriptive-statistics",
+          "text": "Descriptive statistics"
+        },
+        {
+          "depth": 3,
+          "slug": "reading-the-numbers",
+          "text": "Reading the numbers"
+        },
+        {
+          "depth": 2,
+          "slug": "a-figure",
+          "text": "A figure"
+        },
+        {
+          "depth": 2,
+          "slug": "a-table",
+          "text": "A table"
+        },
+        {
+          "depth": 2,
+          "slug": "what-a-reader-needs-to-repeat-this",
+          "text": "What a reader needs to repeat this"
+        },
+        {
+          "depth": 2,
+          "slug": "practical-conclusions",
+          "text": "Practical conclusions"
+        },
+        {
+          "depth": 2,
+          "slug": "references",
+          "text": "References"
+        },
+        {
+          "depth": 2,
+          "slug": "footnotes",
+          "text": "Footnotes"
+        }
+      ],
+      "features": {
+        "math": 20,
+        "figures": 1,
+        "tables": 1,
+        "citations": 2,
+        "footnotes": 1,
+        "callouts": 3,
+        "code": 9,
+        "equations": 2
+      }
+    },
     "design/synthetic-specimen": {
       "kind": "study",
       "source": "science/design/synthetic-specimen.qmd",
       "inputs": {
-        "science/_quarto.yml": "0599a9c9121f17820f8c737b586cbcfd8efaee5b3ddcdd3ce19eae030b4f3486",
+        "science/_quarto.yml": "893b136fb856310d0e2977e0c69c9ffbd4ce6e1bbc914770f53d60994833aa6e",
         "science/design/synthetic-specimen.bib": "ee211be07b8566dd132478264ced11f1de83a99014c7dedc78cc21189fb5ccfa",
         "science/design/synthetic-specimen.qmd": "326018911e6b59e4f1a4901dd6fd359df440caa1d0e17003818dd9757f59ffa4"
       },
-      "quarto": "1.10.19",
+      "quarto": "1.11.9",
       "execution": {
         "codeSha256": "ddf3d0fe9593daa69ff3112058b6d7a4bb16f0c853ad7091b8e7350fbdbae562",
         "freezeSha256": "c507b6a553fcd859989f97d5b4c34ad96086ad975cf1c844afdc1e5f31cbf441",
-        "python": "3.12.13"
+        "python": "3.12.16"
       },
       "output": {
         "fragment": "src/design/quarto/synthetic-specimen.html",

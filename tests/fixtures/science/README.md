@@ -11,4 +11,4 @@ anyone's research, and it is never published.
   and compares the result, so this folder cannot drift from the tool.
 
 Regenerate with: `node tests/fixtures/science/regenerate.mjs` (needs Quarto and Python with the
-packages in science/environment.txt; set SCIENCE_PYTHON).
+packages in environments/science/requirements.txt; set SCIENCE_PYTHON).

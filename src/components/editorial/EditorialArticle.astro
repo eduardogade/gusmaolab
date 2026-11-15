@@ -89,6 +89,15 @@ const presentation = PRESENTATIONS[collection]
       )
     }
     {
+      data.synthetic === true && (
+        <p class="ed__notice ed__notice--demo" role="note" data-demo-notice>
+          <strong>Development demonstration — synthetic content.</strong> This article was
+          written to show how GusmaoLab publishes. Its data are invented, and it is not part of
+          the research archive.
+        </p>
+      )
+    }
+    {
       data.status === "archived" && (
         <p class="ed__notice" role="note">
           Archived: this entry is kept for the record and may be out of date.
