@@ -1,0 +1,296 @@
+<!DOCTYPE html><html lang="en" data-category="blog-notes" data-environment="technical"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="description" content="A miniature scientific tutorial: two invented signals, controlled noise, a few summary statistics, and what it takes for someone else to get the same numbers again. Everything is synthetic."><title>From Synthetic Signals to Reproducible Results · GusmaoLab</title><link rel="stylesheet" href="/_astro/BaseLayout.Diqj2w3a.css"><link rel="stylesheet" href="/_astro/FolderStack.oXLg4iUV.css"><style>.scaffold-overline[data-astro-cid-6pesgeuc]{color:var(--color-text-muted);font-family:var(--font-label);font-size:var(--font-size-xs);font-weight:var(--font-weight-semibold);letter-spacing:var(--letter-spacing-label);text-transform:uppercase}
+</style><link rel="stylesheet" href="/_astro/FolderPage.CQQCBSKV.css"></head><body class="gl-flannel"><div class="page" data-page-path="/lecture-notes/greenhouse/demo-synthetic-signals/" data-astro-cid-ct7eqmfv><div class="page-shell" data-astro-cid-ct7eqmfv><div class="gl-folders" data-category="blog-notes" data-folder-depth="2"><div class="gl-folder" data-level="1"><nav class="gl-folder__strip" aria-label="Sections"><ul class="gl-folder__tabs" role="list"><li class="gl-folder-tab" data-tab-id="home" data-tab-kind="folder" data-category="core"><span class="gl-folder-tab__shape" aria-hidden="true"></span><a class="gl-folder-tab__label" href="/">Home</a></li><li class="gl-folder-tab" data-tab-id="about" data-tab-kind="folder" data-category="core"><span class="gl-folder-tab__shape" aria-hidden="true"></span><a class="gl-folder-tab__label" href="/about/">About</a></li><li class="gl-folder-tab" data-tab-id="contact" data-tab-kind="folder" data-category="core"><span class="gl-folder-tab__shape" aria-hidden="true"></span><a class="gl-folder-tab__label" href="/contact/">Contact</a></li><li class="gl-folder-tab" data-tab-id="schedule" data-tab-kind="folder" data-category="core"><span class="gl-folder-tab__shape" aria-hidden="true"></span><a class="gl-folder-tab__label" href="/schedule/">Schedule</a></li><li class="gl-folder-tab" data-tab-id="portfolio" data-tab-kind="folder" data-category="research"><span class="gl-folder-tab__shape" aria-hidden="true"></span><a class="gl-folder-tab__label" href="/portfolio/">Portfolio</a></li><li class="gl-folder-tab" data-tab-id="cv" data-tab-kind="folder" data-category="research" data-preview><span class="gl-folder-tab__shape" aria-hidden="true"></span><a class="gl-folder-tab__label" href="/cv/">CV</a><div class="gl-folder-preview" popover="manual" data-preview-of="cv"><p class="gl-folder-preview__title" aria-hidden="true">CV</p><ul class="gl-folder-preview__list" role="list" aria-label="CV folders"><li class="gl-folder-preview__item" data-tab-id="overview:cv" data-tab-kind="overview"><a class="gl-folder-preview__link" href="/cv/">Overview<span class="gl-visually-hidden"> of CV</span></a></li><li class="gl-folder-preview__item" data-tab-id="cv-teaching" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/cv/teaching/">Teaching</a></li><li class="gl-folder-preview__item" data-tab-id="cv-research" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/cv/research/">Research</a></li><li class="gl-folder-preview__item" data-tab-id="cv-publications" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/cv/publications/">Publications</a></li><li class="gl-folder-preview__item" data-tab-id="cv-talks" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/cv/talks/">Talks / Presentations</a></li><li class="gl-folder-preview__item" data-tab-id="cv-mentoring" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/cv/mentoring/">Mentoring / Supervision</a></li><li class="gl-folder-preview__item" data-tab-id="cv-awards" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/cv/awards/">Awards &amp; Honors</a></li><li class="gl-folder-preview__item" data-tab-id="cv-service" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/cv/service/">Service</a></li><li class="gl-folder-preview__item" data-tab-id="cv-outreach" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/cv/outreach/">Outreach / Public Engagement</a></li></ul></div></li><li class="gl-folder-tab" data-tab-id="lab" data-tab-kind="folder" data-category="research" data-preview><span class="gl-folder-tab__shape" aria-hidden="true"></span><a class="gl-folder-tab__label" href="/lab/">Lab</a><div class="gl-folder-preview" popover="manual" data-preview-of="lab"><p class="gl-folder-preview__title" aria-hidden="true">Lab</p><ul class="gl-folder-preview__list" role="list" aria-label="Lab folders"><li class="gl-folder-preview__item" data-tab-id="overview:lab" data-tab-kind="overview"><a class="gl-folder-preview__link" href="/lab/">Overview<span class="gl-visually-hidden"> of Lab</span></a></li><li class="gl-folder-preview__item" data-tab-id="lab-people" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/lab/people/">People</a></li><li class="gl-folder-preview__item" data-tab-id="lab-join-us" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/lab/join-us/">Join Us</a></li><li class="gl-folder-preview__item" data-tab-id="lab-research-areas" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/lab/research-areas/">Research Areas</a></li><li class="gl-folder-preview__item" data-tab-id="lab-facilities" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/lab/facilities/">Facilities</a></li><li class="gl-folder-preview__item" data-tab-id="lab-partners" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/lab/partners/">Partners</a></li><li class="gl-folder-preview__item" data-tab-id="lab-resources" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/lab/resources/">Resources</a></li></ul></div></li><li class="gl-folder-tab" data-tab-id="blog" data-tab-kind="folder" data-category="blog-notes"><span class="gl-folder-tab__shape" aria-hidden="true"></span><a class="gl-folder-tab__label" href="/blog/">Blog</a></li><li class="gl-folder-tab" data-tab-id="lecture-notes" data-tab-kind="folder" data-category="blog-notes" data-selected><span class="gl-folder-tab__shape" aria-hidden="true"></span><a class="gl-folder-tab__label" href="/lecture-notes/" aria-current="true">Lecture Notes</a><svg class="gl-folder-tab__indicator" viewBox="0 0 16 8" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M1.5 1.5 8 6.5 14.5 1.5" vector-effect="non-scaling-stroke"></path></svg></li><li class="gl-folder-tab" data-tab-id="writing" data-tab-kind="folder" data-category="writing" data-preview><span class="gl-folder-tab__shape" aria-hidden="true"></span><a class="gl-folder-tab__label" href="/writing/">Writing</a><div class="gl-folder-preview" popover="manual" data-preview-of="writing"><p class="gl-folder-preview__title" aria-hidden="true">Writing</p><ul class="gl-folder-preview__list" role="list" aria-label="Writing folders"><li class="gl-folder-preview__item" data-tab-id="overview:writing" data-tab-kind="overview"><a class="gl-folder-preview__link" href="/writing/">Overview<span class="gl-visually-hidden"> of Writing</span></a></li><li class="gl-folder-preview__item" data-tab-id="writing-months-original" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/writing/months-original/">Months&#39; Original</a></li><li class="gl-folder-preview__item" data-tab-id="writing-kosmos" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/writing/kosmos/">Kosmos Series</a></li><li class="gl-folder-preview__item" data-tab-id="writing-book-club" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/writing/book-club/">Book Club</a></li></ul></div></li><li class="gl-folder-tab" data-tab-id="bearnards-area" data-tab-kind="folder" data-category="bearnard" data-preview><span class="gl-folder-tab__shape" aria-hidden="true"></span><a class="gl-folder-tab__label" href="/bearnards-area/">Bearnard&#39;s Area</a><div class="gl-folder-preview" popover="manual" data-preview-of="bearnards-area"><p class="gl-folder-preview__title" aria-hidden="true">Bearnard&#39;s Area</p><ul class="gl-folder-preview__list" role="list" aria-label="Bearnard's Area folders"><li class="gl-folder-preview__item" data-tab-id="overview:bearnards-area" data-tab-kind="overview"><a class="gl-folder-preview__link" href="/bearnards-area/">Overview<span class="gl-visually-hidden"> of Bearnard&#39;s Area</span></a></li><li class="gl-folder-preview__item" data-tab-id="bearnards-area-photos" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/bearnards-area/photos/">Photos</a></li><li class="gl-folder-preview__item" data-tab-id="bearnards-area-videos" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/bearnards-area/videos/">Videos</a></li><li class="gl-folder-preview__item" data-tab-id="bearnards-area-powerlifting" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/bearnards-area/powerlifting/">Powerlifting</a></li><li class="gl-folder-preview__item" data-tab-id="bearnards-area-bear-life" data-tab-kind="folder"><a class="gl-folder-preview__link" href="/bearnards-area/bear-life/">Bear Life</a></li></ul></div></li></ul></nav><div class="gl-folder__body"><div class="gl-folder" data-level="2"><nav class="gl-folder__strip" aria-label="Lecture Notes folders"><ul class="gl-folder__tabs" role="list"><li class="gl-folder-tab" data-tab-id="overview:lecture-notes" data-tab-kind="overview"><span class="gl-folder-tab__shape" aria-hidden="true"></span><a class="gl-folder-tab__label" href="/lecture-notes/">Overview<span class="gl-visually-hidden"> of Lecture Notes</span></a></li><li class="gl-folder-tab" data-tab-id="lecture-notes-bearnards-trail" data-tab-kind="folder"><span class="gl-folder-tab__shape" aria-hidden="true"></span><a class="gl-folder-tab__label" href="/lecture-notes/bearnards-trail/">Bearnard&#39;s Trail</a></li><li class="gl-folder-tab" data-tab-id="lecture-notes-greenhouse" data-tab-kind="folder" data-selected><span class="gl-folder-tab__shape" aria-hidden="true"></span><a class="gl-folder-tab__label" href="/lecture-notes/greenhouse/" aria-current="true">The Greenhouse</a><svg class="gl-folder-tab__indicator" viewBox="0 0 16 8" preserveAspectRatio="none" aria-hidden="true" focusable="false"><path d="M1.5 1.5 8 6.5 14.5 1.5" vector-effect="non-scaling-stroke"></path></svg></li><li class="gl-folder-tab" data-tab-id="lecture-notes-berries" data-tab-kind="folder"><span class="gl-folder-tab__shape" aria-hidden="true"></span><a class="gl-folder-tab__label" href="/lecture-notes/berries/">Berries</a></li><li class="gl-folder-tab" data-tab-id="lecture-notes-timber-logs" data-tab-kind="folder"><span class="gl-folder-tab__shape" aria-hidden="true"></span><a class="gl-folder-tab__label" href="/lecture-notes/timber-logs/">Timber Logs</a></li></ul></nav><div class="gl-folder__body"><div class="gl-folder__paper"><main id="content" data-astro-cid-ct7eqmfv><article class="ed ed--greenhouse" data-editorial-collection="greenhouse" data-editorial-layout="greenhouse" data-editorial-status="published" data-editorial-slug="demo-synthetic-signals" data-measure="technical"><header class="ed__header"><p class="ed__overline"><span>The Greenhouse</span></p><h1 class="ed__title">From Synthetic Signals to Reproducible Results</h1><p class="ed__lede">A miniature scientific tutorial: two invented signals, controlled noise, a few summary statistics, and what it takes for someone else to get the same numbers again. Everything is synthetic.</p><aside class="ed__prerequisites" aria-labelledby="ed-prerequisites"><h2 id="ed-prerequisites">Prerequisites</h2><ul><li>Reading simple Python</li><li>Mean, standard deviation and the sine function</li></ul></aside><p class="ed__meta"><span><span class="ed__meta-label">Published </span><time datetime="2026-11-14">14 November 2026</time></span><span><span class="ed__meta-label">Level </span>intermediate</span></p><ul class="ed__tags" aria-label="Tags"><li>reproducibility</li><li>simulation</li><li>statistics</li><li>demonstration</li></ul><p class="ed__notice ed__notice--demo" role="note" data-demo-notice><strong>Development demonstration — synthetic content.</strong> This article was written to show how GusmaoLab publishes. Its data are invented, and it is not part of the research archive.</p></header><div class="ed__layout" data-has-toc><nav class="ed__toc" aria-labelledby="ed-toc-title" data-toc><p class="ed__toc-title" id="ed-toc-title">On this page</p><ol><li data-depth="2"><a href="#motivation-and-context">Motivation and context</a></li><li data-depth="3"><a href="#what-we-will-do">What we will do</a></li><li data-depth="2"><a href="#reproducible-setup">Reproducible setup</a></li><li data-depth="2"><a href="#a-mathematical-model">A mathematical model</a></li><li data-depth="2"><a href="#synthetic-data-generation">Synthetic-data generation</a></li><li data-depth="2"><a href="#descriptive-statistics">Descriptive statistics</a></li><li data-depth="3"><a href="#reading-the-numbers">Reading the numbers</a></li><li data-depth="2"><a href="#a-figure">A figure</a></li><li data-depth="2"><a href="#a-table">A table</a></li><li data-depth="2"><a href="#what-a-reader-needs-to-repeat-this">What a reader needs to repeat this</a></li><li data-depth="2"><a href="#practical-conclusions">Practical conclusions</a></li><li data-depth="2"><a href="#references">References</a></li><li data-depth="2"><a href="#footnotes">Footnotes</a></li></ol></nav><div class="ed__body" data-editorial-body><div class="callout callout-style-default callout-warning callout-titled">
+<div class="callout-header d-flex align-content-center">
+
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Warning</span>Synthetic data
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>Every number and curve on this page is generated by a seeded random number generator inside the document. They are invented to teach a method; they are not measurements of anything, and no conclusion about biology follows from them.</p>
+</div>
+</div>
+
+<h2 id="motivation-and-context">Motivation and context</h2>
+<p>A result is <em>reproducible</em> when someone else, with the same code and the same inputs, obtains the same numbers <span class="citation" data-cites="peng2011">(<a href="#ref-peng2011" role="doc-biblioref">Peng 2011</a>)</span>. It sounds like the minimum one could ask of a computed result, and it is surprisingly easy to lose: a random seed that was never fixed, a library that changed between two installs, a figure pasted from a session nobody remembers.</p>
+<p>This tutorial is deliberately small. It builds two synthetic signals, adds noise whose size we control, compares a handful of summary statistics, and shows what must be recorded so that the same figure and the same table can be made again.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a> The rules it follows are those collected by <span class="citation" data-cites="sandve2013">Sandve et al. (<a href="#ref-sandve2013" role="doc-biblioref">2013</a>)</span>, in particular the rule to avoid manual steps and the rule to record every random seed.</p>
+
+<h3 id="what-we-will-do">What we will do</h3>
+<ol type="1">
+<li>Write the model of a noisy signal.</li>
+<li>Generate two signals from it with a fixed seed.</li>
+<li>Summarise each with a few statistics.</li>
+<li>Draw them and tabulate the summaries.</li>
+<li>Say what a reader needs in order to repeat all of it.</li>
+</ol>
+
+
+
+<h2 id="reproducible-setup">Reproducible setup</h2>
+<p>The computation uses only the Python standard library, so the environment is nearly empty: a Python interpreter, and the Jupyter packages that let Quarto run the cells. The project fixes both in files kept with the website’s source, and the site never runs the code when it is built.</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode bash"><code class="sourceCode bash"><span><span class="ex">npm</span> run science:env <span class="at">--</span> check</span>
+<span><span class="ex">npm</span> run science:execute <span class="at">--</span> demo/demo-synthetic-signals</span></code></pre></div>
+<div class="callout callout-style-default callout-tip callout-titled">
+<div class="callout-header d-flex align-content-center">
+
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Tip</span>Run only when you mean to
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p><code>science:execute</code> is the one command that runs a document’s code. Rendering and building the site only read the results stored with the article, and stop with a message if those results no longer match the code.</p>
+</div>
+</div>
+<p>The first cell fixes everything that could change the numbers: the seed, the number of samples and the parameters of both signals. Writing them in one place makes them easy to read, and easy to change on purpose.</p>
+<div id="setup-parameters" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python"><code class="sourceCode python"><span><span class="im">import</span> math</span>
+<span><span class="im">import</span> random</span>
+<span><span class="im">import</span> statistics</span>
+<span></span>
+<span>SEED <span class="op">=</span> <span class="dv">20261114</span>        <span class="co"># the only source of randomness in this document</span></span>
+<span>SAMPLES <span class="op">=</span> <span class="dv">160</span>          <span class="co"># samples per signal</span></span>
+<span>DURATION <span class="op">=</span> <span class="fl">4.0</span>         <span class="co"># seconds</span></span>
+<span></span>
+<span><span class="co"># name: amplitude A, frequency f (Hz), phase (radians), noise standard deviation sigma</span></span>
+<span>SIGNALS <span class="op">=</span> {</span>
+<span>    <span class="st">"A"</span>: <span class="bu">dict</span>(amplitude<span class="op">=</span><span class="fl">1.0</span>, frequency<span class="op">=</span><span class="fl">1.0</span>, phase<span class="op">=</span><span class="fl">0.0</span>, sigma<span class="op">=</span><span class="fl">0.25</span>),</span>
+<span>    <span class="st">"B"</span>: <span class="bu">dict</span>(amplitude<span class="op">=</span><span class="fl">0.6</span>, frequency<span class="op">=</span><span class="fl">1.0</span>, phase<span class="op">=</span>math.pi <span class="op">/</span> <span class="dv">3</span>, sigma<span class="op">=</span><span class="fl">0.25</span>),</span>
+<span>}</span>
+<span><span class="bu">print</span>(<span class="ss">f"seed </span><span class="sc">{</span>SEED<span class="sc">}</span><span class="ss">, </span><span class="sc">{</span>SAMPLES<span class="sc">}</span><span class="ss"> samples over </span><span class="sc">{</span>DURATION<span class="sc">}</span><span class="ss"> s"</span>)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>seed 20261114, 160 samples over 4.0 s</code></pre>
+</div>
+</div>
+
+
+<h2 id="a-mathematical-model">A mathematical model</h2>
+<p>Each sample of a signal is a sine wave plus noise. At time <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>t</mi><mi>k</mi></msub><mo>=</mo><mi>k</mi><mspace width="0.167em"></mspace><mi mathvariant="normal">Δ</mi><mi>t</mi></mrow><annotation encoding="application/x-tex">t_k = k\,\Delta t</annotation></semantics></math>, with <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi mathvariant="normal">Δ</mi><mi>t</mi><mo>=</mo><mn>4</mn><mi>/</mi><mn>160</mn><mo>=</mo><mn>0.025</mn></mrow><annotation encoding="application/x-tex">\Delta t = 4/160 = 0.025</annotation></semantics></math> s, the observed value <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>y</mi><mi>k</mi></msub><annotation encoding="application/x-tex">y_k</annotation></semantics></math> is given by <a href="#eq-model" class="quarto-xref">Equation&nbsp;1</a>.</p>
+<p><span id="eq-model"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>y</mi><mi>k</mi></msub><mo>=</mo><mi>A</mi><mspace width="0.167em"></mspace><mrow><mi mathvariant="normal">sin</mi><mo>⁡</mo></mrow><mspace width="-0.167em"></mspace><mrow><mo stretchy="true" form="prefix">(</mo><mn>2</mn><mi>π</mi><mi>f</mi><mspace width="0.167em"></mspace><msub><mi>t</mi><mi>k</mi></msub><mo>+</mo><mi>φ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><msub><mi>ε</mi><mi>k</mi></msub><mo>,</mo><mspace width="2.0em"></mspace><msub><mi>ε</mi><mi>k</mi></msub><mo>∼</mo><mi mathvariant="script">𝒩</mi><mspace width="-0.167em"></mspace><mrow><mo stretchy="true" form="prefix">(</mo><mn>0</mn><mo>,</mo><msup><mi>σ</mi><mn>2</mn></msup><mo stretchy="true" form="postfix">)</mo></mrow><mspace width="2.0em"></mspace><mo stretchy="false" form="prefix">(</mo><mn>1</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+y_k = A\,\sin\!\left(2\pi f\,t_k + \varphi\right) + \varepsilon_k,
+\qquad \varepsilon_k \sim \mathcal{N}\!\left(0,\sigma^2\right)
+ \qquad(1)</annotation></semantics></math></span></p>
+<p>Here <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>A</mi><annotation encoding="application/x-tex">A</annotation></semantics></math> is the amplitude, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>f</mi><annotation encoding="application/x-tex">f</annotation></semantics></math> the frequency, <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>φ</mi><annotation encoding="application/x-tex">\varphi</annotation></semantics></math> the phase, and the noise <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ε</mi><mi>k</mi></msub><annotation encoding="application/x-tex">\varepsilon_k</annotation></semantics></math> is drawn independently at every sample from a normal distribution with mean <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>0</mn><annotation encoding="application/x-tex">0</annotation></semantics></math> and standard deviation <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>σ</mi><annotation encoding="application/x-tex">\sigma</annotation></semantics></math>. A natural question is how much of what we observe is signal and how much is noise. Taking the ratio of their average powers, a sine of amplitude <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>A</mi><annotation encoding="application/x-tex">A</annotation></semantics></math> has mean square <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>A</mi><mn>2</mn></msup><mi>/</mi><mn>2</mn></mrow><annotation encoding="application/x-tex">A^2/2</annotation></semantics></math>, and the noise has mean square <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msup><mi>σ</mi><mn>2</mn></msup><annotation encoding="application/x-tex">\sigma^2</annotation></semantics></math>, so the signal-to-noise ratio is given by <a href="#eq-snr" class="quarto-xref">Equation&nbsp;2</a>.</p>
+<p><span id="eq-snr"><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mrow><mi mathvariant="normal">S</mi><mi mathvariant="normal">N</mi><mi mathvariant="normal">R</mi></mrow><mo>=</mo><mfrac><mrow><msup><mi>A</mi><mn>2</mn></msup><mi>/</mi><mn>2</mn></mrow><msup><mi>σ</mi><mn>2</mn></msup></mfrac><mo>=</mo><mfrac><msup><mi>A</mi><mn>2</mn></msup><mrow><mn>2</mn><msup><mi>σ</mi><mn>2</mn></msup></mrow></mfrac><mo>,</mo><mspace width="2.0em"></mspace><msub><mrow><mi mathvariant="normal">S</mi><mi mathvariant="normal">N</mi><mi mathvariant="normal">R</mi></mrow><mrow><mi mathvariant="normal">d</mi><mi mathvariant="normal">B</mi></mrow></msub><mo>=</mo><mn>10</mn><mspace width="0.167em"></mspace><msub><mrow><mi mathvariant="normal">log</mi><mo>⁡</mo></mrow><mn>10</mn></msub><mrow><mi mathvariant="normal">S</mi><mi mathvariant="normal">N</mi><mi mathvariant="normal">R</mi></mrow><mspace width="2.0em"></mspace><mo stretchy="false" form="prefix">(</mo><mn>2</mn><mo stretchy="false" form="postfix">)</mo></mrow><annotation encoding="application/x-tex">
+\mathrm{SNR} = \frac{A^2/2}{\sigma^2} = \frac{A^2}{2\sigma^2},
+\qquad \mathrm{SNR}_{\mathrm{dB}} = 10\,\log_{10}\mathrm{SNR}
+ \qquad(2)</annotation></semantics></math></span></p>
+<p>For our two signals <a href="#eq-snr" class="quarto-xref">Equation&nbsp;2</a> predicts <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>8.0</mn><annotation encoding="application/x-tex">8.0</annotation></semantics></math> (about <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>9.0</mn><annotation encoding="application/x-tex">9.0</annotation></semantics></math> dB) for signal A, and <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>2.88</mn><annotation encoding="application/x-tex">2.88</annotation></semantics></math> (about <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mn>4.6</mn><annotation encoding="application/x-tex">4.6</annotation></semantics></math> dB) for signal B, because B has the smaller amplitude and the same noise.</p>
+
+
+<h2 id="synthetic-data-generation">Synthetic-data generation</h2>
+<p>Python’s <code>random</code> module provides uniform numbers, and we turn two of them into one normal number with the Box–Muller transform. A single generator, created from the seed, is the only source of randomness. Signals are generated one after the other, in a fixed order, so a signal’s noise does not depend on anything but the seed and its position in that order.</p>
+<div id="generate-signals" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python"><code class="sourceCode python"><span>rng <span class="op">=</span> random.Random(SEED)</span>
+<span></span>
+<span><span class="kw">def</span> normal(sigma):</span>
+<span>    <span class="co">"""One draw from N(0, sigma^2), by the Box-Muller transform."""</span></span>
+<span>    u1, u2 <span class="op">=</span> <span class="fl">1.0</span> <span class="op">-</span> rng.random(), rng.random()</span>
+<span>    <span class="cf">return</span> sigma <span class="op">*</span> math.sqrt(<span class="op">-</span><span class="fl">2.0</span> <span class="op">*</span> math.log(u1)) <span class="op">*</span> math.cos(<span class="fl">2.0</span> <span class="op">*</span> math.pi <span class="op">*</span> u2)</span>
+<span></span>
+<span>times <span class="op">=</span> [k <span class="op">*</span> DURATION <span class="op">/</span> SAMPLES <span class="cf">for</span> k <span class="kw">in</span> <span class="bu">range</span>(SAMPLES)]</span>
+<span>clean, observed <span class="op">=</span> {}, {}</span>
+<span><span class="cf">for</span> name, p <span class="kw">in</span> SIGNALS.items():</span>
+<span>    clean[name] <span class="op">=</span> [p[<span class="st">"amplitude"</span>] <span class="op">*</span> math.sin(<span class="dv">2</span> <span class="op">*</span> math.pi <span class="op">*</span> p[<span class="st">"frequency"</span>] <span class="op">*</span> t <span class="op">+</span> p[<span class="st">"phase"</span>]) <span class="cf">for</span> t <span class="kw">in</span> times]</span>
+<span>    observed[name] <span class="op">=</span> [c <span class="op">+</span> normal(p[<span class="st">"sigma"</span>]) <span class="cf">for</span> c <span class="kw">in</span> clean[name]]</span>
+<span></span>
+<span><span class="cf">for</span> name <span class="kw">in</span> SIGNALS:</span>
+<span>    head <span class="op">=</span> <span class="st">", "</span>.join(<span class="ss">f"</span><span class="sc">{</span>y<span class="sc">:+.3f}</span><span class="ss">"</span> <span class="cf">for</span> y <span class="kw">in</span> observed[name][:<span class="dv">4</span>])</span>
+<span>    <span class="bu">print</span>(<span class="ss">f"signal </span><span class="sc">{</span>name<span class="sc">}</span><span class="ss">: </span><span class="sc">{</span><span class="bu">len</span>(observed[name])<span class="sc">}</span><span class="ss"> samples, first four values </span><span class="sc">{</span>head<span class="sc">}</span><span class="ss"> ..."</span>)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>signal A: 160 samples, first four values -0.086, -0.419, +0.439, +0.491 ...
+signal B: 160 samples, first four values +0.778, +0.657, +0.798, +0.828 ...</code></pre>
+</div>
+</div>
+<p>The printed values are the first ones of each signal. Running the cell again prints exactly the same numbers, because the generator starts from the same seed every time.</p>
+
+
+<h2 id="descriptive-statistics">Descriptive statistics</h2>
+<p>For each signal we compute the mean and the standard deviation of the observed values, and the root-mean-square (RMS) residual, which is the typical size of the noise that was actually added. The measured signal-to-noise ratio is the mean square of the clean signal divided by the mean square of the residual, to be compared with <a href="#eq-snr" class="quarto-xref">Equation&nbsp;2</a>.</p>
+<div id="describe-signals" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python"><code class="sourceCode python"><span>stats <span class="op">=</span> {}</span>
+<span><span class="cf">for</span> name, p <span class="kw">in</span> SIGNALS.items():</span>
+<span>    y, c <span class="op">=</span> observed[name], clean[name]</span>
+<span>    residual <span class="op">=</span> [a <span class="op">-</span> b <span class="cf">for</span> a, b <span class="kw">in</span> <span class="bu">zip</span>(y, c)]</span>
+<span>    ms_clean <span class="op">=</span> statistics.fmean(v <span class="op">*</span> v <span class="cf">for</span> v <span class="kw">in</span> c)</span>
+<span>    ms_noise <span class="op">=</span> statistics.fmean(r <span class="op">*</span> r <span class="cf">for</span> r <span class="kw">in</span> residual)</span>
+<span>    stats[name] <span class="op">=</span> <span class="bu">dict</span>(</span>
+<span>        mean<span class="op">=</span>statistics.fmean(y),</span>
+<span>        sd<span class="op">=</span>statistics.stdev(y),</span>
+<span>        rms<span class="op">=</span>math.sqrt(ms_noise),</span>
+<span>        snr_theory<span class="op">=</span><span class="dv">10</span> <span class="op">*</span> math.log10(p[<span class="st">"amplitude"</span>] <span class="op">**</span> <span class="dv">2</span> <span class="op">/</span> (<span class="dv">2</span> <span class="op">*</span> p[<span class="st">"sigma"</span>] <span class="op">**</span> <span class="dv">2</span>)),</span>
+<span>        snr_measured<span class="op">=</span><span class="dv">10</span> <span class="op">*</span> math.log10(ms_clean <span class="op">/</span> ms_noise),</span>
+<span>    )</span>
+<span><span class="cf">for</span> name, s <span class="kw">in</span> stats.items():</span>
+<span>    <span class="bu">print</span>(<span class="ss">f"signal </span><span class="sc">{</span>name<span class="sc">}</span><span class="ss">: mean </span><span class="sc">{</span>s[<span class="st">'mean'</span>]<span class="sc">:+.3f}</span><span class="ss">, sd </span><span class="sc">{</span>s[<span class="st">'sd'</span>]<span class="sc">:.3f}</span><span class="ss">, rms residual </span><span class="sc">{</span>s[<span class="st">'rms'</span>]<span class="sc">:.3f}</span><span class="ss">"</span>)</span></code></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>signal A: mean -0.022, sd 0.743, rms residual 0.271
+signal B: mean -0.035, sd 0.495, rms residual 0.244</code></pre>
+</div>
+</div>
+
+<h3 id="reading-the-numbers">Reading the numbers</h3>
+<p>Both means are close to zero, as they should be for a sine wave sampled over whole periods. The standard deviation of signal A is larger than that of B because its amplitude is larger, even though the noise is equal. The RMS residuals are close to the chosen <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>σ</mi><mo>=</mo><mn>0.25</mn></mrow><annotation encoding="application/x-tex">\sigma = 0.25</annotation></semantics></math> for both: the noise we asked for is the noise we got, up to the small fluctuations that any 160 random numbers have.</p>
+
+
+
+<h2 id="a-figure">A figure</h2>
+<p><a href="#fig-signals" class="quarto-xref">Figure&nbsp;1</a> shows each signal as it was observed (thin line) over the clean curve it came from (thick line). Noise hides the smaller signal B more than A, which is what the lower signal-to-noise ratio of <a href="#eq-snr" class="quarto-xref">Equation&nbsp;2</a> means in practice.</p>
+<div id="cell-fig-signals" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python"><code class="sourceCode python"><span><span class="im">from</span> IPython.display <span class="im">import</span> SVG, display</span>
+<span></span>
+<span>W, PH, left, right <span class="op">=</span> <span class="dv">560</span>, <span class="dv">150</span>, <span class="dv">52</span>, <span class="dv">20</span></span>
+<span>x_of <span class="op">=</span> <span class="kw">lambda</span> t: left <span class="op">+</span> (W <span class="op">-</span> left <span class="op">-</span> right) <span class="op">*</span> t <span class="op">/</span> DURATION</span>
+<span>parts <span class="op">=</span> []</span>
+<span><span class="cf">for</span> i, name <span class="kw">in</span> <span class="bu">enumerate</span>(SIGNALS):</span>
+<span>    top <span class="op">=</span> <span class="dv">30</span> <span class="op">+</span> i <span class="op">*</span> (PH <span class="op">+</span> <span class="dv">46</span>)</span>
+<span>    y_of <span class="op">=</span> <span class="kw">lambda</span> v: top <span class="op">+</span> PH <span class="op">/</span> <span class="dv">2</span> <span class="op">-</span> (PH <span class="op">/</span> <span class="dv">2</span> <span class="op">-</span> <span class="dv">8</span>) <span class="op">*</span> v <span class="op">/</span> <span class="fl">1.5</span></span>
+<span>    obs <span class="op">=</span> <span class="st">" "</span>.join(<span class="ss">f"</span><span class="sc">{</span>x_of(t)<span class="sc">:.1f}</span><span class="ss">,</span><span class="sc">{</span>y_of(v)<span class="sc">:.1f}</span><span class="ss">"</span> <span class="cf">for</span> t, v <span class="kw">in</span> <span class="bu">zip</span>(times, observed[name]))</span>
+<span>    cln <span class="op">=</span> <span class="st">" "</span>.join(<span class="ss">f"</span><span class="sc">{</span>x_of(t)<span class="sc">:.1f}</span><span class="ss">,</span><span class="sc">{</span>y_of(v)<span class="sc">:.1f}</span><span class="ss">"</span> <span class="cf">for</span> t, v <span class="kw">in</span> <span class="bu">zip</span>(times, clean[name]))</span>
+<span>    p <span class="op">=</span> SIGNALS[name]</span>
+<span>    parts.append(</span>
+<span>        <span class="ss">f'&lt;line x1="</span><span class="sc">{</span>left<span class="sc">}</span><span class="ss">" y1="</span><span class="sc">{</span>top<span class="sc">}</span><span class="ss">" x2="</span><span class="sc">{</span>left<span class="sc">}</span><span class="ss">" y2="</span><span class="sc">{</span>top <span class="op">+</span> PH<span class="sc">}</span><span class="ss">" stroke="currentColor"/&gt;'</span></span>
+<span>        <span class="ss">f'&lt;line x1="</span><span class="sc">{</span>left<span class="sc">}</span><span class="ss">" y1="</span><span class="sc">{</span>top <span class="op">+</span> PH <span class="op">/</span> <span class="dv">2</span><span class="sc">:.1f}</span><span class="ss">" x2="</span><span class="sc">{</span>W <span class="op">-</span> right<span class="sc">}</span><span class="ss">" y2="</span><span class="sc">{</span>top <span class="op">+</span> PH <span class="op">/</span> <span class="dv">2</span><span class="sc">:.1f}</span><span class="ss">" stroke="currentColor" opacity="0.35"/&gt;'</span></span>
+<span>        <span class="ss">f'&lt;polyline points="</span><span class="sc">{</span>obs<span class="sc">}</span><span class="ss">" fill="none" stroke="currentColor" stroke-width="1" opacity="0.6"/&gt;'</span></span>
+<span>        <span class="ss">f'&lt;polyline points="</span><span class="sc">{</span>cln<span class="sc">}</span><span class="ss">" fill="none" stroke="currentColor" stroke-width="2.6"/&gt;'</span></span>
+<span>        <span class="ss">f'&lt;text x="</span><span class="sc">{</span>left <span class="op">-</span> <span class="dv">8</span><span class="sc">}</span><span class="ss">" y="</span><span class="sc">{</span>y_of(<span class="dv">1</span>) <span class="op">+</span> <span class="dv">4</span><span class="sc">:.1f}</span><span class="ss">" text-anchor="end" font-size="15" fill="currentColor"&gt;1&lt;/text&gt;'</span></span>
+<span>        <span class="ss">f'&lt;text x="</span><span class="sc">{</span>left <span class="op">-</span> <span class="dv">8</span><span class="sc">}</span><span class="ss">" y="</span><span class="sc">{</span>y_of(<span class="dv">0</span>) <span class="op">+</span> <span class="dv">4</span><span class="sc">:.1f}</span><span class="ss">" text-anchor="end" font-size="15" fill="currentColor"&gt;0&lt;/text&gt;'</span></span>
+<span>        <span class="ss">f'&lt;text x="</span><span class="sc">{</span>left <span class="op">-</span> <span class="dv">8</span><span class="sc">}</span><span class="ss">" y="</span><span class="sc">{</span>y_of(<span class="op">-</span><span class="dv">1</span>) <span class="op">+</span> <span class="dv">4</span><span class="sc">:.1f}</span><span class="ss">" text-anchor="end" font-size="15" fill="currentColor"&gt;-1&lt;/text&gt;'</span></span>
+<span>        <span class="ss">f'&lt;text x="</span><span class="sc">{</span>left<span class="sc">}</span><span class="ss">" y="</span><span class="sc">{</span>top <span class="op">-</span> <span class="dv">9</span><span class="sc">}</span><span class="ss">" font-size="17" fill="currentColor"&gt;Signal </span><span class="sc">{</span>name<span class="sc">}</span><span class="ss">: A = </span><span class="sc">{</span>p[<span class="st">"amplitude"</span>]<span class="sc">}</span><span class="ss">, σ = </span><span class="sc">{</span>p[<span class="st">"sigma"</span>]<span class="sc">}</span><span class="ss">&lt;/text&gt;'</span></span>
+<span>    )</span>
+<span>axis_y <span class="op">=</span> <span class="dv">30</span> <span class="op">+</span> <span class="dv">2</span> <span class="op">*</span> PH <span class="op">+</span> <span class="dv">46</span></span>
+<span>parts.append(<span class="ss">f'&lt;line x1="</span><span class="sc">{</span>left<span class="sc">}</span><span class="ss">" y1="</span><span class="sc">{</span>axis_y<span class="sc">}</span><span class="ss">" x2="</span><span class="sc">{</span>W <span class="op">-</span> right<span class="sc">}</span><span class="ss">" y2="</span><span class="sc">{</span>axis_y<span class="sc">}</span><span class="ss">" stroke="currentColor"/&gt;'</span>)</span>
+<span><span class="cf">for</span> s <span class="kw">in</span> <span class="bu">range</span>(<span class="dv">0</span>, <span class="bu">int</span>(DURATION) <span class="op">+</span> <span class="dv">1</span>):</span>
+<span>    parts.append(</span>
+<span>        <span class="ss">f'&lt;line x1="</span><span class="sc">{</span>x_of(s)<span class="sc">:.1f}</span><span class="ss">" y1="</span><span class="sc">{</span>axis_y<span class="sc">}</span><span class="ss">" x2="</span><span class="sc">{</span>x_of(s)<span class="sc">:.1f}</span><span class="ss">" y2="</span><span class="sc">{</span>axis_y <span class="op">+</span> <span class="dv">5</span><span class="sc">}</span><span class="ss">" stroke="currentColor"/&gt;'</span></span>
+<span>        <span class="ss">f'&lt;text x="</span><span class="sc">{</span>x_of(s)<span class="sc">:.1f}</span><span class="ss">" y="</span><span class="sc">{</span>axis_y <span class="op">+</span> <span class="dv">22</span><span class="sc">}</span><span class="ss">" text-anchor="middle" font-size="15" fill="currentColor"&gt;</span><span class="sc">{</span>s<span class="sc">}</span><span class="ss">&lt;/text&gt;'</span></span>
+<span>    )</span>
+<span>parts.append(<span class="ss">f'&lt;text x="</span><span class="sc">{</span>(left <span class="op">+</span> W <span class="op">-</span> right) <span class="op">/</span> <span class="dv">2</span><span class="sc">:.1f}</span><span class="ss">" y="</span><span class="sc">{</span>axis_y <span class="op">+</span> <span class="dv">44</span><span class="sc">}</span><span class="ss">" text-anchor="middle" font-size="15" fill="currentColor"&gt;time (s)&lt;/text&gt;'</span>)</span>
+<span>H <span class="op">=</span> axis_y <span class="op">+</span> <span class="dv">52</span></span>
+<span>display(SVG(<span class="ss">f'&lt;svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 </span><span class="sc">{</span>W<span class="sc">}</span><span class="ss"> </span><span class="sc">{</span>H<span class="sc">}</span><span class="ss">" width="</span><span class="sc">{</span>W<span class="sc">}</span><span class="ss">" height="</span><span class="sc">{</span>H<span class="sc">}</span><span class="ss">" role="img"&gt;'</span> <span class="op">+</span> <span class="st">""</span>.join(parts) <span class="op">+</span> <span class="st">"&lt;/svg&gt;"</span>))</span></code></pre></div>
+<div class="cell-output cell-output-display">
+<div id="fig-signals" class="quarto-float quarto-figure quarto-figure-center">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-signals-caption">
+<img src="/demo-assets/demo-synthetic-signals/fig-signals-output-1.svg" class="img-fluid figure-img" alt="Two stacked panels, each showing one period-four sine wave as a thick smooth line with a thin jagged line of noisy observations around it. The top wave, signal A, is larger than the bottom wave, signal B, so the same noise hides B more.">
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-signals-caption">
+Figure&nbsp;1: Two synthetic signals, A (top) and B (bottom): observed values (thin line) over the underlying sine wave (thick line). Same seed, same noise level, different amplitude. Synthetic data.
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+
+
+<h2 id="a-table">A table</h2>
+<p><a href="#tbl-stats" class="quarto-xref">Table&nbsp;1</a> lists the statistics behind the figure. The last two columns compare the signal-to-noise ratio that <a href="#eq-snr" class="quarto-xref">Equation&nbsp;2</a> predicts with the one measured in the generated samples.</p>
+<div class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python"><code class="sourceCode python"><span><span class="im">from</span> IPython.display <span class="im">import</span> Markdown, display</span>
+<span></span>
+<span>head <span class="op">=</span> <span class="st">"| Signal | Amplitude | Noise sigma | Mean | Standard deviation | RMS residual | SNR predicted (dB) | SNR measured (dB) |"</span></span>
+<span>rows <span class="op">=</span> [head, <span class="st">"|:---|---:|---:|---:|---:|---:|---:|---:|"</span>]</span>
+<span><span class="cf">for</span> name, p <span class="kw">in</span> SIGNALS.items():</span>
+<span>    s <span class="op">=</span> stats[name]</span>
+<span>    rows.append(</span>
+<span>        <span class="ss">f"| </span><span class="sc">{</span>name<span class="sc">}</span><span class="ss"> | </span><span class="sc">{</span>p[<span class="st">'amplitude'</span>]<span class="sc">:.1f}</span><span class="ss"> | </span><span class="sc">{</span>p[<span class="st">'sigma'</span>]<span class="sc">:.2f}</span><span class="ss"> | </span><span class="sc">{</span>s[<span class="st">'mean'</span>]<span class="sc">:+.3f}</span><span class="ss"> | </span><span class="sc">{</span>s[<span class="st">'sd'</span>]<span class="sc">:.3f}</span><span class="ss"> | </span><span class="sc">{</span>s[<span class="st">'rms'</span>]<span class="sc">:.3f}</span><span class="ss"> | </span><span class="sc">{</span>s[<span class="st">'snr_theory'</span>]<span class="sc">:.2f}</span><span class="ss"> | </span><span class="sc">{</span>s[<span class="st">'snr_measured'</span>]<span class="sc">:.2f}</span><span class="ss"> |"</span></span>
+<span>    )</span>
+<span>display(Markdown(<span class="st">"</span><span class="ch">\n</span><span class="st">"</span>.join(rows)))</span></code></pre></div>
+<div id="tbl-stats" class="cell quarto-float quarto-figure quarto-figure-center" data-execution_count="5">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-stats-caption">
+Table&nbsp;1: Summary statistics of the two synthetic signals, and their signal-to-noise ratio (SNR) as predicted by the model and as measured. Synthetic data.
+</figcaption>
+<div aria-describedby="tbl-stats-caption">
+<div class="cell-output cell-output-display cell-output-markdown">
+<table class="cell caption-top table table-sm table-striped small">
+
+<thead>
+<tr class="header">
+<th class="align-left" scope="col">Signal</th>
+<th class="align-right" scope="col">Amplitude</th>
+<th class="align-right" scope="col">Noise sigma</th>
+<th class="align-right" scope="col">Mean</th>
+<th class="align-right" scope="col">Standard deviation</th>
+<th class="align-right" scope="col">RMS residual</th>
+<th class="align-right" scope="col">SNR predicted (dB)</th>
+<th class="align-right" scope="col">SNR measured (dB)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td class="align-left">A</td>
+<td class="align-right">1.0</td>
+<td class="align-right">0.25</td>
+<td class="align-right">-0.022</td>
+<td class="align-right">0.743</td>
+<td class="align-right">0.271</td>
+<td class="align-right">9.03</td>
+<td class="align-right">8.32</td>
+</tr>
+<tr class="even">
+<td class="align-left">B</td>
+<td class="align-right">0.6</td>
+<td class="align-right">0.25</td>
+<td class="align-right">-0.035</td>
+<td class="align-right">0.495</td>
+<td class="align-right">0.244</td>
+<td class="align-right">4.59</td>
+<td class="align-right">4.81</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p>The predicted and measured values in <a href="#tbl-stats" class="quarto-xref">Table&nbsp;1</a> differ by less than one decibel. That difference is not an error of the method: it is the sampling variation of a 160-sample experiment, and it changes with the seed.</p>
+
+
+<h2 id="what-a-reader-needs-to-repeat-this">What a reader needs to repeat this</h2>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center">
+
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>The short list
+</div>
+</div>
+<div class="callout-body-container callout-body">
+<p>The seed, the code, the interpreter and the packages it ran with, and a command that runs it all without manual steps. Here: the seed is in the first cell, the code is this document, the environment is fixed by two small files, and one command recomputes everything.</p>
+</div>
+</div>
+<p>Three things are worth keeping separate:</p>
+<ul>
+<li><strong>Same numbers.</strong> Because every random number comes from one seeded generator, rerunning the code gives the same values. This is what a fixed seed buys.</li>
+<li><strong>Same figure.</strong> The figure is produced by the code and not drawn by hand, so it follows the numbers. A redrawn figure would not.</li>
+<li><strong>Same tools.</strong> The numbers depend on the interpreter and the libraries. Recording their versions does not make a result right; it makes it possible to find out <em>why</em> two results differ.</li>
+</ul>
+<p>A different seed would give slightly different statistics, and they would still agree with <a href="#eq-snr" class="quarto-xref">Equation&nbsp;2</a>. That is the other half of reproducibility: the conclusion should not depend on one lucky seed.</p>
+
+
+<h2 id="practical-conclusions">Practical conclusions</h2>
+<ol type="1">
+<li>Put the seed, the sizes and the parameters in one cell at the top.</li>
+<li>Use one random number generator, created once from the seed, and consume it in a fixed order.</li>
+<li>Make figures and tables from code, so that they cannot drift from the numbers.</li>
+<li>Run the document with one command, and keep the stored results with it.</li>
+<li>Treat agreement within sampling variation as agreement, and state how large that variation is.</li>
+</ol>
+
+
+
+
+<h2 class="anchored quarto-appendix-heading" id="references">References</h2><div id="refs" class="references csl-bib-body hanging-indent" role="list">
+<div id="ref-peng2011" class="csl-entry" role="listitem">
+Peng, Roger D. 2011. <span>“Reproducible Research in Computational Science.”</span> <em>Science</em> 334 (6060): 1226–27. <a href="https://doi.org/10.1126/science.1213847" rel="noopener">https://doi.org/10.1126/science.1213847</a>.
+</div>
+<div id="ref-sandve2013" class="csl-entry" role="listitem">
+Sandve, Geir Kjetil, Anton Nekrutenko, James Taylor, and Eivind Hovig. 2013. <span>“Ten Simple Rules for Reproducible Computational Research.”</span> <em>PLoS Computational Biology</em> 9 (10): e1003285. <a href="https://doi.org/10.1371/journal.pcbi.1003285" rel="noopener">https://doi.org/10.1371/journal.pcbi.1003285</a>.
+</div>
+</div><section class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading" id="footnotes">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>The scale is the point. With <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>n</mi><mo>=</mo><mn>160</mn></mrow><annotation encoding="application/x-tex">n = 160</annotation></semantics></math> samples per signal everything runs in a fraction of a second, so the whole document can be recomputed on request, and a reader can check each line.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section>
+</div></div><nav class="ed__pagination" aria-label="More in The Greenhouse"><p class="ed__return"><a href="/lecture-notes/greenhouse/">All of The Greenhouse</a></p></nav><aside class="ed__related" aria-labelledby="ed-related-title"><h2 id="ed-related-title">Related</h2><ul><li><a href="/lecture-notes/greenhouse/demo-scientific-markdown/">A Small Guide to Scientific Markdown</a> <span class="ed__related-collection">· The Greenhouse</span></li><li><a href="/lecture-notes/greenhouse/demo-markdown-and-quarto/">One Archive, Two Authoring Formats</a> <span class="ed__related-collection">· The Greenhouse</span></li></ul></aside></article></main></div></div></div></div></div></div><script type="module">function e(e){let t=getComputedStyle(e);return{start:parseFloat(t.scrollPaddingLeft)||0,end:parseFloat(t.scrollPaddingRight)||0}}function t(){if(!CSS.supports(`scroll-initial-target`,`nearest`))for(let t of document.querySelectorAll(`.gl-folder__strip`)){if(t.scrollWidth<=t.clientWidth)continue;let n=t.querySelector(`.gl-folder-tab[data-selected]`);if(n===null)continue;let{start:r,end:i}=e(t),a=t.getBoundingClientRect(),o=(n.querySelector(`.gl-folder-tab__label`)??n).getBoundingClientRect();if(o.left>=a.left+r&&o.right<=a.right-i)continue;let s=n.getBoundingClientRect(),c=(a.left+r+a.right-i)/2;t.scrollLeft+=s.left+s.width/2-c}}function n(t){let n=t.target;if(!(n instanceof HTMLElement)||!n.matches(`.gl-folder-tab__label:focus-visible`))return;let r=n.closest(`.gl-folder__strip`);if(r===null||r.scrollWidth<=r.clientWidth)return;let{start:i,end:a}=e(r),o=r.getBoundingClientRect(),s=n.getBoundingClientRect();s.left<o.left+i?r.scrollLeft+=s.left-o.left-i:s.right>o.right-a&&(r.scrollLeft+=s.right-o.right+a)}t(),document.addEventListener(`focusin`,n);var r=120,i=90,a=8,o=[],s=null,c,l,u=null,d=0,f=e=>e.pointerType===`touch`,p=void 0;function m(e){!e.pointer&&!e.focus&&(e.dismissed=!1)}function h(){clearTimeout(l),u=null}function g(e){if(clearTimeout(c),h(),s!==e){s!==null&&v(s);try{e.panel.showPopover()}catch{return}s=e,y(e),addEventListener(`scroll`,b,{capture:!0,passive:!0}),addEventListener(`resize`,b,{passive:!0})}}function _(e){if(s===e){clearTimeout(c),cancelAnimationFrame(d),s=null,removeEventListener(`scroll`,b,!0),removeEventListener(`resize`,b);try{e.panel.hidePopover()}catch{}}}function v(e){e.dismissed=e.pointer||e.focus,e.panel.contains(document.activeElement)&&e.label.focus(),_(e)}function y(e){let{tab:t,panel:n}=e,r=t.getBoundingClientRect(),i=t.closest(`.gl-folder__strip`)?.getBoundingClientRect()??r,o=Math.max(r.left,i.left),s=Math.min(r.right,i.right),{clientWidth:c,clientHeight:l}=document.documentElement;if((s-o<1||r.bottom<0||r.top>l)&&!n.contains(document.activeElement)){_(e);return}let u=n.style;u.setProperty(`--_min-inline-size`,`${Math.max(0,Math.round(s-o))}px`),u.setProperty(`--_max-inline-size`,`${c-16}px`),u.removeProperty(`--_max-block-size`);let d=n.offsetWidth,f=n.offsetHeight,p=l-a-r.bottom,m=r.top-a,h=f<=p||p>=m,g=Math.max(a,Math.min(o,c-a-d)),v=h?r.bottom:Math.max(a,r.top-f);u.setProperty(`--_x`,`${Math.round(g)}px`),u.setProperty(`--_y`,`${Math.round(v)}px`),u.setProperty(`--_max-block-size`,`${Math.max(0,Math.floor(h?p:m))}px`),n.dataset.placement=h?`below`:`above`}function b(){cancelAnimationFrame(d),d=requestAnimationFrame(()=>{s!==null&&y(s)})}function x(e){let{tab:t}=e;t.addEventListener(`pointerenter`,t=>{f(t)||(e.pointer=!0,p===null&&(s===e?clearTimeout(c):e.dismissed||(s===null?g(e):(h(),u=e,l=setTimeout(()=>{u===e&&e.pointer&&!e.dismissed&&g(e)},i)))))}),t.addEventListener(`pointerleave`,t=>{f(t)||(e.pointer=!1,u===e&&h(),s===e&&!e.focus&&(clearTimeout(c),c=setTimeout(()=>_(e),r)),m(e))}),t.addEventListener(`focusin`,t=>{t.target instanceof Element&&t.target.matches(`:focus-visible`)&&(e.focus=!0,e.dismissed||g(e))}),t.addEventListener(`focusout`,n=>{n.relatedTarget instanceof Node&&t.contains(n.relatedTarget)||(e.focus=!1,s===e&&!e.pointer&&_(e),m(e))})}function S(){if(`showPopover`in HTMLElement.prototype){for(let e of document.querySelectorAll(`.gl-folder-tab[data-preview]`)){let t=e.querySelector(`:scope > .gl-folder-tab__label`),n=e.querySelector(`:scope > .gl-folder-preview`);if(t===null||n===null)continue;let r={tab:e,label:t,panel:n,pointer:!1,focus:!1,dismissed:!1};o.push(r),x(r)}o.length!==0&&(document.addEventListener(`keydown`,e=>{e.key===`Escape`&&s!==null&&v(s)}),document.addEventListener(`pointermove`,e=>{if(p===null||f(e))return;if(p===void 0){p={x:e.clientX,y:e.clientY};return}if(e.clientX===p.x&&e.clientY===p.y)return;p=null;let t=o.find(e=>e.pointer&&!e.dismissed);t!==void 0&&s===null&&g(t)}),addEventListener(`pageshow`,e=>{e.persisted&&(p=void 0)}),addEventListener(`pagehide`,()=>{h(),s!==null&&_(s);for(let e of o)e.pointer=!1,e.focus=!1,e.dismissed=!1}))}}S();</script></div></div></body></html>
