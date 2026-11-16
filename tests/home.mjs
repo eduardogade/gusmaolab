@@ -56,7 +56,8 @@ const git = (...args) => spawnSync("git", ["-C", repo, ...args], { encoding: "ut
 const gitAvailable = git("rev-parse", "--git-dir").status === 0 && git("cat-file", "-e", BASE).status === 0
 const lines = (r) => r.stdout.split("\n").filter(Boolean)
 const p15Commits = () => (gitAvailable ? lines(git("log", "--format=%H", `${BASE}..HEAD`, "--grep=\\[P15\\]")) : [])
-const p15InProgress = () => gitAvailable && git("status", "--porcelain", "--", "tests/home.mjs").stdout.trim() !== ""
+// Only while this file is not yet committed (P15's own first run); a later edit of it (P16) is not P15 in progress.
+const p15InProgress = () => gitAvailable && git("status", "--porcelain", "--", "tests/home.mjs").stdout.startsWith("??")
 function p15Files(paths) {
   const files = new Set()
   for (const commit of p15Commits())
@@ -239,9 +240,10 @@ await test("HOME-012", "P15 loads no 3D runtime and no new script", async (check
   check(json(Object.keys(pkg.dependencies)) === json(["astro"]), "the runtime dependencies changed")
   check(!home.includes("<canvas") && !/webgl/i.test(home), "the page mentions a canvas or WebGL")
   const scripts = all.filter((el) => el.tag === "script")
-  for (const script of scripts) check(/folder-/.test(script.attrs.src ?? "") || /folder/.test(textOf(script)), "a script other than the folder scripts")
+  // The folder scripts (P07, P08) and, from P16, the one world-clocks script; nothing else.
+  for (const script of scripts) check(/folder-|clock/i.test(script.attrs.src ?? "") || /folder|clock/i.test(textOf(script)), `a script other than the folder and clock scripts: ${script.attrs.src}`)
   const files = [...(await readdir(join(repo, "src/components/home")))].filter((f) => f.endsWith(".astro"))
-  for (const file of files) check(!/<script/.test(await read(`src/components/home/${file}`)), `${file} ships a script`)
+  for (const file of files) check(file === "WorldClocks.astro" || !/<script/.test(await read(`src/components/home/${file}`)), `${file} ships a script`)
 })
 
 // --- World clocks ----------------------------------------------------------------------------------------
@@ -283,17 +285,18 @@ await test("HOME-015", "Time-zone identifiers are valid IANA zones", async (chec
   check(!/utcOffset|offset\s*:|UTC[+-]|GMT[+-]/.test(source.replace(/\/\*[\s\S]*?\*\//g, "")), "the configuration holds a UTC offset")
 })
 
-await test("HOME-016", "No clock shows a fake live value", async (check) => {
+await test("HOME-016", "No clock shows a fake live value in the built page", async (check) => {
+  // P16 made the clocks live in the browser; the built page itself still carries no time (a static
+  // build is read long after it is made), and says honestly what it is. CLOCK-026/027 go further.
   const clocks = region("clocks")
-  check(clocks.attrs["data-clocks-state"] === "preview", "the clocks are not marked as a preview")
-  check(/not live yet/i.test(textOf(clocks)), "the section does not say the times are not live")
-  check(!elements(clocks).some((el) => el.tag === "time"), "a <time> element is drawn")
+  check(clocks.attrs["data-clocks-state"] === "loading", "the clocks are not marked as loading")
+  check(!elements(clocks).some((el) => el.tag === "time"), "a <time> element is drawn at build time")
   const text = textOf(clocks)
   check(!/\d{1,2}:\d{2}/.test(text) && !/\b(am|pm)\b/i.test(text), `a time of day is on the page: ${json(text.match(/\d{1,2}:\d{2}/))}`)
   const readings = elements(clocks).filter((el) => "data-clock-reading" in el.attrs)
   check(readings.length === 8 && readings.every((el) => el.attrs["aria-hidden"] === "true" && !/\d/.test(textOf(el))), "a reading holds a digit or is read aloud")
   const source = await read("src/components/home/WorldClocks.astro")
-  check(!/new Date|Date\.now|Intl\./.test(source.replace(/\/\*[\s\S]*?\*\//g, "")), "the component computes a time")
+  check(!/new Date|Date\.now/.test(source.replace(/\/\*[\s\S]*?\*\//g, "")), "the component reads the current time")
 })
 
 // --- Recent Blog updates ---------------------------------------------------------------------------------

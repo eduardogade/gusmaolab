@@ -1,33 +1,93 @@
 ---
 /**
- * Region D of the homepage (P15, D-116): the eight places whose local time the site will show.
- * P15 draws the composition and reads the configuration (src/home/clocks.ts); it shows no time.
- * Every row holds a reserved reading area, marked `data-clock-reading`, that P16 fills with the
- * zone's current local time and date. Until then the area shows dashes and the section says, once,
- * that the times are not live: a dash is not a time, and nothing here is a hardcoded clock value.
+ * Region D of the homepage (P15, D-116; P16, D-118 to D-121): the eight places whose local time
+ * the page shows. The places and their IANA zones are src/home/clocks.ts; what a clock shows for an
+ * instant is src/home/clock-time.ts; keeping it right is src/scripts/world-clocks.ts. This
+ * component draws the structure and nothing that depends on the moment it is built.
  *
- * Each row is `<li data-clock-id data-time-zone>`: P16 needs nothing but those attributes to
- * find its places, so it can add real values, per-zone daylight-saving formatting, one shared
- * update loop and live-region handling without redesigning the layout. Rows are a flexible
- * list that reflows to one or more columns by the width it is given, and long names wrap.
+ * A static build is read days after it is made, so the HTML carries no time: every clock has a
+ * reserved reading ("--:--" and an empty date, hidden from assistive technology) that the script
+ * fills in the visitor's browser. Without JavaScript the reading stays empty and the section says
+ * so, once, instead of showing a frozen time (`<noscript>` and `@media (scripting: none)`).
+ *
+ * Each row is `<li data-clock-id data-time-zone>` holding the city, its country, and a
+ * `[data-clock-reading]` with a time (`[data-clock-time]`) and a date (`[data-clock-date]`). The
+ * script puts `<time datetime>` elements there. The section is not a live region: a reader who
+ * reaches it finds the current times, and nothing is announced when a minute passes.
+ *
+ * `instant` is for the development specimen only (/_design/world-clocks/): a fixed ISO instant the
+ * component formats, at build time, with the same function the page uses, and marks as simulated so
+ * the script leaves it alone. The homepage never passes it, so its clocks are always live.
  */
 import { CLOCK_LOCATIONS } from "../../home/clocks.ts"
+import { readClock } from "../../home/clock-time.ts"
+
+interface Props {
+  /** A fixed UTC instant (ISO 8601) to show instead of the live time: the development specimen. */
+  instant?: string
+}
+const { instant } = Astro.props
+const simulatedAt = instant === undefined ? undefined : Date.parse(instant)
+if (simulatedAt !== undefined && !Number.isFinite(simulatedAt)) throw new Error(`WorldClocks: "${instant}" is not a valid instant`)
+// One heading ID per drawing: the specimen draws several scenarios on one page.
+const titleId = simulatedAt === undefined ? "clocks-title" : `clocks-title-${(instant ?? "").replace(/\W/g, "")}`
+const places = CLOCK_LOCATIONS.map((place) => ({
+  ...place,
+  reading: simulatedAt === undefined ? undefined : readClock(simulatedAt, place.timeZone),
+}))
 ---
 
-<section class="clocks" aria-labelledby="clocks-title" data-home-region="clocks" data-clocks-state="preview">
-  <h2 id="clocks-title" class="home-heading">Around the world</h2>
+<section
+  class="clocks"
+  aria-labelledby={titleId}
+  data-home-region="clocks"
+  data-clocks-state={simulatedAt === undefined ? "loading" : "simulated"}
+  data-clocks-simulated={instant}
+>
+  <h2 id={titleId} class="home-heading">Around the world</h2>
   <p class="clocks__intro">
-    Eight places where collaborators, readers and friends are. <span class="clocks__note" data-clocks-note>The local times are not live yet.</span>
+    Eight places where collaborators, readers and friends are.{" "}
+    {
+      simulatedAt === undefined ? (
+        <span class="clocks__note" data-clocks-note>Times come from this device’s clock, so they are only as accurate as it is.</span>
+      ) : (
+        <span class="clocks__note" data-clocks-note>Simulated instant, {instant}. This is not the current time.</span>
+      )
+    }
   </p>
+  {
+    simulatedAt === undefined && (
+      <noscript><p class="clocks__nojs">Live times need JavaScript, which is switched off in this browser.</p></noscript>
+    )
+  }
   <ol class="clocks__list">
     {
-      CLOCK_LOCATIONS.map((place) => (
-        <li class="clock" data-clock-id={place.id} data-time-zone={place.timeZone}>
-          <span class="clock__city">{place.city}</span>
-          <span class="clock__place">{place.place}</span>
-          <span class="clock__reading" data-clock-reading aria-hidden="true">––:––</span>
+      places.map(({ id, city, place, timeZone, reading }) => (
+        <li class="clock" data-clock-id={id} data-time-zone={timeZone} data-clock-state={reading ? "simulated" : "pending"}>
+          <span class="clock__city">{city}</span>
+          <span class="clock__place">{place}</span>
+          <span class="clock__reading" data-clock-reading aria-hidden={reading ? undefined : "true"}>
+            {
+              reading ? (
+                <>
+                  <time class="clock__time" data-clock-time datetime={reading.isoDateTime}>{reading.time}</time>
+                  <time class="clock__date" data-clock-date datetime={reading.isoDate}>{reading.date}</time>
+                </>
+              ) : (
+                <>
+                  <span class="clock__time" data-clock-time>--:--</span>
+                  <span class="clock__date" data-clock-date />
+                </>
+              )
+            }
+          </span>
         </li>
       ))
     }
   </ol>
 </section>
+
+<script>
+  // Bundled once per page: the clocks come alive in the visitor's browser (P16).
+  import "../../scripts/world-clocks.ts"
+</script>

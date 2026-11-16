@@ -765,13 +765,13 @@ AUTH-040 compares P14's own changes (commits ending `[P14]`, and the working tre
 | G-10 | Eight independent editorial collections | R-06 | Untested |
 | G-11 | Canonical records reused across pages | R-07 | Untested |
 | G-12 | Interactive 3D nucleus/chromatin visualization on Home, with isolated client-side JavaScript | R-08 | Untested |
-| G-13 | Eight international clocks | R-09 | Untested |
+| G-13 | Eight international clocks | R-09 | **Passed** (technical) in P16 in headless Chromium and on fixed instants (G-P16-01 to G-P16-09); the owner's review is pending (G-P16-10). Not shown: Android Chrome, Safari, Firefox, a real device |
 | G-14 | Real booking works through the chosen provider; no credentials in the repository | R-10 | Untested |
 | G-15 | Site deploys to GitHub Pages | R-11 | Untested |
 
 ## P15 gates — Homepage
 
-G-12 (the interactive nucleus) and G-13 (the eight clocks) are not closed by P15: it builds the places for them and says so on the page.
+G-12 (the interactive nucleus) and G-13 (the eight clocks) are not closed by P15: it builds the places for them and says so on the page. (P16 closed G-13 technically: see the P16 gates below.)
 
 | ID | Gate | Status |
 | --- | --- | --- |
@@ -785,3 +785,18 @@ G-12 (the interactive nucleus) and G-13 (the eight clocks) are not closed by P15
 | G-P15-08 | No overflow, overlap or clipped Bearnard at 320, 390, 430, 768, 1024, 1280 and 1440 px; keyboard focus; reflow at 200% text; no motion | **Passed** in headless Chromium (HOME-009B, 023 to 026). Not shown: Safari, Firefox, a real phone, a screen reader |
 | G-P15-09 | P10 to P14, the CV, the palettes, the folders and the Bearnard masters unchanged | **Passed** (HOME-027 to HOME-036) |
 | G-P15-10 | The owner reviews the homepage, its copy and its layout | **Pending** |
+
+## P16 gates — World clocks
+
+| ID | Gate | Status |
+| --- | --- | --- |
+| G-P16-01 | Eight approved locations, in order, on correct IANA zones; Brasília is named Brasília on `America/Sao_Paulo` | **Passed** (CLOCK-001 to CLOCK-003, CLOCK-016) |
+| G-P16-02 | 24-hour `HH:mm` with leading zeros; each city shows its own date and weekday, across previous-day, next-day and year boundaries | **Passed** (CLOCK-004 to CLOCK-010) against an independent `zoneinfo` reference |
+| G-P16-03 | Daylight saving right: Anchorage and Auckland change on their transition instants; Mexico City does not; the other five are fixed | **Passed** (CLOCK-011 to CLOCK-015) |
+| G-P16-04 | No dependence on the machine's zone; an invalid zone is a controlled failure | **Passed** (CLOCK-017, CLOCK-018) |
+| G-P16-05 | One update loop and timer, aimed at the minute, none while hidden, redraw on visible and on restoration, no duplicates | **Passed** with fake timers (CLOCK-019 to CLOCK-025) and in Chromium (CLOCK-019B to CLOCK-025B). Hiding is simulated by visibility events; a real background tab was not exercised |
+| G-P16-06 | No stale build-time time; honest without JavaScript; no layout shift when filled | **Passed** (CLOCK-026, 027, 026B, 034B) |
+| G-P16-07 | Responsive at 320, 390, 430, 768, 1024, 1280 and 1440 px with no overflow and the approved order; accessible markup, no announcements | **Passed** in headless Chromium (CLOCK-030, 031, 032B, 033B). Not shown: a screen reader, Android Chrome |
+| G-P16-08 | Homepage composition, palettes, folders, Bearnard, nucleus stage, publishing, records and the CV unchanged | **Passed** (CLOCK-029, CLOCK-035 to CLOCK-039) |
+| G-P16-09 | The simulated specimen is development-only and never leaks into a live clock or a release | **Passed** (CLOCK-040, CLOCK-041) |
+| G-P16-10 | The owner reviews the clocks on the real homepage, including on Android Chrome | **Pending** |

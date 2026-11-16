@@ -408,7 +408,18 @@ The homepage is composed, not generated: `src/pages/index.astro` fetches the rec
 - **Blog source.** `homeRecentUpdates()` in `src/editorial/site.ts` passes the loaded entries, without demonstrations, to `recentUpdates()`. The Blog's index and the homepage therefore agree on eligibility and order.
 - **Bearnard.** `<BearnardIllustration variant="bearnard-v1.3-portrait">`, through the registry (D-073). The `home-welcome` role stays unassigned.
 - **Nucleus integration point.** The `visual` slot and the `state` prop of `NucleusStage`; nothing else on the page knows of it.
-- **Clock integration point.** `[data-clock-id][data-time-zone]` rows with a `[data-clock-reading]` area, and `data-clocks-state="preview"` on the section. P16 reads the zones from `CLOCK_LOCATIONS` and fills the readings; the page ships no clock code today.
+- **Clock integration point.** `[data-clock-id][data-time-zone]` rows with a `[data-clock-reading]` area. P16 fills them (below).
 - **Specimen.** `src/pages/[design]/home/index.astro` (development and demonstration builds only, D-117) draws `HomePage` with `src/design/home-fixture.ts`. The release guard `scripts/demo-check.mjs` searches `dist/` for it.
 - **Styles.** `src/styles/home.css`, global, imported by `BaseLayout.astro`: every page loads one stylesheet set (RESP-013), so the components carry no scoped style.
 - **No new dependency, script or client-side code.**
+
+## World clocks (P16)
+
+Four small parts, all erasable TypeScript (D-040), none importing a library (D-118 to D-121):
+
+- `src/home/clocks.ts`, the one list of eight places and zones (P15).
+- `src/home/clock-time.ts`, pure: `readClock(instant, zone)` returns the 24-hour time, weekday, date and machine-readable date and date-time from `Intl.DateTimeFormat`'s `formatToParts`; `tryReadClock` returns `null` for a zone it cannot format; `msToNextMinute`. No `Date.now`, no DOM.
+- `src/home/clock-loop.ts`: `createClockLoop(env)`, one timer aimed at the next minute, recomputed from the real time on every tick, none while hidden; given its clock and timers so tests drive it.
+- `src/scripts/world-clocks.ts`: the DOM binding, bundled and inlined by Astro from `WorldClocks.astro`; it takes over only `[data-clocks-state="loading"]` regions, writes `<time datetime>` elements, and listens to `visibilitychange`, `pageshow` (persisted) and `pagehide`.
+
+Lifecycle: the page is static; the clocks start when the script runs, draw from one `Date.now()`, and stop with the page. There is no time server: the device clock is the source. The development specimen `/_design/world-clocks/` renders `WorldClocks` with an `instant` at build time and marks it `simulated`, which the script ignores. Runtime cost: one timer, eight formatter lookups per minute, a handful of text writes only when the minute changes; no animation, observer or interval.

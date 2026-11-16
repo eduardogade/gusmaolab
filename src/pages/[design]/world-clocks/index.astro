@@ -1,0 +1,30 @@
+---
+// The development world-clocks specimen (P16, D-121): the real clock component drawn for fixed,
+// simulated instants, so daylight-saving changes and date boundaries can be seen that the live
+// clocks show only on certain days. Each scenario is the production WorldClocks with an `instant`,
+// formatted with the same function the homepage's script uses. Routed only in development and in a
+// demonstration build (src/editorial/demo.ts); a release build has no page here and its output is
+// searched for it.
+import FolderPage from "../../../layouts/FolderPage.astro"
+import WorldClocks from "../../../components/home/WorldClocks.astro"
+import ClocksSpecimenBanner from "../../../design/home/ClocksSpecimenBanner.astro"
+import { CLOCK_SCENARIOS } from "../../../design/clocks-scenarios.ts"
+import { demosEnabled } from "../../../editorial/demo.ts"
+
+export function getStaticPaths() {
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
+}
+---
+
+<FolderPage path="/" title="World clocks specimen · GusmaoLab">
+  <ClocksSpecimenBanner />
+  {
+    CLOCK_SCENARIOS.map((scenario) => (
+      <section class="clocks-scenario" data-clocks-scenario={scenario.id}>
+        <h2 class="clocks-scenario__title">{scenario.title}</h2>
+        <p class="clocks-scenario__note">{scenario.note}</p>
+        <WorldClocks instant={scenario.instant} />
+      </section>
+    ))
+  }
+</FolderPage>

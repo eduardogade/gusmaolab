@@ -323,12 +323,27 @@
     font-style: italic;
   }
 
+  /* Honest without JavaScript: the loading note gives way to the <noscript> line (P16). */
+  .clocks__nojs {
+    max-inline-size: 52ch;
+    margin-block-start: var(--space-3xs);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    font-style: italic;
+  }
+
+  @media (scripting: none) {
+    .clocks__note[data-clocks-note] {
+      display: none;
+    }
+  }
+
   .clocks__list {
     list-style: none;
     margin: var(--space-m) 0 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
     column-gap: var(--space-l);
   }
 
@@ -340,7 +355,7 @@
       "place reading";
     column-gap: var(--space-xs);
     align-items: center;
-    min-block-size: 3.25rem;
+    min-block-size: 3.75rem;
     padding-block: var(--space-2xs);
     border-block-end: var(--border-width-hairline) solid var(--color-folder-border);
   }
@@ -361,14 +376,39 @@
     overflow-wrap: anywhere;
   }
 
-  /* Reserves the width of "00:00" plus a day name, so a real reading will not move the row. */
+  /*
+   * The reading: the time over the date, at the end of the row. Its footprint is the same before
+   * and after the script fills it (the time's digits are tabular and the placeholder is as wide
+   * as a time; the date line is always one line tall), so nothing moves when it does.
+   */
   .clock__reading {
     grid-area: reading;
-    min-inline-size: 4.5rem;
-    color: var(--color-text-muted);
-    font-family: var(--font-mono);
-    font-size: var(--font-size-sm);
+    display: grid;
+    justify-items: end;
+    max-inline-size: 11rem;
     text-align: end;
+  }
+
+  .clock__time {
+    color: var(--color-text-primary);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-h3);
+    font-variant-numeric: tabular-nums;
+    line-height: var(--line-height-ui);
+    white-space: nowrap;
+  }
+
+  .clock__date {
+    min-block-size: 1lh;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-ui);
+  }
+
+  /* Not yet read, and not readable at all: quieter than a time, but the same size, so nothing moves. */
+  .clock[data-clock-state="pending"] .clock__time,
+  .clock[data-clock-state="unavailable"] .clock__time {
+    color: var(--color-text-muted);
   }
 
 /* 5. Recent Blog updates (region E) ------------------------------------- */
@@ -434,5 +474,24 @@
     border-radius: var(--radius-card);
     background-color: var(--color-surface-callout);
     font-family: var(--font-label);
+    font-size: var(--font-size-sm);
+  }
+
+/* 6. The world-clocks specimen (development only, P16) ------------------- */
+
+  .clocks-scenario {
+    margin-block-start: var(--space-l);
+    padding-block-start: var(--space-m);
+    border-block-start: var(--border-width-hairline) solid var(--color-folder-border);
+  }
+
+  .clocks-scenario__title {
+    font-size: var(--font-size-h3);
+  }
+
+  .clocks-scenario__note {
+    max-inline-size: 60ch;
+    margin-block-start: var(--space-3xs);
+    color: var(--color-text-secondary);
     font-size: var(--font-size-sm);
   }

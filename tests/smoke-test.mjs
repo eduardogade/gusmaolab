@@ -171,7 +171,7 @@ for (const file of expectedFigures)
   check(files.includes(file), `missing figure ${file}`)
 
 // 3. Every page: document basics, and no script except the folder previews (P07), once,
-//    on pages with folders. Then the temporary P03 specimen.
+//    on pages with folders, and the world clocks' (P16), once, on the page that has them. Then the temporary P03 specimen.
 const htmlFiles = files.filter((file) => file.endsWith(".html"))
 for (const file of htmlFiles) {
   const page = await readFile(join(dist, file), "utf8")
@@ -194,11 +194,12 @@ for (const file of htmlFiles) {
   check((page.match(/<main[\s>]/g) ?? []).length === 1, `${file} needs one <main>`)
   const scripts = page.match(/<script\b[^>]*>/gi) ?? []
   const folders = /class="gl-folders"/.test(page)
+  // The world clocks (P16, D-118) add one more module script, on the page that has them: the homepage.
+  const clocks = /data-home-region="clocks"/.test(page) ? 1 : 0
+  const expectedScripts = (folders ? 1 : 0) + clocks
   check(
-    folders
-      ? scripts.length === 1 && scripts[0] === '<script type="module">'
-      : scripts.length === 0,
-    `${file} has ${scripts.length} <script> element(s); expected ${folders ? 1 : 0}`,
+    scripts.length === expectedScripts && scripts.every((script) => script === '<script type="module">'),
+    `${file} has ${scripts.length} <script> element(s); expected ${expectedScripts}`,
   )
 }
 const html = files.includes(specimenFile)

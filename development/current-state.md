@@ -351,7 +351,21 @@ Home (`/`) is the real homepage, not scaffolding (D-112 to D-117; `planning/desi
 - **Looked at:** the page at 320, 390, 430, 768, 1024, 1280 and 1440 px (automated overflow, overlap, Bearnard ratio, clocks, keyboard and motion checks) and screenshots at 1440, 1280, 768, 390 and 320 px, kept outside the repository.
 - **Not shown:** Safari, Firefox, a real phone, a screen reader. The copy is provisional.
 - **Waiting for the owner:** review the homepage, its words and layout (G-P15-10), and decide the `home-welcome` role.
-- **Reserved for later:** P16 fills the clock readings; a later milestone fills the nucleus stage's `visual` slot.
+- **Reserved for later:** a later milestone fills the nucleus stage's `visual` slot. (The clocks were filled by P16, below.)
+
+## World clocks (P16)
+
+The homepage's "Around the world" region shows eight live clocks (D-118 to D-121), Anchorage, Mexico City, Brasília, Accra, Moscow, Dhaka, Koror and Auckland, in that order, on the IANA zones of `src/home/clocks.ts`.
+
+- **What each shows:** the local time as `HH:mm` (24-hour, no seconds), the local weekday and date ("Monday, 16 November"), from `Intl.DateTimeFormat` with the zone and one instant for all eight (`src/home/clock-time.ts`, pure). Daylight saving comes from the browser's own time-zone database; nothing holds an offset. Anchorage and Auckland change with their own rules, Mexico City does not change, Brasília uses `America/Sao_Paulo` and is named Brasília.
+- **Updates:** one timer for all eight, aimed at the next minute and recomputed from the real time on every tick; none while the page is hidden; redrawn on becoming visible and on restoration from the history cache (`src/home/clock-loop.ts`, `src/scripts/world-clocks.ts`). No framework, network call, geolocation or storage.
+- **Before the script, and without it:** the built HTML holds `--:--` placeholders of the same size as a live reading, hidden from assistive technology; with JavaScript off the section says "Live times need JavaScript". An unformattable zone would show "Unavailable", never the visitor's time.
+- **Accuracy limit:** the device's clock is the only time source, so a wrong device clock shifts every clock; the page says so.
+- **Specimen:** `/_design/world-clocks/` (development and demonstration builds only), linked from the dev note at the foot of the real homepage, draws the real component for four simulated instants (New Year's Eve, Anchorage's and Auckland's daylight-saving changes), labelled as simulated.
+- **Tests:** `tests/clocks.mjs` (CLOCK-001 to CLOCK-018 on fixed UTC instants against an independent `zoneinfo` reference, CLOCK-019 to CLOCK-025 on the loop with fake timers, CLOCK-026, 027, 029 and 032 to 040 on the built page, the sources and git) and `tests/clocks-browser.mjs` (CLOCK-019B to 026B, 028, 030, 031, 032B to 034B and 041 in headless Chromium against `dist-demo/`, with a controllable page clock and a count of pending timers).
+- **Looked at:** the homepage and specimen at 320, 390, 430, 768, 1024, 1280 and 1440 px (automated overflow, order and fit checks) and screenshots at 1440, 768, 390 and 320 px, kept outside the repository.
+- **Not shown:** Chrome on Android or any real device, Safari, Firefox, a real background tab (hiding is simulated through the page's own visibility events), a screen reader, or the owner's view.
+- **Waiting for the owner:** review the clocks (G-P16-10).
 
 ## npm scripts
 
@@ -403,7 +417,7 @@ Unchanged since P03; P05 to P09-A01 did not touch it. ISSUE-0003 stays open: the
 
 ## Completed prompts
 
-P01 to P15, including P09's Addendum 01 (the Chromatic Archive) and P11's Addendum 01 (the CV as the source of the owner's records, D-089 to D-093). P08's real-device checks are pending. P09 is technically completed; two owner reviews are pending (G-P09-A6, G-P09-B7); the third, G-P09-C7, was closed by D-076. P10 is completed (D-077 to D-082), and so is P11 (D-083 to D-088), with empty production records. P12 to P15 are described in their own sections above; owner reviews of P13's demonstrations, P14's workflow and P15's homepage are pending.
+P01 to P16, including P09's Addendum 01 (the Chromatic Archive) and P11's Addendum 01 (the CV as the source of the owner's records, D-089 to D-093). P08's real-device checks are pending. P09 is technically completed; two owner reviews are pending (G-P09-A6, G-P09-B7); the third, G-P09-C7, was closed by D-076. P10 is completed (D-077 to D-082), and so is P11 (D-083 to D-088), with empty production records. P12 to P16 are described in their own sections above; owner reviews of P13's demonstrations, P14's workflow, P15's homepage and P16's clocks are pending.
 
 ## Blockers
 

@@ -164,8 +164,11 @@ test("TRANS-B04", "Navigation stays ordinary: no router, no new script", (check)
     )
   }
   for (const path of pages) {
-    const scripts = built.get(path).html.match(/<script\b/g) ?? []
-    check(scripts.length === 1, `${path} has ${scripts.length} scripts`)
+    const html = built.get(path).html
+    const scripts = html.match(/<script\b/g) ?? []
+    // The folder script, and (P16) the world clocks' on the page that has them: no router either way.
+    const expected = /data-home-region="clocks"/.test(html) ? 2 : 1
+    check(scripts.length === expected, `${path} has ${scripts.length} scripts`)
   }
 })
 

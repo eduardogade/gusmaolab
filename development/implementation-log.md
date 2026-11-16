@@ -993,3 +993,20 @@ O trabalho começou na branch `development` com alterações alheias, inclusive 
 **Verified.** See `development/current-state.md` ("Homepage (P15)") and the P15 gates in `development/acceptance-matrix.md`. The nucleus frame was made flatter from a 34rem paper after the tablet screenshot showed a 4:3 frame taller than the text above it.
 
 **Not done, by design.** Clock mechanics (P16), the interactive nucleus, assigning Bearnard to `home-welcome`, any new content, push or deploy.
+
+
+## P16 — World clocks (2026-11-16)
+
+**Git preflight.** Started on `development` at `72cd983` (P15), working tree clean, one worktree, no stash; `origin` has no `development` branch (its `main` is `1e1c52b`). Nothing was reset, rebased or cherry-picked.
+
+**Built.** `src/home/clock-time.ts` (the pure reading), `src/home/clock-loop.ts` (the one loop, with injectable clock and timers), `src/scripts/world-clocks.ts` (the DOM binding), `WorldClocks.astro` rewritten (placeholders, `<noscript>`, an `instant` prop for the specimen), the clocks' part of `src/styles/home.css`, the specimen `/_design/world-clocks/` (`src/pages/[design]/world-clocks/index.astro`, `src/design/clocks-scenarios.ts`, `src/design/home/ClocksSpecimenBanner.astro`), release-guard markers in `scripts/demo-check.mjs`, a dev-note link on the homepage, `tests/clocks.mjs` (37 checks), `tests/clocks-browser.mjs` (15 checks) and `tests/fixtures/clocks/reference.json`. Decisions D-118 to D-121. The clock list (`src/home/clocks.ts`) was not changed.
+
+**Independent reference.** `tests/fixtures/clocks/reference.json` holds the expected local date-times of all eight zones at 18 UTC instants (the transitions of Anchorage and Auckland, New Year, mid-month), computed with Python's `zoneinfo`, not with the code under test. A first Node smoke run matched all 144 values, also under `TZ=Pacific/Kiritimati`. Two mutations were tried to see the tests fail (hour cycle `h12`: nine failures; Mexico City on `America/Chicago`: CLOCK-001, 004, 005 and 007 fail) and reverted.
+
+**Existing tests changed, and why.** Three checks counted scripts: the smoke test, NAV-031 and TRANS-B04 now allow exactly one more module script, the clocks', on the page that has them (they still forbid any other, any router and any inline handler). NAV-032's route allowlist names the new specimen route. HOME-012 allows the clocks' script, HOME-016 asserts the new honest built state (loading, no `<time>`, no digit, placeholders hidden from assistive technology) in place of the P15 "preview" state, and the git regression helper of `tests/home.mjs` treats the file as P15-in-progress only while it is untracked. The homepage composition, the other four regions, the palettes and the folders were not touched (CLOCK-029, 035 to 039).
+
+**Found while testing.** CLOCK-034B showed the placeholder was a smaller size than a live reading (a 4 px shift at 1440 px); the placeholder now has the live size and only a quieter colour. The intro sentence lost the space before the note when the note moved into an expression; restored. The note's text is the same before and after the script runs, so it cannot reflow.
+
+**Verified.** `npm run verify` exit 0 (379 PASS lines), `npm run test:browser` exit 0 in Chrome 157 (the new suite: 15 checks), `git diff --check`. Looked at: the homepage at seven widths (automated) and screenshots at 1440, 768, 390 and 320 px, plus the specimen at 1440 px, kept outside the repository. The live reading on the dev server agreed with the UTC time (Accra) and the offsets of the other seven.
+
+**Not done, by design or not possible here.** Chrome on Android and any real device, Safari, Firefox, a real hidden tab or suspended phone (hiding is simulated with the page's own events), a screen reader, the owner's review; relative-day labels; any nucleus or Bearnard work; P17.

@@ -490,8 +490,10 @@ test("NAV-031", "Plain links; navigation needs no JavaScript", (check) => {
     check(html !== "", `${path} could not be read`)
     const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)]
     // The P03 specimen has no folders, so no script; every page with folders has one.
+    // P16 (D-118): the homepage has one more, the world clocks' script, from WorldClocks.astro.
+    const clocks = /data-home-region="clocks"/.test(html) ? 1 : 0
     const expected =
-      path.startsWith("/_design/") && !STUDIES_WITH_FOLDERS.includes(path) ? 0 : 1
+      (path.startsWith("/_design/") && !STUDIES_WITH_FOLDERS.includes(path) ? 0 : 1) + clocks
     check(
       scripts.length === expected,
       `${path} has ${scripts.length} <script> elements`,
@@ -499,14 +501,16 @@ test("NAV-031", "Plain links; navigation needs no JavaScript", (check) => {
     check(
       scripts.every(
         ([, attrs, body]) =>
-          attrs.trim() === 'type="module"' && /showPopover/.test(body),
+          attrs.trim() === 'type="module"' &&
+          (/showPopover/.test(body) || (clocks === 1 && /data-clocks-state/.test(body))),
       ),
-      `${path} has a script other than the folder previews`,
+      `${path} has a script other than the folder previews and the world clocks`,
     )
     check(!/\son[a-z]+=/i.test(html), `${path} has an inline event handler`)
   }
   for (const [file, text] of sources) {
-    const allowed = file === "components/folders/FolderStack.astro"
+    const allowed =
+      file === "components/folders/FolderStack.astro" || file === "components/home/WorldClocks.astro"
     check(
       allowed || !/<script\b/i.test(text),
       `src/${file} contains a <script> element`,
@@ -583,6 +587,8 @@ test("NAV-032", "Every approved route is a static page", (check) => {
         "[design]/quarto/markdown.astro",
         "[design]/records.astro",
         "[design]/tokens.astro",
+        // P16: the development world-clocks specimen; static paths only in dev and demo mode.
+        "[design]/world-clocks/index.astro",
         "[section]/[folder]/[subfolder]/index.astro",
         "[section]/[folder]/index.astro",
         "[section]/index.astro",

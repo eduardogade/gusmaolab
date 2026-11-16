@@ -35,6 +35,11 @@ export const MARKERS = [
   // The homepage specimen (P15, D-117): the real homepage with synthetic Blog posts.
   "data-home-specimen",
   "Development specimen",
+  // The world-clocks specimen (P16, D-121): the real clocks drawn for simulated instants.
+  "data-clocks-specimen",
+  "data-clocks-simulated",
+  "data-clocks-scenario",
+  "Simulated instant",
 ]
 
 /** The demonstrations the repository has: their file, slug and title, from their own front matter. */
