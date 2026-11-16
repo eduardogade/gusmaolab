@@ -680,3 +680,13 @@ Home is a page of the Core category on one sheet of reading paper. It adds no co
 ### World clocks (P16)
 
 The clocks are rows of the homepage's existing language: hairlines, the heading font for the city, the monospace token for the digits, secondary and muted text for the date and country, and no new colour, font, shadow, motion or script beyond the clocks' own (D-118 to D-121). The reading's footprint is the same before and after the script fills it. Checked at 320, 390, 430, 768, 1024, 1280 and 1440 px: no overflow, the approved order in reading order, a city never running into its reading. The development specimen `/_design/world-clocks/` repeats the region for fixed, simulated instants under plain headings and a dashed note.
+
+## 17. Content states (P17)
+
+A page that has nothing to show yet is designed, not broken. The system has four presentation states, derived from real data (`src/site/coverage.ts`, D-122): **ready** (the page draws its material), **empty** (a working collection says in its own voice that nothing is published; the editorial empty states of P12), **in preparation** (a notice says what the page is for and what it is waiting for) and **unavailable** (a feature needs a resource that is not available; unused so far).
+
+- **A notice is text.** A hairline frame with a 0.25 rem leading edge, an `<h2>` ("In preparation", "Nothing published yet", "Not available right now") and a short paragraph, in the page's own typography and on the open folder's own paper. A dashed frame marks "empty". No giant label, no icon, no construction emoji, no count, no thumbnail, no card, no button and no disabled control. The page's own title and its one-paragraph purpose come first, so the page still says what it is for.
+- **Parents** show a guide to their folders: a link, one sentence on what the folder is for and its state in words, in an auto-fit grid (`minmax(min(100%, 15rem), 1fr)`) that stacks on a phone. **Related folders** are a short list of real links under a "Related" heading.
+- **Bearnard.** On his own overview he stands beside the notice (the notice shares a row with him and wraps under him when narrow); on other pages an unassigned illustration role draws nothing and leaves no gap.
+- **Colour and motion.** No palette colour is added: everything uses semantic tokens and the page's category. No transition or animation (`tests/site.mjs`, SITE-020).
+- **Accessibility.** Each block is a `<section>` labelled by its heading; there is one `<h1>` per page; nothing is a live region or takes focus; links keep the global focus ring. Checked at 200% text size and under reduced motion (SITE-046, SITE-047).

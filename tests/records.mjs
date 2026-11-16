@@ -1541,7 +1541,8 @@ await test(
       !isShown(store, store.get("projects", "project-synthetic-unreviewed")),
       "the unreviewed fixture project is shown",
     )
-    // The fixture is imported by the study (and the tests), and by nothing else in src/.
+    // The fixture is imported by the records study and the page-states specimen (P17, D-124: both
+    // development-only studies, absent from a release build), and by nothing else in src/.
     const importers = []
     for (const file of await listFiles(join(repo, "src"))) {
       if (!/\.(ts|astro|mjs)$/.test(file)) continue
@@ -1549,7 +1550,7 @@ await test(
         importers.push(relative(repo, file))
     }
     check(
-      json(importers) === json(["src/pages/[design]/records.astro"]),
+      json(importers) === json(["src/pages/[design]/page-states/index.astro", "src/pages/[design]/records.astro"]),
       `the fixture is imported by ${json(importers)}`,
     )
   },
@@ -1586,7 +1587,7 @@ await test("REC-022", "A record creates no page", async (check) => {
     ),
     "an entity route exists",
   )
-  // No route file reads the records, except the study.
+  // No route file reads the records, except the two development studies (P17 added the page-states specimen).
   const readers = []
   for (const file of await listFiles(join(repo, "src/pages"))) {
     if (
@@ -1597,7 +1598,7 @@ await test("REC-022", "A record creates no page", async (check) => {
       readers.push(relative(repo, file))
   }
   check(
-    json(readers) === json(["src/pages/[design]/records.astro"]),
+    json(readers) === json(["src/pages/[design]/page-states/index.astro", "src/pages/[design]/records.astro"]),
     `route files that read records: ${json(readers)}`,
   )
   // A slug reserves an address; it does not open one.

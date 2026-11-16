@@ -1079,7 +1079,9 @@ await test(
         "src/navigation",
         "src/components/folders",
         "src/styles/folders.css",
-        "src/scripts",
+        // The two folder scripts, not the folder: P16 added the world clocks' script (D-118).
+        "src/scripts/folder-previews.ts",
+        "src/scripts/folder-rows.ts",
         "src/styles/view-transitions.css",
       ),
       "the folders or the navigation changed",

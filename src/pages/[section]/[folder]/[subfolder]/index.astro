@@ -3,7 +3,8 @@
 // data. Only registered folders and entries that are published or archived get a page;
 // any other URL has none. There is never a level-4 route: a deeper path is a future extension (planning/content-model.md).
 import FolderPage from "../../../../layouts/FolderPage.astro"
-import ScaffoldContent from "../../../../components/scaffold/ScaffoldContent.astro"
+import DestinationPage from "../../../../components/states/DestinationPage.astro"
+import { coverageFor, siteCoverage } from "../../../../site/page.ts"
 import EditorialEntry from "../../../../components/editorial/EditorialEntry.astro"
 import CollectionOverview from "../../../../components/editorial/CollectionOverview.astro"
 import { collectionIndexFor, pageStaticPaths } from "../../../../editorial/site.ts"
@@ -14,6 +15,8 @@ export function getStaticPaths() {
 
 const { collection, entry } = Astro.props
 const index = entry === undefined ? await collectionIndexFor(Astro.url.pathname) : null
+const row = entry === undefined ? await coverageFor(Astro.url.pathname) : undefined
+const rows = row !== undefined && index === null ? await siteCoverage() : []
 ---
 
 {
@@ -24,15 +27,17 @@ const index = entry === undefined ? await collectionIndexFor(Astro.url.pathname)
   ) : (
     <FolderPage>
       {index ? (
-        <CollectionOverview
-          collection={index.id}
-          label={index.label}
-          identity={index.identity}
-          items={index.items}
-          demoItems={index.demoItems}
-        />
+        <div data-page-root data-page-state={row?.state}>
+          <CollectionOverview
+            collection={index.id}
+            label={index.label}
+            identity={index.identity}
+            items={index.items}
+            demoItems={index.demoItems}
+          />
+        </div>
       ) : (
-        <ScaffoldContent path={Astro.url.pathname} />
+        row !== undefined && <DestinationPage row={row} rows={rows} />
       )}
     </FolderPage>
   )

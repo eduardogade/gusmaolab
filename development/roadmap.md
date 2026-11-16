@@ -7,7 +7,7 @@ Status: provisional. The six-wave structure is approved. Individual tasks are no
 | I — Foundations | P01–P04 | Completed 2026-11-10 |
 | II — Physical Folders & Visual Identity | P05–P09 | P05 to P09 completed 2026-11-11; P09's three owner reviews are pending |
 | III — Publishing & Content | P10–P14 | P10 to P14 completed 2026-11-15; owner reviews of P13's demonstrations and P14's workflow are pending |
-| IV — Website Composition | P15–P18 | P15 and P16 completed 2026-11-16; owner reviews are pending |
+| IV — Website Composition | P15–P18 | P15, P16 and P17 completed 2026-11-16; owner reviews are pending |
 | V — Advanced Features | P19–P21 | Not started |
 | VI — QA & Release | P22–P24 | Not started |
 
@@ -32,7 +32,8 @@ Status: provisional. The six-wave structure is approved. Individual tasks are no
 - **P14** — Authoring Workflow, Publication Validation & Editorial Developer Experience (completed 2026-11-15: five `content:*` commands, one preflight, the development Publishing Workbench; the owner's use of the workflow is pending)
 - **P15** — Homepage Composition: Bearnard, scientific identity, world clocks and editorial discovery (completed 2026-11-16: the real homepage with five regions, a reserved nucleus stage, eight configured clock locations and recent Blog updates; the owner's review is pending).
 - **P16** — Eight World Clocks: timezone accuracy, live updates and homepage integration (completed 2026-11-16: eight live, IANA-correct clocks in the homepage's region, one update loop, a development specimen of simulated instants; the owner's clock review is pending). P17 is next; its purpose is whatever this roadmap says when it is prepared.
-- P17–P24 titles are not yet supplied except as named above
+- **P17** — Complete Site Navigation & Content States (completed 2026-11-16: all 36 folders have a page with a derived state, a development site map, an internal-link checker; the owner's site-wide review is pending)
+- P18 is named "Contact, Downloads & Error Pages"; P19–P24 titles are not yet supplied except as named above
 
 Since P04, ordinary prompts run on the persistent `development` branch (D-035).
 

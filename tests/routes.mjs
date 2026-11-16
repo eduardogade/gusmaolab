@@ -579,6 +579,8 @@ test("NAV-032", "Every approved route is a static page", (check) => {
         "[design]/editorial/index.astro",
         "[design]/folders.astro",
         "[design]/home/index.astro",
+        // P17: the development page-states specimen; static paths only in dev and demo mode.
+        "[design]/page-states/index.astro",
         // P14: the development Publishing Workbench; static paths only in dev and demo mode.
         "[design]/publishing/draft-example/index.astro",
         "[design]/publishing/index.astro",
@@ -586,6 +588,8 @@ test("NAV-032", "Every approved route is a static page", (check) => {
         "[design]/quarto/index.astro",
         "[design]/quarto/markdown.astro",
         "[design]/records.astro",
+        // P17: the development site map; static paths only in dev and demo mode.
+        "[design]/site-map/index.astro",
         "[design]/tokens.astro",
         // P16: the development world-clocks specimen; static paths only in dev and demo mode.
         "[design]/world-clocks/index.astro",

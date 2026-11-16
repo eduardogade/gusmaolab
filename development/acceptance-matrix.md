@@ -800,3 +800,20 @@ G-12 (the interactive nucleus) and G-13 (the eight clocks) are not closed by P15
 | G-P16-08 | Homepage composition, palettes, folders, Bearnard, nucleus stage, publishing, records and the CV unchanged | **Passed** (CLOCK-029, CLOCK-035 to CLOCK-039) |
 | G-P16-09 | The simulated specimen is development-only and never leaks into a live clock or a release | **Passed** (CLOCK-040, CLOCK-041) |
 | G-P16-10 | The owner reviews the clocks on the real homepage, including on Android Chrome | **Pending** |
+
+## P17 gates — Navigation coverage and content states
+
+| ID | Gate | Status |
+| --- | --- | --- |
+| G-P17-01 | Eleven top-level and 25 second-level destinations resolve to a generated page, in the approved order and categories; Overview resolves to its parent's URL; no fourth row; no leaf child row | **Passed** (SITE-001 to SITE-011) |
+| G-P17-02 | Direct navigation, selection from the URL, Back and Forward; unknown URLs stay unknown | **Passed** (SITE-010B, 011, 012, 014) in headless Chromium |
+| G-P17-03 | Every registered page has meaningful content or an explicit, derived state; empty collections are not incomplete pages | **Passed** (SITE-015 to SITE-018) |
+| G-P17-04 | No synthetic, invented or confidential record reaches a page; the CV proposal is never exposed; no form or booking control | **Passed** (SITE-017, 019, 026 to 029, 043) |
+| G-P17-05 | Content-state components are plain accessible text: labelled sections, no live region, no control, no motion, no raw colour | **Passed** (SITE-020, 046, 047) |
+| G-P17-06 | Editorial collections, drafts, archives, Quarto ownership and the development demonstrations unchanged | **Passed** (SITE-021 to SITE-025, 040, 042) |
+| G-P17-07 | Palettes, folders, homepage, clocks, Bearnard assets, publishing workflow and dependencies unchanged | **Passed** (SITE-030 to SITE-034, 040, 041, 044) |
+| G-P17-08 | Internal-link validator; no broken internal link in the build | **Passed** (SITE-013; 72 pages, 3554 internal links) |
+| G-P17-09 | Development site map covers every folder, derives its states, is reachable by clicking, and is absent from the release build | **Passed** (SITE-035 to SITE-039) |
+| G-P17-10 | Responsive at 320, 390, 430, 768, 1024, 1280 and 1440 px: no overflow, one heading, no extra row, no broken image | **Passed** (SITE-045) in headless Chromium |
+| G-P17-11 | Nothing of the owner's missing material is invented: the real records, CV snapshot, contact and booking are still to be supplied | **Open** (owner material; P18 for Contact) |
+| G-P17-12 | The owner reviews the site-wide pages, the wording and the site map | **Pending** |

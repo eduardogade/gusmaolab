@@ -1,0 +1,73 @@
+---
+/**
+ * The page of a registered folder that has no page of its own (P17, D-122): About, Contact, Schedule,
+ * Portfolio, the CV and Lab folders, the Lecture Notes, Writing and Bearnard's Area overviews and the
+ * Bearnard pages. It replaces the P06 scaffolding. Editorial collections draw CollectionOverview, and
+ * Home draws HomePage.
+ *
+ * What it shows follows the page's derived state (src/site/coverage.ts):
+ *   - a title and one paragraph of purpose, always (src/site/destinations.ts);
+ *   - ready: the records the projection holds, or the folder guide of a parent;
+ *   - preparation: a plain notice saying what the page is waiting for, and no placeholder content;
+ *   - a few related folders, by registry ID.
+ * Bearnard appears only where he is approved: by ID on his own overview, and as an unassigned
+ * role (drawing nothing) on his other pages, so a missing illustration never breaks a page.
+ */
+import BearnardIllustration from "../bearnard/BearnardIllustration.astro"
+import ChildGuide from "./ChildGuide.astro"
+import RecordsContent from "./RecordsContent.astro"
+import RelatedLinks from "./RelatedLinks.astro"
+import StateNotice from "./StateNotice.astro"
+import { DESTINATIONS } from "../../site/destinations.ts"
+import { siteRecordViews } from "../../site/facts.ts"
+import type { CoverageRow } from "../../site/coverage.ts"
+
+interface Props {
+  row: CoverageRow
+  /** Every row, to find the children's. */
+  rows: readonly CoverageRow[]
+}
+
+const { row, rows } = Astro.props
+const spec = DESTINATIONS[row.id]
+if (spec === undefined) throw new Error(`DestinationPage: no destination for "${row.id}"`)
+const children = row.childIds.flatMap((id) => rows.filter((candidate) => candidate.id === id))
+const views = siteRecordViews()
+const bearnard = row.category === "bearnard"
+const notice = row.state === "preparation" && spec.whileMissing !== undefined ? spec.whileMissing : undefined
+const art = row.id === "bearnards-area"
+---
+
+<div class="dest" data-destination={row.id} data-page-state={row.state}>
+  <div class="gl-prose">
+    <h1>{row.label}</h1>
+    {spec.intro && <p class="dest__lede">{spec.intro}</p>}
+  </div>
+
+  {
+    row.state === "ready" && spec.source === "records" && spec.records && (
+      <RecordsContent records={spec.records} views={views} />
+    )
+  }
+
+  {
+    (notice !== undefined || art) && (
+      <div class="dest__row">
+        {notice !== undefined && (
+          <StateNotice state="preparation" id={row.id} text={notice}>
+            {bearnard && spec.source !== "overview" && <BearnardIllustration role="under-construction" decorative class="state__art" />}
+          </StateNotice>
+        )}
+        {art && (
+          <figure class="state-art" data-bearnard-area>
+            <BearnardIllustration variant="bearnard-v1.3-portrait" sizes="(min-width: 40rem) 10rem, 8rem" />
+          </figure>
+        )}
+      </div>
+    )
+  }
+
+  {children.length > 0 && <ChildGuide id={row.id} label={row.label} rows={children} />}
+
+  {spec.related && spec.related.length > 0 && <RelatedLinks id={row.id} ids={spec.related} />}
+</div>

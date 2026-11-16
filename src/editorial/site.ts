@@ -12,7 +12,7 @@
  */
 import { getCollection } from "astro:content"
 import type { CollectionEntry, CollectionKey } from "astro:content"
-import { collectionById, collectionOwnedBy, COLLECTION_IDS } from "./collections.ts"
+import { collectionById, collectionOwnedBy, COLLECTIONS, COLLECTION_IDS } from "./collections.ts"
 import { demosEnabled } from "./demo.ts"
 import type { CollectionId } from "./collections.ts"
 import {
@@ -187,6 +187,18 @@ export async function collectionIndexFor(path: string): Promise<{
       all.filter((record) => record.demo),
     ),
   }
+}
+
+/**
+ * How many entries each collection lists, by the ID of the folder that owns it (P17, D-122): the
+ * count behind a folder's page state. The same selection as the folder's index (`indexItems`):
+ * published and archived entries, never a draft and never a demonstration.
+ */
+export async function editorialCounts(): Promise<Record<string, number>> {
+  const real = (await entries()).filter((record) => !record.demo)
+  return Object.fromEntries(
+    COLLECTIONS.map((collection) => [collection.owner, indexItems(collection.id, real).length]),
+  )
 }
 
 /**

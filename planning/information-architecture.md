@@ -320,7 +320,7 @@ P11 added the data that the research sections will present, and no navigation: t
 
 - The CV's eight folders match the record families and activity types one to one, so each folder's page is a section of one projection, not a list of its own.
 - A record never becomes a tab. If a project or a person gets a page, it will be a content route owned by a folder (section 8), added by a recorded decision.
-- Until verified records exist, these pages keep their development scaffolding. The projections are shown, with invented data, only at `/_design/records/`.
+- Until verified records exist, these pages are in preparation and say so (P17, section 18). The projections are shown, with invented data, only at `/_design/records/` and `/_design/page-states/`.
 
 ### The CV behind the CV section (P11-A01)
 
@@ -360,3 +360,23 @@ The author's versioned CV YAML is the source of the owner's professional history
 ## Home (P15)
 
 `/` is the entrance, not a folder with children: the global row is its only row, with Home selected. Its body links to the destinations that answer "where do I begin?" in three groups (research and engineering: Portfolio, CV, Lab; learning and explanation: Lecture Notes, Blog; writing and personality: Writing, Bearnard's Area), plus About, Contact and Schedule once each. This is a selection, not a second registry: labels and URLs come from the registry, and the groups are not colour categories. The page also holds the reserved nucleus stage, eight world-clock places and the newest three published Blog entries (D-112 to D-117). `/_design/home/` is a development specimen of the same page, not a route of the site (development and demonstration builds only).
+
+## 18. Every destination has a page, and says what state it is in (P17)
+
+All 36 registered folders (11 sections and 25 children; no third-level folder) have a built page (D-122 to D-125). The registry is still the only list: this section describes what the pages do, and the exact inventory (label, URL, parent, category, state, reason, whether its route is generated) is generated, not copied, by the development site map at `/_design/site-map/` ("Site Map & Page Coverage"; development and demonstration builds only, linked from the local homepage's development note and the Publishing Workbench's banner).
+
+**Route ownership.** A registered folder owns its page. Editorial entries are content routes owned by their collection's folder and are never tabs (section 8). Home, About, Contact, Schedule, Portfolio and Blog have no children; the other five sections open a row whose first tab is the parent's Overview (section 14): a display tab linking to the parent's own URL, never a registry node and never a URL of its own. `/external/` is not a route (D-076); an unknown URL has no page and is not redirected to Home.
+
+**Page states.** A page is in one of four presentation states: ready, empty, in preparation or unavailable. They describe pages, never articles (draft, published and archived are P10's), and are derived from the real source, never typed: a collection by its published entries, a records page by its verified records, a declared-planned page by the declaration in `src/site/destinations.ts`, a parent by its children.
+
+| Section | Destinations | What the pages are now |
+| --- | --- | --- |
+| Core | Home; About, Contact, Schedule | Home is ready. The other three are in preparation: a purpose, an honest notice, no form, no address, no booking control |
+| Research | Portfolio; CV and its 8 sections; Lab and its 6 | In preparation: they are filled from verified records and the owner's approved CV snapshot, and none exists yet. Join Us, Facilities and Resources are declared planned |
+| Blog & Notes | Blog; Lecture Notes and its 4 collections | The five collections are empty (working, nothing published). The Lecture Notes Overview is ready: it guides the four collections |
+| Writing | Writing and its 3 collections | The three collections are empty. The Writing Overview is ready |
+| Bearnard | Bearnard's Area and its 4 pages | In preparation. The Overview shows his approved illustration; Photos, Videos, Powerlifting and Bear Life say what each is for and what is missing, and invent nothing |
+
+**Contextual navigation.** A page may name up to three closely related folders (`related` in `src/site/destinations.ts`, as registry IDs, so labels and URLs come from the registry): Lab Research Areas to Portfolio, Portfolio to Lab, CV Research to Lab, Contact to Schedule. A parent's page also lists its children (`ChildGuide`) with what each is for and, in words, its state. No page links to every section, to an article that does not exist, or through a disabled card.
+
+**Planned features.** Contact, Schedule, Join Us, Facilities, Resources and the four Bearnard pages are declared planned. Contact and Schedule do not pretend to work: P18 completes Contact, and booking waits for a provider (R-10, E-02).

@@ -1,0 +1,30 @@
+---
+/**
+ * What a page says when it has no material to show (P17, D-122): a plain statement, in the page's
+ * own type and the open folder's own colours, that says whether the page is empty, in preparation
+ * or unavailable, and why. It is text: it has no button, no disabled control and no link that
+ * goes nowhere. A ready page never draws one.
+ *
+ *   <StateNotice state="preparation" id="lab-facilities" text="…" />
+ *
+ * `id` is the destination's ID, which keeps the heading's own ID unique. The slot is for an
+ * optional illustration, and may stay empty.
+ */
+import { STATE_HEADINGS } from "../../site/state.ts"
+import type { PageState } from "../../site/state.ts"
+
+interface Props {
+  state: Exclude<PageState, "ready">
+  id: string
+  text: string
+}
+
+const { state, id, text } = Astro.props
+const titleId = `state-${id}`
+---
+
+<section class="state" aria-labelledby={titleId} data-state-notice={state}>
+  <h2 id={titleId} class="state__title">{STATE_HEADINGS[state]}</h2>
+  <p>{text}</p>
+  <slot />
+</section>

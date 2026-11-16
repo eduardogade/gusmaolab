@@ -1,0 +1,67 @@
+---
+// The development page-states specimen (P17, D-124): the content-state components drawn in each state,
+// and the records pages drawn from the synthetic P11 fixture, so a "ready" Portfolio, CV and Lab can
+// be seen before any real record exists. Every name on it is invented and says so. Routed only in
+// development and in a demonstration build (src/editorial/demo.ts); a release build has no page
+// here and its output is searched for it.
+import FolderPage from "../../../layouts/FolderPage.astro"
+import ChildGuide from "../../../components/states/ChildGuide.astro"
+import RecordsContent from "../../../components/states/RecordsContent.astro"
+import RelatedLinks from "../../../components/states/RelatedLinks.astro"
+import StateNotice from "../../../components/states/StateNotice.astro"
+import { SYNTHETIC_PERSON, SYNTHETIC_RECORDS } from "../../../design/records-fixture.ts"
+import { demosEnabled } from "../../../editorial/demo.ts"
+import { createRecords } from "../../../records/index.ts"
+import { recordViews } from "../../../site/facts.ts"
+import { siteCoverage } from "../../../site/page.ts"
+
+export function getStaticPaths() {
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
+}
+
+const views = recordViews(createRecords(SYNTHETIC_RECORDS, { allowSynthetic: true }), SYNTHETIC_PERSON)
+const rows = await siteCoverage()
+const lectureNotes = rows.filter((row) => row.parentId === "lecture-notes")
+const samples = ["portfolio", "cv-publications", "cv-teaching", "lab-people", "lab-areas", "lab-partners"] as const
+---
+
+<FolderPage path="/" title="Page states specimen · GusmaoLab">
+  <aside class="home-specimen" role="note" data-site-map-banner>
+    <p>
+      <strong>Development specimen, not a page of the website.</strong> It draws the content-state
+      components in each state, and the records pages from a <strong>synthetic fixture</strong>: every
+      name below is invented. A production build leaves it out.
+    </p>
+    <p><a href="/_design/site-map/">Site Map &amp; Page Coverage</a></p>
+  </aside>
+  <div class="gl-prose" data-site-map="states">
+    <h1>Page states</h1>
+    <p>One component for each state a page can be in, and the same components with data.</p>
+  </div>
+
+  <section class="sm" aria-labelledby="ps-notices" data-specimen="notices">
+    <h2 id="ps-notices">Notices</h2>
+    <div class="dest">
+      <StateNotice state="empty" id="specimen-empty" text="This collection works, and nothing has been published in it yet." />
+      <StateNotice state="preparation" id="specimen-preparation" text="This page has a purpose and is waiting for material the owner has not yet supplied." />
+      <StateNotice state="unavailable" id="specimen-unavailable" text="This feature needs an external service that cannot be reached right now." />
+    </div>
+  </section>
+
+  <section class="sm" aria-labelledby="ps-guide" data-specimen="guide">
+    <h2 id="ps-guide">Folder guide and related links</h2>
+    <div class="dest">
+      <ChildGuide id="specimen-guide" label="Lecture Notes" rows={lectureNotes} />
+      <RelatedLinks id="specimen-related" ids={["lab-research-areas", "cv-publications"]} />
+    </div>
+  </section>
+
+  {
+    samples.map((key) => (
+      <section class="sm" aria-labelledby={`ps-${key}`} data-specimen={key}>
+        <h2 id={`ps-${key}`}>{key} (synthetic)</h2>
+        <RecordsContent records={key} views={views} />
+      </section>
+    ))
+  }
+</FolderPage>

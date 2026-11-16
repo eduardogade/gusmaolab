@@ -1,0 +1,236 @@
+/*
+ * Content states (P17, D-122): the shared presentation of a page that is ready, empty, in
+ * preparation or unavailable, of a parent folder's guide to its children, and of a page's related
+ * folders. Semantic tokens only, no colour of its own (the open folder's category colours the
+ * paper), no transition or animation, and nothing here looks like a control: a notice is text.
+ * Loaded on every folder page with the other global styles (RESP-013).
+ */
+
+.dest {
+  --_measure: var(--measure-reading-note);
+}
+
+.dest__lede {
+  max-inline-size: var(--_measure);
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-lead);
+}
+
+.dest > * + * {
+  margin-block-start: var(--space-m);
+}
+
+/* A notice states what a page is waiting for, in a hairline frame, in the page's own type. */
+.state {
+  max-inline-size: var(--_measure);
+  padding: var(--space-s) var(--space-m);
+  border: var(--border-width-hairline) solid var(--color-folder-border);
+  border-inline-start-width: 0.25rem;
+  border-radius: var(--radius-card);
+}
+
+.state__title {
+  margin: 0;
+  font-size: var(--font-size-h4);
+}
+
+.state > * + * {
+  margin-block-start: var(--space-2xs);
+}
+
+.state[data-state-notice="empty"] {
+  border-style: dashed;
+}
+
+.state__art {
+  margin-block-start: var(--space-s);
+}
+
+/* A parent's guide to its folders: a link, what the folder is for, and its state in words. */
+.guide__title,
+.related__title {
+  margin: 0;
+  font-size: var(--font-size-h3);
+}
+
+.guide__list,
+.related__list {
+  display: grid;
+  gap: var(--space-s);
+  margin: var(--space-s) 0 0;
+  padding: 0;
+  list-style: none;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+}
+
+.guide__item {
+  display: grid;
+  align-content: start;
+  gap: var(--space-3xs);
+  padding: var(--space-xs) var(--space-s);
+  border: var(--border-width-hairline) solid var(--color-folder-border);
+  border-radius: var(--radius-card);
+}
+
+.guide__link {
+  font-size: var(--font-size-h4);
+  font-weight: var(--font-weight-semibold);
+}
+
+.guide__about {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.guide__state {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.related__list {
+  grid-template-columns: none;
+  gap: var(--space-2xs);
+}
+
+/* Records pages: dated lines and citations, compact and in the record's own order. */
+.rec__section + .rec__section {
+  margin-block-start: var(--space-l);
+}
+
+.rec__heading {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-h3);
+}
+
+.rec__list {
+  display: grid;
+  gap: var(--space-s);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-inline-size: var(--measure-reading-technical);
+}
+
+.rec__item {
+  display: grid;
+  gap: var(--space-3xs);
+}
+
+.rec__title {
+  font-weight: var(--font-weight-semibold);
+}
+
+.rec__meta,
+.rec__detail {
+  margin: 0;
+  color: var(--color-text-secondary);
+}
+
+.rec__meta {
+  font-size: var(--font-size-sm);
+}
+
+/* A notice and, on Bearnard's own overview, Bearnard beside it; wrapping under it when narrow. */
+.dest__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: var(--space-m);
+}
+
+.dest__row > .state {
+  flex: 1 1 min(100%, 16rem);
+  max-inline-size: min(100%, 34rem);
+}
+
+.state-art {
+  margin: 0;
+  inline-size: min(100%, 10rem);
+}
+
+/* The development site map (P17, D-124): a compact grouped list, never a table, so it wraps. */
+.sm {
+  margin-block-start: var(--space-l);
+}
+
+.sm h2 {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-h3);
+}
+
+.sm__total,
+.sm__note,
+.sm__meta {
+  color: var(--color-text-secondary);
+}
+
+.sm__summary {
+  display: grid;
+  gap: var(--space-xs);
+  margin: 0;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+}
+
+.sm__count {
+  padding: var(--space-xs) var(--space-s);
+  border: var(--border-width-hairline) solid var(--color-folder-border);
+  border-radius: var(--radius-card);
+}
+
+.sm__count dt {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.sm__count dd {
+  margin: 0;
+  font-size: var(--font-size-h2);
+  font-variant-numeric: tabular-nums;
+}
+
+.sm__list {
+  display: grid;
+  gap: var(--space-2xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sm__row {
+  padding-block: var(--space-2xs);
+  border-block-end: var(--border-width-hairline) solid var(--color-folder-border);
+}
+
+.sm__row[data-level="2"] {
+  padding-inline-start: var(--space-m);
+}
+
+.sm__main,
+.sm__meta {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.sm__main {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-s);
+  align-items: baseline;
+  font-weight: var(--font-weight-semibold);
+}
+
+.sm__state {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+  font-weight: normal;
+}
+
+.sm__meta {
+  font-size: var(--font-size-sm);
+}
+
+.sm__note {
+  margin: var(--space-xs) 0 0;
+  font-size: var(--font-size-sm);
+}

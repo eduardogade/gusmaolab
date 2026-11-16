@@ -1,0 +1,139 @@
+---
+/**
+ * The material of a records destination, once verified records exist (P17, D-122): the canonical
+ * records through the P11 projections, drawn compactly. It draws only what the projection holds:
+ * nothing is added, no field is invented, and an absent date or detail is left out. Nothing here
+ * reads a record family directly or keeps a fact of its own.
+ */
+import type { RecordsKey } from "../../site/destinations.ts"
+import type { RecordViews } from "../../site/facts.ts"
+import type { Citation, CvEntry } from "../../records/index.ts"
+
+interface Props {
+  records: RecordsKey
+  views: RecordViews
+}
+
+const { records, views } = Astro.props
+const cv = views.cv
+
+interface Block {
+  heading?: string
+  entries?: readonly CvEntry[]
+  citations?: readonly Citation[]
+}
+function blocks(): Block[] {
+  switch (records) {
+    case "cv-teaching":
+      return [{ entries: cv?.teaching }]
+    case "cv-research":
+      return [
+        { heading: "Positions", entries: cv?.appointments },
+        { heading: "Projects", entries: cv?.projects },
+      ]
+    case "cv-publications":
+      return [{ citations: cv?.publications }]
+    case "cv-talks":
+      return [{ entries: cv?.presentations }]
+    case "cv-mentoring":
+      return [{ entries: cv?.mentoring }]
+    case "cv-awards":
+      return [{ entries: cv?.awards }]
+    case "cv-service":
+      return [{ entries: cv?.service }]
+    case "cv-outreach":
+      return [{ entries: cv?.outreach }]
+    default:
+      return []
+  }
+}
+const cvBlocks = blocks().filter((b) => (b.entries?.length ?? 0) + (b.citations?.length ?? 0) > 0)
+---
+
+<div class="rec" data-records={records}>
+  {
+    cvBlocks.map((block) => (
+      <section class="rec__section">
+        {block.heading && <h2 class="rec__heading">{block.heading}</h2>}
+        <ul class="rec__list">
+          {block.entries?.map((entry) => (
+            <li class="rec__item" data-record-id={entry.id}>
+              <span class="rec__title">{entry.heading}</span>
+              {(entry.organization || entry.when) && (
+                <p class="rec__meta">{[entry.organization, entry.when].filter(Boolean).join(" · ")}</p>
+              )}
+              {entry.detail && <p class="rec__detail">{entry.detail}</p>}
+            </li>
+          ))}
+          {block.citations?.map((citation) => (
+            <li class="rec__item" data-record-id={citation.id}>
+              <span class="rec__title">{citation.title}</span>
+              <p class="rec__detail">{citation.text}</p>
+              {citation.link && <p class="rec__meta"><a href={citation.link}>{citation.doi ? `doi:${citation.doi}` : "Link"}</a></p>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+  {
+    records === "portfolio" && (
+      <ul class="rec__list">
+        {views.portfolio.map((project) => (
+          <li class="rec__item" data-record-id={project.id}>
+            <span class="rec__title">{project.title}</span>
+            <p class="rec__meta">{[project.kind, project.status, project.when].filter(Boolean).join(" · ")}</p>
+            {project.description && <p class="rec__detail">{project.description}</p>}
+            {project.areas.length > 0 && <p class="rec__meta">Areas: {project.areas.map((a) => a.title).join(", ")}</p>}
+            {project.people.length > 0 && <p class="rec__meta">With: {project.people.map((p) => p.name).join(", ")}</p>}
+            {project.links.length > 0 && (
+              <p class="rec__meta">
+                {project.links.map((link, index) => (
+                  <>{index > 0 && " · "}<a href={link.url} rel="noopener">{link.label}</a></>
+                ))}
+              </p>
+            )}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+  {
+    records === "lab-people" && (
+      <ul class="rec__list">
+        {views.lab.people.map((person) => (
+          <li class="rec__item" data-record-id={person.id}>
+            <span class="rec__title">{person.name}</span>
+            {(person.title || person.affiliations.length > 0) && (
+              <p class="rec__meta">{[person.title, ...person.affiliations].filter(Boolean).join(" · ")}</p>
+            )}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+  {
+    records === "lab-areas" && (
+      <ul class="rec__list">
+        {views.lab.areas.map((area) => (
+          <li class="rec__item" data-record-id={area.id}>
+            <span class="rec__title">{area.title}</span>
+            {area.summary && <p class="rec__detail">{area.summary}</p>}
+            {area.projects.length > 0 && <p class="rec__meta">Projects: {area.projects.map((p) => p.title).join(", ")}</p>}
+          </li>
+        ))}
+      </ul>
+    )
+  }
+  {
+    records === "lab-partners" && (
+      <ul class="rec__list">
+        {views.lab.organizations.map((organization) => (
+          <li class="rec__item" data-record-id={organization.id}>
+            <span class="rec__title">{organization.name}</span>
+          </li>
+        ))}
+      </ul>
+    )
+  }
+</div>

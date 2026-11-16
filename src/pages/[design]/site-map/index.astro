@@ -1,0 +1,129 @@
+---
+// The development site map (P17, D-124): every registered folder, grouped by archive category, with its
+// canonical URL, parent, the state its page is in and whether its route is generated, all derived
+// from the navigation registry, the real content and the route files, never listed by hand. Routed
+// only in development and in a demonstration build (src/editorial/demo.ts); a release build has no
+// page here and its output is searched for it. It lives in the Home folder, like the other
+// development pages, and is not a tab.
+import FolderPage from "../../../layouts/FolderPage.astro"
+import SiteMapBanner from "../../../design/site-map/SiteMapBanner.astro"
+import { DEV_PAGES, SITE_MAP_LABEL } from "../../../design/site-map.ts"
+import { demosEnabled } from "../../../editorial/demo.ts"
+import { CATEGORY_IDS, siteNavigation } from "../../../navigation/index.ts"
+import { summarize } from "../../../site/coverage.ts"
+import { routeAudit, siteCoverage } from "../../../site/page.ts"
+import { STATE_LABELS } from "../../../site/state.ts"
+
+export function getStaticPaths() {
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
+}
+
+const rows = await siteCoverage()
+const audit = await routeAudit()
+const counts = summarize(rows)
+const resolved = rows.filter((row) => audit.generated.has(row.path)).length
+const missing = rows.length - resolved
+const conflicts = audit.duplicates.length + audit.unregistered.length
+const CATEGORY_NAMES: Record<string, string> = {
+  core: "Core",
+  research: "Research",
+  "blog-notes": "Blog & Notes",
+  writing: "Writing",
+  bearnard: "Bearnard",
+}
+const groups = CATEGORY_IDS.map((category) => ({
+  category,
+  name: CATEGORY_NAMES[category] ?? category,
+  rows: rows.filter((row) => row.category === category),
+})).filter((group) => group.rows.length > 0)
+const labelOf = (id: string | null) => (id === null ? "top level" : siteNavigation.node(id).label)
+const summary: [string, number, string][] = [
+  ["Registered folders", rows.length, "registered"],
+  ["Routes generated", resolved, "resolved"],
+  ["Ready", counts.ready, "ready"],
+  ["Empty collections", counts.empty, "empty"],
+  ["In preparation", counts.preparation, "preparation"],
+  ["Unavailable", counts.unavailable, "unavailable"],
+  ["Missing routes", missing, "missing"],
+  ["Route conflicts", conflicts, "conflicts"],
+]
+---
+
+<FolderPage path="/" title={`${SITE_MAP_LABEL} · GusmaoLab`}>
+  <SiteMapBanner />
+  <div class="gl-prose" data-site-map="page">
+    <h1>{SITE_MAP_LABEL}</h1>
+    <p>
+      Every approved folder of the archive, as the site builds it now. Each state is derived from the
+      real content: the published entries of a collection, the verified records behind a page, or a
+      feature declared planned. Open any page, then come back here.
+    </p>
+  </div>
+
+  <section class="sm" aria-labelledby="sm-summary" data-site-map="summary">
+    <h2 id="sm-summary">Summary</h2>
+    <dl class="sm__summary">
+      {
+        summary.map(([label, value, key]) => (
+          <div class="sm__count" data-count={key}>
+            <dt>{label}</dt>
+            <dd>{value}</dd>
+          </div>
+        ))
+      }
+    </dl>
+    <p class="sm__note">
+      {audit.entryPages} editorial entry pages are also generated (here, synthetic Greenhouse
+      demonstrations); they belong to their folder and are never tabs.
+    </p>
+  </section>
+
+  {
+    groups.map((group) => (
+      <section class="sm" aria-labelledby={`sm-${group.category}`} data-site-map-category={group.category}>
+        <h2 id={`sm-${group.category}`}>
+          {group.name} <span class="sm__total">({group.rows.length})</span>
+        </h2>
+        <ul class="sm__list">
+          {group.rows.map((row) => (
+            <li class="sm__row" data-site-map-row={row.id} data-state={row.state} data-level={row.level}>
+              <p class="sm__main">
+                <a href={row.path}>{row.label}</a>
+                <span class="sm__state">{STATE_LABELS[row.state]}</span>
+              </p>
+              <p class="sm__meta">
+                <code>{row.path}</code>
+                {" · "}
+                {row.parentId === null ? "top level" : `inside ${labelOf(row.parentId)}`}
+                {" · "}
+                {audit.generated.has(row.path) ? "route generated" : <strong>route missing</strong>}
+                {" · "}
+                {row.reason}
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+
+  <section class="sm" aria-labelledby="sm-dev" data-site-map="dev-pages">
+    <h2 id="sm-dev">Other development pages</h2>
+    <p class="sm__note">
+      These are routes but not folders. None is in the navigation, and a production build leaves them
+      out. Home links to the same pages.
+    </p>
+    <ul class="sm__list">
+      {
+        DEV_PAGES.map((page) => (
+          <li class="sm__row" data-dev-page={page.href}>
+            <p class="sm__main">
+              {page.href === "/_design/site-map/" ? <span aria-current="page">{page.label}</span> : <a href={page.href}>{page.label}</a>}
+            </p>
+            <p class="sm__meta"><code>{page.href}</code> · {page.note}</p>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</FolderPage>

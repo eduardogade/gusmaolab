@@ -40,6 +40,9 @@ export const MARKERS = [
   "data-clocks-simulated",
   "data-clocks-scenario",
   "Simulated instant",
+  // The development site map (P17, D-124): every folder and its state, with route diagnostics.
+  "data-site-map",
+  "Page Coverage",
 ]
 
 /** The demonstrations the repository has: their file, slug and title, from their own front matter. */
@@ -84,6 +87,8 @@ export async function publicBuildIssues(dist, root = ROOT) {
     if (rel.startsWith("demo-assets")) issues.push(`${rel}: a demonstration's figure`)
     if (rel.startsWith("_design/publishing")) issues.push(`${rel}: a Publishing Workbench page`)
     if (rel.startsWith("_design/home")) issues.push(`${rel}: the homepage specimen`)
+    if (rel.startsWith("_design/site-map")) issues.push(`${rel}: the development site map`)
+    if (rel.startsWith("_design/page-states")) issues.push(`${rel}: the page-states specimen`)
     if (!TEXT.test(file)) continue
     const text = await readFile(file, "utf8")
     // A stylesheet may style the demonstration markup (the rule is shared), so markers are not

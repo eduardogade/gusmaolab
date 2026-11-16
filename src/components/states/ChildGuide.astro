@@ -1,0 +1,48 @@
+---
+/**
+ * A parent folder's guide to the folders inside it (P17, D-123): each child as a link, with what it is for
+ * and, in words, the state its page is in, so a visitor can tell a collection that works from a page
+ * still being prepared before they open it. The data are the registry's children and the coverage
+ * rows (src/site/coverage.ts); a collection's sentence is its approved identity (collections.ts).
+ */
+import { collectionOwnedBy } from "../../editorial/collections.ts"
+import { DESTINATIONS } from "../../site/destinations.ts"
+import type { CoverageRow } from "../../site/coverage.ts"
+import type { PageState } from "../../site/state.ts"
+
+interface Props {
+  /** The parent's ID, for a unique heading ID. */
+  id: string
+  /** The parent's label. */
+  label: string
+  /** The coverage rows of the children, in registry order. */
+  rows: readonly CoverageRow[]
+}
+
+const { id, label, rows } = Astro.props
+
+const STATE_WORDS: Record<PageState, string> = {
+  ready: "Has published material",
+  empty: "Nothing published yet",
+  preparation: "In preparation",
+  unavailable: "Not available right now",
+}
+const about = (row: CoverageRow): string =>
+  collectionOwnedBy(row.id)?.identity ?? DESTINATIONS[row.id]?.intro ?? ""
+const titleId = `guide-${id}`
+---
+
+<section class="guide" aria-labelledby={titleId} data-guide={id}>
+  <h2 id={titleId} class="guide__title">Inside {label}</h2>
+  <ul class="guide__list">
+    {
+      rows.map((row) => (
+        <li class="guide__item" data-guide-item={row.id} data-child-state={row.state}>
+          <a class="guide__link" href={row.path}>{row.label}</a>
+          <p class="guide__about">{about(row)}</p>
+          <p class="guide__state">{STATE_WORDS[row.state]}</p>
+        </li>
+      ))
+    }
+  </ul>
+</section>

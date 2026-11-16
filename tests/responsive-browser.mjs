@@ -716,15 +716,17 @@ await test(
 await test("RESP-015", "Desktop keeps P07's layout (cases G, H)", async (check) => {
   // Measured on the P07 build (28392b0) before P08 changed anything.
   const P07 = {
+    // /cv/'s h1 sits higher since P17 replaced the scaffold (its "Development scaffolding" overline) with a
+    // destination page that starts at its title; the shell, the paper and the row are P07's.
     // Home's h1 sits higher since P15 replaced the scaffold with the homepage (its own overline and
     // type scale): its position is content, not folder geometry. The shell, the paper and the row
     // are P07's.
     "1024 /": { shell: [22, 980], paper: 920, h1: 182, rowFits: false },
-    "1024 /cv/": { shell: [22, 980], paper: 890, h1: 276, rowFits: false },
+    "1024 /cv/": { shell: [22, 980], paper: 890, h1: 212, rowFits: false },
     "1280 /": { shell: [27, 1226], paper: 1159, h1: 197, rowFits: true },
-    "1280 /cv/": { shell: [27, 1226], paper: 1127, h1: 297, rowFits: true },
+    "1280 /cv/": { shell: [27, 1226], paper: 1127, h1: 228, rowFits: true },
     "1440 /": { shell: [110, 1219], paper: 1150, h1: 206, rowFits: true },
-    "1440 /cv/": { shell: [110, 1219], paper: 1118, h1: 308, rowFits: true },
+    "1440 /cv/": { shell: [110, 1219], paper: 1118, h1: 237, rowFits: true },
   }
   for (const [key, expected] of Object.entries(P07)) {
     const [width, path] = key.split(" ")

@@ -5,6 +5,7 @@
  * the page's one `<h1>` is its own.
  */
 import { DRAFT_PAGE, WORKBENCH_ROOT, WORKFLOW_PAGE } from "./workbench.ts"
+import { SITE_MAP, SITE_MAP_LABEL } from "../site-map.ts"
 
 interface Props {
   /** The page showing, so its link is marked and not repeated as a link. */
@@ -39,6 +40,8 @@ const pages = [
     }
     {" · "}
     <a href="/lecture-notes/greenhouse/">The Greenhouse</a>
+    {" · "}
+    <a href={SITE_MAP}>{SITE_MAP_LABEL}</a>
   </p>
 </aside>
 

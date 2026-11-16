@@ -710,7 +710,9 @@ await test("P13A-027", "The physical folders are intact", async (check) => {
     "src/layouts/FolderPage.astro",
     "src/navigation",
     "src/styles/view-transitions.css",
-    "src/scripts",
+    // The two folder scripts, not the folder: P16 added the world clocks' script beside them (D-118).
+    "src/scripts/folder-previews.ts",
+    "src/scripts/folder-rows.ts",
   ).stdout
   check(diff.trim() === "", "the folders, their styles, navigation or scripts changed")
   const registry = await read("src/navigation/registry.ts")

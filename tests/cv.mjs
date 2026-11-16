@@ -1625,10 +1625,13 @@ await test(
     const now = [...distText.keys()].filter((f) => f.endsWith(".html")).sort()
     const withSnapshot = built.files.filter((f) => f.endsWith(".html")).sort()
     check(json(now) === json(withSnapshot), "CV data changes which pages exist")
+    // The homepage is untouched. From P17 (D-122) the CV pages draw approved CV data in their body, so
+    // /cv/ may differ inside <main>; the folders and tabs around it never do.
+    const outsideMain = (html) => html.replace(/<main[\s\S]*<\/main>/, "")
     check(
       built.text.get("index.html") === distText.get("index.html") &&
-        built.text.get("cv/index.html") === distText.get("cv/index.html"),
-      "CV data changes a folder page before any page is built to show it",
+        outsideMain(built.text.get("cv/index.html")) === outsideMain(distText.get("cv/index.html")),
+      "CV data changes the folders or the homepage",
     )
   },
 )
