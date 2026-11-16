@@ -363,10 +363,17 @@ await test("P13A-009", "A stale or edited source is refused offline", async (che
 await test("P13A-025", "The author's CV files are untouched", async (check) => {
   const status = run("git", ["status", "--porcelain", "--", "cv"], { cwd: repo }).stdout
   check(status.trim() === "", `cv/ has changes: ${status}`)
-  const since = run("git", ["diff", "--name-only", P13, "HEAD", "--", "cv"], {
+  // The owner committed their own edit of cv/cv.md (e74bbac, 2026-11-16, after P17). Nothing an
+  // agent did may change cv/ since then; before it, cv/ was unchanged since P13 except for that file.
+  const OWNER_CV_COMMIT = "e74bbac"
+  const since = run("git", ["diff", "--name-only", OWNER_CV_COMMIT, "HEAD", "--", "cv"], {
     cwd: repo,
   }).stdout
-  check(since.trim() === "", `cv/ changed since ${P13}: ${since}`)
+  check(since.trim() === "", `cv/ changed since ${OWNER_CV_COMMIT}: ${since}`)
+  const before = run("git", ["diff", "--name-only", P13, OWNER_CV_COMMIT, "--", "cv"], {
+    cwd: repo,
+  }).stdout
+  check(before.trim() === "cv/cv.md", `cv/ changed between ${P13} and the owner's commit: ${before}`)
 })
 
 await test("P13A-026", "The five category palettes are unchanged", async (check) => {
