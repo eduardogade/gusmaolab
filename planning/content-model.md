@@ -616,3 +616,16 @@ Nothing here has been migrated, and P10 did not import any of it: the owner has 
 | `content-pt/pages/` | 10 | All empty (Portuguese placeholders) |
 
 Still at the repository root, and also empty: `cv/cv.md`, `cv/template.tex`, `publications/publications.bib`, `publications/style.csl` and `publications/templates/pub_list.md`.
+
+## Authoring (P14)
+
+The author works on one file and the tool does the mechanics (D-107 to D-111). Everything below is already true of the content model; P14 adds the commands that respect it.
+
+- **A new article** is `status: draft`, with no `publishedAt` and no `updatedAt`. `description` is a commented hint until the author writes it. Collection fields the schema requires even in a draft are asked for on the command line (`--period`, `--work`, `--book`); the others are written only when given.
+- **The slug** is suggested from the title once and is then the author's: retitling never moves a page. A slug may be given explicitly. A public entry's slug that differs from the last commit is an error.
+- **Publication** needs a `description` and a `publishedAt` (D-079). The command sets `status: published` and, with `--date` or `--today`, `publishedAt`; it never rewrites an existing date and never sets `updatedAt`.
+- **Archive** sets `status: archived`; slug, date, route and listing stay.
+- **Validation levels.** `error` blocks. `critical` (placeholders, local paths, links to drafts, a missing description) is a warning in a draft and an error in a published, archived or about-to-be-published entry. `warning` never blocks. The list is `PREFLIGHT_CHECKS` in `src/editorial/authoring.ts`.
+- **Templates** are a short front matter and a few neutral prompts per collection, one `TODO` marker that blocks publication until deleted. A Quarto template (Greenhouse, Trail) adds an equation, a cross-referenced table and a code example that is shown, not executed. No achievement, date, source or result is invented.
+- **Quarto** is offered where P13 integrated it (Greenhouse, Trail). The `.qmd` front matter is the one place its metadata is written; the registration in `src/content/` is generated.
+- **Synthetic examples** (the workbench's transcript, its draft preview, the throwaway projects of the tests) are never entries: they live in `src/design/publishing/` and `tests/`, outside every loader.

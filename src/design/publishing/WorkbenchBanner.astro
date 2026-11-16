@@ -1,0 +1,63 @@
+---
+/**
+ * The note at the head of every Publishing Workbench page (P14): what this page is, that it
+ * exists only while developing, and the way between the workbench's pages. A note, not a heading:
+ * the page's one `<h1>` is its own.
+ */
+import { DRAFT_PAGE, WORKBENCH_ROOT, WORKFLOW_PAGE } from "./workbench.ts"
+
+interface Props {
+  /** The page showing, so its link is marked and not repeated as a link. */
+  current: "workbench" | "workflow" | "draft"
+}
+const { current } = Astro.props
+const pages = [
+  { id: "workbench", label: "Publishing Workbench", href: WORKBENCH_ROOT },
+  { id: "workflow", label: "Workflow example", href: WORKFLOW_PAGE },
+  { id: "draft", label: "Draft preview", href: DRAFT_PAGE },
+] as const
+---
+
+<aside class="workbench-banner" role="note" data-publishing-workbench>
+  <p>
+    <strong>Development workbench, not a page of the website.</strong> It explains how articles are
+    written and published, and shows real command output on invented content. It changes no file,
+    and a production build leaves it out.
+  </p>
+  <p>
+    {
+      pages.map((page, index) => (
+        <>
+          {index > 0 && " · "}
+          {page.id === current ? (
+            <span aria-current="page">{page.label}</span>
+          ) : (
+            <a href={page.href}>{page.label}</a>
+          )}
+        </>
+      ))
+    }
+    {" · "}
+    <a href="/lecture-notes/greenhouse/">The Greenhouse</a>
+  </p>
+</aside>
+
+<style>
+  .workbench-banner {
+    margin-block-end: var(--space-l);
+    padding: var(--space-xs) var(--space-s);
+    border: var(--border-width-hairline) dashed var(--color-folder-border);
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface-callout);
+    font-family: var(--font-label);
+    font-size: var(--font-size-sm);
+  }
+
+  .workbench-banner p + p {
+    margin-block-start: var(--space-2xs);
+  }
+
+  .workbench-banner [aria-current="page"] {
+    font-weight: var(--font-weight-semibold);
+  }
+</style>

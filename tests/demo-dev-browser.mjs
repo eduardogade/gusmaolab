@@ -146,7 +146,8 @@ await test(
       const section = document.querySelector("[data-demo-section]");
       return section && {
         heading: section.querySelector("h2")?.textContent,
-        links: [...section.querySelectorAll("a")].map((a) => [a.textContent.trim(), new URL(a.href).pathname]),
+        // The Publishing Workbench link (P14) is in the section too; it is not a demonstration.
+        links: [...section.querySelectorAll("a")].filter((a) => !a.closest("[data-workbench-link]")).map((a) => [a.textContent.trim(), new URL(a.href).pathname]),
         text: section.textContent.replace(/\\s+/g, " "),
         empty: !!document.querySelector("[data-editorial-empty]"),
         rows: document.querySelectorAll(".gl-folder__strip").length,

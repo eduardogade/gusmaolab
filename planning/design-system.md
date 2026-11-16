@@ -660,3 +660,7 @@ A demonstration is drawn in the approved Greenhouse, unchanged: only two things 
 
 - `docs/design-system.md` is an empty placeholder from the Pelican era.
 - `_backup/pelican-legacy/static/css/tokens.css` and `dark.css` hold the old site's generic blue-and-white tokens. P03 did not adopt them.
+
+## 15. Publishing Workbench (P14)
+
+A development page, not a part of the site's design. It uses only existing semantic tokens and the Greenhouse folder's own colours, adds no colour, no font and no motion, and no client script. Its parts: a dashed note at the head (the study banner's treatment), a flow of four chips, cards for the lifecycle and the eight collections (a definition list inside each), command blocks (`pre`, focusable, scrolling inside themselves so the page never scrolls sideways), a checklist and a two-column glossary. Checked at 320, 390, 768, 1280 and 1440 px.

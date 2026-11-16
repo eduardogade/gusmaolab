@@ -6,7 +6,7 @@ Status: provisional. The six-wave structure is approved. Individual tasks are no
 | --- | --- | --- |
 | I — Foundations | P01–P04 | Completed 2026-11-10 |
 | II — Physical Folders & Visual Identity | P05–P09 | P05 to P09 completed 2026-11-11; P09's three owner reviews are pending |
-| III — Publishing & Content | P10–P14 | Not started |
+| III — Publishing & Content | P10–P14 | P10 to P14 completed 2026-11-15; owner reviews of P13's demonstrations and P14's workflow are pending |
 | IV — Website Composition | P15–P18 | Not started |
 | V — Advanced Features | P19–P21 | Not started |
 | VI — QA & Release | P22–P24 | Not started |
@@ -26,8 +26,11 @@ Status: provisional. The six-wave structure is approved. Individual tasks are no
 - **P10** — Editorial Collections, Structured Publishing Foundations & Navigation Consolidation (completed 2026-11-13: the global row grouped by category, eight schema-validated collections, entry routes inside the folders, no content published; nothing pushed)
 - **P11** — Canonical Research, Publication, People & Professional Records (completed 2026-11-13: eight record families, validation, selectors and projections, proved with a synthetic fixture; the site's records are empty until the owner supplies verified ones; nothing pushed)
   - **P11-A01** — The Author's Versioned CV YAML as the Canonical Professional Source of Truth (addendum to P11; implemented 2026-11-14: a read-only adapter from the CV to the P11 records, explicit version selection and approval, a generated public snapshot; no CV data is published, and the owner's CV file is unchanged)
-- **P12** — Distinctive Editorial Layouts & Reading Experiences (next; not started)
-- P13 (Quarto) and P14 (authoring helpers) are named in the P10 brief; P13–P24 titles are otherwise not yet supplied
+- **P12** — Distinctive Editorial Layouts & Reading Experiences (completed)
+- **P13** — Quarto and scientific publishing (completed)
+  - **P13-A01** — Environment Stabilization, Reproducibility & Visible Scientific Publishing Demonstrations (completed 2026-11-15; the owner visually approved P12, P13 and the demonstrations)
+- **P14** — Authoring Workflow, Publication Validation & Editorial Developer Experience (completed 2026-11-15: five `content:*` commands, one preflight, the development Publishing Workbench; the owner's use of the workflow is pending)
+- P15–P24 titles are not yet supplied
 
 Since P04, ordinary prompts run on the persistent `development` branch (D-035).
 

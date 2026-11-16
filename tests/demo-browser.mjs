@@ -50,12 +50,15 @@ await test(
       // The Overview.
       await goto(GREENHOUSE)
       const overview = await js(`(() => {
+      // The Publishing Workbench link (P14) shares the section: it must also fit and be tappable,
+      // but it is not one of the three demonstrations.
       const links = [...document.querySelectorAll("[data-demo-section] a")];
+      const demos = links.filter((a) => !a.closest("[data-workbench-link]"));
       const section = document.querySelector("[data-demo-section]").getBoundingClientRect();
-      return { n: links.length, tappable: links.every((a) => { const r = a.getBoundingClientRect(); return r.height >= 20 && r.width >= 44; }), inside: links.every((a) => { const r = a.getBoundingClientRect(); return r.left >= section.left - 1 && r.right <= section.right + 1; }) };
+      return { n: demos.length, all: links.length, tappable: links.every((a) => { const r = a.getBoundingClientRect(); return r.height >= 20 && r.width >= 44; }), inside: links.every((a) => { const r = a.getBoundingClientRect(); return r.left >= section.left - 1 && r.right <= section.right + 1; }) };
     })()`)
       check(
-        overview.n === 3 && overview.tappable && overview.inside,
+        overview.n === 3 && overview.all === 4 && overview.tappable && overview.inside,
         `${width} px Overview links: ${json(overview)}`,
       )
 

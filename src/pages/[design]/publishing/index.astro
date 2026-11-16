@@ -1,0 +1,329 @@
+---
+// The development Publishing Workbench (P14, D-110): how an article is written, checked, published
+// and archived, from the same lists the commands use. Read-only: it has no control that changes a
+// file; the commands do that, in a terminal. Routed only in development and in a demonstration
+// build (src/editorial/demo.ts); a release build has no page here and its output is searched for it.
+import FolderPage from "../../../layouts/FolderPage.astro"
+import WorkbenchBanner from "../../../design/publishing/WorkbenchBanner.astro"
+import {
+  COMMANDS,
+  DRAFT_PAGE,
+  SEVERITY_TEXT,
+  WORKFLOW_PAGE,
+  checklist,
+  collectionCards,
+} from "../../../design/publishing/workbench.ts"
+import { LIFECYCLE } from "../../../editorial/authoring.ts"
+import { demosEnabled } from "../../../editorial/demo.ts"
+import { collectionIndexFor } from "../../../editorial/site.ts"
+
+export function getStaticPaths() {
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
+}
+
+const cards = collectionCards()
+const groups = checklist()
+const demos = (await collectionIndexFor("/lecture-notes/greenhouse/"))?.demoItems ?? []
+---
+
+<FolderPage path="/lecture-notes/greenhouse/" title="Publishing Workbench · GusmaoLab">
+  <WorkbenchBanner current="workbench" />
+  <div class="gl-prose" data-workbench-page="overview">
+    <h1>Publishing Workbench</h1>
+    <p>
+      Articles are text files. You write one in your editor, five commands create, check, publish
+      and archive it, and the site builds the rest. Nothing on this page edits a file: it shows what
+      the commands do, in the words and with the same lists the commands use.
+    </p>
+  </div>
+
+  <section class="wb" aria-labelledby="wb-lifecycle" data-workbench-section="lifecycle">
+    <h2 id="wb-lifecycle">The lifecycle</h2>
+    <p class="wb__flow" aria-label="Draft, validation, published, archived">
+      <span>Draft</span> → <span>Validation</span> → <span>Published</span> → <span>Archived</span>
+    </p>
+    <ul class="wb__states">
+      {
+        LIFECYCLE.map((state) => (
+          <li data-state={state.status}>
+            <h3>{state.status}</h3>
+            <p>{state.meaning}</p>
+          </li>
+        ))
+      }
+    </ul>
+    <p>
+      The state is a line in the article's metadata. <strong>Publishing an article changes that line;
+      it does not put anything on the web.</strong> The site goes live only when the repository is
+      built and deployed, which is a separate step you take on purpose.
+    </p>
+  </section>
+
+  <section class="wb" aria-labelledby="wb-commands" data-workbench-section="commands">
+    <h2 id="wb-commands">The commands</h2>
+    <p>Five commands, run from the project folder. Each takes explicit arguments and asks nothing.</p>
+    <dl class="wb__commands">
+      {
+        COMMANDS.map((command) => (
+          <div data-command={command.id}>
+            <dt>
+              <code>content:{command.id}</code>
+              <span class="wb__tag">{command.writes ? "writes one source file" : "changes nothing"}</span>
+            </dt>
+            <dd>
+              <p>{command.summary}</p>
+              {command.examples.map((example) => (
+                <pre tabindex="0"><code>{example}</code></pre>
+              ))}
+            </dd>
+          </div>
+        ))
+      }
+    </dl>
+    <p>
+      <code>publish</code> and <code>archive</code> only show their change until you add
+      <code>--yes</code>. None of the five commits, pushes, deploys or runs a notebook cell.
+    </p>
+  </section>
+
+  <section class="wb" aria-labelledby="wb-collections" data-workbench-section="collections">
+    <h2 id="wb-collections">The eight collections</h2>
+    <p>
+      Every collection takes Markdown. Quarto is offered only where it is built and tested. These
+      cards are read from the site's own collection and schema definitions.
+    </p>
+    <ul class="wb__cards">
+      {
+        cards.map((card) => (
+          <li data-collection-card={card.id}>
+            <h3>{card.label}</h3>
+            <dl>
+              <dt>Id</dt>
+              <dd><code>{card.id}</code></dd>
+              <dt>Formats</dt>
+              <dd>{card.formats.join(", ")}</dd>
+              <dt>Source</dt>
+              <dd>{card.sources.map((source) => <code>{source}</code>)}</dd>
+              <dt>Public address</dt>
+              <dd><code>{card.prefix}</code></dd>
+              <dt>Required metadata</dt>
+              <dd>{card.required.join(", ")}</dd>
+              <dt>Optional</dt>
+              <dd>{card.optional.length > 0 ? card.optional.join(", ") : "tags, related (every collection)"}</dd>
+            </dl>
+          </li>
+        ))
+      }
+    </ul>
+    <p>
+      To publish, every collection also needs a <code>description</code> and a
+      <code>publishedAt</code> date. The slug is chosen when the draft is created and never changes
+      with the title.
+    </p>
+  </section>
+
+  <section class="wb" aria-labelledby="wb-checklist" data-workbench-section="checklist">
+    <h2 id="wb-checklist">The publication checklist</h2>
+    <p>
+      <code>content:validate</code> and <code>content:publish</code> run these checks, and only
+      these. They are one list in the code; this is that list. They show that an article is
+      technically ready, not that it is right: scientific accuracy and editorial approval are yours.
+    </p>
+    {
+      groups.map(({ group, checks }) => (
+        <section aria-labelledby={`wb-check-${group}`}>
+          <h3 id={`wb-check-${group}`}>{group}</h3>
+          <ul class="wb__checks">
+            {checks.map((check) => (
+              <li data-check={check.id} data-severity={check.severity}>
+                <code>{check.id}</code>
+                <span>{check.summary}</span>
+                <span class="wb__tag">{SEVERITY_TEXT[check.severity]}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </section>
+
+  <section class="wb" aria-labelledby="wb-states" data-workbench-section="explanations">
+    <h2 id="wb-states">Why things look the way they do</h2>
+    <dl class="wb__why">
+      <dt>An article is valid but not published</dt>
+      <dd>
+        Validation answers “is it well formed?”; publication is a decision. A draft can pass every
+        check and stay a draft until you run <code>content:publish</code>.
+      </dd>
+      <dt>A Quarto article is stale</dt>
+      <dd>
+        The page shows the article that was generated from the <code>.qmd</code>. Edit the source
+        and the generated copy is out of date, so the build refuses it until you run
+        <code>npm run science:render -- &lt;dir&gt;/&lt;name&gt;</code>. That re-renders and computes
+        nothing. Code is run only by <code>npm run science:execute</code>, and only when you name
+        the document.
+      </dd>
+      <dt>A draft is on screen here but not in production</dt>
+      <dd>
+        The dev server shows drafts so you can read them as a reader will. A build routes only
+        published and archived articles, so a draft has no page, no index entry and no link in
+        anything that is deployed.
+      </dd>
+      <dt>A draft in the repository</dt>
+      <dd>
+        The repository is public. A draft is absent from the website but its text is in the
+        repository once you commit it. Keep anything you do not want read out of committed files.
+      </dd>
+    </dl>
+  </section>
+
+  <section class="wb" aria-labelledby="wb-examples" data-workbench-section="examples">
+    <h2 id="wb-examples">See it working</h2>
+    <ul class="wb__links">
+      <li>
+        <a href={WORKFLOW_PAGE}>The workflow example</a>: a throwaway article created, broken,
+        repaired, checked, published and archived with the real commands, with their output.
+      </li>
+      <li>
+        <a href={DRAFT_PAGE}>A draft preview</a>: an unfinished article drawn by the real Greenhouse
+        layout.
+      </li>
+      {
+        demos.map((demo) => (
+          <li>
+            <a href={demo.path}>{demo.title}</a>: a development demonstration of the publishing
+            pipeline.
+          </li>
+        ))
+      }
+    </ul>
+    <p>
+      <a href="/lecture-notes/greenhouse/">Back to The Greenhouse</a>
+    </p>
+  </section>
+</FolderPage>
+
+<style>
+  .wb {
+    margin-block-start: var(--space-l);
+    max-inline-size: 60rem;
+  }
+
+  .wb > * + * {
+    margin-block-start: var(--space-s);
+  }
+
+  .wb h3 {
+    text-transform: none;
+  }
+
+  .wb__flow {
+    font-family: var(--font-label);
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2xs);
+    align-items: center;
+  }
+
+  .wb__flow span {
+    padding: var(--space-3xs) var(--space-xs);
+    border: var(--border-width-hairline) solid var(--color-surface-card-border);
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface-card);
+  }
+
+  .wb__states,
+  .wb__cards,
+  .wb__checks,
+  .wb__links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .wb__states,
+  .wb__cards {
+    display: grid;
+    gap: var(--space-s);
+    grid-template-columns: repeat(auto-fill, minmax(min(100%, 17rem), 1fr));
+  }
+
+  .wb__states li,
+  .wb__cards li {
+    padding: var(--space-xs) var(--space-s);
+    border: var(--border-width-hairline) solid var(--color-surface-card-border);
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface-card);
+    min-inline-size: 0;
+  }
+
+  .wb__cards dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    gap: var(--space-3xs) var(--space-xs);
+    margin: 0;
+    font-size: var(--font-size-sm);
+  }
+
+  .wb__cards dt {
+    color: var(--color-text-muted);
+  }
+
+  .wb__cards dd {
+    margin: 0;
+    min-inline-size: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .wb__cards dd code {
+    display: block;
+    padding: 0;
+    background: none;
+  }
+
+  .wb__commands > div {
+    margin-block-start: var(--space-s);
+  }
+
+  .wb__commands dd {
+    margin-inline-start: 0;
+  }
+
+  .wb pre {
+    font-variant-ligatures: none;
+    overflow-x: auto;
+    max-inline-size: 100%;
+  }
+
+  .wb__tag {
+    margin-inline-start: var(--space-xs);
+    font-family: var(--font-label);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-muted);
+  }
+
+  .wb__checks li {
+    display: grid;
+    gap: var(--space-3xs);
+    padding-block: var(--space-2xs);
+    border-block-end: var(--border-width-hairline) solid var(--color-surface-card-border);
+    overflow-wrap: anywhere;
+  }
+
+  .wb__tag {
+    margin-inline-start: 0;
+  }
+
+  .wb__why dt {
+    margin-block-start: var(--space-s);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .wb__why dd {
+    margin-inline-start: 0;
+  }
+
+  .wb__links li + li {
+    margin-block-start: var(--space-2xs);
+  }
+</style>

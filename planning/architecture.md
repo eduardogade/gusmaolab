@@ -374,3 +374,28 @@ environments.css  ten typography and texture tokens per [data-environment]; no c
 | Python | 3.12.2 via pyenv (`.python-version` says 3.12) |
 | Quarto | 1.10.19 |
 | conda | 25.11.1. The pre-commit hook runs from the micromamba environment `web`, defined by the archived `environment.yml`. |
+
+## Authoring workflow (P14)
+
+How an article is written and published, kept apart from how it is built (D-107 to D-111; `development/authoring-guide.md`).
+
+```text
+author edits one file ─ npm run content:validate ─ content:preview ─ content:publish --yes ─ git commit ─ (later, deliberately) deploy
+        │                         │                       │                   │
+   .md or .qmd              analyze()               dev server         edits status/publishedAt only
+```
+
+| Layer | Where | Role |
+| --- | --- | --- |
+| Definitions | `src/editorial/authoring.ts` | Formats per collection, per-collection fields, templates, the command list, the check list, the lifecycle text. Data and pure functions; runs in Node and in Astro pages |
+| Engine | `scripts/content-lib.mjs` | Reads the workspace, `analyze()` (the one preflight), `createArticle`, `publishArticle`, `archiveArticle`, `previewInfo`. No output of its own; every function takes the project root |
+| Commands | `scripts/content.mjs` | `new`, `validate`, `preview`, `publish`, `archive`, exposed as `npm run content:<command>`. Explicit arguments, no prompts, exit 0/1 (2 for a bad command line) |
+| Reused, not copied | `schema.ts`, `model.ts`, `reading.ts`, `src/navigation`, `src/records`, `scripts/science.mjs` | The same functions the build uses decide validity, identity, references, addresses and Quarto freshness |
+| Workbench | `src/pages/[design]/publishing/`, `src/design/publishing/` | A read-only, development-only view of the same lists, with a verified real-output transcript |
+
+- **Source of truth.** Markdown: `src/content/<dir>/<slug>.md`. Quarto: `science/<dir>/<slug>.qmd`; the generated registration, fragment and figures are derived (D-098). A draft and its Quarto article are checked together: stale, missing, hand-edited or unexecuted output is an error, and only `science:render` and `science:execute` repair it.
+- **Atomicity.** Every refusal is decided before a byte is written. Creation opens the file exclusively (a race cannot overwrite). Publication and archiving change two lines at most; for Quarto they re-register the article afterwards and restore the source if that fails.
+- **Execution.** No content command executes code: `buildDocument` is only ever called with `execute: false`, and a test searches the tool for any way to execute. `npm run build` is unchanged: offline `science:verify`, then the release build.
+- **Drafts.** The dev server routes drafts (`routeOptions`, P10); a build never does. The tool does not change this; it makes a draft easy to create and to see.
+- **Not part of the site.** The tool is development tooling: no page imports `scripts/`, and `src/editorial/authoring.ts` is imported only by the workbench.
+- **Not done:** a web editor, a database, authentication, server-side writes, deletion, redirects, slug renaming, automatic commits or deployment.

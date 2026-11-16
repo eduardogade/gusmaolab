@@ -23,6 +23,11 @@ Source for [www.gusmaolab.org](https://www.gusmaolab.org), Eduardo Gade Gusmao's
 | `npm run verify` | Run `check`, `build` and `test` in one go |
 | `npm run dev` | Serve the site with live reload. Editorial drafts are previewed here, at their future URLs, and nowhere else |
 | `node tests/contrast.mjs --markdown` | Print every contrast ratio as Markdown tables |
+| `npm run content:new -- --collection <id> --title "<title>" [--format qmd]` | Create a draft article (Markdown, or Quarto for The Greenhouse and Bearnard's Trail). See [`development/authoring-guide.md`](development/authoring-guide.md). |
+| `npm run content:validate -- --all` | Check one article or all of them: metadata, identity, relationships, text, Quarto freshness, publication safety. Changes nothing. |
+| `npm run content:preview -- --collection <id> --slug <slug>` | Show an article's source, state and local address, and whether the dev server answers. Changes nothing. |
+| `npm run content:publish -- --collection <id> --slug <slug> --date YYYY-MM-DD [--yes]` | Check a draft as it would be published and show the change; with `--yes`, make it. Never commits or deploys. |
+| `npm run content:archive -- --collection <id> --slug <slug> [--yes]` | Mark a published article archived; its address and date stay. |
 | `npm run science:check` | Report the Quarto and Python the scientific-article tool finds. See [`science/README.md`](science/README.md). |
 | `npm run science:verify` | Offline check that every generated scientific article is current (no Quarto, no Python, nothing executed). `npm run build` runs it first. |
 | `npm run science:render -- <dir>/<name>` | Prepare one Quarto article from its frozen results; never computes. |

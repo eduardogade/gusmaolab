@@ -721,6 +721,34 @@ Checked by `tests/cv.mjs` (CV-001 to CV-020) in `npm run verify`, on a synthetic
 | P13A-030 Home to every demonstration by clicking, P13A-029 direct URLs | `tests/demo-dev-browser.mjs` (the real dev server) | Pass |
 | P13A-002 The main verification | `npm run verify` | Pass |
 
+## P14 gates — Authoring workflow
+
+| ID | Gate | Status |
+| --- | --- | --- |
+| G-P14-01 | One small CLI creates drafts in all eight collections, and Markdown or Quarto where supported | **Passed** (AUTH-001 to AUTH-006, AUTH-036). Quarto creation needs Quarto: AUTH-003 is reported SKIPPED without it |
+| G-P14-02 | New entries are drafts, slugs are stable, nothing is overwritten, unsafe paths are refused | **Passed** (AUTH-005 to AUTH-009, AUTH-027) |
+| G-P14-03 | One preflight validates metadata, identity, relationships, text, Quarto and publication safety, with actionable messages | **Passed** (AUTH-010 to AUTH-016). Not shown: that an article is scientifically right |
+| G-P14-04 | Drafts preview locally through the real layout; preview changes nothing and executes nothing | **Passed** (AUTH-017 to AUTH-020; a draft was also opened in the running dev server by hand, then removed) |
+| G-P14-05 | Publishing and archiving are explicit, preflighted, atomic and keep the address | **Passed** (AUTH-021 to AUTH-023, AUTH-026; built pages AUTH-024, AUTH-025) |
+| G-P14-06 | Quarto articles keep their `.qmd` as the source, and stale output blocks publication | **Passed** (AUTH-015, AUTH-028 to AUTH-030) |
+| G-P14-07 | The Publishing Workbench is reachable from Home by clicking, and its commands are the CLI's | **Passed** (AUTH-031, AUTH-032, AUTH-032B, AUTH-033, AUTH-033B) |
+| G-P14-08 | The workbench and demonstrations are absent from the release; no synthetic content leaks | **Passed** (AUTH-025, AUTH-035, AUTH-044) |
+| G-P14-09 | The workbench fits at 320 to 1440 px, Chromium | **Passed** (AUTH-045) |
+| G-P14-10 | P10, P11, P12, P13, the CV, the palettes, the tabs and the folders unchanged | **Passed** (AUTH-036 to AUTH-043) |
+| G-P14-11 | The owner uses the workflow and the workbench | **Pending** |
+| G-P14-12 | Safari, Firefox, Android Chrome itself, screen readers; other operating systems | **Untested** |
+
+### Authoring tests (P14)
+
+| Test | Where | Status |
+| --- | --- | --- |
+| AUTH-001 to AUTH-023, AUTH-026 to AUTH-030, AUTH-033, AUTH-034, AUTH-036 to AUTH-043 | `tests/authoring.mjs` (real commands on throwaway project folders) | Pass; the Quarto parts are SKIPPED, never passed, without Quarto |
+| AUTH-024, AUTH-025, AUTH-026 (built), AUTH-032B, AUTH-033B, AUTH-035, AUTH-044 | `tests/authoring-build.mjs` (a release build and a demonstration build of a throwaway copy that holds articles made by the commands) | Pass |
+| AUTH-031 Home to the workbench and through its pages by clicking, AUTH-032 the Overview, AUTH-045 five widths | `tests/authoring-browser.mjs` (the real dev server) | Pass (headless Chromium) |
+| The workflow transcript on the workbench | `tests/authoring.mjs` (AUTH-034) regenerates it with `tests/fixtures/authoring/scenario.mjs` and compares | Pass |
+
+AUTH-040 compares P14's own changes (commits ending `[P14]`, and the working tree while P14 is being written) with the CV, so later prompts are not blamed for their files. P13-A01's tests P13A-013 and P13A-030 were adjusted only to allow the workbench link inside the demonstrations section (`data-workbench-link`); `tests/routes.mjs` lists the three workbench route files.
+
 ## Future gates
 
 | ID | Gate | Source | Status |

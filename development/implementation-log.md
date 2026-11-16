@@ -924,6 +924,26 @@ P12 was interrupted by a usage limit with the shell, the logic, the layouts and 
 - **Existing tests changed:** QTO-001 (`demo` added), QTO-023 and QTO-024 (they list the only lines that may have gone since P12), routes (the figure route), smoke and bearnard (only figures under `public/` are public), the browser harness (a folder or an external origin to serve).
 - **Not touched:** `cv/`, the palettes, the registry, the folders, P10's routing rules, P11, Bearnard, the deployment files. Nothing pushed. The other agent's CV-01 sections were left out of the commit.
 
+## P14 — Authoring workflow, publication validation and editorial developer experience (2026-11-15)
+
+Started on `development` at `1b12f6d` with only the other agent's CV-01 notes uncommitted (kept out of the commit) and the untracked `clean`.
+
+**Inspected first.** P10's schemas, routes and draft rule (a draft is routed only by the dev server), P12's layouts and reading context, P13's `science.mjs` (render never computes; a source without a rendering fails the build), P13-A01's demonstrations and their release guard, the test harness and the P13-A01 browser test.
+
+**Built.** `src/editorial/authoring.ts` (formats, per-collection fields, templates, the command list, the 21 checks, the lifecycle text; erasable TypeScript), `scripts/content-lib.mjs` (workspace reader, `analyze`, create, publish, archive, preview), `scripts/content.mjs` (the five commands, `node:util` argument parsing), five `content:*` scripts, the Publishing Workbench (three pages, a banner, a module, a draft body, a committed transcript), the Greenhouse Overview link, release-guard markers, `development/authoring-guide.md`, and the documentation. Decisions D-107 to D-111.
+
+**Found by doing it.**
+- A Quarto draft must be registered when it is created, or `npm run build` fails (P13's fail-closed rule): `content:new --format qmd` renders it without computing, and removes the file again if that fails.
+- A stale Quarto article is an error even for a draft, for the same reason; it is the one check that does not soften for drafts.
+- `astro dev` listens on `localhost`, which here is the IPv6 loopback only: the first version of `content:preview` probed `127.0.0.1`, reported the server as not running while it ran, and printed an address that would not open. It now tries `localhost`, `127.0.0.1` and `[::1]`, and prints the one that answered.
+- An unquoted `--slug -a` is read as an option by the argument parser (KL-84).
+- `.DS_Store` files that macOS made in `src/content/`, `src/demos/` and `src/` failed CONT-001 and P13A-011 (KL-86); they were deleted. P13A-013 and P13A-030 had to allow the workbench link inside the demonstrations section.
+- `tests/routes.mjs` lists the route files exactly; the three workbench routes were added.
+
+**Verified.** `npm run verify`, `npm run test:browser`, `git diff --check`: see the acceptance matrix and the report. A real throwaway draft was created in the running dev server, previewed (HTTP 200, "Draft preview" notice, absent from the index) and its one file removed.
+
+**Not done, by design.** A web editor, a database, authentication, server-side writes, deletion, redirects, a slug-rename command, `updatedAt` automation, committing, pushing, deploying. P15 not started.
+
 ## Bearnard WhatsApp preparation — Prompt 1/3 (2026-11-10)
 
 Local derivatives are complete in `brand/bearnard/expressions2/_all/`: 204 static transparent 512 × 512 WebPs, each ≤100,000 bytes (79,210–99,996 bytes; total 18,872,908 bytes). All exports pass decode, static-frame, dimensions, alpha, margin and size checks. All 210 protected source/reference/prompt files retain their hashes. Nine existing side-edge contacts are documented and preserved. Every sticker received overview QA; 18 representative/edge cases received larger previews. Ready for emotional categorization; no packs or app were created. Script, manifest, preparation report and QA previews are local ignored assets.

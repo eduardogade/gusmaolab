@@ -28,6 +28,10 @@ export const MARKERS = [
   "Development demonstration",
   "Development Demonstrations",
   "demo-assets",
+  // The Publishing Workbench (P14, D-110) is part of the same development-only set.
+  "data-publishing-workbench",
+  "data-workbench-link",
+  "Publishing Workbench",
 ]
 
 /** The demonstrations the repository has: their file, slug and title, from their own front matter. */
@@ -70,6 +74,7 @@ export async function publicBuildIssues(dist, root = ROOT) {
       if (demo.slug && rel.split("/").includes(demo.slug))
         issues.push(`${rel}: a path of the demonstration ${demo.slug}`)
     if (rel.startsWith("demo-assets")) issues.push(`${rel}: a demonstration's figure`)
+    if (rel.startsWith("_design/publishing")) issues.push(`${rel}: a Publishing Workbench page`)
     if (!TEXT.test(file)) continue
     const text = await readFile(file, "utf8")
     // A stylesheet may style the demonstration markup (the rule is shared), so markers are not

@@ -286,7 +286,9 @@ await test(
   async (check) => {
     const overview = await overviewOf(demoOut)
     const section =
-      /<div data-demo-section[^>]*>([\s\S]*?)<\/section><\/div>/.exec(overview)?.[1] ??
+      /<div data-demo-section[^>]*>([\s\S]*?)<\/section>(?:<p[^>]*data-workbench-link[^>]*>[\s\S]*?<\/p>)?<\/div>/.exec(
+        overview,
+      )?.[1] ??
       ""
     check(
       section.includes("Development Demonstrations"),

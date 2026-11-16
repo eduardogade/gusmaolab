@@ -1,0 +1,127 @@
+$ npm run content:new -- --collection greenhouse --title "A Small Example"
+Created a draft in The Greenhouse.
+
+Source:  src/content/greenhouse/a-small-example.md
+Slug:    a-small-example  (fixed now: retitling never moves the address)
+Status:  draft
+Address when published: /lecture-notes/greenhouse/a-small-example/
+
+Next:
+  edit src/content/greenhouse/a-small-example.md
+  npm run content:preview  -- --collection greenhouse --slug a-small-example
+  npm run content:validate -- --collection greenhouse --slug a-small-example
+[exit 0]
+
+$ head -n 12 src/content/greenhouse/a-small-example.md
+---
+title: "A Small Example"
+# description: one sentence for the index; required to publish
+status: draft
+slug: a-small-example
+# optional: difficulty, prerequisites, references, tags, related.
+---
+
+<!-- TODO: write the article, then delete this line. -->
+
+## Background
+
+
+$ npm run content:validate -- --collection greenhouse --slug a-small-example
+Publication validation passed
+
+Collection: greenhouse
+Source: src/content/greenhouse/a-small-example.md
+1. [warning] description: No description yet: needed to publish.
+     -> add description: (one sentence, shown in the index)
+2. [warning] Line 9: "TODO" is still in the text.
+     -> write the text, or delete the line
+
+0 error(s), 2 warning(s).
+1 article(s) checked. No files were modified.
+[exit 0]
+
+# edit the file: delete the TODO line, add a description (misspelt on purpose)
+
+$ npm run content:validate -- --collection greenhouse --slug a-small-example
+Publication validation failed
+
+Collection: greenhouse
+Source: src/content/greenhouse/a-small-example.md
+1. [error] Unrecognized key: "desription".
+     -> correct the spelling, or remove the key: unknown fields are errors
+
+1 error(s), 0 warning(s).
+1 article(s) checked. No files were modified.
+[exit 1]
+
+# correct the spelling
+
+$ npm run content:validate -- --collection greenhouse --slug a-small-example
+Publication validation passed
+
+0 error(s), 0 warning(s).
+1 article(s) checked. No files were modified.
+[exit 0]
+
+$ npm run content:publish -- --collection greenhouse --slug a-small-example --date 2026-11-20
+Publication preflight passed
+
+Collection: greenhouse
+Source: src/content/greenhouse/a-small-example.md
+Change:
+  status: draft  ->  status: published
+  (absent)  ->  publishedAt: 2026-11-20
+Address: /lecture-notes/greenhouse/a-small-example/
+
+Dry run: no files were modified. Add --yes to make the change:
+  npm run content:publish -- --collection greenhouse --slug a-small-example --date 2026-11-20 --yes
+[exit 0]
+
+$ npm run content:publish -- --collection greenhouse --slug a-small-example --date 2026-11-20 --yes
+Publication preflight passed
+
+Collection: greenhouse
+Source: src/content/greenhouse/a-small-example.md
+Change:
+  status: draft  ->  status: published
+  (absent)  ->  publishedAt: 2026-11-20
+Status now: published
+Public address: /lecture-notes/greenhouse/a-small-example/
+
+Next: review the change, then commit it yourself:
+  git diff -- src/content/greenhouse/a-small-example.md
+This changed one source file. It did not commit, push or deploy anything.
+[exit 0]
+
+$ head -n 7 src/content/greenhouse/a-small-example.md
+---
+title: "A Small Example"
+description: "One sentence for the index."
+status: published
+slug: a-small-example
+publishedAt: 2026-11-20
+# optional: difficulty, prerequisites, references, tags, related.
+
+$ npm run content:archive -- --collection greenhouse --slug a-small-example --yes
+Archive preflight passed
+
+Collection: greenhouse
+Source: src/content/greenhouse/a-small-example.md
+Change:
+  status: published  ->  status: archived
+Status now: archived
+Public address: /lecture-notes/greenhouse/a-small-example/
+
+Next: review the change, then commit it yourself:
+  git diff -- src/content/greenhouse/a-small-example.md
+This changed one source file. It did not commit, push or deploy anything.
+[exit 0]
+
+$ head -n 7 src/content/greenhouse/a-small-example.md
+---
+title: "A Small Example"
+description: "One sentence for the index."
+status: archived
+slug: a-small-example
+publishedAt: 2026-11-20
+# optional: difficulty, prerequisites, references, tags, related.

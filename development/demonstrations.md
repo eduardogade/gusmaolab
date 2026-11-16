@@ -52,3 +52,9 @@ A deployment must run `npm run build`, not `astro build` directly. `tests/demos.
 ## Make a demonstration of a new feature (the standing rule)
 
 When a milestone adds something to be seen, it ships a way to see it in the local website: a new article layout gets a demonstration article, a research-project card a synthetic project specimen, a figure system an actual rendered figure, a Bearnard composition an accessible live page. The demonstration uses the production components, is reachable by clicking, is labelled synthetic, and is excluded from the release by the same three guards. Never invent public content to make a feature look finished.
+
+## The Publishing Workbench (P14)
+
+The same convention, applied to authoring: `npm run dev`, then Home → Lecture Notes → The Greenhouse → **Publishing Workbench** (a link in the Development Demonstrations section, `/_design/publishing/`). It has the lifecycle, the five commands to copy, the eight collections, the publication checklist and the reasons things look as they do; from its banner, the **workflow example** (the real commands run on a throwaway synthetic article, with their output) and a **draft preview** (a synthetic draft in the real Greenhouse layout). It is read-only and gated like the demonstrations: a release build has none of it (`scripts/demo-check.mjs` searches for its paths and markers), and `npm run demo:build` includes it.
+
+The workflow transcript is `src/design/publishing/workflow-transcript.txt`. `tests/authoring.mjs` regenerates it from the commands and fails if it differs; refresh it after changing a command's output with `node tests/fixtures/authoring/scenario.mjs --write`.

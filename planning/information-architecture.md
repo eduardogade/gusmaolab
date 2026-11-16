@@ -352,3 +352,7 @@ The author's versioned CV YAML is the source of the owner's professional history
 - Whether `astro.config.mjs` should enforce `trailingSlash: "always"`, now that section pages exist. Links use the trailing slash; the static host serves both forms.
 - A designed 404 page that uses `resolve()`'s `context`: the polished content states belong to P17. Until then, unknown URLs get the host's default 404.
 - Whether Overview should ever carry a section-specific label (for example "Contents" for a literary folder). P06 uses "Overview" everywhere.
+
+## Development-only routes (P14)
+
+`/_design/publishing/`, `/_design/publishing/workflow/` and `/_design/publishing/draft-example/` are the Publishing Workbench (D-110). They are not tabs, not folders and not part of the registry: they are pages inside the Greenhouse folder (selected like any Greenhouse page, so no fourth row or level appears), routed only in `npm run dev` and `npm run demo:build`. The Greenhouse Overview links to the first from its Development Demonstrations section, so the owner reaches it by clicking: Home → Lecture Notes → The Greenhouse → Publishing Workbench. A release build has none of them.

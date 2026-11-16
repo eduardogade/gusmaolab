@@ -1,0 +1,38 @@
+---
+// The development Publishing Workbench's draft preview (P14, D-110): an unfinished SYNTHETIC
+// article drawn by the production Greenhouse layout, so the owner can see what `status: draft`
+// looks like. It is not a content entry and cannot be published: it lives in src/design/, which
+// no collection loader reads, and it is routed only in development and demonstration builds.
+import FolderPage from "../../../../layouts/FolderPage.astro"
+import WorkbenchBanner from "../../../../design/publishing/WorkbenchBanner.astro"
+import { DRAFT_SLUG } from "../../../../design/publishing/workbench.ts"
+import { EDITORIAL_LAYOUTS } from "../../../../layouts/editorial/layouts.ts"
+import { demosEnabled } from "../../../../editorial/demo.ts"
+import { readingContext } from "../../../../editorial/reading.ts"
+import type { CommonData } from "../../../../editorial/schema.ts"
+import * as body from "../../../../design/publishing/draft-example.md"
+
+export function getStaticPaths() {
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
+}
+
+const data = {
+  title: "An Example of the GusmaoLab Publishing Workflow",
+  status: "draft",
+  slug: DRAFT_SLUG,
+  tags: ["publishing", "demonstration"],
+  relatedRecords: [],
+  related: [],
+  synthetic: true,
+} as unknown as CommonData
+const record = { collection: "greenhouse" as const, id: DRAFT_SLUG, data }
+const context = readingContext(record, [record])
+const Layout = EDITORIAL_LAYOUTS.greenhouse
+---
+
+<FolderPage path="/lecture-notes/greenhouse/" title="Draft preview (workbench) · GusmaoLab">
+  <WorkbenchBanner current="draft" />
+  <Layout collection="greenhouse" data={data} context={context} headings={body.getHeadings()}>
+    <body.Content />
+  </Layout>
+</FolderPage>

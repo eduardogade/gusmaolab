@@ -571,6 +571,10 @@ test("NAV-032", "Every approved route is a static page", (check) => {
         "[design]/editorial/[collection]/index.astro",
         "[design]/editorial/index.astro",
         "[design]/folders.astro",
+        // P14: the development Publishing Workbench; static paths only in dev and demo mode.
+        "[design]/publishing/draft-example/index.astro",
+        "[design]/publishing/index.astro",
+        "[design]/publishing/workflow/index.astro",
         "[design]/quarto/index.astro",
         "[design]/quarto/markdown.astro",
         "[design]/records.astro",

@@ -1,6 +1,6 @@
 # Current state
 
-Last updated: P13, 2026-11-14. Verified facts only.
+Last updated: P14, 2026-11-15. Verified facts only.
 
 ## Framework
 
@@ -329,9 +329,20 @@ The scientific Python is now isolated and specified, and the scientific publishi
 - **Looked at:** the demonstrations at 1440 and 390 px in headless Chrome (screenshots of the live dev server, kept outside the repository), and by clicking from Home in the real dev server. Not looked at: Safari, Firefox, Android Chrome on a phone, screen readers.
 - **Waiting for the owner:** open `http://localhost:4321/lecture-notes/greenhouse/` and read the three articles (G-P13A-10); P13's own review of the layout (G-P13-13) can be done on the same pages.
 
+## Authoring workflow (P14)
+
+Writing and publishing an article is now five commands over one file, with a development workbench that shows them (D-107 to D-111; `development/authoring-guide.md`).
+
+- **Commands:** `npm run content:new | content:validate | content:preview | content:publish | content:archive` (`scripts/content.mjs`, engine `scripts/content-lib.mjs`, definitions `src/editorial/authoring.ts`). Explicit arguments, no prompts. They create drafts in all eight collections (Markdown; Quarto for The Greenhouse and Bearnard's Trail), validate with one preflight of 21 checks, print an article's local address and whether the dev server answers, publish and archive with a dry run unless `--yes`, and never commit, push, deploy, delete or run a notebook cell. No new dependency.
+- **Workbench:** `/_design/publishing/` (overview), `/_design/publishing/workflow/` (the real commands on a throwaway article, with their output) and `/_design/publishing/draft-example/` (a synthetic draft in the real Greenhouse layout). Reached by clicking from the Greenhouse Overview's Development Demonstrations section. Development and demonstration builds only: the release build has 72 pages and none of it; the demonstration build has the three pages more.
+- **Changed elsewhere:** one link in `CollectionOverview.astro`, three route files, release-guard markers in `scripts/demo-check.mjs`, `tests/routes.mjs` (the route allowlist), and two P13-A01 tests adjusted to allow the link inside the demonstrations section (`tests/demos.mjs`, `tests/demo-dev-browser.mjs`). P10's schemas and routes, P12's layouts, P13's tool, the CV, the palettes, the folders and the registry are untouched.
+- **Tests:** `tests/authoring.mjs` (AUTH-001 to AUTH-043, real commands on throwaway project folders), `tests/authoring-build.mjs` (a release and a demonstration build of a throwaway copy holding articles made by the commands) and `tests/authoring-browser.mjs` (AUTH-031, AUTH-032, AUTH-045 in the real dev server); the acceptance matrix has the table.
+- **Looked at:** the workbench's pages at 320, 390, 768, 1280 and 1440 px in headless Chrome, and screenshots at 1440 and 390 px (kept outside the repository). A real draft was created, opened in the running dev server (HTTP 200, draft notice, not in the index) and removed. Not looked at: Safari, Firefox, Android Chrome, screen readers.
+- **Waiting for the owner:** use the workflow on a real article, and read the workbench (G-P14-11).
+
 ## npm scripts
 
-`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro`, `format`, and `science:check`, `science:verify`, `science:render`, `science:execute`, `science:env`, `science:quarto`, `science:restore-test`, `demo:build`, `demo:preview` and `demo:verify` (the scientific-article tool and the demonstrations; `build` runs `science:verify` first, and nothing else runs the others), and `cv:check` and `cv:snapshot` (the CV tool, run by hand, never by a build). `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs`, `tests/responsive.mjs`, `tests/transitions.mjs`, `tests/bearnard.mjs`, `tests/categories.mjs`, `tests/content.mjs`, `tests/editorial-build.mjs`, `tests/records.mjs` and `tests/cv.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs`, `tests/responsive-browser.mjs`, `tests/transitions-browser.mjs` and `tests/categories-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
+`dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro`, `format`, and `science:check`, `science:verify`, `science:render`, `science:execute`, `science:env`, `science:quarto`, `science:restore-test`, `content:new`, `content:validate`, `content:preview`, `content:publish`, `content:archive`, `demo:build`, `demo:preview` and `demo:verify` (the scientific-article tool and the demonstrations; `build` runs `science:verify` first, and nothing else runs the others), and `cv:check` and `cv:snapshot` (the CV tool, run by hand, never by a build). `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs`, `tests/responsive.mjs`, `tests/transitions.mjs`, `tests/bearnard.mjs`, `tests/categories.mjs`, `tests/content.mjs`, `tests/editorial-build.mjs`, `tests/records.mjs` and `tests/cv.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs`, `tests/responsive-browser.mjs`, `tests/transitions-browser.mjs` and `tests/categories-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
 
 ## Build status
 
