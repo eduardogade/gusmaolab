@@ -340,6 +340,19 @@ Writing and publishing an article is now five commands over one file, with a dev
 - **Looked at:** the workbench's pages at 320, 390, 768, 1280 and 1440 px in headless Chrome, and screenshots at 1440 and 390 px (kept outside the repository). A real draft was created, opened in the running dev server (HTTP 200, draft notice, not in the index) and removed. Not looked at: Safari, Firefox, Android Chrome, screen readers.
 - **Waiting for the owner:** use the workflow on a real article, and read the workbench (G-P14-11).
 
+## Homepage (P15)
+
+Home (`/`) is the real homepage, not scaffolding (D-112 to D-117; `planning/design-system.md`, "Homepage").
+
+- **Regions:** welcome with Bearnard and the one `<h1>`; "Where to begin" (seven folders in three groups, from the registry); the reserved "Inside the nucleus" stage; "From the Blog" (the newest three published Blog entries, or an honest empty state, which is what the real page shows now); "Around the world" (eight places, configured, not live). Components in `src/components/home/`, data in `src/home/` (`archive.ts`, `clocks.ts`, `updates.ts`).
+- **Bearnard:** the registry's one approved illustration, by ID (`bearnard-v1.3-portrait`), eager, with its width and height. No role was assigned to `home-welcome`: that stays the owner's decision.
+- **Specimen:** `/_design/home/` (development and demonstration builds only) shows the same page with synthetic Blog posts; the real homepage links to it at its foot while developing. A release build has neither.
+- **Tests:** `tests/home.mjs` (HOME-001 to HOME-022 and HOME-027 to HOME-036, on `dist/` and the sources) and `tests/home-browser.mjs` (HOME-009B, 010B, 022B and HOME-023 to HOME-026, headless Chromium against `dist-demo/`).
+- **Looked at:** the page at 320, 390, 430, 768, 1024, 1280 and 1440 px (automated overflow, overlap, Bearnard ratio, clocks, keyboard and motion checks) and screenshots at 1440, 1280, 768, 390 and 320 px, kept outside the repository.
+- **Not shown:** Safari, Firefox, a real phone, a screen reader. The copy is provisional.
+- **Waiting for the owner:** review the homepage, its words and layout (G-P15-10), and decide the `home-welcome` role.
+- **Reserved for later:** P16 fills the clock readings; a later milestone fills the nucleus stage's `visual` slot.
+
 ## npm scripts
 
 `dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro`, `format`, and `science:check`, `science:verify`, `science:render`, `science:execute`, `science:env`, `science:quarto`, `science:restore-test`, `content:new`, `content:validate`, `content:preview`, `content:publish`, `content:archive`, `demo:build`, `demo:preview` and `demo:verify` (the scientific-article tool and the demonstrations; `build` runs `science:verify` first, and nothing else runs the others), and `cv:check` and `cv:snapshot` (the CV tool, run by hand, never by a build). `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs`, `tests/responsive.mjs`, `tests/transitions.mjs`, `tests/bearnard.mjs`, `tests/categories.mjs`, `tests/content.mjs`, `tests/editorial-build.mjs`, `tests/records.mjs` and `tests/cv.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs`, `tests/responsive-browser.mjs`, `tests/transitions-browser.mjs` and `tests/categories-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
@@ -390,7 +403,7 @@ Unchanged since P03; P05 to P09-A01 did not touch it. ISSUE-0003 stays open: the
 
 ## Completed prompts
 
-P01 to P11, including P09's Addendum 01 (the Chromatic Archive) and P11's Addendum 01 (the CV as the source of the owner's records, D-089 to D-093). P08's real-device checks are pending. P09 is technically completed; two owner reviews are pending (G-P09-A6, G-P09-B7); the third, G-P09-C7, was closed by D-076. P10 is completed (D-077 to D-082), and so is P11 (D-083 to D-088), with empty production records; P12 has not started.
+P01 to P15, including P09's Addendum 01 (the Chromatic Archive) and P11's Addendum 01 (the CV as the source of the owner's records, D-089 to D-093). P08's real-device checks are pending. P09 is technically completed; two owner reviews are pending (G-P09-A6, G-P09-B7); the third, G-P09-C7, was closed by D-076. P10 is completed (D-077 to D-082), and so is P11 (D-083 to D-088), with empty production records. P12 to P15 are described in their own sections above; owner reviews of P13's demonstrations, P14's workflow and P15's homepage are pending.
 
 ## Blockers
 

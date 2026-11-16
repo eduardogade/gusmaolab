@@ -1,0 +1,33 @@
+---
+/**
+ * Region D of the homepage (P15, D-116): the eight places whose local time the site will show.
+ * P15 draws the composition and reads the configuration (src/home/clocks.ts); it shows no time.
+ * Every row holds a reserved reading area, marked `data-clock-reading`, that P16 fills with the
+ * zone's current local time and date. Until then the area shows dashes and the section says, once,
+ * that the times are not live: a dash is not a time, and nothing here is a hardcoded clock value.
+ *
+ * Each row is `<li data-clock-id data-time-zone>`: P16 needs nothing but those attributes to
+ * find its places, so it can add real values, per-zone daylight-saving formatting, one shared
+ * update loop and live-region handling without redesigning the layout. Rows are a flexible
+ * list that reflows to one or more columns by the width it is given, and long names wrap.
+ */
+import { CLOCK_LOCATIONS } from "../../home/clocks.ts"
+---
+
+<section class="clocks" aria-labelledby="clocks-title" data-home-region="clocks" data-clocks-state="preview">
+  <h2 id="clocks-title" class="home-heading">Around the world</h2>
+  <p class="clocks__intro">
+    Eight places where collaborators, readers and friends are. <span class="clocks__note" data-clocks-note>The local times are not live yet.</span>
+  </p>
+  <ol class="clocks__list">
+    {
+      CLOCK_LOCATIONS.map((place) => (
+        <li class="clock" data-clock-id={place.id} data-time-zone={place.timeZone}>
+          <span class="clock__city">{place.city}</span>
+          <span class="clock__place">{place.place}</span>
+          <span class="clock__reading" data-clock-reading aria-hidden="true">––:––</span>
+        </li>
+      ))
+    }
+  </ol>
+</section>

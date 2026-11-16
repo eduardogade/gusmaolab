@@ -356,3 +356,7 @@ The author's versioned CV YAML is the source of the owner's professional history
 ## Development-only routes (P14)
 
 `/_design/publishing/`, `/_design/publishing/workflow/` and `/_design/publishing/draft-example/` are the Publishing Workbench (D-110). They are not tabs, not folders and not part of the registry: they are pages inside the Greenhouse folder (selected like any Greenhouse page, so no fourth row or level appears), routed only in `npm run dev` and `npm run demo:build`. The Greenhouse Overview links to the first from its Development Demonstrations section, so the owner reaches it by clicking: Home → Lecture Notes → The Greenhouse → Publishing Workbench. A release build has none of them.
+
+## Home (P15)
+
+`/` is the entrance, not a folder with children: the global row is its only row, with Home selected. Its body links to the destinations that answer "where do I begin?" in three groups (research and engineering: Portfolio, CV, Lab; learning and explanation: Lecture Notes, Blog; writing and personality: Writing, Bearnard's Area), plus About, Contact and Schedule once each. This is a selection, not a second registry: labels and URLs come from the registry, and the groups are not colour categories. The page also holds the reserved nucleus stage, eight world-clock places and the newest three published Blog entries (D-112 to D-117). `/_design/home/` is a development specimen of the same page, not a route of the site (development and demonstration builds only).

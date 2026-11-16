@@ -399,3 +399,16 @@ author edits one file ─ npm run content:validate ─ content:preview ─ conte
 - **Drafts.** The dev server routes drafts (`routeOptions`, P10); a build never does. The tool does not change this; it makes a draft easy to create and to see.
 - **Not part of the site.** The tool is development tooling: no page imports `scripts/`, and `src/editorial/authoring.ts` is imported only by the workbench.
 - **Not done:** a web editor, a database, authentication, server-side writes, deletion, redirects, slug renaming, automatic commits or deployment.
+
+## Homepage (P15)
+
+The homepage is composed, not generated: `src/pages/index.astro` fetches the recent Blog entries and hands them to `src/components/home/HomePage.astro`, which orders five region components. Data stays out of the components and out of the page: `src/home/archive.ts` (registry-derived links), `src/home/clocks.ts` (eight locations, IANA zones), `src/home/updates.ts` (the selector, over `src/editorial/model.ts`'s `indexItems`). All three are erasable TypeScript so that Node tests run them (D-040).
+
+- **Navigation source.** Labels and URLs come from `siteNavigation.node(id)`; the page writes no URL.
+- **Blog source.** `homeRecentUpdates()` in `src/editorial/site.ts` passes the loaded entries, without demonstrations, to `recentUpdates()`. The Blog's index and the homepage therefore agree on eligibility and order.
+- **Bearnard.** `<BearnardIllustration variant="bearnard-v1.3-portrait">`, through the registry (D-073). The `home-welcome` role stays unassigned.
+- **Nucleus integration point.** The `visual` slot and the `state` prop of `NucleusStage`; nothing else on the page knows of it.
+- **Clock integration point.** `[data-clock-id][data-time-zone]` rows with a `[data-clock-reading]` area, and `data-clocks-state="preview"` on the section. P16 reads the zones from `CLOCK_LOCATIONS` and fills the readings; the page ships no clock code today.
+- **Specimen.** `src/pages/[design]/home/index.astro` (development and demonstration builds only, D-117) draws `HomePage` with `src/design/home-fixture.ts`. The release guard `scripts/demo-check.mjs` searches `dist/` for it.
+- **Styles.** `src/styles/home.css`, global, imported by `BaseLayout.astro`: every page loads one stylesheet set (RESP-013), so the components carry no scoped style.
+- **No new dependency, script or client-side code.**

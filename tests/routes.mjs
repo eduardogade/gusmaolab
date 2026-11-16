@@ -202,7 +202,10 @@ test("NAV-023", "Each page's own URL rebuilds its folders", (check) => {
     )
     const headings = main ? elements(main).filter((el) => el.tag === "h1") : []
     check(
-      headings.length === 1 && textOf(headings[0]).trim() === state.folder.label,
+      // Home (P15) is headed by the site's name, not by its tab's label.
+      headings.length === 1 &&
+        textOf(headings[0]).trim() ===
+          (path === "/" ? "GusmaoLab" : state.folder.label),
       `${path}: the page's heading is not "${state.folder.label}"`,
     )
   }
@@ -571,6 +574,7 @@ test("NAV-032", "Every approved route is a static page", (check) => {
         "[design]/editorial/[collection]/index.astro",
         "[design]/editorial/index.astro",
         "[design]/folders.astro",
+        "[design]/home/index.astro",
         // P14: the development Publishing Workbench; static paths only in dev and demo mode.
         "[design]/publishing/draft-example/index.astro",
         "[design]/publishing/index.astro",

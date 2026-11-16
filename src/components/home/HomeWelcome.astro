@@ -1,0 +1,39 @@
+---
+/**
+ * Region A of the homepage (P15, D-112): who and what GusmaoLab is, with Bearnard. The page's one
+ * `<h1>` is here. Words are plain and invent nothing: no title, affiliation, award or result.
+ * Bearnard is the registry's approved illustration, chosen by its ID because the owner has not
+ * assigned any illustration to the `home-welcome` role (src/illustrations/bearnard.ts); the
+ * assignment stays the owner's. The links come from the registry.
+ */
+import BearnardIllustration from "../bearnard/BearnardIllustration.astro"
+import { linkTo } from "../../home/archive.ts"
+
+const about = linkTo("about")
+---
+
+<section class="welcome" aria-labelledby="home-title" data-home-region="welcome">
+  <div class="welcome__text">
+    <p class="welcome__overline">Research · Engineering · Teaching · Writing</p>
+    <h1 id="home-title" class="welcome__title">GusmaoLab</h1>
+    <p class="welcome__lede">
+      A personal workshop for research, engineering, teaching and writing, kept in one place.
+    </p>
+    <p class="welcome__body">
+      I am Eduardo Gade Gusmao, and I work where biology and computation meet: genomes, data,
+      software, and the questions that connect them. Browse the notes, the work and the stories
+      below, or pull up a chair and have a coffee with Bearnard.
+    </p>
+  </div>
+  <figure class="welcome__art" data-home-bearnard>
+    <BearnardIllustration
+      variant="bearnard-v1.3-portrait"
+      loading="eager"
+      sizes="(min-width: 44rem) 15rem, 9rem"
+    />
+  </figure>
+  <p class="welcome__actions">
+    <a class="welcome__primary" href={about.href}>About me</a>
+    <a class="welcome__secondary" href="#explore">Explore the archive</a>
+  </p>
+</section>

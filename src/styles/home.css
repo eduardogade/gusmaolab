@@ -1,0 +1,438 @@
+/*
+ * The homepage (P15, D-112): the styles of src/components/home/ and of the Home route's one
+ * development note. They sit in one global stylesheet, imported by FolderPage with the editorial
+ * styles, because every page must load the same stylesheet set (RESP-013). The class names are
+ * the components' own and are used by nothing else. Semantic tokens only (tests/design-tokens.mjs),
+ * no colour of its own, no transition, animation or smooth scrolling (D-071).
+ *
+ * Responsive rules answer to the width of the page's paper through the `home` container, never the
+ * window: the folders already change that width (P08).
+ */
+
+/* 0. The page ----------------------------------------------------------- */
+
+  .home {
+    container-type: inline-size;
+    container-name: home;
+    display: grid;
+    gap: var(--space-xl);
+    min-inline-size: 0;
+  }
+
+  /* A region after the welcome opens with a rule, as a section of one sheet of paper does. */
+  .home__region {
+    min-inline-size: 0;
+    padding-block-start: var(--space-l);
+    border-block-start: var(--border-width-hairline) solid var(--color-folder-border);
+  }
+
+  .home__pair {
+    display: grid;
+    gap: var(--space-xl);
+    min-inline-size: 0;
+  }
+
+  .home .home-heading {
+    font-size: var(--font-size-h2);
+    line-height: var(--line-height-heading);
+  }
+
+  @container home (min-width: 60rem) {
+    .home__pair {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+      column-gap: var(--space-xl);
+      align-items: start;
+    }
+  }
+
+/* 1. Welcome (region A) ------------------------------------------------- */
+
+  .welcome {
+    display: grid;
+    gap: var(--space-m);
+    grid-template-areas:
+      "text"
+      "art"
+      "actions";
+    justify-items: start;
+    padding-block-end: var(--space-l);
+  }
+
+  .welcome__text {
+    grid-area: text;
+    min-inline-size: 0;
+  }
+
+  .welcome__text > * + * {
+    margin-block-start: var(--space-s);
+  }
+
+  .welcome__overline {
+    color: var(--color-text-muted);
+    font-family: var(--font-label);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: uppercase;
+  }
+
+  .welcome__title {
+    font-size: var(--font-size-display);
+    line-height: var(--line-height-display);
+    letter-spacing: var(--letter-spacing-display);
+    overflow-wrap: anywhere;
+  }
+
+  .welcome__lede {
+    max-inline-size: var(--measure-narrow);
+    color: var(--color-text-heading);
+    font-size: var(--font-size-lead);
+  }
+
+  .welcome__body {
+    max-inline-size: 52ch;
+    color: var(--color-text-secondary);
+  }
+
+  /* Bearnard is a full-length, transparent portrait: tall and narrow. On a phone he stands
+     small between the words and the links, so the page's useful content is never far below. */
+  .welcome__art {
+    grid-area: art;
+    inline-size: 9rem;
+    margin: 0;
+    justify-self: center;
+  }
+
+  .welcome__actions {
+    grid-area: actions;
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs) var(--space-m);
+    align-items: center;
+    justify-self: center;
+    font-family: var(--font-label);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .welcome__primary,
+  .welcome__secondary {
+    display: inline-flex;
+    align-items: center;
+    min-block-size: 2.75rem;
+  }
+
+  .welcome__primary {
+    padding-inline: var(--space-m);
+    border: var(--border-width-thin) solid currentcolor;
+    border-radius: var(--radius-control);
+    text-decoration: none;
+  }
+
+  .welcome__primary:hover {
+    color: var(--color-text-link-hover);
+  }
+
+  @container home (min-width: 44rem) {
+    .welcome {
+      grid-template-areas:
+        "text art"
+        "actions art";
+      grid-template-columns: minmax(0, 1fr) clamp(10rem, 28cqi, 15rem);
+      grid-template-rows: auto 1fr;
+      column-gap: var(--space-xl);
+      align-items: start;
+      justify-items: start;
+    }
+
+    .welcome__art {
+      inline-size: 100%;
+      align-self: end;
+      justify-self: end;
+    }
+
+    .welcome__actions {
+      justify-self: start;
+      align-self: start;
+    }
+  }
+
+/* 2. Where to begin (region C) ------------------------------------------ */
+
+  .explore__groups {
+    display: grid;
+    gap: var(--space-l) var(--space-xl);
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    margin-block-start: var(--space-m);
+  }
+
+  .explore__group {
+    min-inline-size: 0;
+  }
+
+  .explore__group-title {
+    padding-block-end: var(--space-2xs);
+    border-block-end: var(--border-width-thin) solid var(--color-text-heading);
+    color: var(--color-text-muted);
+    font-family: var(--font-label);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: uppercase;
+  }
+
+  .explore__routes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* One row per folder; the link's ::after stretches over the whole row. */
+  .explore__route {
+    position: relative;
+    padding-block: var(--space-s);
+    border-block-end: var(--border-width-hairline) solid var(--color-folder-border);
+  }
+
+  .explore__link {
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h3);
+    line-height: var(--line-height-heading);
+    text-decoration-thickness: var(--border-width-hairline);
+    text-underline-offset: 0.2em;
+  }
+
+  .explore__link::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+  }
+
+  .explore__about {
+    margin-block-start: var(--space-3xs);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-ui);
+  }
+
+  .explore__inside {
+    margin-block-start: var(--space-3xs);
+    color: var(--color-text-muted);
+    font-family: var(--font-label);
+    font-size: var(--font-size-xs);
+    overflow-wrap: anywhere;
+  }
+
+  .explore__reach {
+    margin-block-start: var(--space-m);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+  }
+
+/* 3. The nucleus stage (region B) --------------------------------------- */
+
+  .stage {
+    display: grid;
+    gap: var(--space-m);
+    align-items: center;
+  }
+
+  .stage__text {
+    min-inline-size: 0;
+  }
+
+  .stage__text > * + * {
+    margin-block-start: var(--space-s);
+  }
+
+  .stage__text p:not(.stage__status) {
+    max-inline-size: 52ch;
+    color: var(--color-text-secondary);
+  }
+
+  .stage__status {
+    color: var(--color-text-muted);
+    font-family: var(--font-label);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: uppercase;
+  }
+
+  /* The frame owns its footprint: one aspect ratio, whatever it holds, so nothing below it
+     moves when a model arrives. A fixed ratio is the stable layout region (HOME-010). */
+  .stage__frame {
+    display: grid;
+    place-items: center;
+    inline-size: 100%;
+    aspect-ratio: 4 / 3;
+    min-inline-size: 0;
+    overflow: hidden;
+    padding: var(--space-m);
+    border: var(--border-width-thin) dashed var(--color-text-muted);
+    border-radius: var(--radius-card);
+    background-color: transparent;
+  }
+
+  .stage__placeholder {
+    display: grid;
+    gap: var(--space-xs);
+    justify-items: center;
+    max-inline-size: 30ch;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    text-align: center;
+  }
+
+  .stage__badge {
+    padding: var(--space-3xs) var(--space-xs);
+    border: var(--border-width-hairline) solid var(--color-text-muted);
+    border-radius: var(--radius-control);
+    color: var(--color-text-muted);
+    font-family: var(--font-label);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: uppercase;
+  }
+
+  /* A wider frame is a flatter one, so it never becomes taller than the text above it. */
+  @container home (min-width: 34rem) {
+    .stage__frame {
+      aspect-ratio: 16 / 10;
+    }
+  }
+
+  @container home (min-width: 52rem) {
+    .stage {
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1.35fr);
+      column-gap: var(--space-xl);
+    }
+  }
+
+/* 4. World clocks (region D) -------------------------------------------- */
+
+  .clocks__intro {
+    max-inline-size: 52ch;
+    margin-block-start: var(--space-xs);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+  }
+
+  .clocks__note {
+    color: var(--color-text-muted);
+    font-style: italic;
+  }
+
+  .clocks__list {
+    list-style: none;
+    margin: var(--space-m) 0 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 13rem), 1fr));
+    column-gap: var(--space-l);
+  }
+
+  .clock {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      "city reading"
+      "place reading";
+    column-gap: var(--space-xs);
+    align-items: center;
+    min-block-size: 3.25rem;
+    padding-block: var(--space-2xs);
+    border-block-end: var(--border-width-hairline) solid var(--color-folder-border);
+  }
+
+  .clock__city {
+    grid-area: city;
+    font-family: var(--font-heading);
+    font-size: var(--font-size-h4);
+    line-height: var(--line-height-ui);
+    overflow-wrap: anywhere;
+  }
+
+  .clock__place {
+    grid-area: place;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-xs);
+    line-height: var(--line-height-ui);
+    overflow-wrap: anywhere;
+  }
+
+  /* Reserves the width of "00:00" plus a day name, so a real reading will not move the row. */
+  .clock__reading {
+    grid-area: reading;
+    min-inline-size: 4.5rem;
+    color: var(--color-text-muted);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-sm);
+    text-align: end;
+  }
+
+/* 5. Recent Blog updates (region E) ------------------------------------- */
+
+  .updates__list {
+    list-style: none;
+    margin: var(--space-m) 0 0;
+    padding: 0;
+  }
+
+  .update {
+    padding-block: var(--space-s);
+    border-block-end: var(--border-width-hairline) solid var(--color-folder-border);
+  }
+
+  .update:first-child {
+    border-block-start: var(--border-width-hairline) solid var(--color-folder-border);
+  }
+
+  .update__when {
+    display: block;
+    color: var(--color-text-muted);
+    font-family: var(--font-label);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: uppercase;
+  }
+
+  .update__title {
+    margin-block-start: var(--space-3xs);
+    font-size: var(--font-size-h3);
+    overflow-wrap: anywhere;
+  }
+
+  .update__summary {
+    margin-block-start: var(--space-3xs);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    overflow-wrap: anywhere;
+  }
+
+  .updates__all,
+  .updates__empty {
+    margin-block-start: var(--space-s);
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+  }
+
+  .updates__empty {
+    max-inline-size: 40ch;
+    padding: var(--space-s);
+    border: var(--border-width-hairline) dashed var(--color-text-muted);
+    border-radius: var(--radius-card);
+  }
+
+/* 6. The development note on the Home route ---------------------------------- */
+
+  .home-specimen-link {
+    margin-block-start: var(--space-xl);
+    padding: var(--space-xs) var(--space-s);
+    border: var(--border-width-hairline) dashed var(--color-folder-border);
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface-callout);
+    font-family: var(--font-label);
+    font-size: var(--font-size-sm);
+  }

@@ -1,0 +1,32 @@
+---
+/**
+ * The note at the head of the homepage specimen (P15): what it is, that its Blog posts are
+ * invented, and the way back. A note, not a heading: the page's one `<h1>` is the homepage's own.
+ */
+---
+
+<aside class="home-specimen" role="note" data-home-specimen>
+  <p>
+    <strong>Development specimen, not a page of the website.</strong> This is the real homepage,
+    drawn by the production components, with <em>synthetic</em> Blog posts in the updates section
+    so you can see it populated. Nobody wrote those posts and they are published nowhere. A
+    production build leaves this page out.
+  </p>
+  <p><a href="/">The real homepage</a></p>
+</aside>
+
+<style>
+  .home-specimen {
+    margin-block-end: var(--space-l);
+    padding: var(--space-xs) var(--space-s);
+    border: var(--border-width-hairline) dashed var(--color-folder-border);
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface-callout);
+    font-family: var(--font-label);
+    font-size: var(--font-size-sm);
+  }
+
+  .home-specimen p + p {
+    margin-block-start: var(--space-2xs);
+  }
+</style>

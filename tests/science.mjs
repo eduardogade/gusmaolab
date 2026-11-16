@@ -190,11 +190,15 @@ await test(
         })(),
         `"${bad}" is accepted as a document`,
       )
-    // Nothing was converted: the repository's collections hold no hand-written entries, and the generated ones say so.
+    // Nothing was converted: a hand-written entry stays Markdown (the owner writes some, P14), and an
+    // entry that has a Quarto source beside it is generated and says so.
     for (const c of COLLECTIONS) {
       const folder = join(repo, "src/content", c.directory)
       for (const file of existsSync(folder) ? await readdir(folder) : [])
-        if (file.endsWith(".md"))
+        if (
+          file.endsWith(".md") &&
+          existsSync(join(repo, "science", c.directory, file.replace(/\.md$/, ".qmd")))
+        )
           check(
             (await read(`src/content/${c.directory}/${file}`)).includes(
               GENERATED_MARKER,

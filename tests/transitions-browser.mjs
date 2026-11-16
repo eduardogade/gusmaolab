@@ -502,6 +502,10 @@ await test(
     )
     // The design studies do not opt in, so a link to one is a plain navigation.
     await goto("/")
+    // Home no longer links the studies in a release build (P15), so the test adds the plain link itself.
+    await js(
+      `(() => { const a = document.createElement("a"); a.href = "/_design/tokens/"; a.textContent = "design tokens"; a.style.cssText = "position:fixed;top:4px;left:4px;z-index:9999;padding:8px;background:#fff"; document.body.append(a); })()`,
+    )
     const link = await js(
       `(() => { const a = document.querySelector('a[href="/_design/tokens/"]'); const b = a.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 } })()`,
     )

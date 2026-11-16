@@ -664,3 +664,15 @@ A demonstration is drawn in the approved Greenhouse, unchanged: only two things 
 ## 15. Publishing Workbench (P14)
 
 A development page, not a part of the site's design. It uses only existing semantic tokens and the Greenhouse folder's own colours, adds no colour, no font and no motion, and no client script. Its parts: a dashed note at the head (the study banner's treatment), a flow of four chips, cards for the lifecycle and the eight collections (a definition list inside each), command blocks (`pre`, focusable, scrolling inside themselves so the page never scrolls sideways), a checklist and a two-column glossary. Checked at 320, 390, 768, 1280 and 1440 px.
+
+## 16. Homepage (P15)
+
+Home is a page of the Core category on one sheet of reading paper. It adds no colour, font, motion or script (D-112 to D-117). Its parts and their reasons:
+
+- **Welcome.** The display size of the heading font for "GusmaoLab" (the page's one `<h1>`), a lead sentence, a short paragraph and two actions: an outlined link ("About me", in the link colour like every link: no second link colour exists) and a text link ("Explore the archive"). Bearnard stands in a column at the right on a wide paper (up to 15rem, 474 px tall at most) and small (9rem) between the words and the actions on a narrow one, so the page's useful content is never a screen of mascot away. The image reserves its size from its width and height and loads eagerly.
+- **Where to begin.** Three columns (one on a phone) of plain rows separated by hairlines, under small-caps group titles with a heavy rule. A row is one link in the heading font, a sentence, and the folder's own children in small type; its whole area is the target (at least 44 px tall). No cards, no icons.
+- **Inside the nucleus.** Text and a dashed frame, side by side on a wide paper and stacked on a narrow one. The frame is 4:3, or 16:10 from a 34rem paper, transparent, and labelled "Reserved"; it is deliberately plain and draws nothing that could be taken for the model.
+- **From the Blog.** The Blog's own stream language: date in small caps, then the title, then the summary, with hairlines. Long titles wrap anywhere. With no post, one dashed note says so.
+- **Around the world.** A list of eight rows, city in the heading font, country in small type, and a reserved reading area at the right that shows a dash. Rows reflow to one or two columns by the width they get.
+- **Layout.** The regions follow one another, opened by a hairline; updates and clocks sit side by side from a 60rem paper. Every responsive rule is a container query on the paper's width (`@container home`), never the window.
+- **Not here:** a dashboard, an animation, a decorative stage, a second mascot image, a new category colour.

@@ -1,15 +1,28 @@
 ---
-// Home (P06): the Home folder with temporary development content. The final homepage
-// composition (Bearnard, the nucleus, clocks, the latest writing) belongs to later
-// prompts. The P03 design specimen that used to live here is at /_design/tokens/ (D-055).
+// Home (P15, D-112): the entrance to the archive, in the Home folder. Its regions are the
+// components in src/components/home/; the recent Blog updates are the newest published entries
+// of the real Blog (src/home/updates.ts), so while nothing is published the page says so.
+// The development specimen, /_design/home/, draws these same components with synthetic entries.
 import FolderPage from "../layouts/FolderPage.astro"
-import ScaffoldContent from "../components/scaffold/ScaffoldContent.astro"
+import HomePage from "../components/home/HomePage.astro"
+import { demosEnabled } from "../editorial/demo.ts"
+import { homeRecentUpdates } from "../editorial/site.ts"
+import { HOME_SPECIMEN } from "../design/home-fixture.ts"
+
+const updates = await homeRecentUpdates()
 ---
 
-<FolderPage>
-  <ScaffoldContent path={Astro.url.pathname}>
-    <p>
-      Temporary design studies, not part of the website: the <a href="/_design/tokens/">design tokens</a> (P03) and the <a href="/_design/folders/">physical folders</a> (P05).
-    </p>
-  </ScaffoldContent>
+<FolderPage
+  title="GusmaoLab"
+  description="GusmaoLab is a personal workshop for research, engineering, teaching and writing: computational biology, software, notes and stories, with Bearnard."
+>
+  <HomePage updates={updates} />
+  {
+    demosEnabled() && (
+      <p class="home-specimen-link" data-home-specimen-link>
+        Development only, not part of the website: <a href={HOME_SPECIMEN}>this page with example Blog posts</a>;
+        the older design studies, <a href="/_design/tokens/">design tokens</a> and <a href="/_design/folders/">physical folders</a>.
+      </p>
+    )
+  }
 </FolderPage>

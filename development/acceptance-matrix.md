@@ -768,3 +768,20 @@ AUTH-040 compares P14's own changes (commits ending `[P14]`, and the working tre
 | G-13 | Eight international clocks | R-09 | Untested |
 | G-14 | Real booking works through the chosen provider; no credentials in the repository | R-10 | Untested |
 | G-15 | Site deploys to GitHub Pages | R-11 | Untested |
+
+## P15 gates — Homepage
+
+G-12 (the interactive nucleus) and G-13 (the eight clocks) are not closed by P15: it builds the places for them and says so on the page.
+
+| ID | Gate | Status |
+| --- | --- | --- |
+| G-P15-01 | Home is the real homepage on `/`, in the Core category and environment, with the eleven tabs and one row of folders | **Passed** (HOME-001 to HOME-005, HOME-035) |
+| G-P15-02 | Welcome with Bearnard from the approved registry; one `<h1>`; reserved image size | **Passed** (HOME-006 to HOME-009, HOME-009B). No illustration was assigned to a role |
+| G-P15-03 | A reserved, honest, replaceable nucleus stage with a stable footprint; no 3D runtime | **Passed** (HOME-010 to HOME-012, HOME-010B). The visualization itself is **not built** (G-12 stays open) |
+| G-P15-04 | The archive links are valid and come from the registry | **Passed** (HOME-004, HOME-024) |
+| G-P15-05 | Eight clock locations with validated IANA zones; no fake live values | **Passed** (HOME-013 to HOME-016). The clocks do not run (P16; G-13 stays open) |
+| G-P15-06 | Recent updates are derived from published, real Blog entries in the Blog's order; drafts, archived entries and demonstrations are excluded; an empty Blog is handled | **Passed** (HOME-017 to HOME-021) |
+| G-P15-07 | A populated specimen uses the real components and is development-only | **Passed** (HOME-022, HOME-022B, HOME-033) |
+| G-P15-08 | No overflow, overlap or clipped Bearnard at 320, 390, 430, 768, 1024, 1280 and 1440 px; keyboard focus; reflow at 200% text; no motion | **Passed** in headless Chromium (HOME-009B, 023 to 026). Not shown: Safari, Firefox, a real phone, a screen reader |
+| G-P15-09 | P10 to P14, the CV, the palettes, the folders and the Bearnard masters unchanged | **Passed** (HOME-027 to HOME-036) |
+| G-P15-10 | The owner reviews the homepage, its copy and its layout | **Pending** |

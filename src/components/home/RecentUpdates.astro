@@ -1,0 +1,52 @@
+---
+/**
+ * Region E of the homepage (P15, D-114): the newest published Blog entries, in the Blog's own
+ * language (a chronological stream, date before title, no cards). The items arrive already
+ * selected (src/home/updates.ts); this component only draws them, so a real page and the
+ * development specimen use exactly the same markup. With none, it says so instead of inventing
+ * news.
+ */
+import { formatWhen } from "../../editorial/model.ts"
+import type { IndexItem } from "../../editorial/model.ts"
+import { linkTo } from "../../home/archive.ts"
+
+interface Props {
+  items: readonly IndexItem[]
+}
+
+const { items } = Astro.props
+const blog = linkTo("blog")
+---
+
+<section class="updates" aria-labelledby="updates-title" data-home-region="updates">
+  <h2 id="updates-title" class="home-heading">From the Blog</h2>
+  {
+    items.length === 0 ? (
+      <p class="updates__empty" data-updates-empty>
+        Nothing has been published on the <a href={blog.href}>Blog</a> yet. New posts will appear here
+        when they are.
+      </p>
+    ) : (
+      <>
+        <ol class="updates__list" data-updates-list>
+          {items.map((item) => (
+            <li class="update" data-update-path={item.path}>
+              {item.when && (
+                <time class="update__when" datetime={item.when}>
+                  {formatWhen(item.when)}
+                </time>
+              )}
+              <h3 class="update__title">
+                <a href={item.path}>{item.title}</a>
+              </h3>
+              {item.description && <p class="update__summary">{item.description}</p>}
+            </li>
+          ))}
+        </ol>
+        <p class="updates__all">
+          <a href={blog.href}>All posts</a>
+        </p>
+      </>
+    )
+  }
+</section>

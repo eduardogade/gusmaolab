@@ -1,0 +1,41 @@
+---
+/**
+ * Region C of the homepage (P15, D-113): where to begin. An editorial selection of the archive's
+ * principal folders in three groups, drawn from the registry (src/home/archive.ts). It is not a
+ * second global row: About, Contact and Schedule have their own places, and the global tabs hold
+ * everything. Entries are plain rows with a hairline between them, not a wall of identical cards,
+ * and each row is one link whose whole area is the touch target.
+ */
+import { archiveGroups, linkTo } from "../../home/archive.ts"
+
+const groups = archiveGroups()
+const contact = linkTo("contact")
+const schedule = linkTo("schedule")
+---
+
+<section class="explore" id="explore" aria-labelledby="explore-title" data-home-region="explore">
+  <h2 id="explore-title" class="home-heading">Where to begin</h2>
+  <div class="explore__groups">
+    {
+      groups.map((group) => (
+        <section class="explore__group" aria-labelledby={`explore-${group.id}`} data-archive-group={group.id}>
+          <h3 id={`explore-${group.id}`} class="explore__group-title">{group.title}</h3>
+          <ul class="explore__routes">
+            {group.routes.map((route) => (
+              <li class="explore__route" data-archive-route={route.id}>
+                <a class="explore__link" href={route.href}>{route.label}</a>
+                <p class="explore__about">{route.about}</p>
+                {route.inside.length > 0 && (
+                  <p class="explore__inside">{route.inside.join(" · ")}</p>
+                )}
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))
+    }
+  </div>
+  <p class="explore__reach">
+    To reach me: <a href={contact.href}>{contact.label}</a> or <a href={schedule.href}>{schedule.label}</a>.
+  </p>
+</section>

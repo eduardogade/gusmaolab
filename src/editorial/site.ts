@@ -24,6 +24,7 @@ import {
   routableRecords,
 } from "./model.ts"
 import type { EditorialRecord, IndexItem } from "./model.ts"
+import { recentUpdates } from "../home/updates.ts"
 import { entryReferenceIssues, readingContext } from "./reading.ts"
 import type { ReadingContext } from "./reading.ts"
 import { SECTIONS } from "../navigation/registry.ts"
@@ -186,6 +187,14 @@ export async function collectionIndexFor(path: string): Promise<{
       all.filter((record) => record.demo),
     ),
   }
+}
+
+/**
+ * The Blog entries the homepage lists as recent updates (P15, D-114): the real, published ones,
+ * newest first, never a demonstration. The selection rule is src/home/updates.ts.
+ */
+export async function homeRecentUpdates(): Promise<IndexItem[]> {
+  return recentUpdates((await entries()).filter((record) => !record.demo))
 }
 
 /** What a reader of one entry is offered besides its text (reading.ts), from the real entries. */

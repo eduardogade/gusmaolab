@@ -1,0 +1,42 @@
+---
+/**
+ * The homepage's content (P15, D-112), drawn inside the Home folder by pages/index.astro:
+ *
+ *   A  HomeWelcome      who and what GusmaoLab is, and Bearnard (the page's one <h1>)
+ *   C  ArchiveExplorer  where to begin, from the registry
+ *   B  NucleusStage     the reserved stage for the interactive nucleus
+ *   E  RecentUpdates    the newest published Blog entries, or an honest empty state
+ *   D  WorldClocks      eight places, configured, not yet live
+ *
+ * The source order is the mobile reading order: identity, welcome, Bearnard, where to begin, the
+ * scientific stage, then the updates and the clocks side by side where there is room. It is a
+ * single page of one material (the Core reading paper), separated by whitespace and hairlines,
+ * with no panels and no new colour. The page answers to the width of its paper, not the window,
+ * because the folders already change that width (P08).
+ *
+ * `updates` is supplied, so the real page and the development specimen (/_design/home/) draw
+ * the very same regions. Nothing here reads content itself.
+ */
+import ArchiveExplorer from "./ArchiveExplorer.astro"
+import HomeWelcome from "./HomeWelcome.astro"
+import NucleusStage from "./NucleusStage.astro"
+import RecentUpdates from "./RecentUpdates.astro"
+import WorldClocks from "./WorldClocks.astro"
+import type { IndexItem } from "../../editorial/model.ts"
+
+interface Props {
+  updates: readonly IndexItem[]
+}
+
+const { updates } = Astro.props
+---
+
+<div class="home" data-home>
+  <HomeWelcome />
+  <div class="home__region"><ArchiveExplorer /></div>
+  <div class="home__region"><NucleusStage /></div>
+  <div class="home__pair">
+    <div class="home__region"><RecentUpdates items={updates} /></div>
+    <div class="home__region"><WorldClocks /></div>
+  </div>
+</div>

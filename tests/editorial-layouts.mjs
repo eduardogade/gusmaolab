@@ -758,10 +758,17 @@ await test(
     for (const id of COLLECTION_IDS) {
       const dir = join(root, "src/content", collectionById(id).directory)
       const files = await readdir(dir).catch(() => [])
-      check(
-        files.filter((f) => f.endsWith(".md") && !f.startsWith("_")).length === 0,
-        `src/content/${collectionById(id).directory} holds entries`,
-      )
+      // The collections may hold the owner's real entries (drafts or published); they may never hold a
+      // synthetic fixture, whose slug is one of the fixtures' own (P15 relaxed "holds no entry at all").
+      for (const f of files.filter((f) => f.endsWith(".md") && !f.startsWith("_"))) {
+        const text = await readFile(join(dir, f), "utf8")
+        const slug = /^slug:\s*["']?([^"'\n]+)/m.exec(text)?.[1]?.trim() ?? ""
+        check(
+          !/^(synthetic|specimen|demo)-/.test(slug) &&
+            !SYNTHETIC_ENTRIES.some((e) => e.data.slug === slug),
+          `src/content/${collectionById(id).directory}/${f} is a synthetic fixture`,
+        )
+      }
     }
     // Only the study's own pages import the fixture.
     const importers = []

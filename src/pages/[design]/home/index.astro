@@ -1,0 +1,24 @@
+---
+// The development homepage specimen (P15, D-117): the real homepage components with synthetic Blog
+// posts, so the populated updates section can be seen while the real Blog is empty. It draws the
+// Home folder around it and reuses HomePage unchanged. Routed only in development and in a
+// demonstration build (src/editorial/demo.ts); a release build has no page here and its output is
+// searched for it.
+import FolderPage from "../../../layouts/FolderPage.astro"
+import HomePage from "../../../components/home/HomePage.astro"
+import HomeSpecimenBanner from "../../../design/home/HomeSpecimenBanner.astro"
+import { HOME_SPECIMEN_ENTRIES } from "../../../design/home-fixture.ts"
+import { demosEnabled } from "../../../editorial/demo.ts"
+import { recentUpdates } from "../../../home/updates.ts"
+
+export function getStaticPaths() {
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
+}
+
+const updates = recentUpdates(HOME_SPECIMEN_ENTRIES)
+---
+
+<FolderPage path="/" title="Homepage specimen · GusmaoLab">
+  <HomeSpecimenBanner />
+  <HomePage updates={updates} />
+</FolderPage>

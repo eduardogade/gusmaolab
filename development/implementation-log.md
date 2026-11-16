@@ -978,3 +978,18 @@ Inclui 3 formações, 14 experiências documentadas (2 consultorias industriais)
 Validação: extração OOXML somente leitura com o Python empacotado; geração e `python3 /tmp/cv-yaml-audit/validate.py` com PyYAML 6.0.3 passaram após ajustes no extrator bibliográfico. Verificados parsing sem chaves duplicadas, indentação de dois espaços, ausência de tabs, datas ISO, cobertura dos inventários, campos bibliográficos contra a fonte, cadastro de todos os marcadores, variantes sem instituições e hashes das 14 entradas. A primeira tentativa de geração no Python empacotado falhou por ausência de PyYAML; a geração YAML usou o Python local, sem instalação de dependências. Verificação factual externa: não realizada. `npm run verify` e testes de navegador: não executados nesta alteração documental, sem mudança no site.
 
 O trabalho começou na branch `development` com alterações alheias, inclusive exclusões já staged; elas foram preservadas. Nenhum commit ou push foi realizado nesta entrega de proposta. A promoção da proposta a `CV.yaml` depende da revisão do autor e da resolução da instrução de preservar os arquivos de entrada.
+
+
+## P15 — Homepage composition (2026-11-16)
+
+**Git preflight.** Started on `development` at `6332901` ("Adding self publishing articles", the owner's commit after P14: two draft articles, the earlier CV-01 notes in the two development records, and a `clean` file). Working tree clean, nothing staged, no stash, one worktree, no other local branch ahead; `origin` has only `main` (`1e1c52b`), so `development` is local only. Nothing was merged, rebased or cherry-picked, so P15 continued on `development`. The owner's two draft articles are not published and do not affect the page; the `clean` file was left alone.
+
+**Built.** `src/home/` (archive selection, clock configuration, recent-update selector); `src/components/home/` (`HomePage`, `HomeWelcome`, `ArchiveExplorer`, `NucleusStage`, `WorldClocks`, `RecentUpdates`); `src/pages/index.astro` now draws the homepage; `homeRecentUpdates()` added to `src/editorial/site.ts`; the specimen `/_design/home/` with `src/design/home-fixture.ts` and `src/design/home/HomeSpecimenBanner.astro`; release-guard markers in `scripts/demo-check.mjs`; `tests/home.mjs`, `tests/home-browser.mjs`; the route allowlist in `tests/routes.mjs`; `package.json` scripts. Decisions D-112 to D-117.
+
+**Styles.** The homepage's CSS is one global file, `src/styles/home.css`, imported by `BaseLayout.astro` with the other global styles (one added line). Component-scoped styles were tried first and failed RESP-013, which requires every page to load the same stylesheet set.
+
+**Two stale checks relaxed.** The owner's two draft articles (`src/content/greenhouse/pyspark-exercises.md`, `src/content/berries/pyspark-exercies-berries.md`, commit `6332901`) made two earlier tests fail that had assumed the collections were empty: EDIT-019 (no synthetic fixture in `src/content/`) now forbids fixtures by slug instead of forbidding every entry, and QTO-001 (nothing converted to Quarto) now requires the generated marker only of entries that have a `.qmd` beside them. Their purposes are unchanged. `tests/routes.mjs` also accepts Home's heading "GusmaoLab" (NAV-023).
+
+**Verified.** See `development/current-state.md` ("Homepage (P15)") and the P15 gates in `development/acceptance-matrix.md`. The nucleus frame was made flatter from a 34rem paper after the tablet screenshot showed a 4:3 frame taller than the text above it.
+
+**Not done, by design.** Clock mechanics (P16), the interactive nucleus, assigning Bearnard to `home-welcome`, any new content, push or deploy.

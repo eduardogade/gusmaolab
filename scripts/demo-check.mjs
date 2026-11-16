@@ -32,6 +32,9 @@ export const MARKERS = [
   "data-publishing-workbench",
   "data-workbench-link",
   "Publishing Workbench",
+  // The homepage specimen (P15, D-117): the real homepage with synthetic Blog posts.
+  "data-home-specimen",
+  "Development specimen",
 ]
 
 /** The demonstrations the repository has: their file, slug and title, from their own front matter. */
@@ -75,6 +78,7 @@ export async function publicBuildIssues(dist, root = ROOT) {
         issues.push(`${rel}: a path of the demonstration ${demo.slug}`)
     if (rel.startsWith("demo-assets")) issues.push(`${rel}: a demonstration's figure`)
     if (rel.startsWith("_design/publishing")) issues.push(`${rel}: a Publishing Workbench page`)
+    if (rel.startsWith("_design/home")) issues.push(`${rel}: the homepage specimen`)
     if (!TEXT.test(file)) continue
     const text = await readFile(file, "utf8")
     // A stylesheet may style the demonstration markup (the rule is shared), so markers are not
