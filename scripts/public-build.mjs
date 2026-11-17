@@ -7,6 +7,15 @@ import { spawnSync } from "node:child_process"
 import { join } from "node:path"
 import process from "node:process"
 import { publicBuildIssues, releaseEnvironment, ROOT } from "./demo-check.mjs"
+import { distIssues, sourceIssues } from "./downloads.mjs"
+
+// The downloads (P18, D-127): every approved file must exist before anything is built.
+const before = await sourceIssues()
+if (before.length > 0) {
+  console.error(`FAIL: ${before.length} download problem(s):`)
+  for (const issue of before) console.error(`  - ${issue}`)
+  process.exit(1)
+}
 
 const env = releaseEnvironment(process.env)
 const built = spawnSync(
@@ -25,3 +34,11 @@ if (issues.length > 0) {
   process.exit(1)
 }
 console.log("PASS: the release build holds no demonstration")
+
+const after = await distIssues(join(ROOT, "dist"))
+if (after.length > 0) {
+  console.error(`FAIL: the release build has ${after.length} download problem(s):`)
+  for (const issue of after) console.error(`  - ${issue}`)
+  process.exit(1)
+}
+console.log("PASS: the release build holds every approved download and no private or demonstration file")

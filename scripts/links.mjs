@@ -42,7 +42,9 @@ export function readPage(html) {
     if (node.type === ELEMENT_NODE) {
       if (typeof node.attributes?.id === "string") ids.add(node.attributes.id)
       if (typeof node.attributes?.name === "string" && node.name === "a") ids.add(node.attributes.name)
-      for (const attribute of URL_ATTRIBUTES[node.name] ?? []) {
+      // A link that is meant to be missing (a development note that shows the 404 page) is not a broken one.
+      const expectsMissing = node.attributes?.["data-expect-missing"] !== undefined
+      for (const attribute of expectsMissing ? [] : (URL_ATTRIBUTES[node.name] ?? [])) {
         const value = node.attributes?.[attribute]
         if (typeof value === "string") urls.push([node.name, attribute, value])
       }

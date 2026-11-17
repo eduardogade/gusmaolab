@@ -105,6 +105,8 @@ for (const file of files.filter((f) => f.endsWith("/index.html"))) {
     editorialPages.push(file)
 }
 expectedPages.push(...editorialPages)
+// P18 (D-128): the custom 404 page, the one file a static host serves for an address that matches no page.
+expectedPages.push("404.html")
 
 // 1. Only the expected pages and stylesheets, and nothing private.
 const unexpected = files.filter(
@@ -196,7 +198,8 @@ for (const file of htmlFiles) {
   const folders = /class="gl-folders"/.test(page)
   // The world clocks (P16, D-118) add one more module script, on the page that has them: the homepage.
   const clocks = /data-home-region="clocks"/.test(page) ? 1 : 0
-  const expectedScripts = (folders ? 1 : 0) + clocks
+  // The custom 404 page (P18) draws the folder styles but no tabs and ships no script.
+  const expectedScripts = file === "404.html" ? 0 : (folders ? 1 : 0) + clocks
   check(
     scripts.length === expectedScripts && scripts.every((script) => script === '<script type="module">'),
     `${file} has ${scripts.length} <script> element(s); expected ${expectedScripts}`,
@@ -293,7 +296,7 @@ const pagePaths = htmlFiles.map(
   (file) => `/${file.replace(/(^|\/)index\.html$/, "$1")}`,
 )
 for (const path of pagePaths) {
-  if (designStudies.includes(path)) continue
+  if (designStudies.includes(path) || path === "/404.html") continue
   check(
     siteNavigation.resolve(path).found,
     `built page ${path} is not in the navigation registry`,

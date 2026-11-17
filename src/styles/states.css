@@ -234,3 +234,71 @@
   margin: var(--space-xs) 0 0;
   font-size: var(--font-size-sm);
 }
+
+/* Downloads and contact channels (P18, D-126, D-127): plain, restrained lists of real links. */
+.dl__title,
+.contact__heading {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-h3);
+}
+
+.dl__list,
+.contact__list {
+  display: grid;
+  gap: var(--space-s);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-inline-size: var(--measure-reading-technical);
+}
+
+.dl__item,
+.contact__item {
+  display: grid;
+  gap: var(--space-3xs);
+  padding-block-end: var(--space-s);
+  border-block-end: var(--border-width-hairline) solid var(--color-folder-border);
+}
+
+.dl__name,
+.dl__about,
+.dl__meta,
+.contact__line,
+.contact__about {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.dl__name,
+.contact__line {
+  font-weight: var(--font-weight-semibold);
+}
+
+.dl__about,
+.contact__about {
+  color: var(--color-text-secondary);
+}
+
+.dl__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3xs) var(--space-s);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.dl__item--planned .dl__name {
+  color: var(--color-text-secondary);
+}
+
+.contact__group + .contact__group,
+.dl + .dl {
+  margin-block-start: var(--space-l);
+}
+
+.contact__host {
+  margin-inline-start: var(--space-xs);
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: normal;
+}

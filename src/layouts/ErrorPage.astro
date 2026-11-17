@@ -1,0 +1,56 @@
+---
+/**
+ * A page for a URL that is not in the archive (P18, D-128): the dark shell and one folder of the Core
+ * cardstock holding the page on its reading paper, like a folder page, but with no row of tabs. A
+ * missing URL has no owning folder, so this layout draws none: it never selects a tab, never
+ * invents a route ID and never opens a fourth row. `FolderPage` and the folder components are
+ * unchanged; this uses only their styles (`.gl-folder`, `.gl-folder__body`, `.gl-folder__paper`).
+ *
+ *   <ErrorPage title="Page not found · GusmaoLab">…</ErrorPage>
+ *
+ * Core category and the core environment: the same atmosphere as Home, no palette of its own.
+ * `<main id="content">` is the paper.
+ */
+import BaseLayout from "./BaseLayout.astro"
+import "../styles/folders.css"
+
+interface Props {
+  title: string
+  description?: string
+}
+
+const { title, description } = Astro.props
+---
+
+<BaseLayout title={title} description={description} category="core" main={false}>
+  <div class="page">
+    <div class="page-shell">
+      <div class="gl-folders" data-category="core" data-error-page>
+        <div class="gl-folder" data-level="1">
+          <div class="gl-folder__body">
+            <main id="content" class="gl-folder__paper">
+              <slot />
+            </main>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<style>
+  /* The cabinet, as on every folder page (FolderPage). */
+  .page {
+    max-inline-size: var(--size-shell-max);
+    margin-inline: auto;
+    padding: var(--space-gutter);
+  }
+
+  .page-shell {
+    padding: var(--space-shell-padding);
+    border: var(--border-width-hairline) solid var(--color-shell-border);
+    border-radius: var(--radius-shell);
+    background-color: var(--color-shell);
+    box-shadow: var(--shadow-shell);
+  }
+</style>

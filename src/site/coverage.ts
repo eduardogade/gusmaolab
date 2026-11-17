@@ -23,6 +23,8 @@ export interface PageFacts {
   readonly editorial: Readonly<Record<string, number>>
   /** Shown (public, verified) records behind each projection. */
   readonly records: Readonly<Partial<Record<RecordsKey, number>>>
+  /** Public contact channels the owner has approved (P18). */
+  readonly contact?: number
 }
 
 export const NO_FACTS: PageFacts = { editorial: {}, records: {} }
@@ -65,6 +67,12 @@ function ownState(
       return n > 0
         ? { state: "ready", reason: plural(n, "verified record", "verified records") }
         : { state: "preparation", reason: "no verified record to show" }
+    }
+    case "contact": {
+      const n = facts.contact ?? 0
+      return n > 0
+        ? { state: "ready", reason: plural(n, "approved contact channel", "approved contact channels") }
+        : { state: "preparation", reason: "no contact channel approved for the public site" }
     }
     case "planned":
       return { state: "preparation", reason: "declared planned; material not yet supplied" }

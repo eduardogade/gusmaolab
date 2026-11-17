@@ -1,0 +1,7 @@
+SYNTHETIC SAMPLE: NOT A REAL DOCUMENT
+
+This small text file exists only to show that GusmaoLab's download links work.
+It is development content. It describes nothing about any person, project or
+publication, and a release build of the website does not contain it.
+
+If you can read this, the link served the file, with its own name and type.

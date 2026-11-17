@@ -13,6 +13,7 @@
 import { CV_SNAPSHOT } from "../data/cv/snapshot.ts"
 import { cvProjection, labProjection, portfolioProjection, siteRecords } from "../records/index.ts"
 import type { CvProjection, LabProjection, PortfolioProject, Records } from "../records/index.ts"
+import { siteChannels } from "../contact/index.ts"
 import type { PageFacts } from "./coverage.ts"
 import type { RecordsKey } from "./destinations.ts"
 
@@ -62,6 +63,7 @@ export function recordCounts(views: RecordViews): Partial<Record<RecordsKey, num
 export function pageFacts(
   editorial: Readonly<Record<string, number>>,
   views: RecordViews = siteRecordViews(),
+  contact: number = siteChannels.length,
 ): PageFacts {
-  return { editorial, records: recordCounts(views) }
+  return { editorial, records: recordCounts(views), contact }
 }

@@ -12,6 +12,13 @@ build/
 develop-eggs/
 dist/
 downloads/
+# GusmaoLab (P18, D-127): the Python template's `downloads/` would hide the site's downloads system.
+# These folders are source, and public/downloads/ is the one a release serves; each is un-ignored by path.
+!/public/downloads/
+!/src/downloads/
+!/src/components/downloads/
+!/src/demos/downloads/
+!/src/pages/*/downloads/
 eggs/
 .eggs/
 lib/

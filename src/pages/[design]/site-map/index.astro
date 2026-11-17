@@ -7,7 +7,7 @@
 // development pages, and is not a tab.
 import FolderPage from "../../../layouts/FolderPage.astro"
 import SiteMapBanner from "../../../design/site-map/SiteMapBanner.astro"
-import { DEV_PAGES, SITE_MAP_LABEL } from "../../../design/site-map.ts"
+import { DEV_PAGES, MISSING_PAGE, SITE_MAP_LABEL } from "../../../design/site-map.ts"
 import { demosEnabled } from "../../../editorial/demo.ts"
 import { CATEGORY_IDS, siteNavigation } from "../../../navigation/index.ts"
 import { summarize } from "../../../site/coverage.ts"
@@ -125,5 +125,9 @@ const summary: [string, number, string][] = [
         ))
       }
     </ul>
+    <p class="sm__note">
+      To see the custom 404 page, open <a href={MISSING_PAGE} data-expect-missing>a URL that is not in the archive</a>:
+      <code>{MISSING_PAGE}</code> has no route, and the 404 page answers in its place.
+    </p>
   </section>
 </FolderPage>

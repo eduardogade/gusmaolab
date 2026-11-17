@@ -10,6 +10,11 @@
  */
 export const SITE_MAP = "/_design/site-map/"
 
+/** The development downloads and contact specimens (P18) and a URL that is not in the archive, for the 404 page. */
+export const DOWNLOADS_PAGE = "/_design/downloads/"
+export const CONTACT_PAGE = "/_design/contact/"
+export const MISSING_PAGE = "/this-folder-is-not-in-the-archive/"
+
 /** The label of the link that leads to the site map from the other development pages. */
 export const SITE_MAP_LABEL = "Site Map & Page Coverage"
 
@@ -21,6 +26,8 @@ export interface DevPage {
 
 export const DEV_PAGES: readonly DevPage[] = [
   { href: SITE_MAP, label: SITE_MAP_LABEL, note: "This page." },
+  { href: DOWNLOADS_PAGE, label: "Downloads specimen", note: "The download list, with synthetic files that really download." },
+  { href: CONTACT_PAGE, label: "Contact specimen", note: "The Contact layout with synthetic channels." },
   { href: "/_design/page-states/", label: "Page states specimen", note: "The content-state components, and records pages from a synthetic fixture." },
   { href: "/_design/home/", label: "Homepage specimen", note: "The homepage with example Blog posts." },
   { href: "/_design/world-clocks/", label: "World clocks specimen", note: "The eight clocks at simulated instants." },

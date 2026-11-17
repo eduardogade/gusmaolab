@@ -9,7 +9,7 @@ import { demosEnabled } from "../editorial/demo.ts"
 import { homeRecentUpdates } from "../editorial/site.ts"
 import { HOME_SPECIMEN } from "../design/home-fixture.ts"
 import { CLOCKS_SPECIMEN } from "../design/clocks-scenarios.ts"
-import { SITE_MAP, SITE_MAP_LABEL } from "../design/site-map.ts"
+import { CONTACT_PAGE, DOWNLOADS_PAGE, MISSING_PAGE, SITE_MAP, SITE_MAP_LABEL } from "../design/site-map.ts"
 import { coverageFor } from "../site/page.ts"
 
 const updates = await homeRecentUpdates()
@@ -26,7 +26,7 @@ const row = await coverageFor("/")
   {
     demosEnabled() && (
       <p class="home-specimen-link" data-home-specimen-link>
-        Development only, not part of the website: <a href={HOME_SPECIMEN}>this page with example Blog posts</a>, <a href={CLOCKS_SPECIMEN}>the world clocks at simulated instants</a>, <a href={SITE_MAP}>{SITE_MAP_LABEL}</a> (every folder and its state);
+        Development only, not part of the website: <a href={HOME_SPECIMEN}>this page with example Blog posts</a>, <a href={CLOCKS_SPECIMEN}>the world clocks at simulated instants</a>, <a href={SITE_MAP}>{SITE_MAP_LABEL}</a> (every folder and its state), <a href={DOWNLOADS_PAGE}>downloads</a> and <a href={CONTACT_PAGE}>contact</a> specimens, and <a href={MISSING_PAGE} data-expect-missing>a missing URL</a> to see the 404 page;
         the older design studies, <a href="/_design/tokens/">design tokens</a> and <a href="/_design/folders/">physical folders</a>.
       </p>
     )

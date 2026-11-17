@@ -25,6 +25,8 @@ export type DestinationSource =
   | "records"
   /** A feature declared planned here: `preparation` until the owner supplies the material. */
   | "planned"
+  /** The Contact page (P18): `ready` once the owner has approved at least one public channel. */
+  | "contact"
   /** A parent folder: its page introduces its children, and its state follows theirs. */
   | "overview"
 
@@ -51,6 +53,8 @@ export interface DestinationSpec {
   readonly whileMissing?: string
   /** For `records`: which projection supplies the material. */
   readonly records?: RecordsKey
+  /** Public downloads of this category are listed on the page, with the planned ones as "not yet available" (P18). */
+  readonly downloads?: "cv" | "research" | "reference" | "project"
   /** Registry IDs of closely related folders (at most three), shown as links. */
   readonly related?: readonly string[]
 }
@@ -70,11 +74,11 @@ export const DESTINATIONS: Readonly<Record<string, DestinationSpec>> = {
     related: ["portfolio", "lecture-notes", "writing"],
   },
   contact: {
-    source: "planned",
+    source: "contact",
     intro:
-      "Contact is for reaching Eduardo Gade Gusmao about research, collaboration, teaching or writing.",
+      "Contact is for reaching Eduardo Gade Gusmao about research collaboration, professional opportunities, or technical and project discussions.",
     whileMissing:
-      "No public way of getting in touch has been approved for the site yet, and there is no contact form: anything typed here would go nowhere. A fuller Contact page is planned.",
+      "Direct contact details are being prepared. No public way of getting in touch has been approved yet, so none is listed, and there is no contact form: a message typed on this page would not be delivered anywhere. Please check back.",
     related: ["schedule", "lab-join-us"],
   },
   schedule: {
@@ -99,6 +103,7 @@ export const DESTINATIONS: Readonly<Record<string, DestinationSpec>> = {
     source: "overview",
     intro:
       "The CV is the professional record, in eight sections: teaching, research, publications, talks, mentoring, awards, service and outreach.",
+    downloads: "cv",
     whileMissing:
       "The public CV is built from a version the owner approves, and none has been approved yet. Until then the sections below stay in preparation, and nothing is taken from drafts.",
     related: ["lab", "portfolio"],

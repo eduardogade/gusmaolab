@@ -196,7 +196,8 @@ await test(
         FIXTURE_PAGES.log,
       ].map(fileOf),
     )
-    const pages = good.files.filter((f) => f.endsWith(".html"))
+    // The custom 404 page (P18, D-128) is not a route; tests/util.mjs covers it.
+    const pages = good.files.filter((f) => f.endsWith(".html") && f !== "404.html")
     for (const file of expected) check(pages.includes(file), `missing page: ${file}`)
     const extra = pages.filter((f) => !expected.has(f))
     check(extra.length === 0, `unexpected pages: ${extra.join(", ")}`)

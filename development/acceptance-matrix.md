@@ -817,3 +817,21 @@ G-12 (the interactive nucleus) and G-13 (the eight clocks) are not closed by P15
 | G-P17-10 | Responsive at 320, 390, 430, 768, 1024, 1280 and 1440 px: no overflow, one heading, no extra row, no broken image | **Passed** (SITE-045) in headless Chromium |
 | G-P17-11 | Nothing of the owner's missing material is invented: the real records, CV snapshot, contact and booking are still to be supplied | **Open** (owner material; P18 for Contact) |
 | G-P17-12 | The owner reviews the site-wide pages, the wording and the site map | **Pending** |
+
+## P18 gates — Contact, downloads and the 404 page
+
+| ID | Gate | Status |
+| --- | --- | --- |
+| G-P18-01 | Contact is a real Core page with an honest state; only owner-approved channels can be shown, and an unapproved or malformed one fails the build | **Passed** (UTIL-001 to UTIL-006, 031) |
+| G-P18-02 | No contact detail is invented or taken from the CV, a record or another file; no email address in the release except approved channels | **Passed** (UTIL-004, 007) |
+| G-P18-03 | No form, button, form service or submission on Contact | **Passed** (UTIL-008) |
+| G-P18-04 | A validated download registry; approved and planned never mixed; a missing approved file fails the build clearly | **Passed** (UTIL-010 to UTIL-016) |
+| G-P18-05 | The unfinished CV cannot be a download; no private or source file in `public/` or the build; the build works with no approved CV | **Passed** (UTIL-017, 018, 048) |
+| G-P18-06 | Synthetic downloads work locally, really download in a browser and never reach the release | **Passed** (UTIL-019, 019B, 020, 021B) |
+| G-P18-07 | The new folders are tracked by git, so an approved file would be committed and deployed | **Passed** (UTIL-050) |
+| G-P18-08 | A custom static 404 page, generated as `404.html`, with a 404 status, recovery links, no selected folder and no script | **Passed** (UTIL-023 to UTIL-030, 033, 025B, 029B) against a Pages-style server and `astro preview`. **Untested** on GitHub Pages itself |
+| G-P18-09 | Empty collections and pages in preparation are not 404s; valid routes are never 404 | **Passed** (UTIL-027, 031) |
+| G-P18-10 | Contact, downloads and the 404 page fit at 320, 390, 430, 768, 1024, 1280 and 1440 px; keyboard focus visible; reduced motion | **Passed** in headless Chromium (UTIL-009, 022, 032, 051) |
+| G-P18-11 | P10 to P17, the folders, palettes, Bearnard assets, the CV and dependencies unchanged | **Passed** (UTIL-034 to UTIL-049) |
+| G-P18-12 | The owner supplies approved contact channels and any downloads | **Open** (owner material) |
+| G-P18-13 | The owner reviews Contact, the downloads specimen and the 404 page | **Pending** |

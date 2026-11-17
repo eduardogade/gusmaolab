@@ -18,6 +18,10 @@ import ChildGuide from "./ChildGuide.astro"
 import RecordsContent from "./RecordsContent.astro"
 import RelatedLinks from "./RelatedLinks.astro"
 import StateNotice from "./StateNotice.astro"
+import ContactChannels from "../contact/ContactChannels.astro"
+import DownloadList from "../downloads/DownloadList.astro"
+import { siteChannels } from "../../contact/index.ts"
+import { inCategory, siteDownloads, sitePlannedDownloads } from "../../downloads/index.ts"
 import { DESTINATIONS } from "../../site/destinations.ts"
 import { siteRecordViews } from "../../site/facts.ts"
 import type { CoverageRow } from "../../site/coverage.ts"
@@ -47,6 +51,18 @@ const art = row.id === "bearnards-area"
   {
     row.state === "ready" && spec.source === "records" && spec.records && (
       <RecordsContent records={spec.records} views={views} />
+    )
+  }
+
+  {row.state === "ready" && spec.source === "contact" && <ContactChannels id="contact" channels={siteChannels} />}
+
+  {
+    spec.downloads && (
+      <DownloadList
+        id={row.id}
+        resources={inCategory(siteDownloads, spec.downloads)}
+        planned={inCategory(sitePlannedDownloads, spec.downloads)}
+      />
     )
   }
 

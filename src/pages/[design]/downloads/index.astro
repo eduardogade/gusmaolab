@@ -1,0 +1,42 @@
+---
+// The development downloads specimen (P18, D-127): the production DownloadList and the production
+// registry rules, drawn with two small synthetic files that really download, and one planned
+// resource that has no file and no link. The files are served from /demo-downloads/ by a route that
+// exists only in development and demonstration builds (src/pages/demo-downloads/). Routed only when
+// `demosEnabled()` is true (src/editorial/demo.ts); a release build has no page here and its output is
+// searched for it.
+import FolderPage from "../../../layouts/FolderPage.astro"
+import DownloadList from "../../../components/downloads/DownloadList.astro"
+import { DEMO_DOWNLOADS, DEMO_PLANNED } from "../../../design/downloads-fixture.ts"
+import { SITE_MAP, SITE_MAP_LABEL } from "../../../design/site-map.ts"
+import { demosEnabled } from "../../../editorial/demo.ts"
+import { factsOf } from "../../../downloads/files.ts"
+import { validateDownloads } from "../../../downloads/registry.ts"
+
+export function getStaticPaths() {
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
+}
+
+// The same gate a real registry passes, on the fixture's own root: a missing file fails the build.
+const issues = validateDownloads(DEMO_DOWNLOADS, DEMO_PLANNED, factsOf(DEMO_DOWNLOADS, "demo"), { root: "demo" })
+if (issues.length > 0) throw new Error(`Invalid demonstration downloads:\n- ${issues.join("\n- ")}`)
+---
+
+<FolderPage path="/" title="Downloads specimen · GusmaoLab">
+  <aside class="home-specimen" role="note" data-downloads-specimen>
+    <p>
+      <strong>Development specimen, not a page of the website.</strong> It draws the real download list
+      with <strong>synthetic</strong> files that really download, and one planned resource with no file and no
+      link. A production build leaves this page and these files out.
+    </p>
+    <p><a href="/">The real homepage</a> · <a href={SITE_MAP}>{SITE_MAP_LABEL}</a></p>
+  </aside>
+  <div class="gl-prose">
+    <h1>Downloads</h1>
+    <p>An approved file is a plain link with its type, size and version. A planned file is only text.</p>
+  </div>
+  <div class="dest">
+    <DownloadList id="specimen" heading="Available files" resources={DEMO_DOWNLOADS} root="demo" />
+    <DownloadList id="specimen-planned" heading="Planned" planned={DEMO_PLANNED} />
+  </div>
+</FolderPage>

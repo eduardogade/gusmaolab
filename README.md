@@ -39,10 +39,11 @@ Source for [www.gusmaolab.org](https://www.gusmaolab.org), Eduardo Gade Gusmao's
 | `npm run demo:preview` | Serve `dist-demo/` on port 4323. |
 | `npm run demo:verify` | Check that `dist-demo/` holds every demonstration, labelled as synthetic. |
 | `npm run links [-- <folder>]` | Check every internal link of a built folder (`dist/` by default): pages, files, canonical trailing slashes and fragments. External URLs are counted, never fetched. Changes nothing. |
+| `npm run downloads:check` | Check the download registry against the files in `public/downloads/` and, after a build, against `dist/`. `npm run build` runs it too. See [`development/downloads-guide.md`](development/downloads-guide.md). |
 | `npm run cv:check` | Report which CV file is selected, whether it can be read and whether a version is approved. Prints counts and identifiers, never the CV's text. Add `-- --verbose` to list what would be left out. See [`cv/README.md`](cv/README.md). |
 | `npm run cv:snapshot` | Write the public CV snapshot (`src/data/cv/snapshot.ts`) from the version approved in `cv/manifest.json`. Refuses, and changes nothing, without an approval. Not part of a build. |
 
-To try the site, run `npm run build` and `npm run preview`, then open the address it prints and click through the folder tabs. Add `/_design/tokens/` for the design specimen, `/_design/folders/` for the folder study, `/_design/bearnard/` for the Bearnard illustrations `/_design/records/` for the canonical records (synthetic data), and, in development, `/_design/site-map/` (Site Map & Page Coverage: every folder and its state). The design tokens and folder styles live in `src/styles/` and are described in [`planning/design-system.md`](planning/design-system.md).
+To try the site, run `npm run build` and `npm run preview`, then open the address it prints and click through the folder tabs. Add `/_design/tokens/` for the design specimen, `/_design/folders/` for the folder study, `/_design/bearnard/` for the Bearnard illustrations `/_design/records/` for the canonical records (synthetic data), and, in development, `/_design/site-map/` (Site Map & Page Coverage: every folder and its state), `/_design/contact/`, `/_design/downloads/` and, to see the 404 page, any address that is not in the archive such as `/this-folder-is-not-in-the-archive/`. The design tokens and folder styles live in `src/styles/` and are described in [`planning/design-system.md`](planning/design-system.md).
 
 ## Project records
 

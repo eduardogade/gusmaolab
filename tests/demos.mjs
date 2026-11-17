@@ -223,18 +223,19 @@ await test(
     )
     check(
       sources.every((f) =>
-        /^src\/demos\/(?:greenhouse\/[^/]+\.md|greenhouse\/\.gitkeep|science\/[^/]+\.html|assets\/[^/]+\/[^/]+\.svg)$/.test(
+        /^src\/demos\/(?:greenhouse\/[^/]+\.md|greenhouse\/\.gitkeep|science\/[^/]+\.html|assets\/[^/]+\/[^/]+\.svg|downloads\/[^/]+\.(?:txt|csv))$/.test(
           f,
         ),
       ),
-      `src/demos holds something other than entries, fragments and figures: ${json(sources)}`,
+      `src/demos holds something other than entries, fragments, figures and the P18 download fixtures: ${json(sources)}`,
     )
     const pages = (await listFiles(join(repo, "src/pages"))).map((f) =>
       relative(repo, f),
     )
     check(
       pages.filter((f) => /demo/i.test(f)).join() ===
-        "src/pages/demo-assets/[name]/[file].svg.ts",
+        // The figures' route, and P18's route for the synthetic download fixtures (D-127).
+        "src/pages/demo-assets/[name]/[file].svg.ts,src/pages/demo-downloads/[file].ts",
       `a page of its own for a demonstration: ${json(pages.filter((f) => /demo/i.test(f)))}`,
     )
     const site = await read("src/editorial/site.ts")

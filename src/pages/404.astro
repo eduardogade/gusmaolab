@@ -1,0 +1,88 @@
+---
+/**
+ * The page for a URL that is not in the archive (P18, D-128). Astro writes it to `404.html` at the root of
+ * the build, the file a static host (GitHub Pages) serves, with a 404 status, for an address that
+ * matches no page. It is not a route anyone links to and not a catch-all: a missing URL stays missing,
+ * and an empty collection or a page in preparation is a real page, never this one.
+ *
+ * It says what happened in the archive's own terms and gives a way back: Home, and a few real
+ * destinations from the navigation registry (labels and URLs from `siteNavigation`, so a rename
+ * cannot leave a link behind). No tab is selected because no folder owns this URL (ErrorPage).
+ * Everything is plain HTML and CSS: it works without JavaScript and loads no script.
+ */
+import BearnardIllustration from "../components/bearnard/BearnardIllustration.astro"
+import ErrorPage from "../layouts/ErrorPage.astro"
+import { siteNavigation } from "../navigation/index.ts"
+
+// What each suggested folder is for, in a few words: copy only, no label or URL.
+const SUGGESTED = [
+  { id: "portfolio", about: "projects and the work behind them" },
+  { id: "lecture-notes", about: "tutorials, short insights and lessons" },
+  { id: "writing", about: "essays, a series and a book club" },
+  { id: "contact", about: "get in touch" },
+].map((item) => ({ ...item, node: siteNavigation.node(item.id) }))
+const home = siteNavigation.node("home")
+---
+
+<ErrorPage
+  title="Page not found · GusmaoLab"
+  description="This page is not in the GusmaoLab archive. It may have moved, or the address may be mistyped."
+>
+  <div class="gl-prose err" data-not-found>
+    <p class="err__eyebrow">404 · Not filed</p>
+    <h1>This folder isn't in the archive.</h1>
+    <p class="err__lede">
+      The page may have moved, or the address may have a typo. Nothing is wrong on your side.
+    </p>
+    <p><a class="err__home" href={home.path}>Start again from {home.label}</a></p>
+    <nav aria-labelledby="err-where" class="err__where">
+      <h2 id="err-where" class="err__heading">Or open one of these</h2>
+      <ul class="err__list">
+        {
+          SUGGESTED.map(({ node, about }) => (
+            <li>
+              <a href={node.path}>{node.label}</a>
+              <span class="err__about">: {about}</span>
+            </li>
+          ))
+        }
+      </ul>
+    </nav>
+    <BearnardIllustration role="not-found" decorative class="err__art" />
+  </div>
+</ErrorPage>
+
+<style>
+  .err__eyebrow {
+    margin: 0;
+    color: var(--color-text-muted);
+    font-family: var(--font-label);
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    letter-spacing: var(--letter-spacing-label);
+    text-transform: uppercase;
+  }
+
+  .err__lede {
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-lead);
+  }
+
+  .err__home {
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .err__heading {
+    margin: 0;
+    font-size: var(--font-size-h3);
+  }
+
+  .err__list {
+    margin: var(--space-xs) 0 0;
+    padding-inline-start: 1.2em;
+  }
+
+  .err__about {
+    color: var(--color-text-secondary);
+  }
+</style>

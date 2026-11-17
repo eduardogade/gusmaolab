@@ -56,8 +56,9 @@ try {
   console.error("FAIL: dist/ not found. Run `npm run build` first.")
   process.exit(1)
 }
+// The custom 404 page (P18, D-128) is the host's answer to a missing address, not a route: tests/util.mjs.
 const builtPaths = files
-  .filter((file) => file.endsWith(".html"))
+  .filter((file) => file.endsWith(".html") && file !== "404.html")
   .map((file) => `/${file.replace(/(^|\/)index\.html$/, "$1")}`)
 
 // Every registered destination's built page, parsed once, with the state it should show.
@@ -573,7 +574,12 @@ test("NAV-032", "Every approved route is a static page", (check) => {
   check(
     json(routeFiles) ===
       json([
+        // P18 (D-128): the custom 404 page, written to 404.html.
+        "404.astro",
         "[design]/bearnard.astro",
+        // P18: the development contact and downloads specimens; static paths only in dev and demo mode.
+        "[design]/contact/index.astro",
+        "[design]/downloads/index.astro",
         "[design]/editorial/[collection]/[entry].astro",
         "[design]/editorial/[collection]/index.astro",
         "[design]/editorial/index.astro",
@@ -598,6 +604,8 @@ test("NAV-032", "Every approved route is a static page", (check) => {
         "[section]/index.astro",
         // P13-A01: the demonstrations' figures; it has static paths only in dev and demo mode.
         "demo-assets/[name]/[file].svg.ts",
+        // P18: the synthetic download fixtures; static paths only in dev and demo mode.
+        "demo-downloads/[file].ts",
         "index.astro",
       ]),
     `unexpected route files: ${json(routeFiles)}`,

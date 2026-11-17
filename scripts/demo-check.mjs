@@ -43,6 +43,12 @@ export const MARKERS = [
   // The development site map (P17, D-124): every folder and its state, with route diagnostics.
   "data-site-map",
   "Page Coverage",
+  // The downloads and contact specimens (P18, D-126, D-127) and their synthetic files.
+  "data-downloads-specimen",
+  "data-contact-specimen",
+  "demo-downloads",
+  "synthetic-sample",
+  "Synthetic sample",
 ]
 
 /** The demonstrations the repository has: their file, slug and title, from their own front matter. */
@@ -88,6 +94,9 @@ export async function publicBuildIssues(dist, root = ROOT) {
     if (rel.startsWith("_design/publishing")) issues.push(`${rel}: a Publishing Workbench page`)
     if (rel.startsWith("_design/home")) issues.push(`${rel}: the homepage specimen`)
     if (rel.startsWith("_design/site-map")) issues.push(`${rel}: the development site map`)
+    if (rel.startsWith("_design/downloads")) issues.push(`${rel}: the downloads specimen`)
+    if (rel.startsWith("_design/contact")) issues.push(`${rel}: the contact specimen`)
+    if (rel.startsWith("demo-downloads")) issues.push(`${rel}: a demonstration download`)
     if (rel.startsWith("_design/page-states")) issues.push(`${rel}: the page-states specimen`)
     if (!TEXT.test(file)) continue
     const text = await readFile(file, "utf8")

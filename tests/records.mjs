@@ -1559,7 +1559,7 @@ await test(
 await test("REC-022", "A record creates no page", async (check) => {
   const pages = (await listFiles(dist))
     .map((f) => relative(dist, f))
-    .filter((f) => f.endsWith(".html"))
+    .filter((f) => f.endsWith(".html") && f !== "404.html") // the 404 page is P18's (tests/util.mjs)
   // The pages of the site, the four studies of P03 to P11 and the editorial study (P12).
   const expected = siteNavigation.pagePaths().length + 4 + studyPaths().length
   check(

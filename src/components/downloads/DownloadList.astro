@@ -1,0 +1,66 @@
+---
+/**
+ * A restrained list of public documents (P18, D-127): what each file is, its type, size and version, and a
+ * real link to it. Approved resources are ordinary same-origin links (the `download` attribute
+ * suggests the file name; a browser may still open a text file instead of saving it, and the page
+ * says "Download" either way, which is the honest word for an ordinary link to a file). Planned
+ * resources are plain text, "not yet available", with no link, no control and no disabled button.
+ *
+ *   <DownloadList id="cv" heading="Downloads" resources={…} planned={…} root="release" />
+ *
+ * It draws only what the registry holds and reads each file's size from the file itself. It
+ * draws nothing for an empty pair of lists.
+ */
+import { FILE_TYPES, extensionOf, formatSize, sizeOf } from "../../downloads/index.ts"
+import type { DownloadResource, DownloadRoot, PlannedDownload } from "../../downloads/index.ts"
+
+interface Props {
+  /** A unique ID for the heading. */
+  id: string
+  heading?: string
+  resources?: readonly DownloadResource[]
+  planned?: readonly PlannedDownload[]
+  root?: DownloadRoot
+  /** The heading level: 2 on a page that has its own h1. */
+  level?: 2 | 3
+}
+
+const { id, heading = "Downloads", resources = [], planned = [], root = "release", level = 2 } = Astro.props
+const rows = resources.map((resource) => ({
+  resource,
+  type: FILE_TYPES[extensionOf(resource.fileName)]?.label ?? "File",
+  size: formatSize(sizeOf(resource, root)),
+}))
+const titleId = `downloads-${id}`
+---
+
+{
+  (rows.length > 0 || planned.length > 0) && (
+    <section class="dl" aria-labelledby={titleId} data-downloads={id}>
+      {level === 2 ? <h2 id={titleId} class="dl__title">{heading}</h2> : <h3 id={titleId} class="dl__title">{heading}</h3>}
+      <ul class="dl__list">
+        {rows.map(({ resource, type, size }) => (
+          <li class="dl__item" data-download={resource.id} data-download-state="available">
+            <p class="dl__name">
+              <a href={resource.publicPath} download={resource.fileName}>{resource.title}</a>
+            </p>
+            <p class="dl__about">{resource.description}</p>
+            <p class="dl__meta">
+              <span>{type}</span>
+              <span>{size}</span>
+              {resource.version && <span>Version {resource.version}</span>}
+              <span class="dl__file">{resource.fileName}</span>
+            </p>
+          </li>
+        ))}
+        {planned.map((item) => (
+          <li class="dl__item dl__item--planned" data-download={item.id} data-download-state="planned">
+            <p class="dl__name">{item.title}</p>
+            <p class="dl__about">{item.description}</p>
+            <p class="dl__meta"><span>Not yet available: waiting for {item.waitingFor}.</span></p>
+          </li>
+        ))}
+      </ul>
+    </section>
+  )
+}

@@ -1,0 +1,55 @@
+---
+/**
+ * The ways to reach the owner (P18, D-126): the approved channels, grouped by what each is for. An email
+ * channel is the readable address and a plain `mailto:` link, which opens the visitor's own mail
+ * application (and says so); a profile channel is an ordinary link to the host it names. No form,
+ * no button that does nothing, no script, no copy control (the address is selectable text), and
+ * no `target="_blank"`: a link opens where the visitor chose. Draws nothing for no channels.
+ *
+ * It draws only the channels it is given; the Contact page gives it the validated site channels
+ * (src/contact/index.ts), and the development specimen gives it synthetic ones.
+ */
+import { groupByUse, mailtoHref, profileHost } from "../../contact/channels.ts"
+import type { ContactChannel } from "../../contact/channels.ts"
+
+interface Props {
+  channels: readonly ContactChannel[]
+  /** A unique ID for the headings. */
+  id: string
+}
+
+const { channels, id } = Astro.props
+const groups = groupByUse(channels)
+---
+
+{
+  groups.length > 0 && (
+    <div class="contact" data-contact-channels={id}>
+      {groups.map((group) => (
+        <section class="contact__group" aria-labelledby={`contact-${id}-${group.use}`} data-contact-use={group.use}>
+          <h2 id={`contact-${id}-${group.use}`} class="contact__heading">{group.label}</h2>
+          <ul class="contact__list">
+            {group.channels.map((channel) => (
+              <li class="contact__item" data-channel={channel.id} data-channel-kind={channel.kind}>
+                {channel.kind === "email" ? (
+                  <p class="contact__line">
+                    <a href={mailtoHref(channel.destination)} class="contact__link">{channel.label}: <span class="contact__address">{channel.destination}</span></a>
+                  </p>
+                ) : (
+                  <p class="contact__line">
+                    <a href={channel.destination} class="contact__link" rel="noopener">{channel.label}</a>
+                    <span class="contact__host">{profileHost(channel.destination)}</span>
+                  </p>
+                )}
+                <p class="contact__about">
+                  {channel.description}
+                  {channel.kind === "email" ? " Opens your email application." : " Opens an external site."}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </section>
+      ))}
+    </div>
+  )
+}

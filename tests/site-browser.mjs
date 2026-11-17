@@ -94,7 +94,7 @@ await test("SITE-035", "The site map covers every registered destination, with c
 
 await test("SITE-036", "Every link of the site map opens a page, and the map is reachable again", async (check) => {
   await goto(SITE_MAP)
-  const hrefs = await js(`[...document.querySelectorAll("main a[href]")].map((a) => a.getAttribute("href"))`)
+  const hrefs = await js(`[...document.querySelectorAll("main a[href]:not([data-expect-missing])")].map((a) => a.getAttribute("href"))`)
   check(hrefs.length >= nodes.length + DEV_PAGES.length - 1, `${hrefs.length} links`)
   for (const href of new Set(hrefs)) {
     const response = await fetched(href)

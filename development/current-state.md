@@ -381,6 +381,16 @@ Every one of the 36 registered folders (11 sections, 25 children) has a built pa
 - **Not shown:** Safari, Firefox, Chrome on Android, a screen reader, the owner's view of the copy.
 - **Waiting for the owner:** review the site-wide pages and their wording (G-P17-12); supply the real material (About text, contact details, the CV approval, projects, people, photographs).
 
+## Contact, downloads and the 404 page (P18)
+
+- **Contact** (`/contact/`, Core): lists only channels the owner has approved, from `src/data/contact.ts`, which is empty (D-126). With none, the page says direct contact details are being prepared; with some, it groups them by use and draws plain `mailto:` and external links. No form, no script, no invented address. Its state is derived: preparation today, `ready` once a channel is approved.
+- **Downloads** (D-127): `src/data/downloads.ts` (approved: none; planned: the CV as a PDF), `src/downloads/` (rules and file reads), `DownloadList.astro`, `scripts/downloads.mjs` (run by `npm run build` before and after Astro, and by `npm run downloads:check`). The CV page shows the planned CV document as "Not yet available". `public/downloads/` does not exist yet; the `.gitignore` is changed so it will be tracked. Workflow: `development/downloads-guide.md`.
+- **404 page** (D-128): `src/pages/404.astro` writes `dist/404.html`; `src/layouts/ErrorPage.astro` draws it (no tab row, no selection, no script, Core atmosphere). It offers Home, Portfolio, Lecture Notes, Writing and Contact. Unknown addresses return 404 with it from the dev server, `astro preview` and a Pages-style test server. GitHub Pages itself is untested.
+- **Development specimens** (development and demonstration builds only): `/_design/contact/` (synthetic channels), `/_design/downloads/` (two synthetic files that really download, one planned example); the synthetic files are served from `/demo-downloads/`. Linked from the local homepage's development note, the site map and the Publishing Workbench's banner; the homepage note and the site map also link a missing URL that shows the 404 page.
+- **Tests:** `tests/util.mjs` (UTIL-001 to UTIL-050 on the registry, the build, real local servers and git; 47 checks) and `tests/util-browser.mjs` (UTIL-003B, 009, 019B, 021B, 022, 025B, 029B, 032, 051; 9 checks).
+- **Not shown:** an email delivered or a mail client opened, GitHub Pages itself, Safari, Firefox, Chrome on Android, a screen reader, the owner's view.
+- **Waiting for the owner:** approved contact channels (G-P18-12) and any downloads; review of Contact, the downloads specimen and the 404 page (G-P18-13).
+
 ## npm scripts
 
 `dev`, `build`, `preview`, `check`, `test`, `test:browser`, `verify` (`check`, then `build`, then `test`), `astro`, `format`, and `science:check`, `science:verify`, `science:render`, `science:execute`, `science:env`, `science:quarto`, `science:restore-test`, `content:new`, `content:validate`, `content:preview`, `content:publish`, `content:archive`, `demo:build`, `demo:preview` and `demo:verify` (the scientific-article tool and the demonstrations; `build` runs `science:verify` first, and nothing else runs the others), and `cv:check` and `cv:snapshot` (the CV tool, run by hand, never by a build). `npm test` runs `tests/design-tokens.mjs`, `tests/contrast.mjs`, `tests/navigation.mjs`, `tests/smoke-test.mjs`, `tests/folders.mjs`, `tests/routes.mjs`, `tests/previews.mjs`, `tests/responsive.mjs`, `tests/transitions.mjs`, `tests/bearnard.mjs`, `tests/categories.mjs`, `tests/content.mjs`, `tests/editorial-build.mjs`, `tests/records.mjs` and `tests/cv.mjs`. `npm run test:browser` runs `tests/previews-browser.mjs`, `tests/responsive-browser.mjs`, `tests/transitions-browser.mjs` and `tests/categories-browser.mjs` in a local headless Chrome, through `tests/browser-harness.mjs`, separately from `verify` (D-062, D-069).
@@ -431,7 +441,7 @@ Unchanged since P03; P05 to P09-A01 did not touch it. ISSUE-0003 stays open: the
 
 ## Completed prompts
 
-P01 to P17, including P09's Addendum 01 (the Chromatic Archive) and P11's Addendum 01 (the CV as the source of the owner's records, D-089 to D-093). P08's real-device checks are pending. P09 is technically completed; two owner reviews are pending (G-P09-A6, G-P09-B7); the third, G-P09-C7, was closed by D-076. P10 is completed (D-077 to D-082), and so is P11 (D-083 to D-088), with empty production records. P12 to P16 are described in their own sections above; owner reviews of P13's demonstrations, P14's workflow, P15's homepage and P16's clocks are pending.
+P01 to P18, including P09's Addendum 01 (the Chromatic Archive) and P11's Addendum 01 (the CV as the source of the owner's records, D-089 to D-093). P08's real-device checks are pending. P09 is technically completed; two owner reviews are pending (G-P09-A6, G-P09-B7); the third, G-P09-C7, was closed by D-076. P10 is completed (D-077 to D-082), and so is P11 (D-083 to D-088), with empty production records. P12 to P16 are described in their own sections above; owner reviews of P13's demonstrations, P14's workflow, P15's homepage and P16's clocks are pending.
 
 ## Blockers
 

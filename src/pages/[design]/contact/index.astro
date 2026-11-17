@@ -1,0 +1,45 @@
+---
+// The development contact specimen (P18, D-126): the production ContactChannels component drawn with
+// synthetic channels on reserved example domains, so the finished layout (grouped channels, a mailto
+// link, an external profile link) can be seen while the owner has approved no real channel. The real
+// page is /contact/. Routed only when `demosEnabled()` is true (src/editorial/demo.ts); a release
+// build has no page here and its output is searched for it.
+import FolderPage from "../../../layouts/FolderPage.astro"
+import ContactChannels from "../../../components/contact/ContactChannels.astro"
+import { validateChannels } from "../../../contact/channels.ts"
+import type { ContactChannel } from "../../../contact/channels.ts"
+import { SITE_MAP, SITE_MAP_LABEL } from "../../../design/site-map.ts"
+import { demosEnabled } from "../../../editorial/demo.ts"
+
+export function getStaticPaths() {
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
+}
+
+const SYNTHETIC: ContactChannel[] = [
+  { id: "demo-email", kind: "email", label: "Email", destination: "synthetic.person@example.org", description: "A synthetic address on a reserved example domain.", use: "general", approvedOn: "2026-11-17" },
+  { id: "demo-collaboration", kind: "email", label: "Email for collaboration", destination: "synthetic.collab@example.org", description: "A second synthetic address, to show grouping.", use: "collaboration", approvedOn: "2026-11-17" },
+  { id: "demo-long", kind: "email", label: "Email for a long address", destination: "synthetic.person.with.a.very.long.address.for.layout.testing@subdomain.department.example.org", description: "A long synthetic address, to show that it wraps instead of running off the page.", use: "technical", approvedOn: "2026-11-17" },
+  { id: "demo-profile", kind: "profile", label: "Synthetic profile", destination: "https://example.org/synthetic-profile", description: "A synthetic external profile.", use: "professional", approvedOn: "2026-11-17" },
+]
+const issues = validateChannels(SYNTHETIC, { allowExampleDomains: true })
+if (issues.length > 0) throw new Error(`Invalid demonstration channels:\n- ${issues.join("\n- ")}`)
+---
+
+<FolderPage path="/contact/" title="Contact specimen · GusmaoLab">
+  <aside class="home-specimen" role="note" data-contact-specimen>
+    <p>
+      <strong>Development specimen, not a page of the website.</strong> It shows the finished Contact
+      layout with <strong>synthetic</strong> channels on example domains; none is real and none is
+      monitored. The real page is <a href="/contact/">Contact</a>, which lists only channels the owner has
+      approved. A production build leaves this page out.
+    </p>
+    <p><a href="/">The real homepage</a> · <a href={SITE_MAP}>{SITE_MAP_LABEL}</a></p>
+  </aside>
+  <div class="dest">
+    <div class="gl-prose">
+      <h1>Contact (specimen)</h1>
+      <p class="dest__lede">Contact is for reaching Eduardo Gade Gusmao about research collaboration, professional opportunities, or technical and project discussions.</p>
+    </div>
+    <ContactChannels id="specimen" channels={SYNTHETIC} />
+  </div>
+</FolderPage>
