@@ -835,3 +835,23 @@ G-12 (the interactive nucleus) and G-13 (the eight clocks) are not closed by P15
 | G-P18-11 | P10 to P17, the folders, palettes, Bearnard assets, the CV and dependencies unchanged | **Passed** (UTIL-034 to UTIL-049) |
 | G-P18-12 | The owner supplies approved contact channels and any downloads | **Open** (owner material) |
 | G-P18-13 | The owner reviews Contact, the downloads specimen and the 404 page | **Pending** |
+
+## P19 — 3D nucleus prototype
+
+| ID | Requirement | Status |
+| --- | --- | --- |
+| G-P19-01 | A recognisable interphase nucleus: translucent envelope, spatially folded continuous chromatin polymers, no metaphase X chromosomes | **Passed** by test (NUC-001 to NUC-005, 008) and drawn in Chrome (screenshots). **Pending** the owner's judgement of how it looks |
+| G-P19-02 | A yellow region exists at rest, as part of one strand | **Passed** (NUC-005, NUC-019 counts its pixels in a real render) |
+| G-P19-03 | The region deforms modestly, continuously, toward the target, and returns; one state, one mesh, no recolouring | **Passed** (NUC-006, 007, 009 to 017; NUC-016B measures the direction in a browser). **Pending** the owner's judgement of the motion |
+| G-P19-04 | Rapid retargeting never snaps | **Passed** (NUC-014 in Node, NUC-030B in a browser) |
+| G-P19-05 | Mouse and keyboard focus work in the prototype | **Passed** (NUC-030, 030B, 031, 032) |
+| G-P19-06 | Touch devices and reduced motion get a still nucleus that never animates and never takes a gesture | **Passed** (NUC-018, 018B, 033, 033B) in emulation. **Untested** on a real phone |
+| G-P19-07 | A static fallback exists and WebGL failure is handled | **Passed** (NUC-020, 029, 029B). The fallback picture is provisional |
+| G-P19-08 | Draws on demand: nothing while still, frames while moving, a stop after settling, a pause when hidden | **Passed** (NUC-021 to 026; 0 idle frames measured in 2 s on an M1 Max) |
+| G-P19-09 | No leaked renderer, listener, timer or canvas; mounting again leaves one | **Passed** (NUC-027, 028, 028B) |
+| G-P19-10 | Responsive at 320, 390, 430, 768, 1024, 1280 and 1440 px, no overflow, no clipping | **Passed** (NUC-034, 035) in headless Chrome |
+| G-P19-11 | Performance measured | **Observed**: 60 fps steady (median and 95th percentile 16.7 ms) during a response at 896 × 672 px on an Apple M1 Max, headless Chrome 157, Metal; about 15 fps on software WebGL. Not a guarantee for other devices; **Untested** on a phone |
+| G-P19-12 | Reachable by clicking in the local site; a release build holds no page, specimen script or Three.js; Three.js loads on no other page | **Passed** (NUC-044, NUC-045; the homepage's development note and the site map link to it) |
+| G-P19-13 | The real homepage, clocks, folders, palettes, Bearnard, publishing, CV, contact, downloads, 404 and site map are unchanged | **Passed** (NUC-037 to NUC-043, NUC-046) |
+| G-P19-14 | Two dependencies only, pinned; bundle impact recorded | **Passed** (NUC-047): `three` and `@types/three` 0.187.0; the graphics chunk is 537 KB, 132 KB gzip, on the specimen page only |
+| G-P19-15 | The owner reviews the nucleus's biology, elegance, motion, suitability for the homepage and performance (P20 gate) | **Pending** |

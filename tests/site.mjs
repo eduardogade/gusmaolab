@@ -533,9 +533,11 @@ await test("SITE-041", "No dependency was added", async (check) => {
   if (before.status !== 0) return
   const now = JSON.parse(await read("package.json"))
   const then = JSON.parse(before.stdout)
-  check(json(now.dependencies) === json(then.dependencies), "dependencies changed")
+  // P19 (D-130) added Three.js and its types and nothing else; tests/nucleus.mjs (NUC-047) holds that
+  // and that the lockfile records both.
+  const withoutThree = (d) => json(Object.fromEntries(Object.entries(d).filter(([k]) => k !== "three" && k !== "@types/three")))
+  check(withoutThree(now.dependencies) === withoutThree(then.dependencies), "dependencies changed")
   check(json(now.devDependencies) === json(then.devDependencies), "devDependencies changed")
-  check(git("diff", "--stat", BASE, "--", "package-lock.json").stdout.trim() === "", "package-lock.json changed")
 })
 
 await test("SITE-042", "A production build runs no Quarto computation", async (check) => {

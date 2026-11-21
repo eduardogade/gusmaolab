@@ -1750,7 +1750,8 @@ await test("REC-024", "The record system needs nothing outside src/", async (che
   }
   const manifest = JSON.parse(await readFile(join(repo, "package.json"), "utf8"))
   check(
-    json(Object.keys(manifest.dependencies)) === json(["astro"]),
+    // P19 (D-130) added Three.js and its types for the nucleus prototype; nothing of the records uses them.
+    json(Object.keys(manifest.dependencies).sort()) === json(["@types/three", "astro", "three"]),
     "a dependency was added",
   )
   check(

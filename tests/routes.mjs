@@ -511,7 +511,10 @@ test("NAV-031", "Plain links; navigation needs no JavaScript", (check) => {
   }
   for (const [file, text] of sources) {
     const allowed =
-      file === "components/folders/FolderStack.astro" || file === "components/home/WorldClocks.astro"
+      file === "components/folders/FolderStack.astro" ||
+      file === "components/home/WorldClocks.astro" ||
+      // P19 (D-136): the development nucleus specimen's guarded entry script; it is never in a release.
+      file === "pages/[design]/nucleus/index.astro"
     check(
       allowed || !/<script\b/i.test(text),
       `src/${file} contains a <script> element`,
@@ -585,6 +588,8 @@ test("NAV-032", "Every approved route is a static page", (check) => {
         "[design]/editorial/index.astro",
         "[design]/folders.astro",
         "[design]/home/index.astro",
+        // P19: the development 3D nucleus prototype; static paths only in dev and demo mode.
+        "[design]/nucleus/index.astro",
         // P17: the development page-states specimen; static paths only in dev and demo mode.
         "[design]/page-states/index.astro",
         // P14: the development Publishing Workbench; static paths only in dev and demo mode.

@@ -502,3 +502,21 @@ Inclui 3 formações, 14 experiências documentadas (2 consultorias industriais)
 Validação: extração OOXML somente leitura com o Python empacotado; geração e `python3 /tmp/cv-yaml-audit/validate.py` com PyYAML 6.0.3 passaram após ajustes no extrator bibliográfico. Verificados parsing sem chaves duplicadas, indentação de dois espaços, ausência de tabs, datas ISO, cobertura dos inventários, campos bibliográficos contra a fonte, cadastro de todos os marcadores, variantes sem instituições e hashes das 14 entradas. A primeira tentativa de geração no Python empacotado falhou por ausência de PyYAML; a geração YAML usou o Python local, sem instalação de dependências. Verificação factual externa: não realizada. `npm run verify` e testes de navegador: não executados nesta alteração documental, sem mudança no site.
 
 O trabalho começou na branch `development` com alterações alheias, inclusive exclusões já staged; elas foram preservadas. Nenhum commit ou push foi realizado nesta entrega de proposta. A promoção da proposta a `CV.yaml` depende da revisão do autor e da resolução da instrução de preservar os arquivos de entrada.
+
+## 3D nucleus prototype (P19)
+
+A standalone, interactive Three.js model of an interphase nucleus and its folded chromatin, with one yellow region that opens and reaches modestly toward a navigation target (D-130 to D-136). **It is not on the homepage**; the P15 stage is still the reserved placeholder, and P20 integrates the nucleus only after the owner approves it.
+
+| Item | Where / what |
+| --- | --- |
+| Code | `src/visualization/nucleus/` (12 modules, about 1,700 lines); guide: `development/nucleus-guide.md` |
+| Figure markup and fallback | `src/components/scientific/NucleusFigure.astro` (a still SVG picture from the same model; the canvas replaces it when live) |
+| Specimen | `/_design/nucleus/`, "3D Nucleus Prototype", development and demonstration builds only; linked from the local homepage's development note and the Site Map & Page Coverage list; five simulated tabs, a play button, frame-width presets, a still-nucleus preview, hideable diagnostics |
+| Entry script | `src/scripts/nucleus-specimen.ts` (a guard) loads `src/design/nucleus/specimen.ts` only in development and demonstration builds |
+| Dependencies | `three` 0.187.0 and `@types/three` 0.187.0 (the only additions); the graphics chunk is 537 KB, 132 KB gzip, loaded on demand on the specimen page only |
+| Tests | `tests/nucleus.mjs` (42 checks, Node) and `tests/nucleus-browser.mjs` (19 checks, headless Chrome with software WebGL) |
+| Release build | no page, no script, no Three.js (`scripts/demo-check.mjs` searches for them) |
+
+Observed: at 896 × 672 px (pixel ratio 1) on an Apple M1 Max in headless Chrome 157 (Metal) the nucleus holds 60 fps while responding (median and 95th percentile 16.7 ms) and draws 0 frames while still; on software WebGL it runs at about 15 fps. 128,000 triangles at full detail and 78,000 at `light`, four draw calls, three materials. Untested: Safari, Firefox, Android Chrome, a real phone, a screen reader.
+
+The homepage, its stage and clocks, the folders, the five palettes, Bearnard, the editorial and CV code, and the contact, downloads, 404 and site-map pages are unchanged. Pending: the owner's review of the biology, look, motion, suitability and performance (G-P19-15).

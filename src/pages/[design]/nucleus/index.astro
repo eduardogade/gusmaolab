@@ -1,0 +1,236 @@
+---
+// The 3D nucleus prototype (P19, D-136): the real Three.js model on a development-only page, with
+// simulated navigation targets, so the owner can judge the structure (NUC-01), the continuous
+// deformation (NUC-02) and the targeting, keyboard, still-image and responsive behaviour (NUC-03)
+// by clicking. It mounts the nucleus through the interface the homepage will use (P20) and
+// changes nothing of the real homepage or navigation. Routed only in development and in a
+// demonstration build (src/editorial/demo.ts); a release build has no page here, no Three.js, and
+// its output is searched for both.
+import FolderPage from "../../../layouts/FolderPage.astro"
+import NucleusFigure from "../../../components/scientific/NucleusFigure.astro"
+import NucleusBanner from "../../../design/nucleus/NucleusBanner.astro"
+import { demosEnabled } from "../../../editorial/demo.ts"
+
+export function getStaticPaths() {
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
+}
+
+/** Simulated targets: where the real folder tabs will be, across the top of the frame. */
+const TARGETS = ["Home", "CV", "Lab", "Lecture Notes", "Writing"]
+---
+
+<FolderPage path="/" title="3D Nucleus Prototype · GusmaoLab">
+  <NucleusBanner />
+
+  <div class="nuc" data-nucleus-lab>
+    <section class="nuc__section" aria-labelledby="nuc-1">
+      <h2 id="nuc-1" class="nuc__title">NUC-01 · Structure and depth</h2>
+      <p class="nuc__note">
+        An interphase nucleus: a translucent envelope around chromatin folded into twelve territories.
+        Each territory is one continuous polymer that loops back on itself and stays in its own
+        region, and chromatin is more compact toward the envelope. One stretch of one polymer is
+        yellow from the start; it is part of the same strand, not a separate object.
+      </p>
+      <div class="nuc__stage" data-nucleus-width="full">
+        <div class="nuc__targets" role="group" aria-label="Simulated navigation targets (not the site’s navigation)">
+          {
+            TARGETS.map((label) => (
+              <button type="button" class="nuc__target" data-nucleus-target={label} aria-pressed="false">
+                {label}
+              </button>
+            ))
+          }
+        </div>
+        <NucleusFigure />
+      </div>
+      <p class="nuc__status" data-nucleus-readout aria-live="off">
+        <span data-readout="state">Loading the model</span> · target: <span data-readout="target">none</span> ·
+        phase: <span data-readout="phase">resting</span> (<span data-readout="activation">0</span>%)
+      </p>
+    </section>
+
+    <section class="nuc__section" aria-labelledby="nuc-2">
+      <h2 id="nuc-2" class="nuc__title">NUC-02 · Continuous deformation</h2>
+      <p class="nuc__note">
+        Move the pointer over a simulated tab above the nucleus, or Tab to it. The yellow region
+        opens its loops and reaches a little toward that tab, then settles; leaving lets it return.
+        It is one continuous motion of the same geometry: change tabs mid-way and it moves on from
+        where it is.
+      </p>
+      <p>
+        <button type="button" class="nuc__button" data-nucleus-play>Play the response (Lab, then release)</button>
+      </p>
+    </section>
+
+    <section class="nuc__section" aria-labelledby="nuc-3">
+      <h2 id="nuc-3" class="nuc__title">NUC-03 · Targeting and responsive behaviour</h2>
+      <p class="nuc__note">
+        The response heads for whichever target is active, from the same anchored region. Touch
+        devices and visitors who ask for reduced motion get a still nucleus instead: nothing
+        animates and nothing waits for a hover. Try the controls below.
+      </p>
+      <div class="nuc__controls">
+        <fieldset class="nuc__fieldset">
+          <legend>Frame width</legend>
+          <button type="button" class="nuc__button" data-nucleus-set-width="320">320</button>
+          <button type="button" class="nuc__button" data-nucleus-set-width="390">390</button>
+          <button type="button" class="nuc__button" data-nucleus-set-width="430">430</button>
+          <button type="button" class="nuc__button" data-nucleus-set-width="768">768</button>
+          <button type="button" class="nuc__button" data-nucleus-set-width="full">Full</button>
+        </fieldset>
+        <label class="nuc__check">
+          <input type="checkbox" data-nucleus-static />
+          Preview the still nucleus (what touch and reduced-motion get)
+        </label>
+        <label class="nuc__check">
+          <input type="checkbox" data-nucleus-diagnostics-toggle />
+          Show diagnostics
+        </label>
+      </div>
+      <p class="nuc__note" data-nucleus-device>This device: not yet read.</p>
+      <dl class="nuc__diag" data-nucleus-diagnostics hidden>
+        <div><dt>status</dt><dd data-diag="status"></dd></div>
+        <div><dt>mode</dt><dd data-diag="mode"></dd></div>
+        <div><dt>reason</dt><dd data-diag="reason"></dd></div>
+        <div><dt>frames drawn</dt><dd data-diag="framesDrawn"></dd></div>
+        <div><dt>loop running</dt><dd data-diag="loopRunning"></dd></div>
+        <div><dt>last draw (ms)</dt><dd data-diag="lastFrameMs"></dd></div>
+        <div><dt>canvas (px)</dt><dd data-diag="canvas"></dd></div>
+        <div><dt>pixel ratio</dt><dd data-diag="pixelRatio"></dd></div>
+        <div><dt>triangles</dt><dd data-diag="triangles"></dd></div>
+        <div><dt>geometries / materials</dt><dd data-diag="resources"></dd></div>
+        <div><dt>draw calls</dt><dd data-diag="drawCalls"></dd></div>
+      </dl>
+    </section>
+
+    <section class="nuc__section" aria-labelledby="nuc-4">
+      <h2 id="nuc-4" class="nuc__title">What it is, and is not</h2>
+      <p class="nuc__note">
+        A scientifically informed artistic model: confined polymer paths, chromosome-territory
+        organisation and peripheral compaction are recognisable features of interphase nuclei. The
+        envelope is stylised and the territories are not the 46 human chromosomes. Nothing here is
+        measured, simulated with physics or calibrated, and no real cell or experiment is shown.
+      </p>
+    </section>
+  </div>
+</FolderPage>
+
+<style>
+  .nuc {
+    display: grid;
+    /* One column that never grows past the paper: the diagnostics grid must not widen the page. */
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-l);
+  }
+
+  .nuc__title {
+    margin-block-end: var(--space-2xs);
+  }
+
+  .nuc__note {
+    max-inline-size: 64ch;
+    color: var(--color-text-secondary);
+  }
+
+  .nuc__stage {
+    inline-size: 100%;
+    max-inline-size: 56rem;
+    margin-block-start: var(--space-s);
+  }
+
+  .nuc__targets {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-2xs);
+    margin-block-end: var(--space-xs);
+  }
+
+  .nuc__target,
+  .nuc__button {
+    padding: var(--space-2xs) var(--space-s);
+    border: var(--border-width-thin) solid var(--color-text-muted);
+    border-radius: var(--radius-control);
+    background-color: transparent;
+    color: inherit;
+    font-family: var(--font-label);
+    font-size: var(--font-size-sm);
+    cursor: pointer;
+  }
+
+  .nuc__target[aria-pressed="true"] {
+    border-color: var(--color-text-primary);
+    font-weight: var(--font-weight-semibold);
+  }
+
+  .nuc__status {
+    margin-block-start: var(--space-2xs);
+    color: var(--color-text-muted);
+    font-family: var(--font-label);
+    font-size: var(--font-size-sm);
+  }
+
+  .nuc__controls {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-s) var(--space-l);
+    margin-block: var(--space-s);
+  }
+
+  .nuc__fieldset {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2xs);
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-family: var(--font-label);
+    font-size: var(--font-size-sm);
+  }
+
+  .nuc__fieldset legend {
+    float: left;
+    margin-inline-end: var(--space-2xs);
+    padding: 0;
+  }
+
+  .nuc__check {
+    display: inline-flex;
+    gap: var(--space-2xs);
+    align-items: center;
+    font-family: var(--font-label);
+    font-size: var(--font-size-sm);
+  }
+
+  .nuc__diag {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(min(11rem, 100%), 1fr));
+    gap: var(--space-2xs) var(--space-s);
+    max-inline-size: 56rem;
+    margin: 0;
+    padding: var(--space-xs);
+    border: var(--border-width-hairline) dashed var(--color-folder-border);
+    border-radius: var(--radius-card);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+  }
+
+  .nuc__diag[hidden] {
+    display: none;
+  }
+
+  .nuc__diag dt {
+    color: var(--color-text-muted);
+  }
+
+  .nuc__diag dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+</style>
+
+<script>
+  import "../../../scripts/nucleus-specimen.ts"
+</script>

@@ -1108,8 +1108,10 @@ await test(
 
 await test("QTO-029", "No framework and no new runtime", async (check) => {
   const pkg = JSON.parse(await read("package.json"))
+  // P19 (D-130) added Three.js and its types for the nucleus prototype, and nothing else
+  // (tests/nucleus.mjs, NUC-047); no framework and no science runtime came with them.
   check(
-    json(Object.keys(pkg.dependencies)) === json(["astro"]),
+    json(Object.keys(pkg.dependencies).sort()) === json(["@types/three", "astro", "three"]),
     `dependencies ${json(pkg.dependencies)}`,
   )
   check(pkg.devDependencies.ultrahtml === "1.7.0", "ultrahtml is not pinned")

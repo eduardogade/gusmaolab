@@ -616,13 +616,15 @@ await test("UTIL-047", "No unexpected script, dependency or external form depend
     const before = git("show", `${BASE}:package.json`).stdout
     const now = JSON.parse(await read("package.json"))
     const then = JSON.parse(before)
-    check(json(now.dependencies) === json(then.dependencies) && json(now.devDependencies) === json(then.devDependencies), "a dependency changed")
-    check(git("diff", "--stat", BASE, "--", "package-lock.json").stdout.trim() === "", "package-lock.json changed")
+    // P19 (D-130) added Three.js and its types, and nothing else; tests/nucleus.mjs (NUC-047) holds that.
+    const withoutThree = (d) => json(Object.fromEntries(Object.entries(d).filter(([k]) => k !== "three" && k !== "@types/three")))
+    check(withoutThree(now.dependencies) === withoutThree(then.dependencies) && json(now.devDependencies) === json(then.devDependencies), "a dependency changed")
   }
   const clientSources = (await Promise.all(["src/scripts/world-clocks.ts", "src/scripts/folder-previews.ts", "src/scripts/folder-rows.ts"].map(read))).join("\n")
   check(!/downloads|contact/i.test(clientSources), "a client script handles downloads or contact")
   const scriptsAdded = (await readdir(join(repo, "src/scripts"))).sort()
-  check(json(scriptsAdded) === json(["folder-previews.ts", "folder-rows.ts", "world-clocks.ts"]), `src/scripts holds ${json(scriptsAdded)}`)
+  // P19 added the development specimen's own script (D-136): no page of the release loads it.
+  check(json(scriptsAdded) === json(["folder-previews.ts", "folder-rows.ts", "nucleus-specimen.ts", "world-clocks.ts"]), `src/scripts holds ${json(scriptsAdded)}`)
 })
 
 await test("UTIL-048", "The build succeeds without any approved downloadable CV", async (check) => {

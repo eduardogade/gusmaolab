@@ -8,7 +8,7 @@ Status: provisional. The six-wave structure is approved. Individual tasks are no
 | II — Physical Folders & Visual Identity | P05–P09 | P05 to P09 completed 2026-11-11; P09's three owner reviews are pending |
 | III — Publishing & Content | P10–P14 | P10 to P14 completed 2026-11-15; owner reviews of P13's demonstrations and P14's workflow are pending |
 | IV — Website Composition | P15–P18 | P15 to P17 completed 2026-11-16 and P18 on 2026-11-17; owner reviews are pending |
-| V — Advanced Features | P19–P21 | Not started |
+| V — Advanced Features | P19–P21 | P19 technically complete 2026-11-21 (the standalone 3D nucleus prototype; the owner's visual review is the gate for P20); P20 and P21 not started |
 | VI — QA & Release | P22–P24 | Not started |
 
 ## Known prompt titles
@@ -34,7 +34,9 @@ Status: provisional. The six-wave structure is approved. Individual tasks are no
 - **P16** — Eight World Clocks: timezone accuracy, live updates and homepage integration (completed 2026-11-16: eight live, IANA-correct clocks in the homepage's region, one update loop, a development specimen of simulated instants; the owner's clock review is pending). P17 is next; its purpose is whatever this roadmap says when it is prepared.
 - **P17** — Complete Site Navigation & Content States (completed 2026-11-16: all 36 folders have a page with a derived state, a development site map, an internal-link checker; the owner's site-wide review is pending)
 - **P18** — Contact, Downloads & Error Pages (completed 2026-11-17: a Contact page that lists only owner-approved channels (none yet), a validated download registry with no approved file yet, a custom static 404 page; the owner's review and approved channels are pending)
-- P19–P24 titles are not yet supplied except as named above
+- **P19** — Scientific 3D Nucleus & Chromatin: Standalone Prototype (technically completed 2026-11-21: a real Three.js model of an interphase nucleus with folded chromatin and one yellow region that opens and reaches modestly toward a simulated target, a development specimen at `/_design/nucleus/`, the interface P20 will use; not on the homepage; awaiting the owner's visual approval)
+- **P20** — Nucleus Integration (named by P19: mount the approved nucleus on Home, connect it to real navigation hover and focus; not started and not begun before the owner approves P19)
+- P21–P24 titles are not yet supplied except as named above
 
 Since P04, ordinary prompts run on the persistent `development` branch (D-035).
 
@@ -42,7 +44,7 @@ Since P04, ordinary prompts run on the persistent `development` branch (D-035).
 
 | ID | Topic | Status |
 | --- | --- | --- |
-| E-01 | 3D nucleus/chromatin visualization | Not started |
+| E-01 | 3D nucleus/chromatin visualization | Prototype built in P19 (feasible: 60 fps measured on one GPU); awaiting the owner's review |
 | E-02 | Scheduling provider capability | Not started |
 
 When the experiments run relative to the waves is not yet decided.

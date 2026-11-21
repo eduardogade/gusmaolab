@@ -235,9 +235,11 @@ await test("HOME-011", "The stage has an accessible, honest placeholder", async 
 
 await test("HOME-012", "P15 loads no 3D runtime and no new script", async (check) => {
   const pkg = JSON.parse(await read("package.json"))
-  const deps = Object.keys({ ...pkg.dependencies, ...pkg.devDependencies })
+  // P19 (D-130) added Three.js for the standalone nucleus prototype. The homepage still loads none of
+  // it (the page checks below, and NUC-037, NUC-044 and NUC-045); P20 will connect them on purpose.
+  const deps = Object.keys({ ...pkg.dependencies, ...pkg.devDependencies }).filter((d) => d !== "three" && d !== "@types/three")
   check(!deps.some((d) => /three|babylon|webgl|regl|ogl|d3|cesium|pixi|playcanvas|aframe/i.test(d)), `a 3D or drawing dependency: ${json(deps)}`)
-  check(json(Object.keys(pkg.dependencies)) === json(["astro"]), "the runtime dependencies changed")
+  check(json(Object.keys(pkg.dependencies).sort()) === json(["@types/three", "astro", "three"]), "the runtime dependencies changed")
   check(!home.includes("<canvas") && !/webgl/i.test(home), "the page mentions a canvas or WebGL")
   const scripts = all.filter((el) => el.tag === "script")
   // The folder scripts (P07, P08) and, from P16, the one world-clocks script; nothing else.

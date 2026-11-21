@@ -1,0 +1,32 @@
+---
+/**
+ * The note at the head of the 3D nucleus specimen (P19, D-136): what this is, that it is not on
+ * the homepage, and what it is not. A note, not a heading: the page's headings are its own.
+ */
+---
+
+<aside class="home-specimen" role="note" data-nucleus-specimen>
+  <p>
+    <strong>3D Nucleus Prototype: development only, not part of the homepage.</strong> This page
+    shows the real Three.js model, mounted through the interface the homepage will use in P20. It
+    is an illustration of interphase chromatin organisation, not a reconstruction of a cell, a
+    measured genome or a simulation. A production build leaves this page and the 3D code out.
+  </p>
+  <p><a href="/_design/site-map/">Site Map &amp; Page Coverage</a> · <a href="/">The real homepage</a></p>
+</aside>
+
+<style>
+  .home-specimen {
+    margin-block-end: var(--space-l);
+    padding: var(--space-xs) var(--space-s);
+    border: var(--border-width-hairline) dashed var(--color-folder-border);
+    border-radius: var(--radius-card);
+    background-color: var(--color-surface-callout);
+    font-family: var(--font-label);
+    font-size: var(--font-size-sm);
+  }
+
+  .home-specimen p + p {
+    margin-block-start: var(--space-2xs);
+  }
+</style>

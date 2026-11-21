@@ -686,14 +686,35 @@ await test("P13A-023", "P10 publication filtering is intact", async (check) => {
     (f) =>
       /\.(ts|astro)$/.test(f) && /import\.meta\.env\.MODE/.test(readFileSyncSafe(f)),
   )
+  // P19 (D-136): the nucleus specimen's client entry repeats the same condition, because a bundler
+  // folds a comparison of constants but not a function call, and a release must not bundle the
+  // specimen or the graphics engine. It is the only other reader.
   check(
-    readers.map((f) => relative(repo, f)).join() === "src/editorial/demo.ts",
+    readers.map((f) => relative(repo, f)).join() ===
+      "src/editorial/demo.ts,src/scripts/nucleus-specimen.ts",
     `another file reads the mode: ${json(readers.map((f) => relative(repo, f)))}`,
+  )
+  const guard = await read("src/scripts/nucleus-specimen.ts")
+  check(
+    /import\.meta\.env\.MODE === "development" \|\| import\.meta\.env\.MODE === "demo"/.test(guard),
+    "the nucleus specimen's guard is not exactly development or demo mode",
   )
 })
 
 await test("P13A-024", "The P11 canonical records are intact", async (check) => {
-  const diff = git("diff", P13, "--", "src/data", "src/records", "src/cv").stdout
+  // P17 and P18 added two registries beside the records (the contact channels and the downloads,
+  // D-126, D-127); they are not records, and everything else is as P13 left it. (Before they were
+  // committed this diff ignored them, as untracked files; a committed tree shows them.)
+  const diff = git(
+    "diff",
+    P13,
+    "--",
+    "src/data",
+    "src/records",
+    "src/cv",
+    ":(exclude)src/data/contact.ts",
+    ":(exclude)src/data/downloads.ts",
+  ).stdout
   check(diff.trim() === "", "records, the record model or the CV adapter changed")
   check(
     !/demo/i.test(await read("src/records/index.ts")),

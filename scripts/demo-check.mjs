@@ -49,6 +49,13 @@ export const MARKERS = [
   "demo-downloads",
   "synthetic-sample",
   "Synthetic sample",
+  // The 3D nucleus prototype (P19, D-136) and the graphics engine it alone loads: a release build
+  // contains neither (P20 integrates the approved nucleus and revises this list on purpose).
+  "data-nucleus-specimen",
+  "data-nucleus-lab",
+  "data-nucleus-figure",
+  "3D Nucleus Prototype",
+  "WebGLRenderer",
 ]
 
 /** The demonstrations the repository has: their file, slug and title, from their own front matter. */
@@ -97,6 +104,7 @@ export async function publicBuildIssues(dist, root = ROOT) {
     if (rel.startsWith("_design/downloads")) issues.push(`${rel}: the downloads specimen`)
     if (rel.startsWith("_design/contact")) issues.push(`${rel}: the contact specimen`)
     if (rel.startsWith("demo-downloads")) issues.push(`${rel}: a demonstration download`)
+    if (rel.startsWith("_design/nucleus")) issues.push(`${rel}: the 3D nucleus prototype`)
     if (rel.startsWith("_design/page-states")) issues.push(`${rel}: the page-states specimen`)
     if (!TEXT.test(file)) continue
     const text = await readFile(file, "utf8")

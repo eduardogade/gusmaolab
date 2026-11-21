@@ -62,3 +62,7 @@ The workflow transcript is `src/design/publishing/workflow-transcript.txt`. `tes
 ## Contact, downloads and the 404 page (P18)
 
 The same convention again: from `npm run dev`, Home, then the development note at the foot of the page links to `/_design/downloads/` (two synthetic files that really download, and a planned one with no link), `/_design/contact/` (the finished Contact layout with synthetic channels on example domains) and to a missing URL that shows the real 404 page. The real Contact page is Home → Contact. The synthetic files are in `src/demos/downloads/` and are served from `/demo-downloads/` only in development and demonstration builds. See `development/downloads-guide.md`.
+
+## The 3D nucleus prototype (P19)
+
+From `npm run dev`: Home, then the development note at the foot of the page, then "3D Nucleus Prototype" (or Site Map & Page Coverage, then the same name), at `/_design/nucleus/`. Move the pointer over a simulated tab above the nucleus, or Tab to it, to see the yellow region open and reach toward it; leave and it returns. "Play the response" does it for Lab and then releases. The frame-width buttons resize the frame, "Preview the still nucleus" shows what touch and reduced motion get, and "Show diagnostics" reveals frame counts and renderer statistics. Nothing here is published, and a release build has no trace of it.

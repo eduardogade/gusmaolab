@@ -9,6 +9,9 @@
  * here and its output is searched for it (scripts/demo-check.mjs).
  */
 export const SITE_MAP = "/_design/site-map/"
+/** The 3D nucleus prototype (P19, D-136): development only. */
+export const NUCLEUS_PAGE = "/_design/nucleus/"
+export const NUCLEUS_LABEL = "3D Nucleus Prototype"
 
 /** The development downloads and contact specimens (P18) and a URL that is not in the archive, for the 404 page. */
 export const DOWNLOADS_PAGE = "/_design/downloads/"
@@ -26,6 +29,7 @@ export interface DevPage {
 
 export const DEV_PAGES: readonly DevPage[] = [
   { href: SITE_MAP, label: SITE_MAP_LABEL, note: "This page." },
+  { href: NUCLEUS_PAGE, label: NUCLEUS_LABEL, note: "The interactive 3D interphase nucleus and its chromatin response, on its own page." },
   { href: DOWNLOADS_PAGE, label: "Downloads specimen", note: "The download list, with synthetic files that really download." },
   { href: CONTACT_PAGE, label: "Contact specimen", note: "The Contact layout with synthetic channels." },
   { href: "/_design/page-states/", label: "Page states specimen", note: "The content-state components, and records pages from a synthetic fixture." },

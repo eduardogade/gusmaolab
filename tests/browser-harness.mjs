@@ -21,7 +21,7 @@ export const json = (value) => JSON.stringify(value)
 /**
  * Starts the server and the browser, and returns the helpers the tests use. `ids` are the
  * test IDs reported NOT RUN when no browser can start. `root` is the built folder to serve
- * (dist/ by default; the demonstration build is dist-demo/, P13-A01). `external` is the origin of a
+ * (dist/ by default; the demonstration build is dist-demo/, P13-A01). `chromeArgs` are extra Chrome flags (P19: software WebGL). `external` is the origin of a
  * server the caller runs itself (the dev server): nothing is served, and `root` is not read.
  */
 export async function startBrowser({
@@ -29,6 +29,7 @@ export async function startBrowser({
   timeout = 180_000,
   root = "dist",
   external,
+  chromeArgs = [],
 }) {
   function notRun(reason) {
     for (const id of ids) console.log(`NOT RUN ${id}`)
@@ -104,6 +105,7 @@ export async function startBrowser({
       "--no-default-browser-check",
       "--disable-extensions",
       "--hide-scrollbars",
+      ...chromeArgs,
       "about:blank",
     ],
     { stdio: "ignore" },

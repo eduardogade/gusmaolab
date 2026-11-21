@@ -388,3 +388,7 @@ All 36 registered folders (11 sections and 25 children; no third-level folder) h
 **Downloads** have no route and no tab (D-127). A download is shown where it belongs: CV documents on the CV Overview, others on a page whose `src/site/destinations.ts` entry has `downloads: "<category>"`. A new `/downloads/` route would be a deliberate IA decision, not a side effect. Files are served from `/downloads/<name>` (`public/downloads/`); the registry, validation and workflow are `development/downloads-guide.md`. Today none is approved, and the CV page lists the planned CV document as not yet available.
 
 **A missing address** is not a destination. `404.html` (from `src/pages/404.astro`) is the page a static host serves, with a 404 status, for an address that matches no page (D-128). It is not in the registry, is never a tab and selects no folder. It is distinct from an empty collection or a page in preparation (section 18), which are real pages. `/external/` stays an unknown address and gets this page. Redirects are for known former URLs only, never to Home generally.
+
+## 20. The 3D nucleus prototype (P19)
+
+`/_design/nucleus/`, "3D Nucleus Prototype", is a development page (D-105, D-136): it adds no tab, no registry node and no route to a release, and is reached from the local homepage's development note and the Site Map & Page Coverage list. P20 places the approved nucleus in the homepage stage (the `visual` slot of `NucleusStage`, D-115); the other pages never load it.
