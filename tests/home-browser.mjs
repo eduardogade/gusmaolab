@@ -170,7 +170,9 @@ await test("HOME-026", "The homepage has no motion, with or without a reduced-mo
         const animated = nodes.filter((e) => getComputedStyle(e).animationName !== "none").length;
         const transitions = nodes.filter((e) => parseFloat(getComputedStyle(e).transitionDuration) > 0).length;
         const smooth = getComputedStyle(document.documentElement).scrollBehavior;
-        const running = document.getAnimations().filter((a) => !a.effect?.pseudoElement?.startsWith("::view-transition")).length;
+        // The one exception (P20, D-144): a scroll-driven z-index raise on the stuck tab row. Nothing moves or
+        // changes colour; it only decides whether the row is above the paper. Any other animation still fails.
+        const running = document.getAnimations().filter((a) => !a.effect?.pseudoElement?.startsWith("::view-transition") && a.animationName !== "gl-home-tabs-raise").length;
         return { animated, transitions, smooth, running };
       })()`)
       check(motion.animated === 0 && motion.transitions === 0 && motion.smooth === "auto" && motion.running === 0, `${path} reduce=${reduce}: ${json(motion)}`)

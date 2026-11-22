@@ -814,6 +814,32 @@ await test("NUCINT-054", "CV preservation: no CV file changed, staged or modifie
   check(!lines(git("diff", "--cached", "--name-only")).some((f) => /^(cv\/|_references|_books|_papers|_reports|brand\/)/.test(f)), "a private or CV file is staged")
 })
 
+await test("NUCINT-055", "The tab row stays on screen on Home only, on pointer devices, without touching the folders (D-144)", async (check) => {
+  const css = await read("src/styles/home-tabs.css")
+  const code = css.replace(/\/\*[\s\S]*?\*\//g, "")
+  check(/@media \(hover: hover\) and \(pointer: fine\)/.test(code) && /@supports \(container-type: scroll-state\)/.test(code), "the rule is not limited to hovering, fine pointers and browsers that can do it")
+  check(/\.page\[data-page-path="\/"\] \.gl-folder\[data-level="1"\] > \.gl-folder__strip\s*\{[^}]*position:\s*sticky/.test(code), "the global row on Home is not made sticky")
+  check(!/(^|\n)\s*\.gl-folder/.test(code.replace(/\.page\[data-page-path="\/"\][^{]*\{/g, "")), "a rule reaches the folders of other pages")
+  check(/animation-timeline:\s*scroll\(root\)/.test(code) && /animation-name:\s*var\(--_raise\)/.test(code) && !/(^|[\s;{])animation:/.test(code), "the raise is not written as longhands with a variable (a minifier would fold it into a shorthand Chromium drops)")
+  check(/stuck: top/.test(code) && /background-color:\s*var\(--color-shell\)/.test(code) && !/#[0-9a-f]{3,8}\b/i.test(code), "the stuck band is not the shell token")
+  check(changed(["src/styles/folders.css", "src/components/folders", "src/scripts/folder-rows.ts", "src/scripts/folder-previews.ts"], P19_START).length === 0, "the folders changed")
+  const stage = await read("src/components/home/NucleusStage.astro")
+  check(/import "\.\.\/\.\.\/styles\/home-tabs\.css"/.test(stage), "the stage does not import the stylesheet")
+  const users = []
+  for (const dir of ["src/pages", "src/layouts", "src/components"]) {
+    const walk = async (d) => (await Promise.all((await readdir(d, { withFileTypes: true })).map((e) => (e.isDirectory() ? walk(join(d, e.name)) : [join(d, e.name)])))).flat()
+    for (const f of await walk(join(repo, dir))) if (/home-tabs\.css/.test(await readFile(f, "utf8"))) users.push(f.replace(repo, ""))
+  }
+  check(json(users) === json(["src/components/home/NucleusStage.astro"]), `imported by ${json(users)}`)
+  const pages = (await readdir(dist, { recursive: true })).filter((f) => f.endsWith(".html"))
+  const withRule = []
+  for (const f of pages) if (/scroll-state/.test(await readFile(join(dist, f), "utf8"))) withRule.push(f)
+  const sheets = (await readdir(join(dist, "_astro"))).filter((f) => f.endsWith(".css"))
+  for (const f of sheets) if (/scroll-state/.test(await readFile(join(dist, "_astro", f), "utf8"))) withRule.push(`_astro/${f}`)
+  check(json(withRule) === json(["index.html"]), `the sticky rule is in ${json(withRule)}`)
+  check(/@keyframes gl-home-tabs-raise/.test(homeHtml) && /animation-name:var\(--_raise\)/.test(homeHtml), "the built rule lost its animation")
+})
+
 let failed = 0
 for (const { id, title, failures, skipped } of results) {
   if (skipped) console.log(`SKIP ${id} ${title} (${skipped})`)

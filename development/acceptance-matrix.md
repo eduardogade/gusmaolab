@@ -881,5 +881,5 @@ G-12 (the interactive nucleus) and G-13 (the eight clocks) are not closed by P15
 | G-P20-19 | The standalone prototype remains, with a mapping inspector | **Passed** (NUC-049 and the specimen's NUC-04) |
 | G-P20-20 | Performance measured and compared with the P19 homepage | **Observed**: see `development/current-state.md` |
 | G-P20-21 | Documentation, decisions and the multi-domain brief | **Passed** (D-137 to D-143, `planning/nucleus-multidomain.md`) |
-| G-P20-22 | The nucleus and the tabs are visible together at an ordinary window height | **Not met, by the composition** (D-143): the stage is about 1,300 px below the tabs at 1440 px. Reported; not changed without the owner |
-| G-P20-23 | The owner reviews the homepage with the nucleus, and decides G-P20-22 | **Pending** |
+| G-P20-22 | The nucleus and the tabs are visible together at an ordinary window height | **Passed** in Chromium (NUCINT-055, -055B, D-144): the owner chose to keep the tab row on screen; at 1440 × 900 the region moved toward CV with the preview open. Not shown: browsers without scroll-state container queries, which keep the old behaviour. Costs: a 1 px line across the selected tab's foot, and one z-index animation (an exception to "no animation") |
+| G-P20-23 | The owner reviews the homepage with the nucleus and the sticky tab row, and confirms the two costs of D-144 | **Pending** |

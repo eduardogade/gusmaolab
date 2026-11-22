@@ -17,7 +17,7 @@ import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { json, sleep, startBrowser } from "./browser-harness.mjs"
 
-const IDS = ["NUCINT-001B", "NUCINT-004B", "NUCINT-005B", "NUCINT-006B", "NUCINT-011B", "NUCINT-015B", "NUCINT-016B", "NUCINT-013B", "NUCINT-017B", "NUCINT-018B", "NUCINT-028B", "NUCINT-029B", "NUCINT-032B", "NUCINT-035B", "NUCINT-036B", "NUCINT-038B", "NUCINT-039B", "NUCINT-040B", "NUCINT-041B", "NUCINT-043B", "NUCINT-048B", "NUCINT-050B", "NUCINT-033B"]
+const IDS = ["NUCINT-001B", "NUCINT-004B", "NUCINT-005B", "NUCINT-006B", "NUCINT-011B", "NUCINT-015B", "NUCINT-016B", "NUCINT-013B", "NUCINT-017B", "NUCINT-018B", "NUCINT-028B", "NUCINT-029B", "NUCINT-032B", "NUCINT-035B", "NUCINT-036B", "NUCINT-038B", "NUCINT-039B", "NUCINT-040B", "NUCINT-041B", "NUCINT-043B", "NUCINT-055B", "NUCINT-048B", "NUCINT-050B", "NUCINT-033B"]
 const dist = fileURLToPath(new URL("../dist/", import.meta.url))
 if (!existsSync(join(dist, "index.html"))) {
   for (const id of IDS) console.log(`NOT RUN ${id}`)
@@ -539,6 +539,38 @@ await test("NUCINT-048B", "Navigation continuity: leaving Home while the nucleus
   console.log(`  INFO captured ${seen.filter(Boolean).length} frames during the click; black share of the stage before leaving: ${(before * 100).toFixed(2)} %. The old page's canvas snapshot itself is not readable from a test: owner visual check.`)
 })
 
+await test("NUCINT-055B", "Sticky tabs: at a 900 px window the tabs stay on screen, the nucleus answers while both are visible, previews open, and a click navigates", async (check) => {
+  await open(1440, 900, "/", { waitForModel: false })
+  const rest = await js(`(() => { const s = getComputedStyle(document.querySelector("nav[aria-label=Sections]")); return { pos: s.position, z: s.zIndex, top: Math.round(document.querySelector("nav[aria-label=Sections]").getBoundingClientRect().top) } })()`)
+  check(rest.pos === "sticky" && rest.z === "1" && rest.top === 49, `at rest: ${json(rest)} (the row is where it always was, below the folder body)`)
+  await js(`window.scrollTo(0, document.querySelector("[data-nucleus-stage]").getBoundingClientRect().top + scrollY - 340)`)
+  check(await waitFor(`document.querySelector("[data-nucleus-stage]").dataset.stageState === "ready"`, 25_000), `the state is ${await stageState()}`)
+  await sleep(800)
+  const m = await js(`(() => { const n = document.querySelector("nav[aria-label=Sections]"); const r = n.getBoundingClientRect(); const f = document.querySelector("[data-stage-frame]").getBoundingClientRect(); const hit = [...n.querySelectorAll(".gl-folder-tab__label")].map((a) => { const b = a.getBoundingClientRect(); const e = document.elementFromPoint(b.x + b.width / 2, b.y + b.height / 2); return e === a || a.contains(e) }); return { z: getComputedStyle(n).zIndex, top: Math.round(r.top), bottom: Math.round(r.bottom), frameTop: Math.round(f.top), frameBottom: Math.round(f.bottom), vh: innerHeight, hits: hit.filter(Boolean).length } })()`)
+  check(m.z === "10" && m.top <= 0 && m.bottom > 30, `the row is not stuck above the page: ${json(m)}`)
+  check(m.frameTop >= 0 && m.frameBottom <= m.vh, `the stage is not wholly on screen with the tabs: ${json(m)}`)
+  check(m.hits === 11, `only ${m.hits} of 11 tabs are what is under their own centre while stuck`)
+  const band = await js(`getComputedStyle(document.querySelector("nav[aria-label=Sections] .gl-folder__tabs")).backgroundColor`)
+  check(band !== "rgba(0, 0, 0, 0)", `no band behind the stuck row: ${band}`)
+  await moveTo(2, 2, 3)
+  await sleep(300)
+  await quiet()
+  const at = await pixels()
+  await hover("cv")
+  check(await waitFor(`document.querySelector("[data-nucleus-stage]").dataset.stageTarget === "cv"`, 3000), `target ${await target()}`)
+  check(await waitFor(`document.querySelector('.gl-folder-preview[data-preview-of="cv"]')?.matches(":popover-open")`, 3000), "the preview did not open over the stuck row")
+  await sleep(2800)
+  await quiet()
+  const moved = dist2(await pixels(), at)
+  check(moved > 10, `the nucleus moved ${moved.toFixed(1)} px: the response is not seen with the tabs on screen`)
+  console.log(`  INFO at 1440 x 900 the tabs and the nucleus are on screen together; the region moved ${moved.toFixed(0)} px toward CV`)
+  const p = await pointOf("lab")
+  await click(p.x, p.y)
+  check(await waitForPath("/lab/"), "a click on a stuck tab did not navigate")
+  await open(1440, 900, "/", { waitForModel: false })
+  await js(`window.scrollTo(0, 0)`)
+})
+
 // Touch emulation changes layout for the rest of the session, so this runs last.
 await test("NUCINT-033B", "Touch: a still nucleus, no response to tapping or to touch pointers, and a swipe over it scrolls the page", async (check) => {
   await send("Emulation.setTouchEmulationEnabled", { enabled: true, maxTouchPoints: 5 })
@@ -562,6 +594,7 @@ await test("NUCINT-033B", "Touch: a still nucleus, no response to tapping or to 
   check(await js(`getComputedStyle(document.querySelector("[data-nucleus-frame] canvas")).touchAction`) === "auto", "the canvas takes over touch")
   const overflow = await js(`document.documentElement.scrollWidth - document.documentElement.clientWidth`)
   check(overflow <= 0, `the page overflows by ${overflow}`)
+  check(await js(`getComputedStyle(document.querySelector("nav[aria-label=Sections]")).position`) !== "sticky", "the tab row sticks on a touch device")
   const where = await js(`(() => { const r = document.querySelector("[data-nucleus-frame]").getBoundingClientRect(); return { x: r.x + r.width / 2, y: Math.min(innerHeight - 40, r.y + r.height / 2) } })()`)
   const top = await js(`document.documentElement.scrollTop`)
   await send("Input.synthesizeScrollGesture", { x: Math.round(where.x), y: Math.round(where.y), yDistance: -250, gestureSourceType: "touch" })

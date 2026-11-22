@@ -1,0 +1,54 @@
+/*
+ * Home's tab row stays on screen (P20, D-144). The nucleus is far below the tabs on Home (D-143), so
+ * pointing at a tab and seeing the nucleus answer were never possible together. On a device with a
+ * hovering, fine pointer, the global row of folder tabs sticks to the top of the window on Home only:
+ * it is the same row, the same links and the same previews, not a menu, sidebar or second row (D-064).
+ * Nothing else about the folders is touched (src/styles/folders.css is unchanged).
+ *
+ * - At rest the row is where it always was. A sticky row is a stacking context of its own, so at rest it
+ *   sits at the inactive tabs' level, below the folder body, and the tabs tuck behind it as before; the
+ *   one visible consequence is a 1 px line of the body's top edge across the selected tab's foot (one
+ *   pixel row, at most a fifth of the range of a channel). Once the page has scrolled a few pixels the
+ *   row rises above the body, by a scroll-driven animation of z-index (not motion: nothing moves), so a
+ *   stuck row is never covered by the paper.
+ * - While stuck (a scroll-state container query, Chromium 133 and later) the row gets the shell's own
+ *   colour behind it, so the page does not show between the tabs. A browser without the query leaves
+ *   the row where it was: the rules below are inside @supports.
+ * - A touch device or a coarse pointer is unchanged: the nucleus is still there (D-141), so there is
+ *   nothing to see by pointing.
+ * - The headroom above the tabs is scrolled out of sight, so the stuck row is only as tall as its tabs.
+ */
+@media (hover: hover) and (pointer: fine) {
+  @supports (container-type: scroll-state) {
+    .page[data-page-path="/"] .gl-folder[data-level="1"] > .gl-folder__strip {
+      position: sticky;
+      top: calc(-1 * var(--folder-strip-headroom));
+      z-index: var(--z-folder-inactive);
+      container-type: scroll-state;
+      /* Longhands, with the name through a variable: a minifier would fold them into the `animation`
+         shorthand, which Chromium does not yet accept with a timeline in it, and drop the rule. */
+      --_raise: gl-home-tabs-raise;
+      animation-name: var(--_raise);
+      animation-timing-function: linear;
+      animation-fill-mode: both;
+      animation-timeline: scroll(root);
+      animation-range: 0 12px;
+    }
+
+    @keyframes gl-home-tabs-raise {
+      from {
+        z-index: var(--z-folder-inactive);
+      }
+
+      to {
+        z-index: var(--z-folder-preview);
+      }
+    }
+
+    @container scroll-state(stuck: top) {
+      .page[data-page-path="/"] .gl-folder[data-level="1"] > .gl-folder__strip .gl-folder__tabs {
+        background-color: var(--color-shell);
+      }
+    }
+  }
+}

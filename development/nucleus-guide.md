@@ -110,7 +110,7 @@ On Home, `src/scripts/home-nucleus.ts` waits until the stage is near the viewpor
 
 **Domains.** `domainsOf(model)` lists what can respond: **exactly one domain**, `highlighted-region`. `resolveDomain` answers a target by an explicit `chromatinDomainId`, then `NAVIGATION_DOMAINS[navigationId]` (empty), then the default; an unknown ID resolves to the default and is reported as `unknown-domain`. So all eleven tabs open the same region. Nothing claims otherwise: not the page, the specimen's mapping table, nor these documents. For several regions see `planning/nucleus-multidomain.md` (a brief, not a decision).
 
-**The layout fact (D-143).** The stage is about 1,300 px below the tabs at 1440 px wide, so the two are on screen together only in a very tall window or a zoomed-out page. The response is correct but unseen otherwise.
+**The layout fact (D-143) and its answer (D-144).** The stage is about 1,300 px below the tabs at 1440 px wide, so they were never on screen together. On Home, on a hovering fine pointer in Chromium 133 or later, the tab row now stays at the top of the window (`src/styles/home-tabs.css`), so the tab and the nucleus are visible together. Elsewhere the response is correct but unseen unless the window is very tall.
 
 ## Budgets (held by tests)
 

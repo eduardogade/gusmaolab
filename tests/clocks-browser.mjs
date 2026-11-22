@@ -280,7 +280,8 @@ await test("CLOCK-033B", "A minute change is not announced", async (check) => {
     return { focusMoved, ariaLive: region.closest("[aria-live]") !== null, tabbable: region.querySelectorAll("a[href], button, [tabindex]").length, active: document.activeElement === document.body };
   })()`)
   check(!mutated.focusMoved && !mutated.ariaLive && mutated.tabbable === 0 && mutated.active, `${json(mutated)}`)
-  check(await js(`document.getAnimations().length`) === 0, "the page animates")
+  // Except the scroll-driven z-index raise of Home's stuck tab row (P20, D-144): it moves and recolours nothing.
+  check(await js(`document.getAnimations().filter((a) => a.animationName !== "gl-home-tabs-raise").length`) === 0, "the page animates")
 })
 
 await test("CLOCK-034B", "Filling the clocks does not move the layout", async (check) => {

@@ -1071,6 +1071,8 @@ O trabalho começou na branch `development` com alterações alheias, inclusive 
 
 **Existing checks changed, and why** (D-139): smoke test (three allowed script files, their own size ceiling, the stage's external script), NAV-031, TRANS-B04, QTO-029, HOME-011 and HOME-012 (the placeholder became a picture; one more script), UTIL-047 (one more script file), NUC-036, NUC-037, NUC-044, NUC-048 and NUC-049, and the demo check. No test was loosened to pass: each now names what is allowed exactly.
 
+**Owner decision after the report (D-144).** The owner chose to keep the tab row on screen. `src/styles/home-tabs.css` makes the global row sticky on Home only, for hovering fine pointers, with a shell-coloured band while stuck and a scroll-driven z-index raise. Found in the browser: the first version put the row under the paper (z-index below the body); a second raised it but a minifier folded the animation longhands into a shorthand that Chromium rejects, so the rule vanished until the name went behind a variable. Cost: a 1 px line across the selected tab's foot at rest (measured), one z-index animation. NUCINT-055 and -055B.
+
 **Verified.** See the completion report; `npm run verify` and `npm run test:browser` were run on the committed tree.
 
 **Not done, by design or not possible here.** Several chromatin domains; any change to P15's composition; a real touch device, Android GPU, Safari, Firefox or screen reader; deployment; P21.
