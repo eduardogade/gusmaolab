@@ -8,7 +8,7 @@
 // devices and screen readers are not covered.
 import { spawn } from "node:child_process"
 import { existsSync } from "node:fs"
-import { mkdtemp, readFile, rm } from "node:fs/promises"
+import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises"
 import { createServer } from "node:http"
 import { tmpdir } from "node:os"
 import { extname, join, normalize } from "node:path"
@@ -16,6 +16,30 @@ import process from "node:process"
 import { fileURLToPath } from "node:url"
 
 export const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+
+const SERVED_TYPES = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".svg": "image/svg+xml", ".webp": "image/webp", ".png": "image/png", ".jpg": "image/jpeg", ".txt": "text/plain; charset=utf-8", ".json": "application/json" }
+/**
+ * A second static server for a built folder (P21, P22): for the tests that read two builds at once (the
+ * release and the demonstration build, or a throwaway build). Returns `{ server, origin }`; the caller
+ * closes `server`. A missing file answers 404, as the harness's own server does.
+ */
+export async function serveFolder(folder) {
+  const root = normalize(folder.endsWith("/") ? folder : `${folder}/`)
+  const server = createServer(async (request, response) => {
+    let path = decodeURIComponent(new URL(request.url, "http://localhost").pathname)
+    if (path.endsWith("/")) path += "index.html"
+    const file = normalize(join(root, path))
+    try {
+      if (!file.startsWith(root)) throw new Error("outside")
+      const body = await readFile(file)
+      response.writeHead(200, { "content-type": SERVED_TYPES[extname(file)] ?? "application/octet-stream", "cache-control": "no-store" }).end(body)
+    } catch {
+      response.writeHead(404, { "content-type": "text/plain" }).end("Not found")
+    }
+  })
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve))
+  return { server, origin: `http://127.0.0.1:${server.address().port}` }
+}
 export const json = (value) => JSON.stringify(value)
 
 /**
@@ -389,6 +413,21 @@ export async function startBrowser({
     results.push({ id, title, failures })
     console.log(`${failures.length === 0 ? "PASS" : "FAIL"} ${id} ${title}`)
     for (const message of failures.slice(0, 10)) console.log(`  - ${message}`)
+    if (failures.length > 0) await captureEvidence(id)
+  }
+  // Failure evidence (P22, D-153): when the QA command sets QA_EVIDENCE_DIR, a failing check leaves a
+  // screenshot, the page address and the visible text of the page behind, so a failure that cannot be
+  // reproduced can still be looked at. Nothing is written otherwise, and a failure here never hides the test's own.
+  async function captureEvidence(id) {
+    const dir = process.env.QA_EVIDENCE_DIR
+    if (!dir) return
+    try {
+      await mkdir(dir, { recursive: true })
+      const { data } = await send("Page.captureScreenshot", { format: "png" })
+      await writeFile(join(dir, `${id}.png`), Buffer.from(data, "base64"))
+      const note = await js(`({ url: location.pathname + location.search, width: innerWidth, height: innerHeight, text: document.body.innerText.slice(0, 1500) })`)
+      await writeFile(join(dir, `${id}.json`), JSON.stringify(note, null, 2))
+    } catch {}
   }
   // Park the pointer on the flannel, away from every tab.
   const away = () => moveTo(2, 2, 3)

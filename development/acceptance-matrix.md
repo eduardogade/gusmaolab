@@ -907,3 +907,24 @@ Status values: **Passed** (run and observed), **Blocked** (needs the owner's pro
 | G-P21-15 | Home, clocks, nucleus, sticky tabs and D-144, previews, folders, palettes, editorial, Contact, downloads, 404, CV and Bearnard unchanged | **Passed** (SCH-056 to -070) |
 | G-P21-16 | Guide, decisions and records; the operations guide | **Passed** (D-145 to D-150, `development/scheduling-guide.md`) |
 | G-P21-17 | The owner creates an account, event type and availability, enables the page, and runs the blocked checks | **Waiting for the owner** |
+
+## P22 — Automated quality assurance
+
+Status values: **Passed** (run and observed in this milestone's QA run), **Deferred** (approved external action pending; not passed), **Untested**. QA-001 to QA-082 are derived from the checks they rest on in every report (`scripts/qa-matrix.mjs`); this table is the milestone's own list.
+
+| ID | Requirement | Status |
+| --- | --- | --- |
+| G-P22-01 | One QA command with a quick and a deep profile; the test inventory equals the files and the npm scripts | **Passed** (QA-INV-01, QA-CLI-01) |
+| G-P22-02 | Six result states with one meaning each; a mandatory FAIL, NOT RUN or unregistered FLAKY exits 1 | **Passed** (QA-STATE-01 to -04, QA-EXIT-01) |
+| G-P22-03 | Static audits of the production build: routes, links, metadata, images, output safety, budgets, reproducibility | **Passed** (QA-ROUTE, QA-LINK, QA-META, QA-IMG, QA-OUT, QA-BUDGET, QA-REPRO checks) |
+| G-P22-04 | A controlled failure is detected, exits nonzero, is named in the report, and is cleared by removing it, without touching real content | **Passed** (QA-NEGATIVE-00, -01, QA-FIXTURE-01: five defects) |
+| G-P22-05 | Machine-readable and readable reports, redacted; failure evidence kept | **Passed** (QA-REPORT-01 to -03, QA-EVIDENCE-01) |
+| G-P22-06 | A development quality overview, read-only, discoverable by clicking, stale-aware, absent from the release | **Passed** (QA-INSPECT-01, -02, QA-REPORT-03) |
+| G-P22-07 | axe-core on twenty representative pages with a register of accepted issues; keyboard, focus, reduced motion, nucleus without WebGL, clocks | **Passed** in Chromium (A11Y-001 to -KEYBOARD, -FOCUS, -MOTION, -NUCLEUS, -CLOCKS); automated only, manual review is P23 |
+| G-P22-08 | Measured performance baselines with the environment recorded, and evidence-based budgets | **Passed** (PERF-ENV, -001 to -REQ, -IDLE, -ISOLATION; QA-BUDGET-01, -02) |
+| G-P22-09 | NUC-031 investigated, cause established with evidence, test repaired without lowering the standard | **Passed** (ISSUE-0005, QA-FLAKE-01); NUC-050 load sensitivity remains by design (KL-125) |
+| G-P22-10 | A non-deploying, least-privilege GitHub Actions workflow | **Structure passed locally** (QA-CI-01 to -03); **not run on GitHub** (KL-121) |
+| G-P22-11 | The Cal.com booking checks stay visible as DEFERRED and do not fail the static run; no regression of P21's code is hidden | **Deferred** (19 checks, owner decision); QA-OUT-08 and the scheduling suites pass |
+| G-P22-12 | P10 to P21, D-144, the palettes, the CV and the masters unchanged | **Passed** (QA-PRESERVE-01 to -04 and the suites) |
+| G-P22-13 | The legacy design studies in the release build: decided by the owner | **Waiting for the owner** (ISSUE-0006): a registered release-blocker exception |
+| G-P22-14 | Manual review (P23): screen readers, Safari and Firefox, real devices, contrast "needs review", nucleus look and motion | **Waiting** (`development/quality-assurance.md`, section 10) |

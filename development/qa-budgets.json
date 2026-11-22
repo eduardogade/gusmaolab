@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "status": "set from the P22 baseline (see baseline); change a number only with a recorded reason",
+  "baseline": {
+    "measuredOn": "2026-11-22 (P22), commit dc1c237 plus the P22 changes",
+    "environment": "Chrome 157 headless, arm64 macOS, Apple M1 Max, 1440 x 900, local static server, no throttling, 5 cold runs per page",
+    "static": "Home: HTML 25,240 B gzip, JS 4,730 B gzip, CSS 12,677 B gzip; folder pages at most HTML 4,136, JS 1,608, CSS 12,153 B gzip; the largest image is the Bearnard portrait at 187,394 B",
+    "measured": "median LCP 156-252 ms, CLS 0, long-task blocking 0 ms on every page; Home with the nucleus loaded: 543.8 KB of script (raw), LCP 412 ms, 546 ms of main-thread time under software WebGL, 0 idle animation frames",
+    "rule": "A threshold is the baseline plus headroom (about 25 percent for sizes, a multiple for the noisy timings), so a real regression fails and run-to-run variation does not. No Lighthouse score is required."
+  },
+  "image": { "maxBytes": 250000 },
+  "pageClasses": {
+    "home": { "html": 32000, "js": 6000, "css": 16000, "images": 240000, "scriptFiles": 1 },
+    "folder": { "html": 5200, "js": 2200, "css": 15500, "images": 240000, "scriptFiles": 1 },
+    "notFound": { "html": 1600, "js": 0, "css": 12000, "images": 0, "scriptFiles": 0 }
+  },
+  "measured": {
+    "home": { "jsKB": 6, "cssKB": 75, "imagesKB": 200, "htmlKB": 90 },
+    "home-mobile": { "jsKB": 6, "cssKB": 75, "imagesKB": 200, "htmlKB": 90 },
+    "home-nucleus": { "jsKB": 650, "cssKB": 75, "imagesKB": 200, "htmlKB": 90 },
+    "folder": { "jsKB": 5, "cssKB": 75, "imagesKB": 10, "htmlKB": 20 },
+    "article": { "jsKB": 5, "cssKB": 75, "imagesKB": 20, "htmlKB": 70 }
+  },
+  "metrics": {
+    "default": { "lcpMs": 1000, "cls": 0.05, "tbtMs": 100, "requests": 10 },
+    "home": { "lcpMs": 1000, "cls": 0.05, "tbtMs": 100, "requests": 10 },
+    "home-mobile": { "lcpMs": 1500, "cls": 0.05, "tbtMs": 300, "requests": 10 },
+    "home-nucleus": { "lcpMs": 1500, "cls": 0.05, "tbtMs": 300, "requests": 12 },
+    "article": { "lcpMs": 1000, "cls": 0.05, "tbtMs": 100, "requests": 8 },
+    "folder": { "lcpMs": 1000, "cls": 0.05, "tbtMs": 100, "requests": 8 },
+    "idleFrames": 3
+  }
+}

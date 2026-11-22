@@ -381,6 +381,8 @@ All 36 registered folders (11 sections and 25 children; no third-level folder) h
 
 **Planned features.** Contact, Schedule, Join Us, Facilities, Resources and the four Bearnard pages are declared planned. Contact and Schedule do not pretend to work: P18 completes Contact, and booking waits for a provider (R-10, E-02).
 
+**Quality Assurance (P22).** `/_design/quality/` is a development page (D-105, D-153): the latest QA report, read-only. It is not a folder, adds no tab, is linked from Home's development note through "Site Map & Page Coverage", and is absent from a release. Folder pages now carry a meta description taken from their destination's own purpose text (or a collection's identity sentence).
+
 **Schedule (P21).** `/schedule/` stays in Core and is not a tab-level change: a `scheduling` destination, `preparation` until the owner approves a booking link (then `ready`). The development specimen `/_design/scheduling/` ("Scheduling Integration") is not a folder, adds no tab and is development-only (D-105, D-150).
 
 ## 19. Contact, downloads and a missing address (P18)

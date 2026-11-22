@@ -48,8 +48,12 @@ if (headings.some((heading) => heading.depth === 1)) {
 }
 const context = await readingContextFor(collection, entry.id, demo)
 const Layout = EDITORIAL_LAYOUTS[collection]
+// Quarto writes code blocks as plain <pre> elements that scroll sideways when a line is long, and a scrolling
+// region the keyboard cannot reach fails WCAG 2.1.1 (found by axe-core in P22). Shiki's blocks already carry
+// tabindex="0"; this gives the Quarto ones the same, in memory, without touching the generated article.
+const keyboardScrollable = (html: string): string => html.replace(/<pre\b(?![^>]*\btabindex=)/g, '<pre tabindex="0"')
 ---
 
 <Layout collection={collection} data={data} context={context} headings={headings}>
-  {science ? <Fragment set:html={science.html} /> : rendered && <rendered.Content />}
+  {science ? <Fragment set:html={keyboardScrollable(science.html)} /> : rendered && <rendered.Content />}
 </Layout>

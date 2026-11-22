@@ -1,0 +1,197 @@
+---
+// The development quality overview (P22, D-153): the latest QA report, read-only. It does not run anything: it
+// shows what `npm run qa` last wrote to qa-report/latest.json, says when that was and which commit it described,
+// and says plainly when the working tree has changed since, so an old report is never labelled current. With no
+// report it says how to make one. Routed only when `demosEnabled()` is true (src/editorial/demo.ts); a release
+// build has no page here, and its output is searched for the markers below.
+//
+// The page reads the report when it is rendered: on the dev server that is on every request, so a fresh run
+// shows on reload; in a demonstration build it is the report that existed when the build ran, and the page says so.
+import FolderPage from "../../../layouts/FolderPage.astro"
+import { SITE_MAP, SITE_MAP_LABEL } from "../../../design/site-map.ts"
+import { demosEnabled } from "../../../editorial/demo.ts"
+import { freshness, projectRoot, readLatestReport, sourceState } from "../../../quality/source.mjs"
+
+export function getStaticPaths() {
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
+}
+
+// Astro runs from the project root; a built page's own module URL points into the build, not the repository.
+const root = projectRoot()
+const { report, unreadable } = readLatestReport(root)
+const fresh = report ? freshness(report, sourceState(root)) : null
+const counts = (c: Record<string, number> | undefined) => (c ? `${c.PASS} pass${c.FAIL ? `, ${c.FAIL} fail` : ""}${c["NOT RUN"] ? `, ${c["NOT RUN"]} not run` : ""}${c.FLAKY ? `, ${c.FLAKY} flaky` : ""}${c.DEFERRED ? `, ${c.DEFERRED} deferred` : ""}${c.SKIPPED ? `, ${c.SKIPPED} skipped` : ""}` : "")
+const dur = (ms: number) => (ms >= 60000 ? `${(ms / 60000).toFixed(1)} min` : `${(ms / 1000).toFixed(1)} s`)
+const bad = report ? report.stages.filter((s: any) => (s.failures ?? []).length > 0 && s.status !== "PASS" && s.status !== "SKIPPED") : []
+const blockers = report ? report.findings.filter((f: any) => f.severity === "release-blocker") : []
+const deferred = report ? report.deferred.filter((d: any) => d.status === "DEFERRED") : []
+---
+
+<FolderPage path="/" title="Quality Assurance · GusmaoLab">
+  <aside class="home-specimen" role="note" data-quality-overview>
+    <p>
+      <strong>Development page, not a page of the website.</strong> It shows the latest result of the quality
+      checks. It runs nothing: to make a report, run <code>npm run qa</code> (or <code>npm run qa:quick</code>) in a
+      terminal. A production build leaves this page out.
+    </p>
+    <p><a href="/">The real homepage</a> · <a href={SITE_MAP}>{SITE_MAP_LABEL}</a></p>
+  </aside>
+
+  <div class="dest">
+    <div class="gl-prose">
+      <h1>Quality Assurance</h1>
+      <p class="dest__lede">
+        What the automated checks found the last time they ran, and what they did not run or did not pass.
+      </p>
+    </div>
+
+    {
+      report === null ? (
+        <section class="state" data-quality-empty data-state-notice="empty">
+          <h2 class="state__title">No quality report yet</h2>
+          <p>
+            {unreadable ? `The last report could not be read (${unreadable}). ` : ""}Run <code>npm run qa:quick</code>{" "}
+            for the fast checks (no browser), or <code>npm run qa</code> for the full run, then reload this page. The
+            report is written to <code>qa-report/latest.json</code> and <code>latest.md</code>, which git ignores.
+          </p>
+        </section>
+      ) : (
+        <>
+          <section class="qa__summary" data-quality-freshness data-freshness={fresh?.state} aria-labelledby="qa-summary">
+            <h2 id="qa-summary" class="sch__heading">
+              {report.overall.status}
+              {report.overall.partial ? " (partial run)" : ""}
+            </h2>
+            <p>
+              <strong>{fresh?.state === "current" ? "Current." : fresh?.state === "stale" ? "Stale." : "Unknown age."}</strong>{" "}
+              {fresh?.text}
+              {" "}On the dev server the report is read on every request; in a demonstration build it is the one that existed when the build ran.
+            </p>
+            <p class="sch__note">
+              Profile <code>{report.profile}</code> · generated {report.generatedAt} · took {dur(report.durationMs)} · commit
+              <code>{report.source.head?.slice(0, 7) ?? "unknown"}</code> on <code>{report.source.branch}</code>, {report.source.dirty ? `${report.source.changed} uncommitted change(s)` : "clean tree"}.
+              Node {report.environment.node}, {report.environment.platform}/{report.environment.arch}, Chrome {report.environment.chrome ?? "not found"}, axe-core {report.environment.axe ?? "n/a"}.
+            </p>
+            <p>
+              {report.overall.checkCounts.PASS} PASS · {report.overall.checkCounts.FAIL} FAIL · {report.overall.checkCounts.SKIPPED} SKIPPED · {report.overall.checkCounts.DEFERRED} DEFERRED · {report.overall.checkCounts["NOT RUN"]} NOT RUN · {report.overall.checkCounts.FLAKY} FLAKY.
+              The states are never merged: a deferred, skipped or unexecuted check is not a pass.
+            </p>
+          </section>
+
+          {
+            blockers.length > 0 && (
+              <section class="state" aria-labelledby="qa-blockers" data-quality-blockers>
+                <h2 id="qa-blockers" class="state__title">Release blockers: the owner must decide before P24</h2>
+                <ul>
+                  {blockers.map((b: any) => <li><strong>{b.id.replace("F-EXCEPTION:", "")}</strong> ({b.area}): {b.text}</li>)}
+                </ul>
+              </section>
+            )
+          }
+
+          <section aria-labelledby="qa-stages" data-quality-stages>
+            <h2 id="qa-stages" class="sch__heading">Stages</h2>
+            <div class="qa__scroll">
+              <table class="qa__table">
+                <thead><tr><th>Stage</th><th>Status</th><th>Checks</th><th>Time</th></tr></thead>
+                <tbody>
+                  {report.stages.map((s: any) => (
+                    <tr data-stage={s.id} data-status={s.status}>
+                      <th scope="row">{s.id}<span class="qa__sub">{s.title}</span></th>
+                      <td><strong>{s.status}</strong>{s.note ? <span class="qa__sub">{s.note}</span> : null}</td>
+                      <td>{counts(s.counts)}</td>
+                      <td>{dur(s.durationMs ?? 0)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </section>
+
+          {
+            bad.length > 0 && (
+              <section aria-labelledby="qa-failures" data-quality-failures>
+                <h2 id="qa-failures" class="sch__heading">Failures</h2>
+                <ul>
+                  {bad.flatMap((s: any) => s.failures.slice(0, 30).map((f: any) => <li><strong>{s.id}{f.suite ? ` / ${f.suite}` : ""}</strong> <code>{f.id}</code> {f.title}: {(f.reasons ?? [])[0]}</li>))}
+                </ul>
+              </section>
+            )
+          }
+
+          <section aria-labelledby="qa-deferred" data-quality-deferred>
+            <h2 id="qa-deferred" class="sch__heading">Deferred, not passed</h2>
+            {
+              deferred.length === 0 ? (
+                <p>No deferred checks in this run.</p>
+              ) : (
+                <>
+                  <p>
+                    <strong>{deferred.length} Cal.com booking checks: DEFERRED, external activation pending.</strong>{" "}
+                    {deferred[0].reason}. They stay on every report until the owner configures the account; they are never counted as passed, and
+                    they do not fail the static-site run. Everything else about scheduling is still tested.
+                  </p>
+                  <p class="sch__note">{deferred.map((d: any) => d.id).join(" · ")}</p>
+                </>
+              )
+            }
+          </section>
+
+          {
+            report.findings.length > 0 && (
+              <section aria-labelledby="qa-findings" data-quality-findings>
+                <h2 id="qa-findings" class="sch__heading">Findings</h2>
+                <p class="sch__note">Recommendations and limitations. They do not fail the run.</p>
+                <ul>
+                  {report.findings.filter((f: any) => !/^F-(ORPHAN|DUPLICATE)/.test(f.id)).map((f: any) => <li><strong>{f.severity}</strong> ({f.area}): {f.text}</li>)}
+                </ul>
+              </section>
+            )
+          }
+
+          {
+            report.performance?.pages && (
+              <section aria-labelledby="qa-perf" data-quality-performance>
+                <h2 id="qa-perf" class="sch__heading">Performance</h2>
+                <p class="sch__note">{report.performance.environment?.summary}</p>
+                <div class="qa__scroll">
+                  <table class="qa__table">
+                    <thead><tr><th>Page</th><th>LCP ms</th><th>CLS</th><th>TBT* ms</th><th>Requests</th><th>JS KB</th><th>CSS KB</th><th>Images KB</th></tr></thead>
+                    <tbody>
+                      {report.performance.pages.map((p: any) => <tr><th scope="row">{p.name}</th><td>{p.median.lcp}</td><td>{p.median.cls}</td><td>{p.median.tbt}</td><td>{p.median.requests}</td><td>{p.median.jsKB}</td><td>{p.median.cssKB}</td><td>{p.median.imagesKB}</td></tr>)}
+                    </tbody>
+                  </table>
+                </div>
+                <p class="sch__note">Medians of {report.performance.environment?.runs} cold runs. *Blocking time is approximated from long tasks, not Lighthouse's simulation.</p>
+              </section>
+            )
+          }
+
+          {
+            report.accessibility?.pages && (
+              <section aria-labelledby="qa-a11y" data-quality-accessibility>
+                <h2 id="qa-a11y" class="sch__heading">Accessibility</h2>
+                <p>
+                  {report.accessibility.tool} on {report.accessibility.pages.length} pages: {report.accessibility.violations} violation(s) outside the register,
+                  {" "}{report.accessibility.registered} registered known issue(s). {report.accessibility.limitations}
+                </p>
+              </section>
+            )
+          }
+
+          <section aria-labelledby="qa-matrix" data-quality-matrix>
+            <h2 id="qa-matrix" class="sch__heading">Acceptance items</h2>
+            <div class="qa__scroll">
+              <table class="qa__table">
+                <thead><tr><th>Item</th><th>Status</th><th>Requirement</th></tr></thead>
+                <tbody>
+                  {report.matrix.map((m: any) => <tr data-status={m.status}><th scope="row">{m.id}</th><td><strong>{m.status}</strong></td><td>{m.title}{m.caveat ? <span class="qa__sub">{m.caveat}</span> : null}</td></tr>)}
+                </tbody>
+              </table>
+            </div>
+          </section>
+        </>
+      )
+    }
+  </div>
+</FolderPage>

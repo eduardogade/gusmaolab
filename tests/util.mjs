@@ -618,7 +618,9 @@ await test("UTIL-047", "No unexpected script, dependency or external form depend
     const then = JSON.parse(before)
     // P19 (D-130) added Three.js and its types, and nothing else; tests/nucleus.mjs (NUC-047) holds that.
     const withoutThree = (d) => json(Object.fromEntries(Object.entries(d).filter(([k]) => k !== "three" && k !== "@types/three")))
-    check(withoutThree(now.dependencies) === withoutThree(then.dependencies) && json(now.devDependencies) === json(then.devDependencies), "a dependency changed")
+    // P22 (D-154) added axe-core, a test-only dependency, pinned exactly, and nothing else.
+    const withoutAxe = (d) => json(Object.fromEntries(Object.entries(d).filter(([k]) => k !== "axe-core")))
+    check(withoutThree(now.dependencies) === withoutThree(then.dependencies) && withoutAxe(now.devDependencies) === withoutAxe(then.devDependencies), "a dependency changed")
   }
   const clientSources = (await Promise.all(["src/scripts/world-clocks.ts", "src/scripts/folder-previews.ts", "src/scripts/folder-rows.ts"].map(read))).join("\n")
   check(!/downloads|contact/i.test(clientSources), "a client script handles downloads or contact")

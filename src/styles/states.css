@@ -483,3 +483,33 @@
   display: grid;
   gap: var(--space-s);
 }
+
+/* The development quality overview (P22): a read-only report. Tables scroll inside their own box, never the page. */
+.qa__summary > * + * {
+  margin-block-start: var(--space-xs);
+}
+
+.qa__scroll {
+  max-inline-size: 100%;
+  overflow-x: auto;
+}
+
+.qa__table {
+  inline-size: 100%;
+  border-collapse: collapse;
+  font-size: var(--font-size-sm);
+}
+
+.qa__table th,
+.qa__table td {
+  padding: var(--space-2xs) var(--space-xs);
+  border-block-end: var(--border-width-hairline) solid var(--color-folder-border);
+  text-align: start;
+  vertical-align: top;
+}
+
+.qa__sub {
+  display: block;
+  color: var(--color-text-muted);
+  font-weight: normal;
+}

@@ -158,6 +158,14 @@
   background-color: var(--color-surface-code) !important;
 }
 
+/*
+ * Shiki's github-dark writes comments as #6A737D, which is 3.0:1 on the code surface (WCAG AA asks 4.5:1; found by
+ * axe-core in P22). Comments take the archive's existing muted-on-dark ink instead; no palette colour is added.
+ */
+.ed__body .astro-code span[style*="6A737D" i] {
+  color: var(--color-text-on-dark-muted) !important;
+}
+
 .ed__body :not(pre) > code {
   overflow-wrap: anywhere;
 }

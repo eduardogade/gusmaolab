@@ -537,7 +537,9 @@ await test("SITE-041", "No dependency was added", async (check) => {
   // and that the lockfile records both.
   const withoutThree = (d) => json(Object.fromEntries(Object.entries(d).filter(([k]) => k !== "three" && k !== "@types/three")))
   check(withoutThree(now.dependencies) === withoutThree(then.dependencies), "dependencies changed")
-  check(json(now.devDependencies) === json(then.devDependencies), "devDependencies changed")
+  // P22 (D-154) added axe-core, a test-only dependency, pinned exactly, and nothing else.
+  const withoutAxe = (d) => json(Object.fromEntries(Object.entries(d).filter(([k]) => k !== "axe-core")))
+  check(withoutAxe(now.devDependencies) === withoutAxe(then.devDependencies) && now.devDependencies["axe-core"] === "4.14.1", "devDependencies changed")
 })
 
 await test("SITE-042", "A production build runs no Quarto computation", async (check) => {

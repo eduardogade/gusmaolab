@@ -1759,7 +1759,8 @@ await test("REC-024", "The record system needs nothing outside src/", async (che
       // `yaml` reads the author's CV for the CV tool and its tests only (D-089); no
       // record module and no page imports it, which the loop above checks.
       // `ultrahtml` cleans Quarto's HTML for the scientific-article tool only (D-100).
-      json(["@astrojs/check", "prettier", "typescript", "ultrahtml", "yaml"]),
+      // `axe-core` runs the accessibility checks of the browser tests only (P22, D-154).
+      json(["@astrojs/check", "axe-core", "prettier", "typescript", "ultrahtml", "yaml"]),
     "a dev dependency was added",
   )
 })

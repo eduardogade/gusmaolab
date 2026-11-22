@@ -183,13 +183,15 @@ await test("NUC-030B", "Rapid retargeting: moving between tabs never snaps back 
 await test("NUC-031", "Keyboard focus triggers the response, hands over between tabs, and releases (NUC-032)", async (check) => {
   await open()
   await park()
+  // P22 (ISSUE-0005): the response is model time, and the model steps at most RENDER.maxStep (50 ms) per frame so that a slow
+  // machine never jumps. The specimen draws with software WebGL here, so how far the response has come after a fixed wait
+  // depends on the machine's load: the same code gave 45-53 % at 700 ms when idle and 2-6 % under CPU contention. The
+  // standard is unchanged (the response reaches the focused target and passes 20 %); the wait is now for that state.
+  const answered = (target) => `(() => { const g = (n) => document.querySelector('[data-readout="' + n + '"]')?.textContent; return g("target") === ${json(target)} && Number(g("activation")) > 20 })()`
   await js(`document.querySelector('[data-nucleus-target="Home"]').focus()`)
-  await sleep(700)
-  check((await readout()).target === "Home" && (await readout()).activation > 20, `focus on Home: ${json(await readout())}`)
+  check(await waitFor(answered("Home"), 20_000), `focus on Home: ${json(await readout())}`)
   await press("Tab")
-  await sleep(500)
-  const r = await readout()
-  check(r.target === "CV" && r.activation > 20, `Tab to CV: ${json(r)} (a handover is not a release)`)
+  check(await waitFor(answered("CV"), 20_000), `Tab to CV: ${json(await readout())} (a handover is not a release)`)
   check(await js(`document.activeElement?.dataset.nucleusTarget`) === "CV", "focus is not on the CV tab")
   // Focus exit: tabbing past the last simulated tab, and blur, release.
   await js(`document.activeElement.blur()`)
@@ -276,7 +278,9 @@ await test("NUC-026B", "A page restored from the cache draws again (pageshow)", 
   await open()
   const a = await diag()
   await js(`window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }))`)
-  await sleep(500)
+  // P22: wait for the redraw itself, not for 500 ms (the restoring frame is a requestAnimationFrame, which a loaded machine delays).
+  await waitFor(`Number(document.querySelector('[data-diag="framesDrawn"]')?.textContent) > ${a.frames}`, 15_000)
+  await sleep(150)
   const b = await diag()
   check(b.frames === a.frames + 1 && !b.loop, `frames ${a.frames} to ${b.frames}`)
   check((await pixels()).yellow > 150, "the restored nucleus is blank")

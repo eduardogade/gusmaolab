@@ -685,7 +685,7 @@ await test("NUC-046", "Contact, downloads, the 404 page and the site map keep wo
   const P21 = ["src/site/coverage.ts", "src/site/destinations.ts", "src/site/facts.ts"]
   check(touched.filter((f) => !P21.includes(f)).length === 0, `P17/P18 files changed: ${json(touched.filter((f) => !P21.includes(f)))}`)
   const diff = git("diff", BASE, "--", "src/design/site-map.ts").stdout.split("\n").filter((l) => /^[+-][^+-]/.test(l))
-  check(diff.every((l) => l.startsWith("+") && /NUCLEUS|nucleus|3D|Nucleus|SCHEDULING|Scheduling/.test(l.replace(/^\+\/\*\*.*$/, "nucleus"))), `the site map's list lost something: ${json(diff)}`)
+  check(diff.every((l) => l.startsWith("+") && /NUCLEUS|nucleus|3D|Nucleus|SCHEDULING|Scheduling|QUALITY|Quality/.test(l.replace(/^\+\/\*\*.*$/, "nucleus"))), `the site map's list lost something: ${json(diff)}`)
   check(DEV_PAGES.some((p) => p.href === NUCLEUS_PAGE && p.label === "3D Nucleus Prototype"), "the nucleus is not in the development list")
   check(existsSync(join(dist, "contact/index.html")) && existsSync(join(dist, "404.html")), "a page of P18 is missing from the build")
 })
@@ -717,7 +717,9 @@ await test("NUC-047", "Dependencies: Three.js and its types are the only additio
   if (!gitAvailable) return skip("git is not available")
   const then = JSON.parse(git("show", `${BASE}:package.json`).stdout)
   const strip = (d) => Object.fromEntries(Object.entries(d).filter(([k]) => k !== "three" && k !== "@types/three"))
-  check(json(strip(now.dependencies)) === json(then.dependencies) && json(now.devDependencies) === json(then.devDependencies), "another dependency changed")
+  // P22 (D-154) added axe-core, a test-only dependency, pinned exactly, and nothing else.
+  const withoutAxe = (d) => json(Object.fromEntries(Object.entries(d).filter(([k]) => k !== "axe-core")))
+  check(json(strip(now.dependencies)) === json(then.dependencies) && withoutAxe(now.devDependencies) === withoutAxe(then.devDependencies), "another dependency changed")
   const lock = JSON.parse(await read("package-lock.json"))
   check(lock.packages["node_modules/three"]?.version === "0.187.0" && lock.packages["node_modules/@types/three"]?.version === "0.187.0", "the lockfile does not hold both")
   const importers = (await Promise.all((await readdir(join(repo, "src"), { recursive: true })).filter((f) => /\.(ts|astro|mjs)$/.test(f)).map(async (f) => [f, await read(join("src", f))]))).filter(([, t]) => /from\s+["']three["']/.test(t)).map(([f]) => f).sort()

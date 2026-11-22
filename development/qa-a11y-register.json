@@ -1,0 +1,5 @@
+{
+  "version": 1,
+  "note": "Known axe-core violations the owner has accepted or that wait for P23, each with a reason. A violation not listed here fails tests/a11y-browser.mjs. Empty means every violation axe finds on the representative pages fails the run.",
+  "entries": []
+}

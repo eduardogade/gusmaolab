@@ -714,6 +714,9 @@ await test("P13A-024", "The P11 canonical records are intact", async (check) => 
     "src/cv",
     ":(exclude)src/data/contact.ts",
     ":(exclude)src/data/downloads.ts",
+    // P21 (D-145) added a third registry beside the records, the scheduling configuration. P21 missed this
+    // guard because its files were untracked while it ran (a diff ignores them); P22's baseline found it.
+    ":(exclude)src/data/scheduling.ts",
   ).stdout
   check(diff.trim() === "", "records, the record model or the CV adapter changed")
   check(

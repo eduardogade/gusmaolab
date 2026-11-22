@@ -7,6 +7,7 @@ import DestinationPage from "../../../components/states/DestinationPage.astro"
 import { coverageFor, siteCoverage } from "../../../site/page.ts"
 import EditorialEntry from "../../../components/editorial/EditorialEntry.astro"
 import CollectionOverview from "../../../components/editorial/CollectionOverview.astro"
+import { DESTINATIONS } from "../../../site/destinations.ts"
 import { collectionIndexFor, pageStaticPaths } from "../../../editorial/site.ts"
 
 export function getStaticPaths() {
@@ -25,7 +26,7 @@ const rows = row !== undefined && index === null ? await siteCoverage() : []
       <EditorialEntry collection={collection} entry={entry} />
     </FolderPage>
   ) : (
-    <FolderPage>
+    <FolderPage description={index ? index.identity : row === undefined ? undefined : DESTINATIONS[row.id]?.intro}>
       {index ? (
         <div data-page-root data-page-state={row?.state}>
           <CollectionOverview

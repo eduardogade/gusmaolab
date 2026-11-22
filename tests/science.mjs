@@ -1118,7 +1118,8 @@ await test("QTO-029", "No framework and no new runtime", async (check) => {
   const dev = Object.keys(pkg.devDependencies).sort()
   check(
     json(dev) ===
-      json(["@astrojs/check", "prettier", "typescript", "ultrahtml", "yaml"]),
+      // `axe-core` runs the accessibility checks of the browser tests only (P22, D-154).
+      json(["@astrojs/check", "axe-core", "prettier", "typescript", "ultrahtml", "yaml"]),
     `devDependencies ${json(dev)}`,
   )
   for (const [file, text] of built.text) {

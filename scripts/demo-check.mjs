@@ -57,6 +57,10 @@ export const MARKERS = [
   "Scheduling Integration",
   "no real booking will be created",
   "scheduling-fixture",
+  // The development quality overview (P22, D-153): the latest QA report, read from qa-report/.
+  "data-quality-overview",
+  "data-quality-freshness",
+  "gusmaolab-qa-report",
   // The 3D nucleus prototype (P19, D-136): its page, its controls and its script. The nucleus itself
   // is on the real homepage since P20 (D-139), so its engine, the frame and the renderer are not
   // listed here: a release build holds those on purpose and only Home loads them (tests/nucleus-

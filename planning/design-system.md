@@ -701,6 +701,10 @@ A page that has nothing to show yet is designed, not broken. The system has four
 
 The nucleus is an illustration with its own, scientifically motivated colours (pale periwinkle, lavender, sage and blush chromatin, a yellow highlighted region, a pale translucent envelope) defined in `src/visualization/nucleus/config.ts`. They are not site tokens and appear in no stylesheet; the five Chromatic Archive palettes, the Home folder and the surrounding UI are not recoloured to suit it (D-076, D-131). Its frame keeps a fixed aspect ratio (no layout shift), it takes no pointer events, it moves only in response to a target, never idles, and it is a still image on touch devices and under reduced motion (D-134). It is a development specimen until the owner approves it.
 
+## 22. Accessibility corrections (P22)
+
+axe-core, run on twenty pages (D-154), found two things that touch the visual system, both corrected without adding a colour or changing a layout. **Code comments in articles** (Shiki's github-dark writes `#6A737D`, 3.0:1 on the code surface, below WCAG AA's 4.5:1) now take the archive's existing `--color-text-on-dark-muted`, through one attribute selector in `src/styles/editorial.css`. **Quarto's scrolling code blocks** are keyboard-reachable (`tabindex="0"`, as Shiki's already are), added when the article is rendered. The nucleus specimen gained an `<h1>`. Everything axe lists as "needs review" (colour contrast over the flannel and the paper) is for P23 to judge at the real colours.
+
 ## 21. Scheduling (P21)
 
 The Schedule page uses the page's own tokens and the Core paper: a hairline-framed status like the content-state notice, a plain bordered button (the only control the page draws, shown only with scripts), and a frame that reserves the provider's calendar. The provider's iframe keeps its own styling and is never restyled. Scheduling styles are in `states.css` (`.sch`, `.sim`), with semantic tokens only, no colour of their own and no transition or animation. A month grid in the development specimen keeps seven columns with days of at least 40 px tall at 320 px.

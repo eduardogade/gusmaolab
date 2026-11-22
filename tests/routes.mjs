@@ -607,6 +607,8 @@ test("NAV-032", "Every approved route is a static page", (check) => {
         "[design]/publishing/draft-example/index.astro",
         "[design]/publishing/index.astro",
         "[design]/publishing/workflow/index.astro",
+        // P22: the development quality overview; static paths only in dev and demo mode.
+        "[design]/quality/index.astro",
         "[design]/quarto/index.astro",
         "[design]/quarto/markdown.astro",
         "[design]/records.astro",
