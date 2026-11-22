@@ -1,17 +1,10 @@
 ---
 /**
- * The frame of the 3D nucleus (P19, D-135): markup only, no script and no 3D code. The element
- * with `data-nucleus-frame` is what `mountNucleus` (src/visualization/nucleus/) fills with a canvas;
- * until then, and for good when 3D is unavailable or JavaScript is off, it holds a still picture
- * of the same model (fallback.ts: the nucleus's own geometry projected to SVG paths, not another
- * illustration). The frame keeps one aspect ratio in every state, so nothing moves when the
- * canvas arrives (D-115's rule for the homepage stage, kept here for P20).
- *
- * The picture is provisional: a flat capture of the prototype, to be replaced by an approved one.
- * The frame is a single image to assistive technology: the canvas is hidden from it, and the
- * label says what is shown and that the model is illustrative.
+ * The 3D nucleus with a caption (P19, D-135): the frame (NucleusFrame.astro) in a figure, for the
+ * specimen. The homepage stage uses the frame alone, with its own text. The caption says the picture
+ * is provisional and steps aside once the 3D nucleus (or its still render) is on screen.
  */
-import { buildFallback } from "../../visualization/nucleus/fallback.ts"
+import NucleusFrame from "./NucleusFrame.astro"
 
 interface Props {
   /** The frame's accessible name. */
@@ -20,31 +13,11 @@ interface Props {
   ratio?: string
 }
 
-const {
-  label = "An illustrative three-dimensional model of an interphase cell nucleus: a translucent envelope around folded chromatin, with one region highlighted in yellow.",
-  ratio = "4 / 3",
-} = Astro.props
-const picture = buildFallback()
+const { label, ratio } = Astro.props
 ---
 
 <figure class="nucleus" data-nucleus-figure>
-  <div
-    class="nucleus__frame"
-    data-nucleus-frame
-    data-nucleus-state="picture"
-    role="img"
-    aria-label={label}
-    style={`aspect-ratio: ${ratio}`}
-  >
-    <svg class="nucleus__picture" viewBox={picture.viewBox} preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
-      <path class="nucleus__envelope" d={picture.envelope}></path>
-      {
-        picture.paths.map((p) => (
-          <path d={p.d} stroke={p.stroke} stroke-width={p.width} stroke-opacity={p.opacity}></path>
-        ))
-      }
-    </svg>
-  </div>
+  <NucleusFrame label={label} ratio={ratio} />
   <figcaption class="nucleus__caption" data-nucleus-caption>
     A still picture of the model, provisional. The three-dimensional nucleus replaces it where the browser can show it.
   </figcaption>
@@ -54,50 +27,6 @@ const picture = buildFallback()
   .nucleus {
     margin: 0;
     min-inline-size: 0;
-  }
-
-  .nucleus__frame {
-    position: relative;
-    inline-size: 100%;
-    min-inline-size: 0;
-    overflow: hidden;
-  }
-
-  .nucleus__picture {
-    display: block;
-    inline-size: 100%;
-    block-size: 100%;
-  }
-
-  .nucleus__picture path {
-    fill: none;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-
-  /* The picture's own colours are the object's, not the site's (D-131). */
-  .nucleus__picture .nucleus__envelope {
-    fill: #e6eef7;
-    fill-opacity: 0.55;
-    stroke: #b3c7e0;
-    stroke-width: 1.6;
-  }
-
-  .nucleus__frame > canvas {
-    position: absolute;
-    inset: 0;
-    inline-size: 100%;
-    block-size: 100%;
-    display: block;
-    /* The canvas never takes a pointer event: links and tabs under or beside it work as ever. */
-    pointer-events: none;
-    touch-action: auto;
-  }
-
-  /* Once the 3D nucleus (or its still render) is on screen, the picture steps aside. */
-  .nucleus__frame[data-nucleus-state="ready"] .nucleus__picture,
-  .nucleus__frame[data-nucleus-state="static"] .nucleus__picture {
-    visibility: hidden;
   }
 
   .nucleus__caption {

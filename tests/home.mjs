@@ -218,34 +218,44 @@ await test("HOME-010", "The nucleus stage keeps a stable layout footprint", asyn
   check(/stage__frame[^}]*aspect-ratio:\s*4\s*\/\s*3/.test(css), "the built CSS has no frame ratio")
 })
 
-await test("HOME-011", "The stage has an accessible, honest placeholder", async (check) => {
+await test("HOME-011", "The stage holds an honest still picture before the model loads (P15, revised by P20)", async (check) => {
   const stage = region("stage")
-  check(stage.attrs["data-stage-state"] === "placeholder", "not in the placeholder state")
+  // P20 (D-139): the placeholder is gone. The static HTML is the still picture of the model, which is also
+  // all that JavaScript-free and WebGL-less visitors get; the script moves the state on.
+  check(stage.attrs["data-stage-state"] === "picture", `the static state is ${stage.attrs["data-stage-state"]}`)
+  check("data-nucleus-stage" in stage.attrs, "the stage is not marked for the script")
   const text = textOf(stage).replace(/\s+/g, " ")
-  check(/not built yet/i.test(text), "the stage does not say it is not built")
-  check(/does not exist yet/i.test(text), "the frame does not say it is not a preview")
+  check(!/not built yet|does not exist yet|planned for this space|Reserved/i.test(text), "the stage still speaks as a placeholder")
+  check(/illustration/i.test(text) && /not a measured genome/i.test(text), "the stage does not say it is an illustration, not a measured genome")
   const frame = elements(stage).find((el) => "data-stage-frame" in el.attrs)
   check(frame.attrs.role === "group" && frame.attrs["aria-labelledby"] === "stage-title", "the frame is not a labelled group")
-  check(!elements(stage).some((el) => ["canvas", "svg", "img", "video", "button", "iframe"].includes(el.tag)), "the placeholder holds a visual or a control")
-  check(!elements(stage).some((el) => "tabindex" in el.attrs), "the placeholder is focusable though nothing in it works")
+  const picture = elements(stage).find((el) => el.attrs.role === "img" && "data-nucleus-frame" in el.attrs)
+  check(picture !== undefined && /interphase/.test(picture.attrs["aria-label"] ?? ""), "the picture has no accessible name")
+  check(!elements(stage).some((el) => el.tag === "canvas"), "a canvas is in the static HTML")
+  check(!elements(stage).some((el) => ["img", "video", "button", "iframe"].includes(el.tag)), "the stage holds a bitmap or a control")
+  check(!elements(stage).some((el) => "tabindex" in el.attrs), "the stage is focusable; the canvas never is")
   const source = await read("src/components/home/NucleusStage.astro")
-  check(/<slot name="visual"/.test(source), "no integration slot")
-  for (const state of ["placeholder", "loading", "ready", "error"]) check(source.includes(`${state}:`), `no ${state} state`)
+  check(/NucleusFrame/.test(source) && !/<slot name="visual"/.test(source), "the stage does not use the shared frame")
+  check(/data-stage-status/.test(text === "" ? "" : home), "no status line")
 })
 
-await test("HOME-012", "P15 loads no 3D runtime and no new script", async (check) => {
+await test("HOME-012", "The homepage loads the 3D nucleus lazily, through one small script (P15, revised by P20)", async (check) => {
   const pkg = JSON.parse(await read("package.json"))
-  // P19 (D-130) added Three.js for the standalone nucleus prototype. The homepage still loads none of
-  // it (the page checks below, and NUC-037, NUC-044 and NUC-045); P20 will connect them on purpose.
+  // P19 (D-130) added Three.js; P20 (D-139) connects it to the homepage. Nothing else 3D.
   const deps = Object.keys({ ...pkg.dependencies, ...pkg.devDependencies }).filter((d) => d !== "three" && d !== "@types/three")
   check(!deps.some((d) => /three|babylon|webgl|regl|ogl|d3|cesium|pixi|playcanvas|aframe/i.test(d)), `a 3D or drawing dependency: ${json(deps)}`)
   check(json(Object.keys(pkg.dependencies).sort()) === json(["@types/three", "astro", "three"]), "the runtime dependencies changed")
   check(!home.includes("<canvas") && !/webgl/i.test(home), "the page mentions a canvas or WebGL")
   const scripts = all.filter((el) => el.tag === "script")
-  // The folder scripts (P07, P08) and, from P16, the one world-clocks script; nothing else.
-  for (const script of scripts) check(/folder-|clock/i.test(script.attrs.src ?? "") || /folder|clock/i.test(textOf(script)), `a script other than the folder and clock scripts: ${script.attrs.src}`)
+  // The folder scripts (P07, P08), the world-clocks script (P16) and the nucleus stage's (P20); nothing else.
+  for (const script of scripts) check(/folder-|clock|NucleusStage/i.test(script.attrs.src ?? "") || /folder|clock/i.test(textOf(script)), `a script other than the folder, clock and stage scripts: ${script.attrs.src}`)
+  const stageScript = scripts.find((s) => /NucleusStage/.test(s.attrs.src ?? ""))
+  check(stageScript !== undefined, "no stage script")
+  const code = await readFile(join(dist, stageScript.attrs.src), "utf8")
+  check(code.length < 8_000, `the stage script is ${code.length} bytes; it should only load the rest`)
+  check(!/WebGLRenderer|from"three"|\bScene\b/.test(code), "the stage script carries the engine instead of importing it")
   const files = [...(await readdir(join(repo, "src/components/home")))].filter((f) => f.endsWith(".astro"))
-  for (const file of files) check(file === "WorldClocks.astro" || !/<script/.test(await read(`src/components/home/${file}`)), `${file} ships a script`)
+  for (const file of files) check(["WorldClocks.astro", "NucleusStage.astro"].includes(file) || !/<script/.test(await read(`src/components/home/${file}`)), `${file} ships a script`)
 })
 
 // --- World clocks ----------------------------------------------------------------------------------------

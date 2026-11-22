@@ -1124,7 +1124,7 @@ await test("QTO-029", "No framework and no new runtime", async (check) => {
   for (const [file, text] of built.text) {
     if (!file.endsWith(".html")) continue
     for (const tag of text.match(/<script[^>]*>/g) ?? [])
-      check(/^<script type="module">$/.test(tag), `${file} has ${tag}`)
+      check(/^<script type="module">$/.test(tag) || /^<script type="module" src="\/_astro\/NucleusStage\.astro_astro_type_script_index_0_lang\.[\w-]+\.js">$/.test(tag), `${file} has ${tag}`)
     check(
       !/react|vue|svelte|preact|alpine|jquery/i.test(text.replace(/gl-[\w-]+/g, "")),
       `${file} names a framework`,
@@ -1138,7 +1138,8 @@ await test("QTO-029", "No framework and no new runtime", async (check) => {
     )
   ).join("\n")
   check(!/from "ultrahtml"/.test(siteText), "the site imports the HTML parser")
-  const jsFiles = built.files.filter((f) => f.endsWith(".js"))
+  // P20 (D-139): the homepage nucleus's three files (its stage script, its code, the renderer), no others.
+  const jsFiles = built.files.filter((f) => f.endsWith(".js") && !/^_astro\/(NucleusStage\.astro_astro_type_script_index_0_lang|nucleus|renderer)\.[\w-]+\.js$/.test(f))
   check(jsFiles.length === 0, `scripts are shipped: ${json(jsFiles)}`)
 })
 

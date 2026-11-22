@@ -1,6 +1,6 @@
 # The 3D nucleus (P19)
 
-A standalone, interactive three-dimensional model of an interphase cell nucleus and its folded chromatin, with one yellow chromatin region that opens and reaches modestly toward a navigation target. It lives in `src/visualization/nucleus/` and is seen at `/_design/nucleus/` (development only). It is **not on the homepage**: P20 integrates it, after the owner approves how it looks and moves. Decisions: D-130 to D-136.
+An interactive three-dimensional model of an interphase cell nucleus and its folded chromatin, with one yellow chromatin region that opens and reaches modestly toward a navigation target. It lives in `src/visualization/nucleus/`. Since P20 it is on the real homepage (Home's region B), where the folder tabs move it; the standalone prototype is still at `/_design/nucleus/` (development only), for scientific and visual inspection. Decisions: D-130 to D-136 (P19), D-137 to D-143 (P20). Multiple chromatin domains are **not implemented**: the model has exactly one domain; the brief for several is `planning/nucleus-multidomain.md`.
 
 ## What it shows, and what it does not
 
@@ -13,14 +13,15 @@ It is **not** a reconstruction of a cell, a measured genome, a molecular-dynamic
 | Module | Job | Touches Three.js or the DOM? |
 | --- | --- | --- |
 | `config.ts` | Every tunable number: seed, size, counts, colours, deformation, camera, budgets | no |
-| `types.ts` | Shared types and the `NucleusController` contract | no |
+| `types.ts` | Shared types, the `NucleusNavigationTarget` and the `NucleusController` contract | no |
+| `domains.ts` | The chromatin-domain abstraction (P20): `domainsOf`, `resolveDomain`, the empty `NAVIGATION_DOMAINS` | no |
 | `model.ts` | Deterministic geometry: envelope irregularity, territory centres, polymer walks, colours, radii, the highlighted region | no |
 | `tube.ts` | Catmull-Rom centreline, ring vertices with transported frames, indices; in-place `update()` | no |
 | `deformation.ts` | The continuous state, the critically damped step, the displacement of the region | no |
-| `view.ts` | Display rotation, projection, camera distance, page point → frame → response | no |
+| `view.ts` | Display rotation, projection, camera distance, page point → bounded frame target (`localTarget`) → response | no |
 | `materials.ts`, `renderer.ts` | Scene, camera, lights, meshes, the three materials, disposal | Three.js only |
 | `lifecycle.ts` | The draw loop, resize, visibility, context loss, disposal; takes a `Surface` and an `Environment` | the browser only through `defaultEnvironment()` |
-| `interaction.ts` | `observeTargets`: passive pointer and focus observation of elements | no |
+| `interaction.ts` | `observeNavigation` (P20): passive pointer and focus observation of items with stable IDs, with the precedence policy; `observeTargets`, the P19 form, wraps it | no |
 | `fallback.ts` | The still SVG picture, projected from the same model | no |
 | `index.ts` | `mountNucleus` and the public types | loads `renderer.ts` on demand |
 
@@ -77,29 +78,39 @@ Every frame, only this one strand is recomputed (`tube.update(points)`, no alloc
 ## Touch, reduced motion, fallback
 
 - **Interactive** when the pointer can hover and no reduced motion is requested. **Static** on `(hover: none), (pointer: coarse)` and under `prefers-reduced-motion: reduce`: a real 3D render of the resting nucleus, drawn once, never animating, ignoring targets, not listening for touch, taking no pointer events (`pointer-events: none`, `touch-action: auto`), so scrolling and links are untouched. A reduced-motion preference that changes while the page is open is followed without a reload.
-- **Fallback.** `fallback.ts` projects the same model to about 13 SVG paths (one per strand, plus the yellow region) and the envelope's silhouette. It is drawn by `NucleusFigure.astro` with no script, keeps the frame's aspect ratio, and is hidden only once a canvas is live. If WebGL is unavailable the picture simply stays. It is a *provisional* capture: flat, without lighting or translucency, to be replaced by an approved capture.
+- **Fallback.** `fallback.ts` projects the same model to about 13 SVG paths (one per strand, plus the yellow region) and the envelope's silhouette. It is drawn by `NucleusFrame.astro` (the homepage stage and the specimen's figure) with no script, keeps the frame's aspect ratio, and is hidden only once a canvas is live. If WebGL is unavailable the picture simply stays. It is a *provisional* capture: flat, without lighting or translucency, to be replaced by an approved capture.
 
 ## Browser support
 
 Chrome 157 on macOS (Apple M1 Max, Metal) and headless Chrome with software WebGL (SwiftShader) were tested. WebGL 2 is required (Three.js 0.187). Safari, Firefox and Chrome on Android were **not** tested.
 
-## The P20 integration interface
+## The interface
 
 ```ts
-import { mountNucleus, observeTargets } from "../visualization/nucleus/index.ts"
+import { browserLayout, mountNucleus, observeNavigation } from "../visualization/nucleus/index.ts"
 
-const nucleus = await mountNucleus(frameElement)   // fills it with a canvas; picks interactive or static
-const stop = observeTargets(nucleus, tabElements)  // passive pointer and focus; touch ignored
-// or directly: nucleus.setTarget({ x: clientX, y: clientY }); nucleus.release()
+const nucleus = await mountNucleus(frameElement)                 // fills it with a canvas; picks interactive or static
+const stop = observeNavigation(nucleus, items, { sample, layout: browserLayout() })   // items: { id, element }[]
+// or directly: nucleus.activate({ navigationId: "cv", position: { x, y } }); nucleus.clear()
 // later: stop(); nucleus.dispose()
 ```
 
-- **Mount point:** the element the canvas fills (`NucleusFigure.astro`'s `[data-nucleus-frame]`, or the homepage stage's `.stage__frame` through its `visual` slot). It must have a size; its box is the coordinate frame.
-- **Targets:** page client coordinates of the element the visitor is on. `observeTargets` reads each element's bounding box centre when the event happens.
-- **Activation:** `pointerenter` (mouse and pen only) and `focusin`. **Release:** `pointerleave` and `focusout` (not when focus moves to another observed element). Listeners are passive and never cancel or stop an event, so tab clicks, previews and navigation are untouched.
-- **Touch and reduced motion:** automatic; `controller.mode` says which. Force with `mountNucleus(el, { mode: "static" })`.
-- **Cleanup:** the page calls `stop()` and `dispose()`. `mountNucleus` loads `renderer.ts` (and Three.js, about 537 KB, 132 KB gzip, one chunk) on demand, so the homepage's first paint need not wait for it.
-- **Diagnostics:** `controller.diagnostics()` returns the status, mode, phase, frame counts, canvas size, pixel ratio and renderer statistics. Development use only.
+- **Mount point:** the element the canvas fills (`NucleusFrame.astro`'s `[data-nucleus-frame]`). It must have a size; its box is the coordinate frame.
+- **The target:** `{ navigationId, position, chromatinDomainId? }`. The ID is the registry's (stable, not the label or the position); `position` is the viewport client coordinates of the visitor's attention, measured when the event happens; the domain ID is optional. The nucleus measures its canvas fresh at each activation, converts to half-frames, limits the distance to 3 (scaling, so the direction stays true), and turns it into a direction and a saturating reach. `setTarget(point)` / `release()` are the same without an ID.
+- **Activation and release.** `pointerenter` (mouse and pen) and keyboard `focusin` (`:focus-visible`); `pointerleave` and `focusout` (not when focus moves to another observed item). Precedence: the most recent input wins, an input ends the response only if it set it, and ending one never revives an older one (D-138). Listeners are passive and never cancel or stop an event; no timer is used.
+- **Re-sampling.** While a target is held, page scroll and resize re-sample it once per frame, if it moved 3 px or more.
+- **Touch, reduced motion, keyboard.** Automatic; `controller.mode` says which. Touch and reduced motion are still; `controller.allowKeyboard()` lets keyboard focus lift the stillness on a touch device, never under reduced motion (D-141). Force with `mountNucleus(el, { mode: "static" })`.
+- **Status.** `mountNucleus(el, { onStatus })` is told `loading`, `ready`, `static`, `fallback` or `disposed`; the host also carries `data-nucleus-state`.
+- **Cleanup:** the page calls `stop()` and `dispose()`. `mountNucleus` loads `renderer.ts` (and Three.js, about 537 KB, 132 KB gzip, one chunk) on demand.
+- **Diagnostics:** `controller.diagnostics()` returns the status, mode, phase, the active navigation ID, the domain that answered and how it was chosen, the clamped target, frame counts, canvas size, pixel ratio, renderer statistics and whether reduced motion is requested. The specimen shows them; no public page does.
+
+## Navigation, domains and the homepage (P20)
+
+On Home, `src/scripts/home-nucleus.ts` waits until the stage is near the viewport, loads the nucleus, mounts it in the stage's frame (which holds the still picture until then), and observes the eleven top-level tabs (`src/home/nucleus-navigation.ts`: `.gl-folder-tab[data-tab-kind='folder']` in the "Sections" row, each with its `data-tab-id`). A response is drawn only while the stage is on screen. The stage's state (`data-stage-state`: picture, loading, ready, static, fallback) and the held tab (`data-stage-target`) are visible in the DOM. The nucleus does not carry across pages: leaving Home ends it.
+
+**Domains.** `domainsOf(model)` lists what can respond: **exactly one domain**, `highlighted-region`. `resolveDomain` answers a target by an explicit `chromatinDomainId`, then `NAVIGATION_DOMAINS[navigationId]` (empty), then the default; an unknown ID resolves to the default and is reported as `unknown-domain`. So all eleven tabs open the same region. Nothing claims otherwise: not the page, the specimen's mapping table, nor these documents. For several regions see `planning/nucleus-multidomain.md` (a brief, not a decision).
+
+**The layout fact (D-143).** The stage is about 1,300 px below the tabs at 1440 px wide, so the two are on screen together only in a very tall window or a zoomed-out page. The response is correct but unseen otherwise.
 
 ## Budgets (held by tests)
 

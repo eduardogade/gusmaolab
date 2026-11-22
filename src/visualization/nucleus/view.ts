@@ -54,6 +54,27 @@ export function clientToFrame(
 }
 
 /**
+ * A viewport position as a bounded target in the frame's own units (P20): `clientToFrame`, with its
+ * distance from the frame's centre limited to `DEFORMATION.targetLimit` half-frames. The limit scales
+ * the vector, so the direction to a far tab stays the true one (a tab far up and a little to the left
+ * stays up and a little to the left); it depends only on where the frame is now (measured fresh each
+ * time, never on a stale page coordinate); a non-finite position gives the centre, which asks for
+ * nothing.
+ */
+export function localTarget(
+  point: TargetPoint,
+  rect: { left: number; top: number; width: number; height: number },
+): readonly [number, number] {
+  const [x, y] = clientToFrame(point, rect)
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return [0, 0]
+  const limit = DEFORMATION.targetLimit
+  const distance = Math.hypot(x, y)
+  if (distance <= limit) return [x, y]
+  const scale = limit / distance
+  return [x * scale, y * scale]
+}
+
+/**
  * The response to a target: a direction in view space (right, up) and a reach from 0 to 1. The
  * direction runs from where the highlighted region appears to where the target is; the reach grows
  * with the distance and saturates, so a faraway target asks for no more than a nearby one.

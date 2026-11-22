@@ -49,13 +49,16 @@ export const MARKERS = [
   "demo-downloads",
   "synthetic-sample",
   "Synthetic sample",
-  // The 3D nucleus prototype (P19, D-136) and the graphics engine it alone loads: a release build
-  // contains neither (P20 integrates the approved nucleus and revises this list on purpose).
+  // The 3D nucleus prototype (P19, D-136): its page, its controls and its script. The nucleus itself
+  // is on the real homepage since P20 (D-139), so its engine, the frame and the renderer are not
+  // listed here: a release build holds those on purpose and only Home loads them (tests/nucleus-
+  // integration.mjs). The specimen's own markers must stay out.
   "data-nucleus-specimen",
   "data-nucleus-lab",
   "data-nucleus-figure",
+  "data-nucleus-diagnostics-toggle",
+  "data-nucleus-set-width",
   "3D Nucleus Prototype",
-  "WebGLRenderer",
 ]
 
 /** The demonstrations the repository has: their file, slug and title, from their own front matter. */

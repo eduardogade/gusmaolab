@@ -1058,3 +1058,19 @@ O trabalho começou na branch `development` com alterações alheias, inclusive 
 **Verified.** `npm run check` 0 errors; `npm run build` exit 0 (73 pages; no script, no Three.js); `npm test` exit 0; `tests/nucleus.mjs` 42 checks; `tests/nucleus-browser.mjs` 19 checks in Chrome 157. Measured on an Apple M1 Max, headless Chrome with Metal: 60 fps while responding at 896 × 672 px, 0 frames while still; software WebGL about 15 fps.
 
 **Not done, by design or not possible here.** P20 (integration); an approved fallback capture; a camera inspection control (optional, not built); Safari, Firefox, Android Chrome, a real phone and a screen reader were not tested; nothing was pushed or deployed.
+
+## P20 — Homepage Nucleus Integration (2026-11-21)
+
+**Scope.** Mount the P19 nucleus in Home's stage and drive it from the real folder tabs, through stable navigation IDs and a chromatin-domain abstraction, without rebuilding the model and without claiming more than one domain. Started on `development` at `64a3ce8` (P19), a clean tree; nothing pushed.
+
+**Built.** `domains.ts` (the one domain, `resolveDomain`, the empty frozen mapping); the controller's `activate` / `clear` and `NucleusNavigationTarget`; `observeNavigation` with the precedence policy and scroll/resize re-sampling (`observeTargets` now wraps it); `localTarget` (a bounded target that keeps the direction); `mountNucleus`'s `onStatus` and `allowKeyboard`; `NucleusFrame.astro` split out of `NucleusFigure.astro`; `NucleusStage.astro` and `home.css` (P15's footprint, no placeholder border); `src/home/nucleus-navigation.ts` and `src/scripts/home-nucleus.ts` (lazy, intersection-gated, one mount); the specimen's NUC-04 mapping inspector; `planning/nucleus-multidomain.md`; `tests/nucleus-integration.mjs`, `tests/nucleus-integration-browser.mjs` and `tests/nucleus-fakes.mjs` (the fakes moved out of `tests/nucleus.mjs`).
+
+**Found by looking, and decided.** The stage is about 1,300 px below the tabs, so at an ordinary window height the response happens off screen (D-143); recorded, not fixed, because P15's composition is approved. A first version clamped the target per axis, which turned every far tab into a 45-degree direction; it now limits the distance and keeps the direction.
+
+**Found by the tests, and fixed.** The release build failed the demo check, because the graphics engine is no longer a trace of a demonstration: the engine was removed from its list and the specimen's own markers added. The test helper waited 25 s for a stage that does not exist on other pages, and for one that is lazily not loaded at a short window height. Several browser checks first measured the preview's approach across other tabs as flicker; they now start once the pointer is inside the tab.
+
+**Existing checks changed, and why** (D-139): smoke test (three allowed script files, their own size ceiling, the stage's external script), NAV-031, TRANS-B04, QTO-029, HOME-011 and HOME-012 (the placeholder became a picture; one more script), UTIL-047 (one more script file), NUC-036, NUC-037, NUC-044, NUC-048 and NUC-049, and the demo check. No test was loosened to pass: each now names what is allowed exactly.
+
+**Verified.** See the completion report; `npm run verify` and `npm run test:browser` were run on the committed tree.
+
+**Not done, by design or not possible here.** Several chromatin domains; any change to P15's composition; a real touch device, Android GPU, Safari, Firefox or screen reader; deployment; P21.

@@ -29,6 +29,7 @@ import { buildModel, ellipsoidNorm, envelopeScale } from "../src/visualization/n
 import { createTubeBuilder, mergeTubes } from "../src/visualization/nucleus/tube.ts"
 import { cameraDistance, clientToFrame, project, rotate, targetResponse, unrotate } from "../src/visualization/nucleus/view.ts"
 import { DEV_PAGES, NUCLEUS_PAGE } from "../src/design/site-map.ts"
+import { fakeBrowser, fakeHost, listeners } from "./nucleus-fakes.mjs"
 
 const repo = fileURLToPath(new URL("../", import.meta.url))
 const dist = join(repo, "dist")
@@ -396,71 +397,6 @@ await test("NUC-017", "Stable anchor: every target moves the same region, with t
 
 // --- Lifecycle, with stand-ins ---------------------------------------------------------------------------------
 
-function listeners() {
-  const map = new Map()
-  let adds = 0
-  let removes = 0
-  return {
-    adds: () => adds,
-    removes: () => removes,
-    live: () => [...map.values()].reduce((s, set) => s + set.size, 0),
-    addEventListener(type, fn) {
-      adds++
-      if (!map.has(type)) map.set(type, new Set())
-      map.get(type).add(fn)
-    },
-    removeEventListener(type, fn) {
-      if (map.get(type)?.delete(fn)) removes++
-    },
-    fire(type, event = {}) {
-      for (const fn of [...(map.get(type) ?? [])]) fn({ preventDefault() {}, ...event })
-    },
-  }
-}
-
-function fakeBrowser({ width = 700, height = 525, hidden = false, dpr = 2 } = {}) {
-  const doc = Object.assign(listeners(), { hidden })
-  const win = Object.assign(listeners(), { devicePixelRatio: dpr })
-  const canvasEvents = listeners()
-  const rect = { left: 100, top: 100, width, height }
-  const canvas = Object.assign(canvasEvents, { removed: false, remove() { this.removed = true }, getBoundingClientRect: () => rect, setAttribute() {}, attributes: {} })
-  const host = { dataset: {}, getBoundingClientRect: () => rect, querySelectorAll: () => [], append() {} }
-  let frames = []
-  let nextId = 1
-  let time = 0
-  const timers = new Map()
-  let sizeCallback = null
-  let observing = 0
-  let released = 0
-  const env = {
-    document: doc,
-    window: win,
-    now: () => time,
-    requestFrame(cb) { const id = nextId++; frames.push({ id, cb }); return id },
-    cancelFrame(id) { frames = frames.filter((f) => f.id !== id) },
-    setTimer(cb, ms) { const id = nextId++; timers.set(id, { cb, ms }); return id },
-    clearTimer(id) { timers.delete(id) },
-    observeSize(_el, cb) { sizeCallback = cb; observing++; return () => { observing--; released++ } },
-  }
-  const surface = {
-    canvas,
-    calls: { resize: [], draw: 0, dispose: 0 },
-    resize(w, h, r) { this.calls.resize.push([w, h, r]) },
-    draw() { this.calls.draw++ },
-    stats: () => ({ triangles: 90_000, geometries: 3, materials: 3, drawCalls: 4 }),
-    dispose() { this.calls.dispose++ },
-  }
-  return {
-    env, surface, canvas, host, doc, win, rect, timers,
-    pending: () => frames.length,
-    observing: () => observing,
-    released: () => released,
-    resizeCallback: () => sizeCallback,
-    /** Run the pending frame at `ms` later; returns false when none was pending. */
-    tick(ms = 1000 / 60) { const f = frames.shift(); if (!f) return false; time += ms; f.cb(time); return true },
-    runUntilIdle(limit = 2000) { let n = 0; while (this.tick() && n++ < limit); return n },
-  }
-}
 const make = (b, mode = "interactive") => createLifecycle({ surface: b.surface, model, host: b.host, mode, modeReason: "test", pixelRatioCap: RENDER.maxPixelRatio, environment: b.env })
 
 await test("NUC-018", "Reduced motion and touch: the static mode never animates and ignores targets", async (check) => {
@@ -583,17 +519,6 @@ await test("NUC-027", "Cleanup: dispose releases the surface, observer, listener
   check(b.pending() === 0 && b.surface.calls.draw === drawn, "a disposed nucleus drew or scheduled")
 })
 
-function fakeHost() {
-  const canvases = []
-  return {
-    dataset: {},
-    canvases,
-    getBoundingClientRect: () => ({ left: 0, top: 0, width: 400, height: 300 }),
-    querySelectorAll: () => canvases.filter((c) => !c.removed),
-    append(c) { canvases.push(c) },
-  }
-}
-
 await test("NUC-028", "No duplicate renderer: mounting again replaces the nucleus, never doubling it", async (check) => {
   const host = fakeHost()
   const made = []
@@ -686,25 +611,27 @@ await test("NUC-030", "Mouse hover: observed targets drive the controller and ne
 // --- Specimen, isolation and preservation ----------------------------------------------------------------------
 
 await test("NUC-036", "No blocked navigation: the canvas takes no pointer events, and the module adds no handler to links", async (check) => {
-  const component = await read("src/components/scientific/NucleusFigure.astro")
+  const component = await read("src/components/scientific/NucleusFrame.astro")
   check(/pointer-events:\s*none/.test(component), "the canvas does not ignore pointer events")
   check(!/touch-action:\s*(none|pan|manipulation)/.test(component) && /touch-action:\s*auto/.test(component), "the canvas changes touch handling")
   const sources = (await Promise.all(["index", "lifecycle", "renderer"].map((f) => read(`src/visualization/nucleus/${f}.ts`)))).join("\n")
   check(!/addEventListener\(\s*["'](click|touchstart|touchmove|wheel|keydown|pointerdown)/.test(sources), "the nucleus listens for a click, touch, wheel or key")
 })
 
-await test("NUC-037", "Homepage preservation: the real Home is unchanged, and the dev note is the only edit", async (check, skip) => {
+await test("NUC-037", "Homepage preservation: P15's regions are unchanged; P20 changed the stage, its style and one helper", async (check, skip) => {
   if (!gitAvailable) return skip("git is not available")
+  // P19 left Home alone; P20 (D-139) mounts the nucleus in the stage. Everything else of P15 stays as it was.
   const touched = changedSinceBase(["src/components/home", "src/home", "src/styles/home.css", "src/components/states", "src/site", "src/layouts"])
-  check(touched.length === 0, `Home sources changed: ${json(touched)}`)
+  const allowed = ["src/components/home/NucleusStage.astro", "src/home/nucleus-navigation.ts", "src/styles/home.css"]
+  check(touched.every((f) => allowed.includes(f)), `Home sources changed beyond the stage: ${json(touched.filter((f) => !allowed.includes(f)))}`)
   const diff = git("diff", BASE, "--", "src/pages/index.astro").stdout
   const changed = diff.split("\n").filter((l) => /^[+-][^+-]/.test(l))
   check(changed.every((l) => /NUCLEUS|demosEnabled|specimen|SITE_MAP|import \{ CONTACT_PAGE/.test(l)), `src/pages/index.astro changed beyond the development note: ${json(changed.filter((l) => !/NUCLEUS|SITE_MAP|import \{ CONTACT_PAGE/.test(l)))}`)
   const home = await readFile(join(dist, "index.html"), "utf8")
-  check(!/data-nucleus|<canvas|WebGL|3D Nucleus Prototype|_design\/nucleus/.test(home), "the release Home carries the prototype")
-  check(/data-stage-state="placeholder"/.test(home) && /Reserved/.test(home) && !/<canvas/.test(home), "the Home nucleus stage is no longer the reserved placeholder")
+  check(!/3D Nucleus Prototype|_design\/nucleus|data-nucleus-lab|data-nucleus-specimen/.test(home), "the release Home carries the prototype")
+  check(/data-stage-state="picture"/.test(home) && /data-nucleus-stage/.test(home) && !/<canvas/.test(home), "the Home stage is not the still picture in the static HTML")
   const stage = await read("src/components/home/NucleusStage.astro")
-  check(!/visualization\/nucleus|NucleusFigure|from "three"|<canvas/.test(stage), "the stage imports or draws the visualization")
+  check(!/visualization\/nucleus|from "three"|<canvas/.test(stage), "the stage imports the engine or draws a canvas itself")
 })
 
 await test("NUC-038", "P16 clocks are unchanged", async (check, skip) => {
@@ -760,23 +687,25 @@ await test("NUC-046", "Contact, downloads, the 404 page and the site map keep wo
   check(existsSync(join(dist, "contact/index.html")) && existsSync(join(dist, "404.html")), "a page of P18 is missing from the build")
 })
 
-await test("NUC-044", "Production isolation: the release build holds no nucleus page, text or Three.js", async (check) => {
+await test("NUC-044", "Production isolation: the release holds no prototype page, and the engine only where Home loads it", async (check) => {
   check(existsSync(join(dist, "index.html")), "dist/ is not built")
   for (const path of ["_design/nucleus/index.html", "_design/nucleus"]) check(!existsSync(join(dist, path)), `dist/${path} exists`)
   const issues = await publicBuildIssues(dist)
   check(issues.length === 0, `traces: ${json(issues.slice(0, 5))}`)
   const walk = async (dir) => (await Promise.all((await readdir(dir, { withFileTypes: true })).map((e) => (e.isDirectory() ? walk(join(dir, e.name)) : [join(dir, e.name)])))).flat()
   const files = await walk(dist)
-  const scripts = files.filter((f) => /\.(js|mjs)$/.test(f))
-  for (const file of scripts) {
+  // P20 (D-139): the engine is in exactly one file, the renderer chunk, and the specimen's own markers are in none.
+  const engine = []
+  for (const file of files.filter((f) => /\.(js|mjs)$/.test(f))) {
     const text = await readFile(file, "utf8")
-    check(!/WebGLRenderer|WebGL2RenderingContext|webglcontextlost|data-nucleus/.test(text), `${file.replace(dist, "")} carries the graphics engine`)
+    if (/WebGLRenderer|WebGL2RenderingContext/.test(text)) engine.push(file.replace(`${dist}/`, ""))
+    check(!/data-nucleus-lab|data-nucleus-specimen|data-nucleus-diagnostics|data-nucleus-set-width/.test(text), `${file.replace(dist, "")} carries the specimen`)
   }
+  check(engine.length === 1 && /^_astro\/renderer\.[\w-]+\.js$/.test(engine[0]), `the engine is in ${json(engine)}`)
   const pages = files.filter((f) => f.endsWith(".html"))
-  let withCanvas = 0
-  for (const file of pages) if (/<canvas|data-nucleus/.test(await readFile(file, "utf8"))) withCanvas++
-  check(withCanvas === 0, `${withCanvas} built pages carry a canvas or nucleus marker`)
-  check(!/three|visualization\/nucleus/.test(JSON.stringify(scripts.map((f) => f.replace(dist, "")))), "a script of the release is named for three or the nucleus")
+  const withNucleus = []
+  for (const file of pages) if (/<canvas|data-nucleus|renderer\.[\w-]+\.js|nucleus\.[\w-]+\.js/.test(await readFile(file, "utf8"))) withNucleus.push(file.replace(`${dist}/`, ""))
+  check(json(withNucleus) === json(["index.html"]), `pages with the nucleus: ${json(withNucleus)}`)
 })
 
 await test("NUC-047", "Dependencies: Three.js and its types are the only addition, pinned exactly", async (check, skip) => {
@@ -795,7 +724,7 @@ await test("NUC-047", "Dependencies: Three.js and its types are the only additio
 await test("NUC-048", "The modules are small and separate, and the pure ones import no engine", async (check) => {
   const dir = join(repo, "src/visualization/nucleus")
   const files = (await readdir(dir)).sort()
-  check(json(files) === json(["config.ts", "deformation.ts", "fallback.ts", "index.ts", "interaction.ts", "lifecycle.ts", "materials.ts", "model.ts", "renderer.ts", "tube.ts", "types.ts", "view.ts"]), `modules: ${json(files)}`)
+  check(json(files) === json(["config.ts", "deformation.ts", "domains.ts", "fallback.ts", "index.ts", "interaction.ts", "lifecycle.ts", "materials.ts", "model.ts", "renderer.ts", "tube.ts", "types.ts", "view.ts"]), `modules: ${json(files)}`)
   for (const f of files) {
     const text = await readFile(join(dir, f), "utf8")
     check(text.split("\n").length < 340, `${f} is ${text.split("\n").length} lines`)
@@ -807,9 +736,9 @@ await test("NUC-048", "The modules are small and separate, and the pure ones imp
 
 await test("NUC-049", "The specimen and the figure: labelled, keyboard operable, still-picture fallback present", async (check) => {
   const page = await read("src/pages/[design]/nucleus/index.astro")
-  const figure = await read("src/components/scientific/NucleusFigure.astro")
+  const figure = await read("src/components/scientific/NucleusFrame.astro")
   check(/demosEnabled\(\)/.test(page) && /getStaticPaths/.test(page), "the specimen is not gated to development and demonstration builds")
-  check(/not part of the homepage/i.test(await read("src/design/nucleus/NucleusBanner.astro")), "the banner does not say it is not on the homepage")
+  check(/development only, not part of the website/i.test(await read("src/design/nucleus/NucleusBanner.astro")), "the banner does not say it is development only")
   check(/<button type="button" class="nuc__target"/.test(page) && !/<a [^>]*nuc__target/.test(page), "the simulated tabs are not buttons")
   check(/role="img"/.test(figure) && /aria-label/.test(figure) && /<svg/.test(figure) && /aria-hidden="true"/.test(figure), "the figure is not a labelled image with a still picture")
   check(/aspect-ratio/.test(figure), "the frame has no fixed aspect ratio, so the canvas would shift the layout")

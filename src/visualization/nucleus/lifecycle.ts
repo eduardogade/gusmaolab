@@ -17,8 +17,11 @@
 import { RENDER } from "./config.ts"
 import { createState, isSettled, phaseOf, releaseState, respondTo, settle, step } from "./deformation.ts"
 import type { Surface } from "./renderer.ts"
-import { clientToFrame, project, rotate, targetResponse } from "./view.ts"
-import type { NucleusController, NucleusDiagnostics, NucleusMode, NucleusModel, NucleusStatus, TargetPoint } from "./types.ts"
+import type { LayoutSource } from "./interaction.ts"
+import { domainsOf, resolveDomain } from "./domains.ts"
+import type { ResolvedDomain } from "./domains.ts"
+import { localTarget, project, rotate, targetResponse } from "./view.ts"
+import type { NucleusController, NucleusDiagnostics, NucleusMode, NucleusModel, NucleusNavigationTarget, NucleusStatus, TargetPoint } from "./types.ts"
 
 /** The slice of the browser the lifecycle uses. `defaultEnvironment()` is the real one. */
 export interface Environment {
@@ -49,6 +52,15 @@ export function defaultEnvironment(): Environment {
   }
 }
 
+/** The page's own scroll and resize, as the observers' re-sampling source (interaction.ts). */
+export function browserLayout(): LayoutSource {
+  return {
+    target: window,
+    requestFrame: (cb) => requestAnimationFrame(cb),
+    cancelFrame: (id) => cancelAnimationFrame(id),
+  }
+}
+
 export interface LifecycleOptions {
   readonly surface: Surface
   readonly model: NucleusModel
@@ -58,6 +70,8 @@ export interface LifecycleOptions {
   readonly modeReason: string
   readonly pixelRatioCap: number
   readonly environment: Environment
+  /** Whether reduced motion is requested now, for the diagnostics. Default: no. */
+  readonly reducedMotion?: () => boolean
   /** Called when the status changes (the mount marks the host). */
   readonly onStatus?: (status: NucleusStatus, reason: string) => void
 }
@@ -65,6 +79,8 @@ export interface LifecycleOptions {
 export interface Lifecycle extends NucleusController {
   /** Switch between interactive and static (reduced motion changing, say). */
   setMode(mode: NucleusMode, reason: string): void
+  /** What `allowKeyboard` does; the mount supplies it, because only it knows why the mode is static. */
+  allowKeyboard(): void
 }
 
 export function createLifecycle(options: LifecycleOptions): Lifecycle {
@@ -85,6 +101,9 @@ export function createLifecycle(options: LifecycleOptions): Lifecycle {
   let stopObserving: (() => void) | null = null
   let lost = false
   let disposed = false
+  /** What holds the response now: the navigation ID, the domain that answers it and the clamped target. */
+  let active: { id: string | null; resolved: ResolvedDomain; target: { x: number; y: number } } | null = null
+  const domains = domainsOf(model)
 
   const setStatus = (next: NucleusStatus, why: string): void => {
     status = next
@@ -193,7 +212,26 @@ export function createLifecycle(options: LifecycleOptions): Lifecycle {
   measure()
   setStatus(mode === "static" ? "static" : "ready", reason)
 
-  const regionAt = (aspect: number): readonly [number, number] => project(rotate(model.highlight.center), aspect)
+  const regionAt = (domain: { readonly center: readonly [number, number, number] }, aspect: number): readonly [number, number] =>
+    project(rotate(domain.center), aspect)
+
+  const respond = (id: string | null, position: TargetPoint, domainId: string | undefined): void => {
+    if (disposed || mode === "static") return
+    const rect = canvas.getBoundingClientRect()
+    if (rect.width === 0 || rect.height === 0) return
+    const resolved = resolveDomain(domains, { navigationId: id ?? undefined, chromatinDomainId: domainId })
+    const [fx, fy] = localTarget(position, rect)
+    const [vx, vy] = targetResponse([fx, fy], regionAt(resolved.domain, rect.width / rect.height))
+    active = { id, resolved, target: { x: fx, y: fy } }
+    respondTo(state, vx, vy)
+    schedule()
+  }
+  const rest = (): void => {
+    if (disposed || mode === "static") return
+    active = null
+    releaseState(state)
+    schedule()
+  }
 
   const controller: Lifecycle = {
     get status() {
@@ -202,20 +240,20 @@ export function createLifecycle(options: LifecycleOptions): Lifecycle {
     get mode() {
       return mode
     },
+    activate(target: NucleusNavigationTarget) {
+      respond(target.navigationId, target.position, target.chromatinDomainId)
+    },
+    clear() {
+      rest()
+    },
     setTarget(point: TargetPoint) {
-      if (disposed || mode === "static") return
-      const rect = canvas.getBoundingClientRect()
-      if (rect.width === 0 || rect.height === 0) return
-      const [fx, fy] = clientToFrame(point, rect)
-      const aspect = rect.width / rect.height
-      const [vx, vy] = targetResponse([fx, fy], regionAt(aspect))
-      respondTo(state, vx, vy)
-      schedule()
+      respond(null, point, undefined)
     },
     release() {
-      if (disposed || mode === "static") return
-      releaseState(state)
-      schedule()
+      rest()
+    },
+    allowKeyboard() {
+      // Replaced by the mount; a bare lifecycle has no touch mode to lift.
     },
     refresh() {
       if (disposed) return
@@ -229,6 +267,7 @@ export function createLifecycle(options: LifecycleOptions): Lifecycle {
       if (next === "static") {
         // A still image of the resting nucleus: no animation is finished off, none is shown.
         cancel()
+        active = null
         releaseState(state)
         settle(state)
         state.s = 0
@@ -240,7 +279,14 @@ export function createLifecycle(options: LifecycleOptions): Lifecycle {
     },
     diagnostics(): NucleusDiagnostics {
       const stats = surface.stats()
+      const resting = phaseOf(state) === "resting"
       return {
+        activeNavigationId: resting ? null : (active?.id ?? null),
+        activeDomainId: resting || active === null ? null : active.resolved.domain.id,
+        resolution: resting || active === null ? null : active.resolved.resolution,
+        target: resting || active === null ? null : active.target,
+        domains: domains.map((d) => d.id),
+        reducedMotion: options.reducedMotion?.() ?? false,
         status,
         mode,
         reason,

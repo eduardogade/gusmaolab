@@ -359,7 +359,7 @@ The author's versioned CV YAML is the source of the owner's professional history
 
 ## Home (P15)
 
-`/` is the entrance, not a folder with children: the global row is its only row, with Home selected. Its body links to the destinations that answer "where do I begin?" in three groups (research and engineering: Portfolio, CV, Lab; learning and explanation: Lecture Notes, Blog; writing and personality: Writing, Bearnard's Area), plus About, Contact and Schedule once each. This is a selection, not a second registry: labels and URLs come from the registry, and the groups are not colour categories. The page also holds the reserved nucleus stage, eight world-clock places and the newest three published Blog entries (D-112 to D-117). `/_design/home/` is a development specimen of the same page, not a route of the site (development and demonstration builds only).
+`/` is the entrance, not a folder with children: the global row is its only row, with Home selected. Its body links to the destinations that answer "where do I begin?" in three groups (research and engineering: Portfolio, CV, Lab; learning and explanation: Lecture Notes, Blog; writing and personality: Writing, Bearnard's Area), plus About, Contact and Schedule once each. This is a selection, not a second registry: labels and URLs come from the registry, and the groups are not colour categories. The page also holds the nucleus stage (the 3D nucleus since P20, D-139), eight world-clock places and the newest three published Blog entries (D-112 to D-117). `/_design/home/` is a development specimen of the same page, not a route of the site (development and demonstration builds only).
 
 ## 18. Every destination has a page, and says what state it is in (P17)
 
@@ -391,4 +391,10 @@ All 36 registered folders (11 sections and 25 children; no third-level folder) h
 
 ## 20. The 3D nucleus prototype (P19)
 
-`/_design/nucleus/`, "3D Nucleus Prototype", is a development page (D-105, D-136): it adds no tab, no registry node and no route to a release, and is reached from the local homepage's development note and the Site Map & Page Coverage list. P20 places the approved nucleus in the homepage stage (the `visual` slot of `NucleusStage`, D-115); the other pages never load it.
+`/_design/nucleus/`, "3D Nucleus Prototype", is a development page (D-105, D-136): it adds no tab, no registry node and no route to a release, and is reached from the local homepage's development note and the Site Map & Page Coverage list. P20 placed the nucleus in the homepage stage (D-139); the other pages never load it.
+
+## 21. The nucleus on Home (P20)
+
+The nucleus is on `/` only: no tab, registry node or route was added, and no other page mounts it or requests its scripts. The eleven top-level tabs (`home`, `about`, `contact`, `schedule`, `portfolio`, `cv`, `lab`, `blog`, `lecture-notes`, `writing`, `bearnards-area`) identify themselves to it by their registry IDs (`data-tab-id`), not their labels, URLs or order. Hovering or keyboard-focusing one makes the highlighted region open toward it; leaving returns it to rest; clicking navigates as ever, and the nucleus is gone on the next page. On touch devices and under reduced motion it is a still picture of the model.
+
+**A fact of the composition (D-143).** The stage is the third region of Home, about 1,300 px below the tab row at 1440 px wide, and the tabs do not stay on screen. At an ordinary window height the tab and the nucleus are never visible together: the response happens, but off screen, and is not drawn. It shows together only in a window tall enough for both (about 1,750 px). P15's composition is approved and was not changed; whether to bring the stage up, keep a row of tabs on screen, or leave it, is the owner's decision.

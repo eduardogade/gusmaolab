@@ -1,51 +1,48 @@
 ---
 /**
- * Region B of the homepage (P15, D-115): the reserved stage for the interactive nucleus and
- * chromosome visualization. P15 builds the frame, not the model. Nothing here pretends to be the
- * visualization: no drawing of a nucleus, no moving part, no 3D code, and the label says it is
- * not built yet.
+ * Region B of the homepage (P15, D-115; the nucleus mounted by P20, D-139): the stage of the 3D
+ * nucleus. The footprint is P15's and unchanged: a frame of one aspect ratio (src/styles/home.css), so
+ * the page never shifts whatever the frame holds. Inside it is the shared nucleus frame
+ * (components/scientific/NucleusFrame.astro): a still picture of the same model in the static HTML,
+ * which is all there is when JavaScript is off, WebGL is unavailable or the load fails, and which the
+ * canvas replaces where it can draw.
  *
- * The integration point is the `visual` slot of `.stage__frame`. A future milestone puts its
- * element there and sets `state` ("ready" once it runs, "loading" while it starts, "error" if
- * it fails); the frame keeps its footprint in every state, so the page never shifts, and the
- * text beside it is the fallback for anyone who cannot or does not use the model. The frame
- * knows nothing of any 3D library, and the welcome and the other regions do not know of it.
+ * The script (src/scripts/home-nucleus.ts) is small and loads the graphics code only when the stage
+ * is near the screen. It keeps `data-stage-state` and the status line in step with what is shown:
+ * "picture" (static HTML), "loading", "ready" (interactive), "static" (a still nucleus: touch or
+ * reduced motion) or "fallback" (3D was not possible). The welcome and the other regions do not know
+ * of any of it.
  *
- * A future interactive element must be keyboard operable, name itself, offer touch and pointer
- * equivalents, and stay still under `prefers-reduced-motion`; the frame sets aside no motion
- * of its own.
+ * The text is honest about what this is: an illustration, not a measured genome.
  */
-interface Props {
-  /** "placeholder" until a visualization exists. */
-  state?: "placeholder" | "loading" | "ready" | "error"
-}
-
-const { state = "placeholder" } = Astro.props
-const STATUS: Record<string, string> = {
-  placeholder: "In development: not built yet",
-  loading: "Loading the model",
-  ready: "Interactive model",
-  error: "The model could not be shown",
-}
+import NucleusFrame from "../scientific/NucleusFrame.astro"
 ---
 
-<section class="stage" aria-labelledby="stage-title" data-home-region="stage" data-stage-state={state}>
+<section
+  class="stage"
+  aria-labelledby="stage-title"
+  data-home-region="stage"
+  data-stage-state="picture"
+  data-nucleus-stage
+>
   <div class="stage__text">
     <h2 id="stage-title" class="home-heading">Inside the nucleus</h2>
     <p>
-      Genomes are folded, not just read. A three-dimensional, interactive model of a nucleus and
-      its chromosomes is planned for this space, so that the structure behind the sequence can be
-      explored by turning it.
+      Genomes are folded, not just read. This is an illustration of an interphase nucleus: a
+      translucent envelope around folded chromatin, with one region highlighted in yellow.
     </p>
-    <p class="stage__status" data-stage-status>{STATUS[state]}</p>
+    <p>
+      With a mouse or the keyboard, point at or focus a folder tab at the top of the page and the
+      highlighted region opens a little toward it. It is an artistic model, not a measured genome
+      or a simulation.
+    </p>
+    <p class="stage__status" data-stage-status>Still picture of the model</p>
   </div>
   <div class="stage__frame" role="group" aria-labelledby="stage-title" data-stage-frame>
-    <slot name="visual">
-      <p class="stage__placeholder" data-stage-placeholder>
-        <span class="stage__badge">Reserved</span>
-        The interactive nucleus will appear here. It does not exist yet, and nothing in this frame
-        is a preview of it.
-      </p>
-    </slot>
+    <NucleusFrame fill />
   </div>
 </section>
+
+<script>
+  import "../../scripts/home-nucleus.ts"
+</script>

@@ -485,7 +485,9 @@ test("NAV-030", "Folder pages keep the approved folder construction", (check) =>
 // (D-060): navigation itself still needs none. Every tab is a plain link, and the only
 // script on a page is that module, inlined once by Astro from FolderStack.
 test("NAV-031", "Plain links; navigation needs no JavaScript", (check) => {
-  check(!files.some((file) => /\.(m?js|cjs)$/.test(file)), "dist/ ships a script file")
+  // P20 (D-139): the homepage's nucleus is the one script that ships as files: three, no others.
+  const nucleusFile = /^_astro\/(NucleusStage\.astro_astro_type_script_index_0_lang|nucleus|renderer)\.[\w-]+\.js$/
+  check(!files.some((file) => /\.(m?js|cjs)$/.test(file) && !nucleusFile.test(file)), "dist/ ships a script file")
   for (const path of builtPaths) {
     const html = pages.get(path)?.html ?? studyHtml.get(path) ?? ""
     check(html !== "", `${path} could not be read`)
@@ -493,8 +495,10 @@ test("NAV-031", "Plain links; navigation needs no JavaScript", (check) => {
     // The P03 specimen has no folders, so no script; every page with folders has one.
     // P16 (D-118): the homepage has one more, the world clocks' script, from WorldClocks.astro.
     const clocks = /data-home-region="clocks"/.test(html) ? 1 : 0
+    // P20 (D-139): and the nucleus stage's, which loads the graphics on demand.
+    const stage = /data-nucleus-stage/.test(html) ? 1 : 0
     const expected =
-      (path.startsWith("/_design/") && !STUDIES_WITH_FOLDERS.includes(path) ? 0 : 1) + clocks
+      (path.startsWith("/_design/") && !STUDIES_WITH_FOLDERS.includes(path) ? 0 : 1) + clocks + stage
     check(
       scripts.length === expected,
       `${path} has ${scripts.length} <script> elements`,
@@ -502,10 +506,11 @@ test("NAV-031", "Plain links; navigation needs no JavaScript", (check) => {
     check(
       scripts.every(
         ([, attrs, body]) =>
-          attrs.trim() === 'type="module"' &&
-          (/showPopover/.test(body) || (clocks === 1 && /data-clocks-state/.test(body))),
+          (attrs.trim() === 'type="module"' &&
+            (/showPopover/.test(body) || (clocks === 1 && /data-clocks-state/.test(body)))) ||
+          (stage === 1 && /^type="module" src="\/_astro\/NucleusStage\.astro_astro_type_script_index_0_lang\.[\w-]+\.js"$/.test(attrs.trim())),
       ),
-      `${path} has a script other than the folder previews and the world clocks`,
+      `${path} has a script other than the folder previews, the world clocks and the nucleus stage`,
     )
     check(!/\son[a-z]+=/i.test(html), `${path} has an inline event handler`)
   }
@@ -513,6 +518,8 @@ test("NAV-031", "Plain links; navigation needs no JavaScript", (check) => {
     const allowed =
       file === "components/folders/FolderStack.astro" ||
       file === "components/home/WorldClocks.astro" ||
+      // P20 (D-139): the homepage nucleus stage's one script element.
+      file === "components/home/NucleusStage.astro" ||
       // P19 (D-136): the development nucleus specimen's guarded entry script; it is never in a release.
       file === "pages/[design]/nucleus/index.astro"
     check(

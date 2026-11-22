@@ -623,8 +623,9 @@ await test("UTIL-047", "No unexpected script, dependency or external form depend
   const clientSources = (await Promise.all(["src/scripts/world-clocks.ts", "src/scripts/folder-previews.ts", "src/scripts/folder-rows.ts"].map(read))).join("\n")
   check(!/downloads|contact/i.test(clientSources), "a client script handles downloads or contact")
   const scriptsAdded = (await readdir(join(repo, "src/scripts"))).sort()
-  // P19 added the development specimen's own script (D-136): no page of the release loads it.
-  check(json(scriptsAdded) === json(["folder-previews.ts", "folder-rows.ts", "nucleus-specimen.ts", "world-clocks.ts"]), `src/scripts holds ${json(scriptsAdded)}`)
+  // P19 added the development specimen's own script (D-136): no page of the release loads it. P20 added
+  // the homepage nucleus's (D-139): Home only.
+  check(json(scriptsAdded) === json(["folder-previews.ts", "folder-rows.ts", "home-nucleus.ts", "nucleus-specimen.ts", "world-clocks.ts"]), `src/scripts holds ${json(scriptsAdded)}`)
 })
 
 await test("UTIL-048", "The build succeeds without any approved downloadable CV", async (check) => {

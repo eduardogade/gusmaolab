@@ -2,21 +2,33 @@
 // The 3D nucleus prototype (P19, D-136): the real Three.js model on a development-only page, with
 // simulated navigation targets, so the owner can judge the structure (NUC-01), the continuous
 // deformation (NUC-02) and the targeting, keyboard, still-image and responsive behaviour (NUC-03)
-// by clicking. It mounts the nucleus through the interface the homepage will use (P20) and
+// by clicking, and (P20) the navigation-to-chromatin mapping (NUC-04). It mounts the nucleus through
+// the interface the real homepage uses, with simulated tabs carrying real navigation IDs, and
 // changes nothing of the real homepage or navigation. Routed only in development and in a
-// demonstration build (src/editorial/demo.ts); a release build has no page here, no Three.js, and
-// its output is searched for both.
+// demonstration build (src/editorial/demo.ts); a release build has no page here and its output is
+// searched for the page's markers.
 import FolderPage from "../../../layouts/FolderPage.astro"
 import NucleusFigure from "../../../components/scientific/NucleusFigure.astro"
 import NucleusBanner from "../../../design/nucleus/NucleusBanner.astro"
 import { demosEnabled } from "../../../editorial/demo.ts"
+import { buildModel } from "../../../visualization/nucleus/model.ts"
+import { NAVIGATION_DOMAINS, domainsOf, resolveDomain } from "../../../visualization/nucleus/domains.ts"
 
 export function getStaticPaths() {
   return demosEnabled() ? [{ params: { design: "_design" } }] : []
 }
 
-/** Simulated targets: where the real folder tabs will be, across the top of the frame. */
-const TARGETS = ["Home", "CV", "Lab", "Lecture Notes", "Writing"]
+/** Simulated targets, across the top of the frame, each with the registry ID its real tab carries (data-tab-id). */
+const TARGETS = [
+  { label: "Home", id: "home" },
+  { label: "CV", id: "cv" },
+  { label: "Lab", id: "lab" },
+  { label: "Lecture Notes", id: "lecture-notes" },
+  { label: "Writing", id: "writing" },
+]
+// What the nucleus makes of each ID: the production mapping, resolved against the model's real domains.
+const domains = domainsOf(buildModel())
+const mapping = TARGETS.map((t) => ({ ...t, ...resolveDomain(domains, { navigationId: t.id }) }))
 ---
 
 <FolderPage path="/" title="3D Nucleus Prototype · GusmaoLab">
@@ -34,9 +46,9 @@ const TARGETS = ["Home", "CV", "Lab", "Lecture Notes", "Writing"]
       <div class="nuc__stage" data-nucleus-width="full">
         <div class="nuc__targets" role="group" aria-label="Simulated navigation targets (not the site’s navigation)">
           {
-            TARGETS.map((label) => (
-              <button type="button" class="nuc__target" data-nucleus-target={label} aria-pressed="false">
-                {label}
+            TARGETS.map((t) => (
+              <button type="button" class="nuc__target" data-nucleus-target={t.label} data-nav-id={t.id} aria-pressed="false">
+                {t.label}
               </button>
             ))
           }
@@ -103,6 +115,36 @@ const TARGETS = ["Home", "CV", "Lab", "Lecture Notes", "Writing"]
       </dl>
     </section>
 
+    <section class="nuc__section" aria-labelledby="nuc-5">
+      <h2 id="nuc-5" class="nuc__title">NUC-04 · Navigation to chromatin (P20)</h2>
+      <p class="nuc__note">
+        The real homepage tells the nucleus a stable navigation ID (the registry's, carried by each
+        folder tab as <code>data-tab-id</code>) and a position; the nucleus decides which chromatin
+        domain answers. <strong>Today the model has {domains.length} domain: {domains.map((d) => d.id).join(", ")}.</strong>{" "}
+        Every ID therefore resolves to it, by default. The mapping is empty
+        ({Object.keys(NAVIGATION_DOMAINS).length} entries) on purpose: distinct regions per tab are
+        not implemented, and what they would need is written in <code>planning/nucleus-multidomain.md</code>.
+      </p>
+      <table class="nuc__map" data-nucleus-map>
+        <caption class="nuc__note">The production mapping for the simulated tabs above</caption>
+        <thead><tr><th scope="col">Tab</th><th scope="col">Navigation ID</th><th scope="col">Domain</th><th scope="col">Resolution</th></tr></thead>
+        <tbody>
+          {
+            mapping.map((m) => (
+              <tr data-map-row={m.id}><th scope="row">{m.label}</th><td><code>{m.id}</code></td><td><code>{m.domain.id}</code></td><td>{m.resolution}</td></tr>
+            ))
+          }
+        </tbody>
+      </table>
+      <p class="nuc__status" data-nucleus-mapping aria-live="off">
+        active navigation ID: <span data-readout="navigation">none</span> · domain: <span data-readout="domain">none</span> ·
+        resolution: <span data-readout="resolution">none</span> · target (half-frames): <span data-readout="coords">none</span>
+      </p>
+      <p>
+        <button type="button" class="nuc__button" data-nucleus-unknown>Ask for an unknown domain ID (falls back to the default)</button>
+      </p>
+    </section>
+
     <section class="nuc__section" aria-labelledby="nuc-4">
       <h2 id="nuc-4" class="nuc__title">What it is, and is not</h2>
       <p class="nuc__note">
@@ -161,6 +203,18 @@ const TARGETS = ["Home", "CV", "Lab", "Lecture Notes", "Writing"]
   .nuc__target[aria-pressed="true"] {
     border-color: var(--color-text-primary);
     font-weight: var(--font-weight-semibold);
+  }
+
+  .nuc__map {
+    border-collapse: collapse;
+    font-size: var(--font-size-sm);
+  }
+
+  .nuc__map th,
+  .nuc__map td {
+    padding: var(--space-3xs) var(--space-s) var(--space-3xs) 0;
+    text-align: start;
+    border-block-end: var(--border-width-hairline) solid var(--color-text-muted);
   }
 
   .nuc__status {

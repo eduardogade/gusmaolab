@@ -52,6 +52,19 @@ export interface TargetPoint {
   readonly y: number
 }
 
+/**
+ * What the navigation layer tells the nucleus (P20, D-137). The navigation ID is the registry's,
+ * stable and independent of the label or the tab's position; `position` is where the visitor's
+ * attention is, in viewport client coordinates, sampled when the target is set. The optional
+ * `chromatinDomainId` asks for a particular domain; without it the nucleus maps the navigation ID
+ * itself (domains.ts). The page never sees a mesh, a vertex or a colour.
+ */
+export interface NucleusNavigationTarget {
+  readonly navigationId: string
+  readonly position: TargetPoint
+  readonly chromatinDomainId?: string
+}
+
 /** The continuous state of the deformation. One instance for the life of a nucleus. */
 export interface DeformationState {
   /** Activation, 0 (resting) to 1 (fully responding). */
@@ -78,6 +91,18 @@ export type NucleusMode = "interactive" | "static"
 export type NucleusStatus = "loading" | "ready" | "static" | "fallback" | "disposed"
 
 export interface NucleusDiagnostics {
+  /** The navigation ID that holds the response, or null when resting or driven by a bare point. */
+  readonly activeNavigationId: string | null
+  /** The domain that is answering (see domains.ts), or null at rest. */
+  readonly activeDomainId: string | null
+  /** How that domain was chosen: requested, mapped, default or unknown-domain; null at rest. */
+  readonly resolution: string | null
+  /** The target in half-frame units after clamping, or null at rest. */
+  readonly target: { readonly x: number; readonly y: number } | null
+  /** The domains the model can deform: today exactly one. */
+  readonly domains: readonly string[]
+  /** Reduced motion is requested now. */
+  readonly reducedMotion: boolean
   readonly status: NucleusStatus
   readonly mode: NucleusMode
   /** Why the mode is static or the status is fallback, in words. */
@@ -103,10 +128,19 @@ export interface NucleusDiagnostics {
 export interface NucleusController {
   readonly status: NucleusStatus
   readonly mode: NucleusMode
-  /** Respond toward a page position (client coordinates). Ignored when the mode is static. */
-  setTarget(point: TargetPoint): void
+  /** Respond to a navigation target: its stable ID, its position, and optionally a domain. Ignored when static. */
+  activate(target: NucleusNavigationTarget): void
   /** Let the chromatin return to rest, from wherever it is. */
+  clear(): void
+  /** Respond toward a bare page position (client coordinates): `activate` without a navigation ID. */
+  setTarget(point: TargetPoint): void
+  /** Same as `clear`. */
   release(): void
+  /**
+   * A keyboard is in use. On a touch device the nucleus is still (D-134); keyboard focus is the one
+   * exception (P20), so this lets focus move the chromatin there too, unless reduced motion is requested.
+   */
+  allowKeyboard(): void
   /** Draw again (after a layout change the observers cannot see). */
   refresh(): void
   diagnostics(): NucleusDiagnostics

@@ -259,40 +259,15 @@
   }
 
   /* The frame owns its footprint: one aspect ratio, whatever it holds, so nothing below it
-     moves when a model arrives. A fixed ratio is the stable layout region (HOME-010). */
+     moves when the canvas arrives. A fixed ratio is the stable layout region (HOME-010). The
+     nucleus fills it (components/scientific/NucleusFrame.astro) and sits on the paper: no panel
+     and no border of its own (P20). */
   .stage__frame {
-    display: grid;
-    place-items: center;
+    position: relative;
     inline-size: 100%;
     aspect-ratio: 4 / 3;
     min-inline-size: 0;
     overflow: hidden;
-    padding: var(--space-m);
-    border: var(--border-width-thin) dashed var(--color-text-muted);
-    border-radius: var(--radius-card);
-    background-color: transparent;
-  }
-
-  .stage__placeholder {
-    display: grid;
-    gap: var(--space-xs);
-    justify-items: center;
-    max-inline-size: 30ch;
-    color: var(--color-text-secondary);
-    font-size: var(--font-size-sm);
-    text-align: center;
-  }
-
-  .stage__badge {
-    padding: var(--space-3xs) var(--space-xs);
-    border: var(--border-width-hairline) solid var(--color-text-muted);
-    border-radius: var(--radius-control);
-    color: var(--color-text-muted);
-    font-family: var(--font-label);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
-    letter-spacing: var(--letter-spacing-label);
-    text-transform: uppercase;
   }
 
   /* A wider frame is a flatter one, so it never becomes taller than the text above it. */

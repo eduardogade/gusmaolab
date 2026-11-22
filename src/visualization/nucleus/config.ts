@@ -93,6 +93,11 @@ export const DEFORMATION = {
   depth: 0.08,
   /** Reach saturates with distance: tanh(distance / this), distance in half-frame units. */
   reachScale: 1.1,
+  /**
+   * A target is clamped to this many half-frames from the frame's centre (P20): a tab far across the
+   * page asks for no more than one at the frame's edge, and no coordinate reaches the maths unbounded.
+   */
+  targetLimit: 3,
   /** Natural frequency (rad/s) of the critically damped response; reaching 90% takes ~1 s and settling ~2.3 s. */
   omega: 3.8,
   /**

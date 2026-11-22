@@ -27,6 +27,10 @@ const expectedPages = [...siteNavigation.pagePaths(), ...designStudies].map(file
 // expected. Its one script, the folder previews (P07), is inlined in the pages that show
 // folders, so it is no file of its own.
 const expectedAsset = /^_astro\/[\w.-]+\.css$/
+// P20 (D-139): the homepage's nucleus is the one thing that ships JavaScript files. The stage's small
+// script, the nucleus's own code and the graphics renderer (the only chunk with Three.js), in these
+// three files and no other; only Home references them (tests/nucleus-integration.mjs).
+const nucleusAsset = /^_astro\/(NucleusStage\.astro_astro_type_script_index_0_lang|nucleus|renderer)\.[\w-]+\.js$/
 // The only images: the registered Bearnard web derivatives (P09), with their provenance.
 const derivatives = JSON.parse(
   await readFile(
@@ -113,6 +117,7 @@ const unexpected = files.filter(
   (file) =>
     !expectedPages.includes(file) &&
     !expectedAsset.test(file) &&
+    !nucleusAsset.test(file) &&
     !expectedImages.has(file) &&
     !expectedFigures.has(file),
 )
@@ -139,6 +144,7 @@ let totalBytes = 0
 let siteBytes = 0
 let studyBytes = 0
 let imageBytes = 0
+let nucleusBytes = 0
 for (const file of files) {
   const bytes = await readFile(join(dist, file))
   const hash = createHash("sha256").update(bytes).digest("hex")
@@ -155,7 +161,8 @@ for (const file of files) {
       bytes.length <= 250_000,
       `${file} is ${bytes.length} bytes, too large for the web`,
     )
-  } else if (file.startsWith("_design/")) studyBytes += bytes.length
+  } else if (nucleusAsset.test(file)) nucleusBytes += bytes.length
+  else if (file.startsWith("_design/")) studyBytes += bytes.length
   else siteBytes += bytes.length
 }
 // Generous ceilings, not exact sizes: they catch accidental artwork or bundles. Since P09
@@ -167,6 +174,8 @@ check(
 )
 // P12: the editorial study adds 30 pages (D-097); the ceiling is for the whole of /_design/.
 check(studyBytes < 1_000_000, `the design studies total ${studyBytes} bytes`)
+// P20: the nucleus's JavaScript has its own ceiling (measured 556 KB, 137 KB gzipped, in P20).
+check(nucleusBytes < 700_000, `the nucleus's scripts total ${nucleusBytes} bytes`)
 check(imageBytes < 600_000, `the illustrations total ${imageBytes} bytes`)
 for (const file of expectedImages.keys()) check(files.includes(file), `missing ${file}`)
 for (const file of expectedFigures)
@@ -199,9 +208,11 @@ for (const file of htmlFiles) {
   // The world clocks (P16, D-118) add one more module script, on the page that has them: the homepage.
   const clocks = /data-home-region="clocks"/.test(page) ? 1 : 0
   // The custom 404 page (P18) draws the folder styles but no tabs and ships no script.
-  const expectedScripts = file === "404.html" ? 0 : (folders ? 1 : 0) + clocks
+  // The nucleus stage (P20, D-139) adds the small external script that loads the graphics on demand.
+  const stage = /data-nucleus-stage/.test(page) ? 1 : 0
+  const expectedScripts = file === "404.html" ? 0 : (folders ? 1 : 0) + clocks + stage
   check(
-    scripts.length === expectedScripts && scripts.every((script) => script === '<script type="module">'),
+    scripts.length === expectedScripts && scripts.every((script) => script === '<script type="module">' || (stage === 1 && /^<script type="module" src="\/_astro\/NucleusStage\.astro_astro_type_script_index_0_lang\.[\w-]+\.js">$/.test(script))),
     `${file} has ${scripts.length} <script> element(s); expected ${expectedScripts}`,
   )
 }

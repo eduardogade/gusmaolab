@@ -351,7 +351,7 @@ Home (`/`) is the real homepage, not scaffolding (D-112 to D-117; `planning/desi
 - **Looked at:** the page at 320, 390, 430, 768, 1024, 1280 and 1440 px (automated overflow, overlap, Bearnard ratio, clocks, keyboard and motion checks) and screenshots at 1440, 1280, 768, 390 and 320 px, kept outside the repository.
 - **Not shown:** Safari, Firefox, a real phone, a screen reader. The copy is provisional.
 - **Waiting for the owner:** review the homepage, its words and layout (G-P15-10), and decide the `home-welcome` role.
-- **Reserved for later:** a later milestone fills the nucleus stage's `visual` slot. (The clocks were filled by P16, below.)
+- **The nucleus stage:** filled by P20 with the 3D nucleus (see "The nucleus on the homepage (P20)"). (The clocks were filled by P16, below.)
 
 ## World clocks (P16)
 
@@ -505,7 +505,7 @@ O trabalho começou na branch `development` com alterações alheias, inclusive 
 
 ## 3D nucleus prototype (P19)
 
-A standalone, interactive Three.js model of an interphase nucleus and its folded chromatin, with one yellow region that opens and reaches modestly toward a navigation target (D-130 to D-136). **It is not on the homepage**; the P15 stage is still the reserved placeholder, and P20 integrates the nucleus only after the owner approves it.
+A standalone, interactive Three.js model of an interphase nucleus and its folded chromatin, with one yellow region that opens and reaches modestly toward a navigation target (D-130 to D-136). P20 mounted it on the real homepage (next section); this section describes the standalone prototype, which remains.
 
 | Item | Where / what |
 | --- | --- |
@@ -520,3 +520,26 @@ A standalone, interactive Three.js model of an interphase nucleus and its folded
 Observed: at 896 × 672 px (pixel ratio 1) on an Apple M1 Max in headless Chrome 157 (Metal) the nucleus holds 60 fps while responding (median and 95th percentile 16.7 ms) and draws 0 frames while still; on software WebGL it runs at about 15 fps. 128,000 triangles at full detail and 78,000 at `light`, four draw calls, three materials. Untested: Safari, Firefox, Android Chrome, a real phone, a screen reader.
 
 The homepage, its stage and clocks, the folders, the five palettes, Bearnard, the editorial and CV code, and the contact, downloads, 404 and site-map pages are unchanged. Pending: the owner's review of the biology, look, motion, suitability and performance (G-P19-15).
+
+## The nucleus on the homepage (P20)
+
+The P19 nucleus is on the real Home (`/`), driven by the real folder tabs (D-137 to D-143; `development/nucleus-guide.md`, `planning/nucleus-multidomain.md`). P19's geometry, deformation, materials, renderer and fallback files are unchanged; the only change to P19's code is one new constant (`DEFORMATION.targetLimit`), the navigation contract (`activate` / `clear`, `observeNavigation`, `domains.ts`, `localTarget`) and a status callback.
+
+| Item | Where / what |
+| --- | --- |
+| Mount | `NucleusStage.astro` (P15's footprint and ratios, no border) with the shared `NucleusFrame.astro` (a still picture of the model in the static HTML); `src/scripts/home-nucleus.ts` (3.8 KB, 1.8 KB gzip) loads the nucleus when the stage is within 300 px of the viewport |
+| Navigation side | `src/home/nucleus-navigation.ts`: the eleven global-row folder tabs, identified by `data-tab-id`; attention point = the tab's visible part |
+| Contract | `NucleusNavigationTarget { navigationId, position, chromatinDomainId? }`; `activate` / `clear`; `setTarget` / `release` kept |
+| Domains | **One** (`highlighted-region`); `NAVIGATION_DOMAINS` is empty; every ID takes the default; unknown IDs fall back and are reported. Multiple regions are not implemented |
+| Precedence | the most recent input wins; an input ends the response only if it set it (D-138) |
+| Touch and reduced motion | still nucleus; keyboard focus lifts stillness on touch, never under reduced motion (D-141) |
+| Release build | three JavaScript files, Home only: stage script 3.8 KB, nucleus 15.2 KB (6.5 KB gzip), renderer with Three.js 537 KB (132 KB gzip); no specimen |
+| Tests | `tests/nucleus-integration.mjs` (54 checks, Node) and `tests/nucleus-integration-browser.mjs` (21 checks, headless Chrome with software WebGL, against the release build) |
+
+**Observed** (Apple M1 Max, headless Chrome 157, Metal; five cold loads, median; the P19 homepage built the same way as the comparison): a 1440 × 1800 window loads Home in 15 ms (load event) in both, first contentful paint 32 ms before and 36 ms after, layout shift 0, one 50 ms-class long task after (total blocking about 4 ms) and none before. The nucleus starts loading at about 19 ms and is mounted and drawn about 66 ms later (median), 154 ms with the CPU throttled four times (a simulation, not a phone). At an ordinary window height (900 px) the stage is far below the fold, so none of the 540 KB loads: Home's transfer is the P19 page plus the 3.8 KB script. Home's HTML grew from 26.9 KB (6.6 KB gzip) to 72.9 KB (25.0 KB gzip) because the still picture is inline (KL-108). While responding: 60 fps (median 16.7 ms, 95th percentile 17.5 ms, worst 19.8 ms), four draw calls per frame; at rest or settled: 0 frames and 0 draw calls in 5 s, after repeated hovers too. The highlighted region's centroid moved 27 to 35 px toward About, CV and Writing and came back to within 2.5 px. Not measured: a real GPU other than this one, a phone, Safari, Firefox.
+
+**Looked at:** 1440 and 1280 px (1,800 px tall, so tabs and nucleus are both on screen), 390 px with touch emulation (still nucleus), and the specimen's mapping inspector; screenshots and a recording are outside the repository. 320, 430, 768 and 1024 px were checked by layout assertions (no overflow, the P15 proportions) rather than by eye.
+
+**Three facts to know.** (1) At an ordinary window height the tabs and the stage are not on screen together (D-143, KL-112); the response is real but off screen. (2) All eleven tabs open the same region, and because the tabs are all far above the nucleus, the directions differ only a little (mostly up, tilted left or right). (3) The cross-document transition's snapshot of the canvas is an owner visual check (KL-115).
+
+Pending: the owner's review of the homepage with the nucleus (G-P20-23) and the decision on D-143.

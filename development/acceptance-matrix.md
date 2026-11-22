@@ -764,7 +764,7 @@ AUTH-040 compares P14's own changes (commits ending `[P14]`, and the working tre
 | G-09 | Only Bearnard v1.3 and approved variants appear; no full-resolution masters in the public directory | R-05 | **Passed** in P09 for what exists: the only images in `public/` and `dist/` are two registered derivatives of the v1.3 master (BEAR-002, BEAR-003, BEAR-006). Untested on site pages: none shows Bearnard yet. |
 | G-10 | Eight independent editorial collections | R-06 | Untested |
 | G-11 | Canonical records reused across pages | R-07 | Untested |
-| G-12 | Interactive 3D nucleus/chromatin visualization on Home, with isolated client-side JavaScript | R-08 | Untested |
+| G-12 | Interactive 3D nucleus/chromatin visualization on Home, with isolated client-side JavaScript | R-08 | **Passed** (technical) in P20: the P19 nucleus is on the real homepage, driven by the real folder tabs (G-P20-01 to G-P20-22); the owner's homepage review is pending (G-P20-23). Not shown: Safari, Firefox, Android Chrome, a real device |
 | G-13 | Eight international clocks | R-09 | **Passed** (technical) in P16 in headless Chromium and on fixed instants (G-P16-01 to G-P16-09); the owner's review is pending (G-P16-10). Not shown: Android Chrome, Safari, Firefox, a real device |
 | G-14 | Real booking works through the chosen provider; no credentials in the repository | R-10 | Untested |
 | G-15 | Site deploys to GitHub Pages | R-11 | Untested |
@@ -855,3 +855,31 @@ G-12 (the interactive nucleus) and G-13 (the eight clocks) are not closed by P15
 | G-P19-13 | The real homepage, clocks, folders, palettes, Bearnard, publishing, CV, contact, downloads, 404 and site map are unchanged | **Passed** (NUC-037 to NUC-043, NUC-046) |
 | G-P19-14 | Two dependencies only, pinned; bundle impact recorded | **Passed** (NUC-047): `three` and `@types/three` 0.187.0; the graphics chunk is 537 KB, 132 KB gzip, on the specimen page only |
 | G-P19-15 | The owner reviews the nucleus's biology, elegance, motion, suitability for the homepage and performance (P20 gate) | **Pending** |
+
+## P20 — The nucleus on the homepage
+
+| ID | Requirement | Status |
+| --- | --- | --- |
+| G-P20-01 | The real homepage (`/`) mounts the P19 nucleus in P15's stage, through the P19 model and renderer, with no copy of either | **Passed** (NUCINT-001 to -003, -001B in a browser) |
+| G-P20-02 | The stage keeps its footprint while the model loads; nothing shifts | **Passed** (NUCINT-004, -004B: frame rect equal at DOMContentLoaded and after load, cumulative layout shift under 0.01) |
+| G-P20-03 | The graphics load lazily and only on Home; no other page mounts or requests them | **Passed** (NUCINT-005, -005B, -006, -006B, -049) |
+| G-P20-04 | A meaningful still picture before the model, without JavaScript and when WebGL fails; the page keeps working | **Passed** (NUCINT-007, -039, -039B, -040, -040B) |
+| G-P20-05 | Stable navigation IDs: the eleven top-level tabs identify themselves by their registry IDs, not their labels, order or URLs | **Passed** (NUCINT-009, -010) |
+| G-P20-06 | Hovering a tab moves the highlighted region, leaving returns it to rest, with continuous retargeting | **Passed** (NUCINT-011, -012, -015, -011B, -015B: yellow-region centroid moved 26 to 35 px toward the tab in a real render and came back within 2.5 px) |
+| G-P20-07 | Keyboard focus does the same, with a defined precedence | **Passed** (NUCINT-013, -014, -013B; D-138) |
+| G-P20-08 | P07 previews keep working and the response neither flickers nor delays them; the canvas never blocks a link; clicking navigates | **Passed** (NUCINT-016, -017, -018, -016B, -017B, -018B) |
+| G-P20-09 | The page sends only an ID and a position; the nucleus owns the geometry; an optional domain ID is carried | **Passed** (NUCINT-019, -023) |
+| G-P20-10 | One chromatin domain exists, all tabs take it by default, unknown IDs fall back, nothing claims more, a synthetic two-domain mapping works through the same API | **Passed** (NUCINT-020 to -022, -024, -025). **Multi-domain chromatin is not implemented**; the brief is `planning/nucleus-multidomain.md` |
+| G-P20-11 | Target coordinates are bounded, measured fresh, follow scroll, resize and a scrolling tab row, without jitter | **Passed** (NUCINT-026 to -031, -028B, -029B) |
+| G-P20-12 | Touch devices get a still nucleus and no gesture is intercepted; reduced motion is respected live; keyboard focus lifts stillness on touch but never reduced motion | **Passed** in emulation (NUCINT-032, -033, -032B, -033B). **Untested** on a real touch device |
+| G-P20-13 | Draws on demand: no idle loop; hidden pages pause; restoration redraws; cleanup releases everything; no duplicate loops or canvases | **Passed** (NUCINT-035 to -038, -050, -035B, -050B) |
+| G-P20-14 | Back, Forward and a direct load restore Home with one working nucleus | **Passed** in Chrome (NUCINT-017B; the history cache restored the page: observed) |
+| G-P20-15 | No black rectangle where the canvas was when leaving Home | **Observed** (NUCINT-048B: none in the stage before leaving; the transition's own snapshot of a canvas is not readable from a test: owner visual check) |
+| G-P20-16 | P15 composition, Bearnard, clocks, folders, previews, row scrolling, transitions and the five palettes unchanged | **Passed** (NUCINT-041 to -048, -041B, -043B) |
+| G-P20-17 | No diagnostics, specimen or simulated tab in the public build | **Passed** (NUCINT-051; the demo check) |
+| G-P20-18 | Publishing, Quarto, authoring, contact, downloads, 404 and the CV are unchanged | **Passed** (NUCINT-052 to -054) |
+| G-P20-19 | The standalone prototype remains, with a mapping inspector | **Passed** (NUC-049 and the specimen's NUC-04) |
+| G-P20-20 | Performance measured and compared with the P19 homepage | **Observed**: see `development/current-state.md` |
+| G-P20-21 | Documentation, decisions and the multi-domain brief | **Passed** (D-137 to D-143, `planning/nucleus-multidomain.md`) |
+| G-P20-22 | The nucleus and the tabs are visible together at an ordinary window height | **Not met, by the composition** (D-143): the stage is about 1,300 px below the tabs at 1440 px. Reported; not changed without the owner |
+| G-P20-23 | The owner reviews the homepage with the nucleus, and decides G-P20-22 | **Pending** |
