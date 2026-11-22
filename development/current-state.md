@@ -543,4 +543,4 @@ The P19 nucleus is on the real Home (`/`), driven by the real folder tabs (D-137
 
 **Three facts to know.** (1) The stage is far below the tabs (D-143); the owner chose to keep the tab row on screen on Home (D-144), so on a hovering fine pointer in Chromium 133 or later the tab pointed at and the nucleus are visible together at 1440 × 900 (checked at 1440, 1280 and 768 px). The cost is a 1 px line across the selected tab's foot at rest and one scroll-driven z-index animation; other browsers keep the old behaviour. (2) All eleven tabs open the same region, and because the tabs are all far above the nucleus, the directions differ only a little (mostly up, tilted left or right). (3) The cross-document transition's snapshot of the canvas is an owner visual check (KL-115).
 
-Pending: the owner's review of the homepage with the nucleus and the sticky tab row, and of the two costs in D-144 (G-P20-23).
+The owner accepted the two costs of the sticky row (D-144, 2026-11-22). Pending: their review of the homepage itself with the nucleus (G-P20-23).
