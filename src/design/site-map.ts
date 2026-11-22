@@ -16,6 +16,9 @@ export const NUCLEUS_LABEL = "3D Nucleus Prototype"
 /** The development downloads and contact specimens (P18) and a URL that is not in the archive, for the 404 page. */
 export const DOWNLOADS_PAGE = "/_design/downloads/"
 export const CONTACT_PAGE = "/_design/contact/"
+/** The scheduling specimen (P21, D-150): development only. */
+export const SCHEDULING_PAGE = "/_design/scheduling/"
+export const SCHEDULING_LABEL = "Scheduling Integration"
 export const MISSING_PAGE = "/this-folder-is-not-in-the-archive/"
 
 /** The label of the link that leads to the site map from the other development pages. */
@@ -30,6 +33,7 @@ export interface DevPage {
 export const DEV_PAGES: readonly DevPage[] = [
   { href: SITE_MAP, label: SITE_MAP_LABEL, note: "This page." },
   { href: NUCLEUS_PAGE, label: NUCLEUS_LABEL, note: "The interactive 3D interphase nucleus and its chromatin response, on its own page." },
+  { href: SCHEDULING_PAGE, label: SCHEDULING_LABEL, note: "The Schedule layout, a month calendar and every request state, with synthetic dates." },
   { href: DOWNLOADS_PAGE, label: "Downloads specimen", note: "The download list, with synthetic files that really download." },
   { href: CONTACT_PAGE, label: "Contact specimen", note: "The Contact layout with synthetic channels." },
   { href: "/_design/page-states/", label: "Page states specimen", note: "The content-state components, and records pages from a synthetic fixture." },

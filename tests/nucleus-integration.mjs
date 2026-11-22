@@ -804,7 +804,9 @@ await test("NUCINT-052", "Publishing regression: the editorial, Quarto and autho
 
 await test("NUCINT-053", "Utility regression: contact, downloads, the 404 page and the site coverage are untouched", async (check) => {
   const touched = changed(["src/data/contact.ts", "src/data/downloads.ts", "src/pages/404.astro", "src/site", "src/components/states", "public/downloads", "scripts/downloads.mjs"], P19_START)
-  check(touched.length === 0, `utility files changed: ${json(touched)}`)
+  // P21 (D-149): Schedule became a `scheduling` destination; these four files carry that and nothing about Contact, downloads or the 404 page.
+  const P21 = ["src/components/states/DestinationPage.astro", "src/site/coverage.ts", "src/site/destinations.ts", "src/site/facts.ts"]
+  check(touched.filter((f) => !P21.includes(f)).length === 0, `utility files changed: ${json(touched.filter((f) => !P21.includes(f)))}`)
   check(existsSync(join(dist, "404.html")) && existsSync(join(dist, "contact/index.html")), "the 404 or Contact page is not built")
 })
 

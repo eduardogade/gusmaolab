@@ -8,7 +8,7 @@ Status: provisional. The six-wave structure is approved. Individual tasks are no
 | II — Physical Folders & Visual Identity | P05–P09 | P05 to P09 completed 2026-11-11; P09's three owner reviews are pending |
 | III — Publishing & Content | P10–P14 | P10 to P14 completed 2026-11-15; owner reviews of P13's demonstrations and P14's workflow are pending |
 | IV — Website Composition | P15–P18 | P15 to P17 completed 2026-11-16 and P18 on 2026-11-17; owner reviews are pending |
-| V — Advanced Features | P19–P21 | P19 and P20 technically complete 2026-11-21 (the 3D nucleus prototype, then its integration on Home; owner reviews are pending); P21 not started |
+| V — Advanced Features | P19–P21 | P19 and P20 technically complete 2026-11-21 (the 3D nucleus prototype, then its integration on Home; owner reviews are pending); P21 integration-ready on 2026-11-22 (Schedule with an external provider, switched off until the owner has an account; its operational checks are blocked) |
 | VI — QA & Release | P22–P24 | Not started |
 
 ## Known prompt titles
@@ -36,7 +36,8 @@ Status: provisional. The six-wave structure is approved. Individual tasks are no
 - **P18** — Contact, Downloads & Error Pages (completed 2026-11-17: a Contact page that lists only owner-approved channels (none yet), a validated download registry with no approved file yet, a custom static 404 page; the owner's review and approved channels are pending)
 - **P19** — Scientific 3D Nucleus & Chromatin: Standalone Prototype (technically completed 2026-11-21: a real Three.js model of an interphase nucleus with folded chromatin and one yellow region that opens and reaches modestly toward a simulated target, a development specimen at `/_design/nucleus/`, the interface P20 will use; not on the homepage; awaiting the owner's visual approval)
 - **P20** — Homepage Nucleus Integration (technically completed 2026-11-21: the P19 nucleus mounted on the real Home, driven by the real folder tabs through stable navigation IDs and a chromatin-domain abstraction with one domain; lazy, still on touch and reduced motion; a brief for multi-domain chromatin; then the tab row kept on screen on Home, D-144; the owner's homepage review is pending)
-- P21–P24 titles are not yet supplied except as named above
+- **P21** — Scheduling Integration: Monthly Calendar, Verified Requests & Owner Approval (integration-ready 2026-11-22: the Schedule page, a validated switched-off configuration for an external Cal.com booking link, a click-to-load monthly embed that ships on Schedule only, an availability-file boundary, a development specimen and 61 checks; the real booking workflow is untested and blocked until the owner has a provider account)
+- P22–P24 titles are not yet supplied except as named above
 
 Since P04, ordinary prompts run on the persistent `development` branch (D-035).
 

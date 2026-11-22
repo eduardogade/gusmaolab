@@ -1,0 +1,22 @@
+---
+/**
+ * One state of a booking request as a visitor reads it (P21, D-149). It is how the development
+ * specimen shows the states a request passes through; the real Schedule page does not draw it,
+ * because the real states belong to the provider and appear in its interface and emails. The
+ * words are src/scheduling/copy.ts, which keeps a pending request from sounding confirmed.
+ */
+import { COPY } from "../../scheduling/copy.ts"
+import type { RequestState } from "../../scheduling/copy.ts"
+
+interface Props {
+  state: RequestState
+}
+
+const { state } = Astro.props
+const { title, text } = COPY.status[state]
+---
+
+<section class="sch__status-card" data-request-status={state} aria-label={title}>
+  <h3 class="sch__status-title">{title}</h3>
+  <p>{text}</p>
+</section>

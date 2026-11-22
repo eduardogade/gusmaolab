@@ -1,0 +1,78 @@
+---
+/**
+ * The specimen's calendar (P21, D-150): a month grid, a zone chooser, a slot list and a simulated
+ * request, all synthetic and all labelled so. It is not the provider's calendar and does not try to
+ * be: the provider's interface lives in its own frame and cannot be driven from here. This shows,
+ * with real controls, how the page's states read; it sends nothing, collects nothing (no field for
+ * a name or an email) and stores nothing. Only the development specimen draws it.
+ */
+import RequestStatus from "../../components/schedule/RequestStatus.astro"
+import { STATUS_WORDS, SIM_MONTH, SIM_SLOT_TIMES_UTC, SIM_YEAR, SIM_ZONES, simMonth } from "../scheduling-fixture.ts"
+import { COPY } from "../../scheduling/copy.ts"
+import type { RequestState } from "../../scheduling/copy.ts"
+
+const days = simMonth()
+const lead = days[0]!.weekday
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+const monthName = new Intl.DateTimeFormat("en", { month: "long", timeZone: "UTC" }).format(new Date(Date.UTC(SIM_YEAR, SIM_MONTH - 1, 1)))
+const outputs: RequestState[] = ["verification", "pending", "confirmed", "declined", "unavailable"]
+---
+
+<div class="sim" data-sim data-sim-times={SIM_SLOT_TIMES_UTC.join(",")}>
+  <p class="sch__note" data-schedule-simulation-label>
+    <strong>Development demonstration: no real booking will be created.</strong> These dates and
+    times are synthetic, not the owner's availability, and nothing you do here is sent anywhere.
+  </p>
+
+  <div class="sim__bar">
+    <label for="sim-zone">Show times in</label>
+    <select id="sim-zone" data-sim-zone>
+      {SIM_ZONES.map((z, i) => <option value={z.zone} selected={i === 0}>{z.label}</option>)}
+    </select>
+  </div>
+
+  <h3 class="sch__heading" id="sim-month">{monthName} {SIM_YEAR}</h3>
+  <ul class="sim__cal" aria-labelledby="sim-month" data-sim-calendar>
+    {WEEKDAYS.map((d) => <li class="sim__dow" aria-hidden="true">{d}</li>)}
+    {Array.from({ length: lead }, () => <li class="sim__blank" aria-hidden="true" />)}
+    {
+      days.map((d) => (
+        <li>
+          <button
+            type="button"
+            class="sim__day"
+            data-sim-day={d.date}
+            data-day-status={d.status}
+            aria-pressed="false"
+            aria-disabled={d.status === "available" ? undefined : "true"}
+            aria-label={`${monthName} ${d.day}, ${STATUS_WORDS[d.status]}`}
+          >
+            {d.day}
+          </button>
+        </li>
+      ))
+    }
+  </ul>
+
+  <div class="sim__panel" data-sim-panel>
+    <p data-sim-hint>Choose an available date.</p>
+    <ul class="sim__slots" aria-label="Available times" data-sim-slots hidden></ul>
+    <p data-sim-summary hidden></p>
+    <p class="sim__bar">
+      <button type="button" class="sim__action" data-sim-request hidden>Request this time (simulated)</button>
+      <button type="button" class="sim__action" data-sim-verify hidden>Simulate: the email was verified</button>
+      <button type="button" class="sim__action" data-sim-decide="accept" hidden>Simulate: the owner accepts</button>
+      <button type="button" class="sim__action" data-sim-decide="reject" hidden>Simulate: the owner declines</button>
+      <button type="button" class="sim__action" data-sim-unavailable>Simulate: the provider is unavailable</button>
+      <button type="button" class="sim__action" data-sim-reset>Start over</button>
+    </p>
+    <div role="status" data-sim-live>
+      {outputs.map((state) => <div data-sim-output={state} hidden><RequestStatus state={state} /></div>)}
+    </div>
+    <p class="sch__note" data-sim-note hidden>{COPY.intro}</p>
+  </div>
+</div>
+
+<script>
+  import "../../scripts/scheduling-specimen.ts"
+</script>

@@ -302,3 +302,184 @@
   font-size: var(--font-size-sm);
   font-weight: normal;
 }
+
+/*
+ * Scheduling (P21, D-149): the Schedule page when booking is ready, and the development specimen.
+ * Semantic tokens only, no colour of its own, no transition or animation. The provider's calendar
+ * lives in an iframe the site cannot and does not restyle; the frame only reserves its footprint.
+ */
+.sch {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-m);
+  max-inline-size: var(--measure-reading-technical);
+}
+
+.sch [hidden] {
+  display: none;
+}
+
+.sch__lede {
+  margin: 0;
+  font-size: var(--font-size-lead);
+}
+
+.sch__heading,
+.sch__status-title {
+  margin: 0 0 var(--space-xs);
+  font-size: var(--font-size-h3);
+}
+
+.sch__steps {
+  margin: 0;
+  padding-inline-start: var(--space-l);
+  display: grid;
+  gap: var(--space-2xs);
+}
+
+.sch__zone,
+.sch__note,
+.sch__privacy {
+  margin: 0;
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-sm);
+}
+
+.sch__load-row,
+.sch__fallback {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
+  margin: 0;
+}
+
+.sch__load {
+  padding: var(--space-xs) var(--space-m);
+  border: var(--border-width-hairline) solid var(--color-folder-border);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface-card);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+}
+
+.sch__load:disabled {
+  cursor: default;
+}
+
+.sch__link {
+  font-weight: var(--font-weight-semibold);
+}
+
+/* The reserved footprint of the provider's calendar: no layout jump while it loads. */
+.sch__frame {
+  min-block-size: 40rem;
+  max-inline-size: 100%;
+  overflow-x: auto;
+}
+
+.sch__status {
+  margin: 0;
+  padding: var(--space-s) var(--space-m);
+  border: var(--border-width-hairline) solid var(--color-folder-border);
+  border-inline-start-width: 0.25rem;
+  border-radius: var(--radius-card);
+}
+
+.sch__status-card {
+  padding: var(--space-s) var(--space-m);
+  border: var(--border-width-hairline) solid var(--color-folder-border);
+  border-inline-start-width: 0.25rem;
+  border-radius: var(--radius-card);
+}
+
+.sch__status-card > p {
+  margin: 0;
+}
+
+/* The specimen's synthetic calendar: a month grid of buttons, every one a real, focusable control. */
+.sim {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--space-s);
+}
+
+.sim__cal {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: var(--space-3xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sim__dow {
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+}
+
+.sim__day {
+  inline-size: 100%;
+  min-block-size: 2.75rem;
+  padding: 0;
+  border: var(--border-width-hairline) solid var(--color-folder-border);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface-card);
+  cursor: pointer;
+}
+
+.sim__day[aria-disabled="true"] {
+  border-style: dashed;
+  color: var(--color-text-muted);
+  background-color: transparent;
+  cursor: default;
+}
+
+.sim__day[aria-pressed="true"],
+.sim__slot[aria-pressed="true"] {
+  border-width: 0.2rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.sim__blank {
+  min-block-size: 2.75rem;
+}
+
+.sim__bar select {
+  max-inline-size: 100%;
+}
+
+.sim__bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs) var(--space-s);
+}
+
+.sim__slots {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.sim__slot,
+.sim__action {
+  padding: var(--space-2xs) var(--space-s);
+  border: var(--border-width-hairline) solid var(--color-folder-border);
+  border-radius: var(--radius-card);
+  background-color: var(--color-surface-card);
+  cursor: pointer;
+}
+
+.sim__panel > * + * {
+  margin-block-start: var(--space-s);
+}
+
+.sim__gallery {
+  display: grid;
+  gap: var(--space-s);
+}

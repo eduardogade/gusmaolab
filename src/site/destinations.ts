@@ -27,6 +27,8 @@ export type DestinationSource =
   | "planned"
   /** The Contact page (P18): `ready` once the owner has approved at least one public channel. */
   | "contact"
+  /** The Schedule page (P21): `ready` once the owner has configured and enabled a booking link. */
+  | "scheduling"
   /** A parent folder: its page introduces its children, and its state follows theirs. */
   | "overview"
 
@@ -82,10 +84,10 @@ export const DESTINATIONS: Readonly<Record<string, DestinationSpec>> = {
     related: ["schedule", "lab-join-us"],
   },
   schedule: {
-    source: "planned",
-    intro: "Schedule is where meetings with Eduardo Gade Gusmao will be arranged.",
+    source: "scheduling",
+    intro: "Schedule is where you can request a meeting with Eduardo Gade Gusmao.",
     whileMissing:
-      "Booking is not set up yet, so no times are shown and no request can be sent. When it is, it is expected to use an external scheduling service rather than a calendar kept on this site.",
+      "Booking is not set up yet, so no times are shown and no request can be sent. When it is, requests will go through an external scheduling service, and each one will be reviewed before it is confirmed. For now, please use Contact.",
     related: ["contact"],
   },
 

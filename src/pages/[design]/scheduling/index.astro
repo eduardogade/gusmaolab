@@ -1,0 +1,72 @@
+---
+// The development scheduling specimen (P21, D-150): the real Schedule wrapper (ScheduleBooking in its
+// demonstration form) around a synthetic calendar, and the states a request can show, so the whole
+// Schedule experience can be inspected at localhost while the owner has no provider account. It is
+// not a booking product and not the real page: no provider is contacted, nothing is collected or
+// stored, and every date and time is synthetic. The real page is /schedule/. Routed only when
+// `demosEnabled()` is true (src/editorial/demo.ts); a release build has no page here and its output
+// is searched for it.
+import FolderPage from "../../../layouts/FolderPage.astro"
+import ScheduleBooking from "../../../components/schedule/ScheduleBooking.astro"
+import RequestStatus from "../../../components/schedule/RequestStatus.astro"
+import StateNotice from "../../../components/states/StateNotice.astro"
+import SyntheticCalendar from "../../../design/scheduling/SyntheticCalendar.astro"
+import { SITE_MAP, SITE_MAP_LABEL } from "../../../design/site-map.ts"
+import { demosEnabled } from "../../../editorial/demo.ts"
+import { COPY } from "../../../scheduling/copy.ts"
+import { siteScheduling } from "../../../scheduling/index.ts"
+import { DESTINATIONS } from "../../../site/destinations.ts"
+import type { RequestState } from "../../../scheduling/copy.ts"
+
+export function getStaticPaths() {
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
+}
+
+const states: RequestState[] = ["verification", "pending", "confirmed", "declined", "unavailable"]
+// The demonstration wrapper takes the real configured zone, and never a booking link.
+const demoView = { state: "unconfigured" as const, ownerTimeZone: siteScheduling.ownerTimeZone }
+---
+
+<FolderPage path="/schedule/" title="Scheduling Integration · GusmaoLab">
+  <aside class="home-specimen" role="note" data-scheduling-specimen>
+    <p>
+      <strong>Development demonstration: no real booking will be created.</strong> This is a specimen,
+      not a page of the website. It shows the Schedule page's layout, a month calendar and the states
+      of a request with <strong>synthetic</strong> dates and times; no provider is contacted, nothing is
+      collected or stored, and no email is sent. The real page is <a href="/schedule/">Schedule</a>
+      (currently <strong data-scheduling-real-state>{siteScheduling.state}</strong>). A production build leaves this page out.
+    </p>
+    <p><a href="/">The real homepage</a> · <a href={SITE_MAP}>{SITE_MAP_LABEL}</a></p>
+  </aside>
+
+  <div class="dest">
+    <div class="gl-prose">
+      <h1>Schedule (specimen)</h1>
+      <p class="dest__lede">{COPY.intro}</p>
+    </div>
+
+    <ScheduleBooking view={demoView} id="specimen" demo>
+      <SyntheticCalendar />
+    </ScheduleBooking>
+
+    <section class="sim__gallery" aria-labelledby="sim-states" data-sim-gallery>
+      <h2 id="sim-states" class="sch__heading">Every state of a request</h2>
+      <p class="sch__note">
+        The same words the page uses. The real page shows only the provider's own states; a request is
+        never shown as confirmed until the provider has recorded the owner's acceptance.
+      </p>
+      {states.map((state) => <RequestStatus state={state} />)}
+    </section>
+
+    <section class="sim__gallery" aria-labelledby="sim-failure" data-sim-failure>
+      <h2 id="sim-failure" class="sch__heading">When the calendar cannot load</h2>
+      <p class="sch__status" data-sim-failure-text>{COPY.failed}</p>
+    </section>
+
+    <section class="sim__gallery" aria-labelledby="sim-unconfigured" data-sim-unconfigured>
+      <h2 id="sim-unconfigured" class="sch__heading">Before a booking link exists</h2>
+      <p class="sch__note">What the real page says while scheduling is not set up. No times, no form, no button.</p>
+      <StateNotice state="preparation" id="specimen-schedule" text={DESTINATIONS.schedule!.whileMissing!} />
+    </section>
+  </div>
+</FolderPage>

@@ -14,6 +14,7 @@ import { CV_SNAPSHOT } from "../data/cv/snapshot.ts"
 import { cvProjection, labProjection, portfolioProjection, siteRecords } from "../records/index.ts"
 import type { CvProjection, LabProjection, PortfolioProject, Records } from "../records/index.ts"
 import { siteChannels } from "../contact/index.ts"
+import { siteScheduling } from "../scheduling/index.ts"
 import type { PageFacts } from "./coverage.ts"
 import type { RecordsKey } from "./destinations.ts"
 
@@ -64,6 +65,7 @@ export function pageFacts(
   editorial: Readonly<Record<string, number>>,
   views: RecordViews = siteRecordViews(),
   contact: number = siteChannels.length,
+  scheduling: boolean = siteScheduling.state === "ready",
 ): PageFacts {
-  return { editorial, records: recordCounts(views), contact }
+  return { editorial, records: recordCounts(views), contact, scheduling }
 }

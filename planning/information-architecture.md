@@ -381,6 +381,8 @@ All 36 registered folders (11 sections and 25 children; no third-level folder) h
 
 **Planned features.** Contact, Schedule, Join Us, Facilities, Resources and the four Bearnard pages are declared planned. Contact and Schedule do not pretend to work: P18 completes Contact, and booking waits for a provider (R-10, E-02).
 
+**Schedule (P21).** `/schedule/` stays in Core and is not a tab-level change: a `scheduling` destination, `preparation` until the owner approves a booking link (then `ready`). The development specimen `/_design/scheduling/` ("Scheduling Integration") is not a folder, adds no tab and is development-only (D-105, D-150).
+
 ## 19. Contact, downloads and a missing address (P18)
 
 **Contact** (`/contact/`, Core, a leaf) lists the owner's approved public channels, grouped by use (general inquiries, research collaboration, professional opportunities, technical and project discussions), from `src/data/contact.ts` (D-126). That file is the only source: a channel needs an owner's approval date, and nothing found elsewhere in the repository counts. Today it is empty and the page says that direct contact details are being prepared. An email channel is a readable address and a plain `mailto:` link; a profile channel is an ordinary external link; neither forces a new tab. There is no form (GitHub Pages has no backend and no form service is chosen). **To add a channel**, add one entry to `src/data/contact.ts` (the file's comment shows the shape); the build fails for an invalid or unapproved one. A profile URL already held by a Person record stays in that record. Privacy: the CV's contact details and references are private and are never imported.

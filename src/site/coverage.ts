@@ -25,6 +25,8 @@ export interface PageFacts {
   readonly records: Readonly<Partial<Record<RecordsKey, number>>>
   /** Public contact channels the owner has approved (P18). */
   readonly contact?: number
+  /** Whether the owner has configured and enabled a booking link (P21). */
+  readonly scheduling?: boolean
 }
 
 export const NO_FACTS: PageFacts = { editorial: {}, records: {} }
@@ -74,6 +76,10 @@ function ownState(
         ? { state: "ready", reason: plural(n, "approved contact channel", "approved contact channels") }
         : { state: "preparation", reason: "no contact channel approved for the public site" }
     }
+    case "scheduling":
+      return facts.scheduling === true
+        ? { state: "ready", reason: "a booking link the owner has approved" }
+        : { state: "preparation", reason: "no booking link approved for the public site" }
     case "planned":
       return { state: "preparation", reason: "declared planned; material not yet supplied" }
     case "overview":

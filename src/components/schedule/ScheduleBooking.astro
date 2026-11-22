@@ -1,0 +1,78 @@
+---
+/**
+ * The Schedule page when scheduling is ready (P21, D-147 to D-149): the workflow in words, the time
+ * zone note, a button (revealed by the script, so without scripts the page shows no dead control) that loads the provider's monthly booking calendar into a reserved frame, the
+ * provider's own booking page as an ordinary link that works without any script, and a disclosure
+ * that an external service handles the booking.
+ *
+ * It draws a booking interface only from a `ready` public view, which exists only when the owner has
+ * configured a real booking link (src/scheduling/config.ts). With no such view it draws nothing: the
+ * unconfigured page is the destination's honest notice, with no times, no button and no form.
+ *
+ * `demo` is for the development specimen: it draws the same wrapper but no script, no provider and
+ * no link, and puts the synthetic calendar from the slot in the frame. The real page never passes it.
+ */
+import RequestLifecycle from "./RequestLifecycle.astro"
+import ScheduleEmbed from "./ScheduleEmbed.astro"
+import { COPY, PROVIDER_PRIVACY_URL } from "../../scheduling/copy.ts"
+import type { PublicScheduling } from "../../scheduling/config.ts"
+
+interface Props {
+  view: PublicScheduling
+  /** A unique ID for the headings. */
+  id: string
+  demo?: boolean
+}
+
+const { view, id, demo = false } = Astro.props
+const live = view.state === "ready" && !demo
+---
+
+{
+  (view.state === "ready" || demo) && (
+    <section
+      class="sch"
+      data-schedule
+      data-schedule-state={demo ? "demonstration" : view.state}
+      data-booking-status="idle"
+      data-schedule-config={live ? JSON.stringify(view) : undefined}
+    >
+      <p class="sch__lede">{COPY.intro}</p>
+      <RequestLifecycle id={id} />
+      <p class="sch__zone" data-schedule-timezone>{COPY.timezone(view.ownerTimeZone)}</p>
+
+      {live ? (
+        <div class="sch__stage">
+          <p class="sch__load-row" data-schedule-load-row hidden>
+            <button type="button" class="sch__load" data-schedule-load>{COPY.load}</button>
+            <span class="sch__note">{COPY.loadNote}</span>
+          </p>
+          <p class="sch__status" role="status" data-schedule-status hidden />
+          <div class="sch__frame" data-schedule-frame hidden aria-label="Booking calendar" />
+        </div>
+      ) : (
+        <div class="sch__stage sch__stage--demo">
+          <slot />
+        </div>
+      )}
+
+      {
+        live && (
+          <p class="sch__fallback" data-schedule-fallback>
+            <a href={view.bookingUrl} class="sch__link">{COPY.fallback}</a>
+            <span class="sch__note">{COPY.fallbackNote}</span>
+          </p>
+        )
+      }
+
+      {
+        live && (
+          <p class="sch__privacy" data-schedule-disclosure>
+            {COPY.disclosure} <a href={PROVIDER_PRIVACY_URL} rel="noopener">{COPY.privacyLink}</a>.
+          </p>
+        )
+      }
+      {live && <ScheduleEmbed />}
+    </section>
+  )
+}

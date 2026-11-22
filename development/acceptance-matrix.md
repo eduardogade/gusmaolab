@@ -883,3 +883,27 @@ G-12 (the interactive nucleus) and G-13 (the eight clocks) are not closed by P15
 | G-P20-21 | Documentation, decisions and the multi-domain brief | **Passed** (D-137 to D-143, `planning/nucleus-multidomain.md`) |
 | G-P20-22 | The nucleus and the tabs are visible together at an ordinary window height | **Passed** in Chromium (NUCINT-055, -055B, D-144): the owner chose to keep the tab row on screen; at 1440 × 900 the region moved toward CV with the preview open. Not shown: browsers without scroll-state container queries, which keep the old behaviour. Costs: a 1 px line across the selected tab's foot, and one z-index animation (an exception to "no animation") |
 | G-P20-23 | The owner reviews the homepage with the nucleus and the sticky tab row, and confirms the two costs of D-144 | **Partly done**: the owner accepted both costs of D-144 on 2026-11-22. Their review of the homepage itself (look, motion, words) is **pending** |
+
+## P21 — Scheduling integration
+
+Status values: **Passed** (run and observed), **Blocked** (needs the owner's provider account; not passed), **Observed**, **Untested**. The provider is never contacted by a test.
+
+| ID | Requirement | Status |
+| --- | --- | --- |
+| G-P21-01 | `/schedule/` remains in Core, in the physical-folder layout, with the eleven tabs | **Passed** (SCH-001 to -003, -063 to -065) |
+| G-P21-02 | A validated, switched-off configuration; provider explicit; invalid or half-enabled setups refused; owner zone `America/Recife`, IANA only | **Passed** (SCH-004, -005, -007, -012) |
+| G-P21-03 | Unconfigured Schedule is honest: no times, no form, no button, no script, Contact reachable; state derived | **Passed** (SCH-006, -011, -067) |
+| G-P21-04 | No credential reaches a bundle or the repository; no tracking; no stored visitor data | **Passed** (SCH-008, -052, -053, -055) |
+| G-P21-05 | The availability-file path is configurable, validated, never public; a missing file and no adapter are reported honestly; nothing invented | **Passed** (SCH-009, -010, -011) |
+| G-P21-06 | Provider code loads only on Schedule, only after a press, only from one origin | **Passed** (SCH-016, -019, -054, -014S) |
+| G-P21-07 | Failure, block, slow or refused provider gives a plain message, the hosted link and Contact; navigation keeps working; no script, no dead button | **Passed** (SCH-017, -017B, -018B, -020, -020B, -048) |
+| G-P21-08 | The loader asks for the monthly view and wires loading, ready and failed | **Passed** against a stand-in only (SCH-013, -014S); the real calendar is **Blocked** (SCH-013B, -014) |
+| G-P21-09 | The hosted booking page link is the configured link | **Passed** as wiring (SCH-015); that the link opens a real page is **Blocked** (SCH-015B) |
+| G-P21-10 | Real slots, conflicts, holds, email verification (and its bypass), pending state, owner and visitor emails, approval, rejection, calendar entry, double booking | **Blocked** (SCH-021 to -035, -042): no provider account. Not run, not passed |
+| G-P21-11 | Time zones from the standard library: six zones, a date boundary, a year boundary, two DST changes, no fixed offset | **Passed** (SCH-036 to -043) |
+| G-P21-12 | A request never sounds confirmed; no promised response time; verification is not called proof of a human | **Passed** (SCH-049) |
+| G-P21-13 | The specimen is clickable from Home, labelled, collects nothing, and absent from the release | **Passed** (SCH-050, -050B, -051, -071) |
+| G-P21-14 | Keyboard, visible focus, layout at 320 to 1440 px, no horizontal overflow | **Passed** in Chromium (SCH-044 to -047); no real phone, Safari, Firefox or screen reader |
+| G-P21-15 | Home, clocks, nucleus, sticky tabs and D-144, previews, folders, palettes, editorial, Contact, downloads, 404, CV and Bearnard unchanged | **Passed** (SCH-056 to -070) |
+| G-P21-16 | Guide, decisions and records; the operations guide | **Passed** (D-145 to D-150, `development/scheduling-guide.md`) |
+| G-P21-17 | The owner creates an account, event type and availability, enables the page, and runs the blocked checks | **Waiting for the owner** |

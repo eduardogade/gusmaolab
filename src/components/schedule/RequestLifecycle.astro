@@ -1,0 +1,23 @@
+---
+/**
+ * How a booking request works (P21, D-149): four plain steps, in the words of src/scheduling/copy.ts,
+ * so the page never lets a request pass for a confirmed meeting. Text only; it holds no state and
+ * controls nothing: the provider owns the request, its verification and its decision.
+ */
+import { COPY } from "../../scheduling/copy.ts"
+
+interface Props {
+  /** A unique ID for the heading. */
+  id: string
+}
+
+const { id } = Astro.props
+const titleId = `lifecycle-${id}`
+---
+
+<section class="sch__how" aria-labelledby={titleId} data-schedule-lifecycle>
+  <h2 id={titleId} class="sch__heading">{COPY.lifecycleTitle}</h2>
+  <ol class="sch__steps">
+    {COPY.lifecycle.map((step) => <li>{step}</li>)}
+  </ol>
+</section>

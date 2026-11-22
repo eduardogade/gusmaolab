@@ -49,6 +49,14 @@ export const MARKERS = [
   "demo-downloads",
   "synthetic-sample",
   "Synthetic sample",
+  // The scheduling specimen (P21, D-150): its page, its synthetic calendar and its simulated states.
+  "data-scheduling-specimen",
+  "data-sim-calendar",
+  "data-sim-gallery",
+  "data-schedule-simulation-label",
+  "Scheduling Integration",
+  "no real booking will be created",
+  "scheduling-fixture",
   // The 3D nucleus prototype (P19, D-136): its page, its controls and its script. The nucleus itself
   // is on the real homepage since P20 (D-139), so its engine, the frame and the renderer are not
   // listed here: a release build holds those on purpose and only Home loads them (tests/nucleus-

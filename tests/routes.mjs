@@ -521,7 +521,11 @@ test("NAV-031", "Plain links; navigation needs no JavaScript", (check) => {
       // P20 (D-139): the homepage nucleus stage's one script element.
       file === "components/home/NucleusStage.astro" ||
       // P19 (D-136): the development nucleus specimen's guarded entry script; it is never in a release.
-      file === "pages/[design]/nucleus/index.astro"
+      file === "pages/[design]/nucleus/index.astro" ||
+      // P21 (D-147, D-150): the Schedule page's one script, rendered only when scheduling is ready (so a
+      // release without a booking link ships none), and the development specimen's calendar script.
+      file === "components/schedule/ScheduleEmbed.astro" ||
+      file === "design/scheduling/SyntheticCalendar.astro"
     check(
       allowed || !/<script\b/i.test(text),
       `src/${file} contains a <script> element`,
@@ -606,6 +610,8 @@ test("NAV-032", "Every approved route is a static page", (check) => {
         "[design]/quarto/index.astro",
         "[design]/quarto/markdown.astro",
         "[design]/records.astro",
+        // P21: the development scheduling specimen; static paths only in dev and demo mode.
+        "[design]/scheduling/index.astro",
         // P17: the development site map; static paths only in dev and demo mode.
         "[design]/site-map/index.astro",
         "[design]/tokens.astro",

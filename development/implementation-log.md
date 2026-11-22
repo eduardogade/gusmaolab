@@ -1076,3 +1076,19 @@ O trabalho começou na branch `development` com alterações alheias, inclusive 
 **Verified.** See the completion report; `npm run verify` and `npm run test:browser` were run on the committed tree.
 
 **Not done, by design or not possible here.** Several chromatin domains; any change to P15's composition; a real touch device, Android GPU, Safari, Firefox or screen reader; deployment; P21.
+
+## P21 — Scheduling integration
+
+**What was built.** The Schedule page's integration with an external provider (Cal.com) and nothing else: `src/data/scheduling.ts` (switched off), `src/scheduling/` (`config.ts` validation and the public view; `availability.ts` the future-file boundary; `time.ts` IANA time zones; `embed.ts` the loader; `copy.ts` and `messages.ts` the words), `src/scripts/schedule-embed.ts`, `src/components/schedule/` (`ScheduleBooking`, `ScheduleEmbed`, `RequestLifecycle`, `RequestStatus`), a `scheduling` destination source (P17), `scripts/scheduling.mjs` (`npm run scheduling:check`), the development specimen `/_design/scheduling/` (`src/design/scheduling-fixture.ts`, `src/design/scheduling/SyntheticCalendar.astro`, `src/scripts/scheduling-specimen.ts`), styles in `states.css`, `tests/scheduling.mjs`, `tests/scheduling-browser.mjs`, `tests/scheduling-ready-build.mjs`, `development/scheduling-guide.md`, D-145 to D-150, and G-P21-01 to -17.
+
+**Decisions made along the way.** The booking calendar loads on a button press, not on page view, so a page view contacts nothing and needs no consent banner (D-147). Enabling needs the owner's dated attestation of three provider settings; the build refuses less (D-145). The page's script is its own component so every other page ships none. With scripts off, the button is not drawn.
+
+**Found in testing.** `Intl.DateTimeFormat` accepts `-03:00` as a time zone, so `isValidTimeZone` also requires an IANA-shaped name (SCH-012). The page's script first imported all the page copy, which put the specimen's "Meeting confirmed" text into the real page's bundle; the two sentences it needs moved to `messages.ts` (SCH-049). A grid with one auto column let the zone chooser's longest option widen the page at 320 px (SCH-045). The harness's first focus check used a programmatic `focus()`, which is not `:focus-visible`; it now reaches each control by Tab (SCH-047).
+
+**Existing checks changed, and why.** `tests/routes.mjs`: NAV-031 names the two new components that contain a script, and NAV-032 the new specimen route; nothing was loosened. The demo check searches the specimen's markers in a release. `src/site/destinations.ts`: Schedule's source changed from `planned` to `scheduling`, and its notice now says requests will be reviewed before confirmation.
+
+**Verified.** See the completion report. The provider was never contacted.
+
+**Not done, by design or not possible here.** A Cal.com account, event type, calendar, real availability, any operational test (SCH-013B, 014, 015B, 021 to 035, 042), the availability adapter and any synchronisation, a Content-Security-Policy, deployment, P22.
+
+**Observed, not caused by P21.** In the full browser run, NUC-031 (P19, keyboard focus on the nucleus specimen) failed twice with an activation of exactly 20 where it expects more than 20 after 700 ms. The same test passed on an unmodified checkout of HEAD, and passed twice on the P21 tree on rerun: its threshold depends on frame timing under load. It was not changed.

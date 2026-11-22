@@ -622,7 +622,8 @@ await test("NUC-037", "Homepage preservation: P15's regions are unchanged; P20 c
   if (!gitAvailable) return skip("git is not available")
   // P19 left Home alone; P20 (D-139) mounts the nucleus in the stage. Everything else of P15 stays as it was.
   const touched = changedSinceBase(["src/components/home", "src/home", "src/styles/home.css", "src/components/states", "src/site", "src/layouts"])
-  const allowed = ["src/components/home/NucleusStage.astro", "src/home/nucleus-navigation.ts", "src/styles/home.css"]
+  // P21 (D-149) added a `scheduling` destination source, which touched these four page-state files and nothing of Home.
+  const allowed = ["src/components/home/NucleusStage.astro", "src/home/nucleus-navigation.ts", "src/styles/home.css", "src/components/states/DestinationPage.astro", "src/site/coverage.ts", "src/site/destinations.ts", "src/site/facts.ts"]
   check(touched.every((f) => allowed.includes(f)), `Home sources changed beyond the stage: ${json(touched.filter((f) => !allowed.includes(f)))}`)
   const diff = git("diff", BASE, "--", "src/pages/index.astro").stdout
   const changed = diff.split("\n").filter((l) => /^[+-][^+-]/.test(l))
@@ -680,9 +681,11 @@ await test("NUC-043", "The CV files are untouched", async (check, skip) => {
 await test("NUC-046", "Contact, downloads, the 404 page and the site map keep working", async (check, skip) => {
   if (!gitAvailable) return skip("git is not available")
   const touched = changedSinceBase(["src/contact", "src/data/contact.ts", "src/downloads", "src/data/downloads.ts", "src/pages/404.astro", "src/layouts/ErrorPage.astro", "src/components/contact", "src/components/downloads", "scripts/downloads.mjs", "src/site", "scripts/links.mjs"])
-  check(touched.length === 0, `P17/P18 files changed: ${json(touched)}`)
+  // P21 (D-149): Schedule became a `scheduling` destination; these three files carry that and nothing about Contact, downloads or the 404 page.
+  const P21 = ["src/site/coverage.ts", "src/site/destinations.ts", "src/site/facts.ts"]
+  check(touched.filter((f) => !P21.includes(f)).length === 0, `P17/P18 files changed: ${json(touched.filter((f) => !P21.includes(f)))}`)
   const diff = git("diff", BASE, "--", "src/design/site-map.ts").stdout.split("\n").filter((l) => /^[+-][^+-]/.test(l))
-  check(diff.every((l) => l.startsWith("+") && /NUCLEUS|nucleus|3D|Nucleus/.test(l.replace(/^\+\/\*\*.*$/, "nucleus"))), `the site map's list lost something: ${json(diff)}`)
+  check(diff.every((l) => l.startsWith("+") && /NUCLEUS|nucleus|3D|Nucleus|SCHEDULING|Scheduling/.test(l.replace(/^\+\/\*\*.*$/, "nucleus"))), `the site map's list lost something: ${json(diff)}`)
   check(DEV_PAGES.some((p) => p.href === NUCLEUS_PAGE && p.label === "3D Nucleus Prototype"), "the nucleus is not in the development list")
   check(existsSync(join(dist, "contact/index.html")) && existsSync(join(dist, "404.html")), "a page of P18 is missing from the build")
 })

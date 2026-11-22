@@ -1,0 +1,11 @@
+---
+/**
+ * The Schedule page's script (P21, D-147), isolated in its own component so that it is rendered
+ * only when scheduling is ready: Astro bundles a component's script into the pages that render it,
+ * so every other page, and Schedule itself while unconfigured, ship no scheduling code.
+ */
+---
+
+<script>
+  import "../../scripts/schedule-embed.ts"
+</script>
