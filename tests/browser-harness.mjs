@@ -631,6 +631,11 @@ export async function startBrowser({
       process.exit(1)
     }
     console.log(`PASS: ${results.length} browser checks in ${browser}`)
+    // End the process: a suite that started a dev server (demo-dev-browser, authoring-browser) kept its event loop alive
+    // through the server's pipe on the GitHub runner, where `npx astro dev` stays attached instead of handing off as it
+    // does on a Mac, and sat for the orchestrator's whole 900 s after every check had passed. A failing run already
+    // exits (above); a passing one must too, and the exit handler stops the server.
+    process.exit(0)
   }
 
   return {

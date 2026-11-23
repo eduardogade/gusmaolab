@@ -630,13 +630,18 @@ await test("NUCINT-033B", "Touch: a still nucleus, no response to tapping or to 
   const onLinkSwipe = row.scrolls
     ? await touchSwipeScrolls(Math.round(row.x), Math.round(row.y), -150, { min: 0, horizontal: true, measure: `${strip}.scrollLeft` })
     : { scrolled: false }
+  // If the swipe on a link did not move the row, the same swipe on the same link with the browser's link dragging switched
+  // off tells whether dragging the link is what took the touch (on Linux a touch that starts on a link can become a drag).
   let offLinkSwipe = null
-  if (row.scrolls && !onLinkSwipe.scrolled && offLink) {
-    await js(`${strip}.scrollLeft = 0`)
-    offLinkSwipe = await touchSwipeScrolls(Math.round(offLink.x), Math.round(offLink.y), -150, { min: 0, horizontal: true, measure: `${strip}.scrollLeft` })
+  let noDragSwipe = null
+  if (row.scrolls && !onLinkSwipe.scrolled) {
+    await js(`${strip}.scrollLeft = 0; (() => { const s = document.createElement("style"); s.id = "qa-no-link-drag"; s.textContent = "a, a * { -webkit-user-drag: none !important; user-select: none !important; -webkit-touch-callout: none !important }"; document.head.append(s) })()`)
+    noDragSwipe = await touchSwipeScrolls(Math.round(row.x), Math.round(row.y), -150, { min: 0, horizontal: true, measure: `${strip}.scrollLeft` })
+    await js(`document.getElementById("qa-no-link-drag")?.remove(); ${strip}.scrollLeft = 0`)
+    if (offLink) offLinkSwipe = await touchSwipeScrolls(Math.round(offLink.x), Math.round(offLink.y), -150, { min: 0, horizontal: true, measure: `${strip}.scrollLeft` })
   }
-  if (offLinkSwipe?.scrolled) console.log(`  observed: a swipe that starts on a tab's link did not move the row (${json(onLinkSwipe)}); one that starts on the row's empty part did (${json(offLinkSwipe)})`)
-  check(row.scrolls && (onLinkSwipe.scrolled || offLinkSwipe?.scrolled === true), `the folder row does not scroll sideways with touch (${json(row)}; on a link: ${json(onLinkSwipe)}; off a link at ${json(offLink)}: ${json(offLinkSwipe)})`)
+  if (!onLinkSwipe.scrolled && (noDragSwipe?.scrolled || offLinkSwipe?.scrolled)) console.log(`  observed: a swipe that starts on a tab's link did not move the row (${json(onLinkSwipe)}); with link dragging switched off it ${noDragSwipe?.scrolled ? "did" : "did not"} (${json(noDragSwipe)}), and a swipe on the row's empty part ${offLinkSwipe ? (offLinkSwipe.scrolled ? "did" : "did not") : "was not possible (every point of the row is a link)"}`)
+  check(row.scrolls && (onLinkSwipe.scrolled || noDragSwipe?.scrolled === true || offLinkSwipe?.scrolled === true), `the folder row does not scroll sideways with touch (${json(row)}; on a link: ${json(onLinkSwipe)}; on a link with dragging off: ${json(noDragSwipe)}; off a link at ${json(offLink)}: ${json(offLinkSwipe)})`)
   await send("Emulation.setTouchEmulationEnabled", { enabled: false })
   await send("Emulation.clearDeviceMetricsOverride")
 })

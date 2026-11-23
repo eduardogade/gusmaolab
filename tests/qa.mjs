@@ -345,6 +345,20 @@ await test("QA-FLAKE-01", "NUC-031 is investigated: the record names the cause w
   check(/activation\)? ?> 20|> 20/.test(test031), "NUC-031's standard was lowered")
 })
 
+// P22-A01: a browser suite that started a dev server (demo-dev-browser, authoring-browser) passed every check on the GitHub
+// runner and then sat for the orchestrator's whole 900 s, because `npx astro dev` stays attached to the test process there
+// (on a Mac it hands off and exits) and its pipe kept the event loop alive. Every run of a failing suite ends the process;
+// a passing one must too, or the orchestrator reports a suite whose checks all passed as failed.
+await test("QA-EXIT-02", "A passing browser suite ends its own process, so nothing left running can hold it until the orchestrator's timeout", async (check) => {
+  const harness = await read("tests/browser-harness.mjs")
+  const finish = harness.slice(harness.indexOf("async function finish()"))
+  check(/console\.log\(`PASS: \$\{results\.length\} browser checks[^\n]*\n(\s*\/\/[^\n]*\n)*\s*process\.exit\(0\)/.test(finish), "finish() does not end the process after a passing run")
+  for (const file of ["tests/demo-dev-browser.mjs", "tests/authoring-browser.mjs"]) {
+    const source = await read(file)
+    check(/process\.on\("exit", stopDev\)/.test(source) && /await finish\(\)\s*$/.test(source.trimEnd()), `${file}: the dev server is not stopped by the exit that finish() now makes`)
+  }
+})
+
 // P22-A01: `.ed__body pre` and `.ed__body table` scroll sideways inside their own box (editorial.css), and a scrolling
 // region the keyboard cannot reach fails WCAG 2.1.1. Whether a table overflows depends on the font (the first GitHub
 // run, on a runner with a wider fallback font, was the first to see it), so axe alone cannot guard this on a machine
