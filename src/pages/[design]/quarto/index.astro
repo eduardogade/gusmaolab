@@ -10,8 +10,10 @@ import { readingContext } from "../../../editorial/reading.ts"
 import type { CommonData } from "../../../editorial/schema.ts"
 import { scientificDocument } from "../../../science/index.ts"
 
+import { demosEnabled } from "../../../editorial/demo.ts"
+
 export function getStaticPaths() {
-  return [{ params: { design: "_design" } }]
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
 }
 
 const article = scientificDocument("design/synthetic-specimen")

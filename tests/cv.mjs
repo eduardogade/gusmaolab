@@ -1344,7 +1344,8 @@ await test("CV-015", "No approved CV data does not break the build", (check) => 
   const site = pages.filter(
     (f) => !f.startsWith("_design/editorial/") && !f.startsWith("_design/quarto/") && f !== "404.html",
   )
-  check(site.length === 40, `the build has ${site.length} pages, not 40`)
+  // P22 (D-157): the 36 registered folders; the four studies that made it 40 are development pages now.
+  check(site.length === 36, `the build has ${site.length} pages, not 36`)
   check(pages.includes("cv/index.html"), "the CV folder's page is not built")
   check(CV_SNAPSHOT === null, "the build was not made without a snapshot")
   check(
@@ -1492,7 +1493,7 @@ await test(
     const site = pages.filter(
       (f) => !f.startsWith("_design/editorial/") && !f.startsWith("_design/quarto/") && f !== "404.html",
     )
-    check(site.length === 40, `${site.length} pages: a record made or lost a page`)
+    check(site.length === 36, `${site.length} pages: a record made or lost a page`)
     for (const [file, text] of built.text) {
       for (const marker of PRIVATE_MARKERS)
         check(!text.includes(marker), `"${marker}" is in ${file}`)

@@ -1,15 +1,5 @@
 {
   "version": 1,
-  "note": "Documented, bounded exceptions the QA audits tolerate, each with its reason and what must happen to it. An exception is a ratchet: it cannot grow (a new page under a registered prefix that is not in the release today would still be caught by the routes audit), it is shown on every report as a finding, and removing it needs a decision, not an edit to a check.",
-  "exceptions": [
-    {
-      "id": "legacy-design-studies",
-      "kind": "route-prefix",
-      "prefixes": ["/_design/tokens/", "/_design/folders/", "/_design/bearnard/", "/_design/records/", "/_design/editorial/", "/_design/quarto/"],
-      "severity": "release-blocker",
-      "reason": "Six design studies from P03 to P12 (tokens, folders, Bearnard, records, the eight-collection editorial study, and the Quarto specimen) are routed in every build, so the release holds 36 pages of synthetic content (the count is in every report) under /_design/. They predate D-105, which gates every later specimen behind demosEnabled(). The tests of P03 to P12 assert that they are in dist/ (smoke test, routes, folders, bearnard, records), so gating them means moving those assertions to the demonstration build.",
-      "decision": "Owner decision before the P24 deployment: gate them like the later specimens (a small change per page, plus moving the tests' reads to dist-demo/), or remove them. P22 does not change them: it is a release-safety decision, not a quality defect in a page.",
-      "introducedIn": "P03-P12"
-    }
-  ]
+  "note": "Documented, bounded exceptions the QA audits tolerate, each with its reason and what must happen to it. An exception is a ratchet and is shown on every report as a finding. The list is empty: the one exception P22 found (the legacy design studies, ISSUE-0006) was closed by gating them (D-157).",
+  "exceptions": []
 }

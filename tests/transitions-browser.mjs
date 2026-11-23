@@ -32,6 +32,8 @@ const {
 } = await startBrowser({
   ids: Array.from({ length: 12 }, (_, i) => `TRANS-${String(i + 1).padStart(3, "0")}`),
   timeout: 300_000,
+  // P22 (D-157): this suite opens a design study, a development page that only the demonstration build routes.
+  root: "dist-demo",
 })
 
 // Each new document records how it was revealed: with a view transition or not, where its
@@ -507,7 +509,7 @@ await test(
       `(() => { const a = document.createElement("a"); a.href = "/_design/tokens/"; a.textContent = "design tokens"; a.style.cssText = "position:fixed;top:4px;left:4px;z-index:9999;padding:8px;background:#fff"; document.body.append(a); })()`,
     )
     const link = await js(
-      `(() => { const a = document.querySelector('a[href="/_design/tokens/"]'); const b = a.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 } })()`,
+      `(() => { const a = document.querySelector('a[href="/_design/tokens/"]'); a.scrollIntoView({ block: "center" }); const b = a.getBoundingClientRect(); return { x: b.left + b.width / 2, y: b.top + b.height / 2 } })()`,
     )
     await moveTo(link.x, link.y)
     for (const type of ["mousePressed", "mouseReleased"]) {

@@ -102,7 +102,9 @@ export function docInfo(doc) {
       ...base,
       fragment: `src/design/quarto/${name}.html`,
       stub: null,
-      assetDir: `public/_design/quarto/assets/${name}`,
+      // Not in public/, whose files every build copies: the study's figure is served by a route that exists
+      // only while development pages are on (P22, D-157); the URL the article names is unchanged.
+      assetDir: `src/design/quarto/assets/${name}`,
       assetBase: `/_design/quarto/assets/${name}/`,
     }
   // A demonstration is an ordinary Greenhouse entry that lives outside src/content/ and public/,

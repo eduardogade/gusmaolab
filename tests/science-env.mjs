@@ -311,7 +311,6 @@ await test("P13A-009", "A stale or edited source is refused offline", async (che
       "science",
       "src/science",
       "src/design/quarto",
-      "public/_design/quarto",
       "src/demos",
     ])
       await cp(join(repo, path), join(dir, path), {

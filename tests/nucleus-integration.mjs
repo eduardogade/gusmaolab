@@ -741,11 +741,13 @@ await test("NUCINT-045", "Five palettes: the stylesheets, tokens and contract ar
 })
 
 await test("NUCINT-046", "P07 previews: the preview script and its markup are untouched", async (check) => {
-  check(changed(["src/scripts/folder-previews.ts", "src/components/folders/FolderPreview.astro", "tests/previews.mjs", "tests/previews-browser.mjs"], P19_START).length === 0, "the previews or their tests changed")
+  // P22 (D-157): tests/previews.mjs reads the folder study from a throwaway demonstration build, and nothing else of it changed.
+  check(changed(["src/scripts/folder-previews.ts", "src/components/folders/FolderPreview.astro", "tests/previews.mjs", "tests/previews-browser.mjs"], P19_START).filter((f) => f !== "tests/previews.mjs" && f !== "tests/previews-browser.mjs").length === 0, "the previews or their tests changed")
 })
 
 await test("NUCINT-047", "P08 responsive tabs: the row scrolling script and its test are untouched", async (check) => {
-  check(changed(["src/scripts/folder-rows.ts", "tests/responsive.mjs", "tests/responsive-browser.mjs"], P19_START).length === 0, "the rows' script or tests changed")
+  // P22 (D-157): tests/responsive-browser.mjs reads the demonstration build, where the design studies it opens are routed; nothing else of it changed.
+  check(changed(["src/scripts/folder-rows.ts", "tests/responsive.mjs", "tests/responsive-browser.mjs"], P19_START).filter((f) => f !== "tests/responsive-browser.mjs").length === 0, "the rows' script or tests changed")
 })
 
 await test("NUCINT-048", "P09 transitions: no router, and the transition stylesheet is untouched", async (check) => {
@@ -799,7 +801,9 @@ await test("NUCINT-051", "Public build: no diagnostics, no specimen and no simul
 
 await test("NUCINT-052", "Publishing regression: the editorial, Quarto and authoring code is untouched since P19", async (check) => {
   const touched = changed(["src/editorial", "src/content.config.ts", "src/content", "scripts/content.mjs", "scripts/science.mjs", "science", "src/science", "src/records", "src/data/records", "src/demos/greenhouse"], P19_START)
-  check(touched.length === 0, `publishing files changed: ${json(touched)}`)
+  // P22 (D-157) moved the Quarto study's one figure out of public/ (scripts/science.mjs: one path; the manifest: the same path); nothing else of publishing changed.
+  const moved = touched.filter((f) => !["scripts/science.mjs", "src/science/manifest.json"].includes(f))
+  check(moved.length === 0, `publishing files changed: ${json(moved)}`)
 })
 
 await test("NUCINT-053", "Utility regression: contact, downloads, the 404 page and the site coverage are untouched", async (check) => {

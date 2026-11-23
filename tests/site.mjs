@@ -217,7 +217,8 @@ await test("SITE-011", "The active selection is derived from the URL", async (ch
 
 await test("SITE-013", "Every internal link of the build resolves", async (check) => {
   const { stats, issues } = await checkLinks(dist)
-  check(stats.pages >= 60 && stats.internal > 1000, `the check saw only ${json(stats)}`)
+  // P22 (D-157): the release holds the 36 folder pages and the 404 page; the development studies are not in it.
+  check(stats.pages >= 37 && stats.internal > 1000, `the check saw only ${json(stats)}`)
   check(issues.length === 0, `${issues.length} broken: ${json(issues.slice(0, 5))}`)
   // The check can fail: a synthetic site with a missing page, a bad fragment, a slashless page link.
   const tmp = await mkdtemp(join(tmpdir(), "gl-links-"))

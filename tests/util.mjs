@@ -412,7 +412,7 @@ await test("UTIL-021", "Download links follow the configured public URL conventi
   const unexpected = issues.filter((i) => i.page !== "/_design/home/")
   check(unexpected.length === 0, `broken links in the demonstration build: ${json(unexpected.slice(0, 5))}`)
   const { stats, issues: release } = await checkLinks(dist)
-  check(release.length === 0 && stats.pages > 60, `the release has ${release.length} broken links`)
+  check(release.length === 0 && stats.pages >= 37, `the release has ${release.length} broken links`)
 })
 
 // --- Error pages -------------------------------------------------------------------------------------------------

@@ -5,6 +5,7 @@
 // QTO-030 is tests/science-browser.mjs.
 //
 // Run `npm run build` first.
+import { demoBuild } from "./demo-dist.mjs"
 import { execFileSync, spawnSync } from "node:child_process"
 import {
   cp,
@@ -39,6 +40,9 @@ import { elements, labelOf, layersOf, parse, selectedOf } from "./html-tree.mjs"
 
 const repo = fileURLToPath(new URL("../", import.meta.url))
 const dist = join(repo, "dist")
+// The Quarto study and its Markdown counterpart are development pages (P22, D-157): they are read from a throwaway
+// demonstration build, and the release is checked to hold none of them.
+const demo = await demoBuild()
 const fixture = join(repo, "tests/fixtures/science")
 const json = (value) => JSON.stringify(value)
 const read = (path) => readFile(join(repo, path), "utf8")
@@ -207,7 +211,7 @@ await test(
           )
     }
     const counterpart = await readFile(
-      join(dist, "_design/quarto/markdown/index.html"),
+      join(demo.dir, "_design/quarto/markdown/index.html"),
       "utf8",
     )
     check(
@@ -218,7 +222,7 @@ await test(
       !/quarto|callout|csl-entry/.test(bodyOf(counterpart)),
       "Quarto's markers are in the Markdown counterpart",
     )
-    const specimen = await readFile(join(dist, "_design/quarto/index.html"), "utf8")
+    const specimen = await readFile(join(demo.dir, "_design/quarto/index.html"), "utf8")
     check(
       specimen.includes('data-editorial-layout="greenhouse"'),
       "the Quarto specimen is not in the Greenhouse layout",
@@ -827,9 +831,9 @@ await test(
       !/src="(?:\.\.?\/|[\w-]+_files\/)/.test(page),
       "a relative path is left in the page",
     )
-    const study = await readFile(join(dist, "_design/quarto/index.html"), "utf8")
+    const study = await readFile(join(demo.dir, "_design/quarto/index.html"), "utf8")
     for (const m of study.matchAll(/<img [^>]*src="([^"]+)"/g))
-      check(existsSync(join(dist, m[1])), `${m[1]} is not built`)
+      check(existsSync(join(demo.dir, m[1])), `${m[1]} is not built`)
     // Paths that escape are refused.
     for (const src of [
       "../x.svg",
@@ -887,7 +891,10 @@ await test(
       await Promise.all(freeze.map(async (f) => (await readFile(f)).length))
     ).reduce((a, b) => a + b, 0)
     check(bytes < 200_000, `the frozen results are ${bytes} bytes`)
-    const assets = await listFiles(join(repo, "public/_design/quarto"))
+    // P22 (D-157): the study's figure is not in public/ (every build copies that); it is in src/design/quarto/assets/
+    // and served by a route that exists only in development and demonstration builds.
+    check(!existsSync(join(repo, "public/_design")), "public/_design exists: its files would be in every build")
+    const assets = await listFiles(join(repo, "src/design/quarto/assets"))
     check(
       assets.every((f) => /\.svg$/.test(f)),
       "a non-figure is among the public assets",
@@ -1096,7 +1103,7 @@ await test(
       "_design/quarto/index.html",
       "_design/quarto/markdown/index.html",
     ]) {
-      const { layers } = layersOf(parse(await readFile(join(dist, path), "utf8")))
+      const { layers } = layersOf(parse(await readFile(join(demo.dir, path), "utf8")))
       check(
         layers.length === 2 &&
           json(selectedOf(layers[1]).map(labelOf)) === json(["The Greenhouse"]),

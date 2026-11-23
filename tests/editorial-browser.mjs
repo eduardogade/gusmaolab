@@ -24,6 +24,8 @@ const { js, click, setViewport, goto, waitForPath, press, test, finish } =
   await startBrowser({
     ids: IDS,
     timeout: 400_000,
+    // P22 (D-157): the editorial study is a development page that only the demonstration build routes.
+    root: "dist-demo",
   })
 
 const TUTORIAL = studyPath("greenhouse", "synthetic-long-tutorial")

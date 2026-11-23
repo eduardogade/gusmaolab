@@ -297,7 +297,7 @@ await test("SCH-016", "The provider's script loads only on Schedule", async (che
   const holders = [...readyText].filter(([n, t]) => /app\.cal\.com|embed\/embed\.js/.test(t)).map(([n]) => n)
   check(json(holders) === json([schedulePath]), `provider origin found in ${json(holders)}`)
   const pages = [...readyText.keys()].filter((n) => n.endsWith(".html") && n !== schedulePath)
-  check(pages.length > 60 && pages.every((n) => !/data-schedule|app\.cal\.com/.test(readyText.get(n))), "another page carries scheduling code")
+  check(pages.length >= 36 && pages.every((n) => !/data-schedule|app\.cal\.com/.test(readyText.get(n))), "another page carries scheduling code")
   check(!/data-schedule|app\.cal\.com/.test(readyText.get("index.html") ?? "x"), "Home carries scheduling code")
   check([...releaseText].every(([n, t]) => !/app\.cal\.com/.test(t)), "the unconfigured release build names the provider's origin")
 })
@@ -538,7 +538,11 @@ await unchanged("SCH-062", "The P07 previews are unchanged", ["src/scripts/folde
 await unchanged("SCH-063", "The physical-folder geometry is unchanged", ["src/components/folders/", "src/styles/folders.css", "src/styles/view-transitions.css", "src/layouts/"])
 await unchanged("SCH-064", "The five Chromatic Archive palettes are unchanged", ["src/styles/categories.css", "src/styles/tokens.css", "src/styles/environments.css", "src/design/contract.mjs"])
 await unchanged("SCH-065", "The eleven tabs and the navigation registry are unchanged", ["src/navigation/"])
-await unchanged("SCH-066", "The P10-P14 editorial publishing is unchanged", ["src/editorial/", "src/content.config.ts", "src/content/", "src/science/", "science/", "scripts/science.mjs", "scripts/content.mjs", "scripts/content-lib.mjs"])
+// P22 (D-157) moved the Quarto study's figure out of public/: one path in scripts/science.mjs and the same one in the manifest.
+await test("SCH-066", "The P10-P14 editorial publishing is unchanged", async (check) => {
+  const touched = changedSinceBase(["src/editorial/", "src/content.config.ts", "src/content/", "src/science/", "science/", "scripts/science.mjs", "scripts/content.mjs", "scripts/content-lib.mjs"]).filter((f) => !["scripts/science.mjs", "src/science/manifest.json"].includes(f))
+  check(touched.length === 0, `changed ${json(touched)}`)
+})
 
 await test("SCH-067", "P17 page coverage remains intact, with Schedule now a scheduling page", async (check) => {
   const rows = coverage(siteNavigation, pageFacts({}, siteRecordViews()))

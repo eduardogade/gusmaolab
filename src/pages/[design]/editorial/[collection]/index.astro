@@ -8,7 +8,10 @@ import { COLLECTIONS, collectionPrefix } from "../../../../editorial/collections
 import { indexItems } from "../../../../editorial/model.ts"
 import { SYNTHETIC_ENTRIES, rebaseItems } from "../../../../design/editorial-fixture.ts"
 
+import { demosEnabled } from "../../../../editorial/demo.ts"
+
 export function getStaticPaths() {
+  if (!demosEnabled()) return []
   return COLLECTIONS.map((collection) => ({
     params: { design: "_design", collection: collection.directory },
     props: { id: collection.id },

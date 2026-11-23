@@ -27,6 +27,8 @@ const {
 } = await startBrowser({
   ids: Array.from({ length: 17 }, (_, i) => `RESP-${String(i + 1).padStart(3, "0")}`),
   timeout: 300_000,
+  // P22 (D-157): the design studies are development pages that only the demonstration build routes.
+  root: "dist-demo",
 })
 
 const PHONES = [320, 360, 390, 430]

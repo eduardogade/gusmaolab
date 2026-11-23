@@ -39,6 +39,7 @@ import {
   studyPaths,
 } from "../src/design/editorial-fixture.ts"
 import { siteNavigation } from "../src/navigation/index.ts"
+import { demoBuild } from "./demo-dist.mjs"
 import { elements, labelOf, layersOf, parse, selectedOf } from "./html-tree.mjs"
 
 const repo = new URL("../", import.meta.url)
@@ -46,7 +47,10 @@ const root = fileURLToPath(repo)
 const dist = join(root, "dist")
 const json = (value) => JSON.stringify(value)
 const read = (path) => readFile(join(root, path), "utf8")
-const fileOf = (path) => join(dist, `${path.slice(1)}index.html`)
+// The editorial study is a development page (P22, D-157): it is read from a throwaway demonstration build; the real
+// collection pages are read from the release.
+const demo = await demoBuild()
+const fileOf = (path) => join(path.startsWith("/_design/") ? demo.dir : dist, `${path.slice(1)}index.html`)
 const html = (path) => readFile(fileOf(path), "utf8")
 
 const results = []
@@ -250,7 +254,7 @@ await test("EDIT-005", "An article adds no row of folder tabs", async (check) =>
 await test("EDIT-006", "Drafts have no page and are never listed", async (check) => {
   const drafts = SYNTHETIC_ENTRIES.filter((e) => e.data.status === "draft")
   check(drafts.length >= 2, "the fixture has too few drafts")
-  const files = (await listFiles(join(dist, "_design", "editorial"))).filter((f) =>
+  const files = (await listFiles(join(demo.dir, "_design", "editorial"))).filter((f) =>
     f.endsWith(".html"),
   )
   for (const draft of drafts) {
@@ -262,11 +266,11 @@ await test("EDIT-006", "Drafts have no page and are never listed", async (check)
       const page = await readFile(file, "utf8")
       check(
         !page.includes(draft.data.title),
-        `${relative(dist, file)} shows the draft "${draft.data.title}"`,
+        `${relative(demo.dir, file)} shows the draft "${draft.data.title}"`,
       )
       check(
         !page.includes(draft.data.slug),
-        `${relative(dist, file)} links the draft ${draft.data.slug}`,
+        `${relative(demo.dir, file)} links the draft ${draft.data.slug}`,
       )
     }
   }

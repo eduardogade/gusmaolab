@@ -23,8 +23,10 @@ import type {
 } from "../../navigation/index.ts"
 import { SECTIONS } from "../../navigation/registry.ts"
 
+import { demosEnabled } from "../../editorial/demo.ts"
+
 export function getStaticPaths() {
-  return [{ params: { design: "_design" } }]
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
 }
 
 // Case C needs a third level, and none is approved yet (planning/information-

@@ -21,8 +21,10 @@ import {
   validateRecords,
 } from "../../records/index.ts"
 
+import { demosEnabled } from "../../editorial/demo.ts"
+
 export function getStaticPaths() {
-  return [{ params: { design: "_design" } }]
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
 }
 
 // The fixture is loaded as a fixture: the site's own dataset would refuse it.

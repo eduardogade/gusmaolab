@@ -41,6 +41,8 @@ const {
     "PREV-013",
     "PREV-014",
   ],
+  // P22 (D-157): the folder study is a development page that only the demonstration build routes.
+  root: "dist-demo",
 })
 
 const PAGE = ".gl-folders"

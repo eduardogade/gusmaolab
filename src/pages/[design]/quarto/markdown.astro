@@ -9,8 +9,10 @@ import { readingContext } from "../../../editorial/reading.ts"
 import { SYNTHETIC_ENTRIES, rebaseContext } from "../../../design/editorial-fixture.ts"
 import * as body from "../../../design/editorial/greenhouse-long.md"
 
+import { demosEnabled } from "../../../editorial/demo.ts"
+
 export function getStaticPaths() {
-  return [{ params: { design: "_design" } }]
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
 }
 
 const record = SYNTHETIC_ENTRIES.find((e) => e.data.slug === "synthetic-long-tutorial")!

@@ -8,6 +8,7 @@
 //
 // The third level used below is a SYNTHETIC FIXTURE, labelled as such. It tests what the
 // model supports and is not approved site content.
+import { demoBuild } from "./demo-dist.mjs"
 import { readFile } from "node:fs/promises"
 import { fileURLToPath } from "node:url"
 import {
@@ -54,7 +55,8 @@ for (const path of site.pagePaths()) {
   }
   pages.set(path, { html, tree: parse(html), state: site.resolve(path).state })
 }
-const studyTree = parse(await read("/_design/folders/"))
+// The folder study is a development page (P22, D-157): read from a throwaway demonstration build.
+const studyTree = parse(await (await demoBuild()).read("_design/folders/index.html"))
 const css = (
   await Promise.all(
     [...(pages.get("/").html.matchAll(/href="\/(_astro\/[^"]+\.css)"/g) ?? [])].map(

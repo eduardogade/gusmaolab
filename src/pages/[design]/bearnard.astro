@@ -6,8 +6,10 @@ import BaseLayout from "../../layouts/BaseLayout.astro"
 import BearnardIllustration from "../../components/bearnard/BearnardIllustration.astro"
 import { ILLUSTRATIONS, ILLUSTRATION_ROLES } from "../../illustrations/bearnard.ts"
 
+import { demosEnabled } from "../../editorial/demo.ts"
+
 export function getStaticPaths() {
-  return [{ params: { design: "_design" } }]
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
 }
 
 const [portrait] = ILLUSTRATIONS

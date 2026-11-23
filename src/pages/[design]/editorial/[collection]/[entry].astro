@@ -12,7 +12,10 @@ import {
   rebaseContext,
 } from "../../../../design/editorial-fixture.ts"
 
+import { demosEnabled } from "../../../../editorial/demo.ts"
+
 export function getStaticPaths() {
+  if (!demosEnabled()) return []
   return SYNTHETIC_ENTRIES.filter((e) => e.data.status !== "draft").map((e) => ({
     params: {
       design: "_design",

@@ -1,6 +1,6 @@
 # ISSUE-0006 — Legacy design studies are routed in the release build
 
-Status: **open, owner decision needed before P24.** Found by the P22 route audit (QA-ROUTE-07, `development/qa-exceptions.json`).
+Status: **resolved by D-157 (the owner chose option A: gate all six).** Found by the P22 route audit (QA-ROUTE-07, `development/qa-exceptions.json`).
 
 ## What is there
 
@@ -23,3 +23,7 @@ Five older test files assert that the studies are in `dist/`: `tests/smoke-test.
 1. Gate the six studies like the later specimens, and move the old tests' reads to `dist-demo/` (recommended before P24).
 2. Remove the studies and their tests.
 3. Keep them public on purpose (the owner says so, and the exception's wording changes).
+
+## Resolution (D-157)
+
+Nine route files return no static paths unless `demosEnabled()`; the Quarto study's figure moved out of `public/` to `src/design/quarto/assets/` behind a gated route; `scripts/demo-check.mjs` and the QA route audit fail on any path under `_design/` in a release. A release has 37 pages. The studies' tests read a throwaway demonstration build (`tests/demo-dist.mjs`); five browser suites read `dist-demo/`. The exception in `development/qa-exceptions.json` was removed.

@@ -5,7 +5,7 @@ Last updated: P14, 2026-11-15. Verified facts only.
 ## Framework
 
 - **Astro 7.4.8**, static output. The repository root is the Astro project.
-- **72 pages:**
+- **72 pages in a demonstration build (a release has 37: the 36 folder pages and the 404 page, since the 36 development studies are routed only in development and demonstration builds, P22, D-157):**
   - **36 folder pages**, one for every registered folder, generated from the navigation registry (P06). Each shows the physical folders with working tab links, folder previews (P07) and **temporary development content only**.
   - **36 pages of temporary design studies**, not part of the website (four studies of one page each, the editorial study of 30 and the Quarto study of 2):
     - the **P03 tokens specimen** at `/_design/tokens/` (`src/pages/[design]/tokens.astro`; it was `/` until P06);
@@ -410,7 +410,7 @@ Every one of the 36 registered folders (11 sections, 25 children) has a built pa
 - **Last full run** (this milestone's commit, Node 26.13.1, Chrome 157, arm64 macOS, 15 minutes): 827 checks PASS, 19 DEFERRED, 0 FAIL, 0 NOT RUN, 0 SKIPPED, 0 FLAKY; no suite needed a retry; 81 of the 82 acceptance items PASS and QA-058 (the booking checks) is DEFERRED. The numbers are from `qa-report/latest.json`, which the next run replaces.
 - **Deferred by the owner's decision:** the 19 Cal.com booking checks (`DEFERRALS`, `scripts/qa-lib.mjs`), EXTERNAL ACTIVATION PENDING. They are on every report, never PASS, and do not fail the static run. Scheduling stays disabled; the P21 gate is untouched.
 - **Static audits** (`scripts/qa-audits.mjs`, 33 checks): routes, links, metadata, images, output safety, budgets; two builds of the same inputs were 83 of 83 files byte-identical. Findings that do not fail a run: no canonical link, Open Graph, robots.txt or sitemap; GitHub Pages cannot send security headers.
-- **Release blocker for the owner (ISSUE-0006):** the six design studies of P03 to P12 (36 pages of synthetic content under `/_design/`) are routed in the release build. They are a registered exception (`development/qa-exceptions.json`); a new development page in the release fails the run.
+- **The legacy design studies are gated (D-157, ISSUE-0006 resolved):** the six studies of P03 to P12 (36 pages) are routed only in development and demonstration builds; a release has 37 pages and nothing under `/_design/`, and any path there fails the build and the QA run. The Quarto study's figure moved from `public/` to `src/design/quarto/assets/` behind a gated route. The studies' own tests read a throwaway demonstration build (`tests/demo-dist.mjs`), and five browser suites read `dist-demo/`.
 - **Accessibility** (`tests/a11y-browser.mjs`, axe-core 4.14.1, twenty pages, `development/qa-a11y-register.json` empty): zero violations after four fixes (code-comment contrast, keyboard access to Quarto's scrolling code, an `<h1>` on the nucleus specimen, folder-page descriptions). Keyboard order of the eleven tabs, visible focus, reduced motion, the nucleus without WebGL and the clocks' markup are checked. Colour contrast is "needs review" on every page: manual (P23).
 - **Performance** (`tests/perf-browser.mjs`, five cold runs per page; `development/qa-budgets.json` from the baseline): median LCP 156 to 252 ms, CLS 0, no long-task blocking; Home loads 3.9 KB of script until the stage is near the window, then 543.8 KB for the nucleus (LCP 412 ms, 546 ms of main-thread time under software WebGL), and asks for no animation frame while idle. Environment is recorded in each report.
 - **NUC-031** (ISSUE-0005): a fixed 700 ms wait for a model-time quantity that a loaded machine lags by design (the nucleus steps at most 50 ms per frame). Repaired to wait for the state; NUC-026B likewise; NUC-050 measures frame time and stays load-sensitive.
@@ -419,7 +419,7 @@ Every one of the 36 registered folders (11 sections, 25 children) has a built pa
 - **Repairs found by the baseline:** P21's committed scheduling registry broke the P13A-024 guard (repaired; P21 had missed it because its files were untracked while it ran).
 - **Dependency:** `axe-core` 4.14.1, test-only, pinned exactly (D-154). No other.
 - **Not shown:** Safari, Firefox, a real phone, a screen reader, WCAG compliance, the workflow on GitHub, Lighthouse scores (none measured), anything about the booking provider.
-- **Waiting for the owner:** the decision on the legacy design studies (ISSUE-0006); the Cal.com account whenever they are ready; P23's manual review.
+- **Waiting for the owner:** the Cal.com account whenever they are ready; P23's manual review.
 
 ## npm scripts
 

@@ -668,7 +668,9 @@ await test("NUC-041", "Bearnard is untouched and not involved", async (check, sk
 await test("NUC-042", "P10 to P14 publishing is unchanged", async (check, skip) => {
   if (!gitAvailable) return skip("git is not available")
   const touched = changedSinceBase(["src/editorial", "src/content.config.ts", "src/content", "scripts/content.mjs", "scripts/science.mjs", "science", "src/science", "src/demos/greenhouse", "src/records", "src/data/records"])
-  check(touched.length === 0, `publishing files changed: ${json(touched)}`)
+  // P22 (D-157) moved the Quarto study's one figure out of public/ (scripts/science.mjs: one path; the manifest: the same path); nothing else of publishing changed.
+  const moved = touched.filter((f) => !["scripts/science.mjs", "src/science/manifest.json"].includes(f))
+  check(moved.length === 0, `publishing files changed: ${json(moved)}`)
 })
 
 await test("NUC-043", "The CV files are untouched", async (check, skip) => {

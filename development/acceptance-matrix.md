@@ -926,5 +926,5 @@ Status values: **Passed** (run and observed in this milestone's QA run), **Defer
 | G-P22-10 | A non-deploying, least-privilege GitHub Actions workflow | **Structure passed locally** (QA-CI-01 to -03); **not run on GitHub** (KL-121) |
 | G-P22-11 | The Cal.com booking checks stay visible as DEFERRED and do not fail the static run; no regression of P21's code is hidden | **Deferred** (19 checks, owner decision); QA-OUT-08 and the scheduling suites pass |
 | G-P22-12 | P10 to P21, D-144, the palettes, the CV and the masters unchanged | **Passed** (QA-PRESERVE-01 to -04 and the suites) |
-| G-P22-13 | The legacy design studies in the release build: decided by the owner | **Waiting for the owner** (ISSUE-0006): a registered release-blocker exception |
+| G-P22-13 | The legacy design studies are absent from the release build | **Passed** (D-157, ISSUE-0006 resolved: QA-ROUTE-07 and the release search fail on any path under `/_design/`; the release has 37 pages) |
 | G-P22-14 | Manual review (P23): screen readers, Safari and Firefox, real devices, contrast "needs review", nucleus look and motion | **Waiting** (`development/quality-assurance.md`, section 10) |

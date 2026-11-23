@@ -5,6 +5,7 @@
 //
 // The masters in brand/bearnard/ are gitignored, so a clean checkout has none: BEAR-004
 // then reports SKIPPED, never PASS, and every other check still runs.
+import { demoBuild } from "./demo-dist.mjs"
 import { createHash } from "node:crypto"
 import { existsSync } from "node:fs"
 import { readFile, readdir } from "node:fs/promises"
@@ -229,7 +230,8 @@ await test(
       "an unknown ID resolves",
     )
     // On the study, each unassigned role shows its fallback and no image.
-    const study = (await readFile(join(dist, "_design/bearnard/index.html"))).toString()
+    // The study is a development page (P22, D-157): read from a throwaway demonstration build.
+    const study = await (await demoBuild()).read("_design/bearnard/index.html")
     for (const role of ILLUSTRATION_ROLES.filter(
       (r) => illustrationFor(r) === undefined,
     )) {

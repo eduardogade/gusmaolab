@@ -8,8 +8,10 @@ import { COLLECTIONS } from "../../../editorial/collections.ts"
 import { PRESENTATIONS } from "../../../editorial/reading.ts"
 import { SYNTHETIC_ENTRIES, studyPath } from "../../../design/editorial-fixture.ts"
 
+import { demosEnabled } from "../../../editorial/demo.ts"
+
 export function getStaticPaths() {
-  return [{ params: { design: "_design" } }]
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
 }
 
 const rows = COLLECTIONS.map((collection) => ({

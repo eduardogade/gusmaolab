@@ -59,6 +59,7 @@ import {
 } from "../src/records/index.ts"
 import { SCHEMAS, isOrcid } from "../src/records/schema.ts"
 
+import { demoBuild } from "./demo-dist.mjs"
 const repo = fileURLToPath(new URL("../", import.meta.url))
 const dist = join(repo, "dist")
 const json = (value) => JSON.stringify(value)
@@ -1560,8 +1561,8 @@ await test("REC-022", "A record creates no page", async (check) => {
   const pages = (await listFiles(dist))
     .map((f) => relative(dist, f))
     .filter((f) => f.endsWith(".html") && f !== "404.html") // the 404 page is P18's (tests/util.mjs)
-  // The pages of the site, the four studies of P03 to P11 and the editorial study (P12).
-  const expected = siteNavigation.pagePaths().length + 4 + studyPaths().length
+  // The pages of the site, and nothing else: since P22 (D-157) the studies of P03 to P12 are development pages, absent from a release.
+  const expected = siteNavigation.pagePaths().length
   check(
     pages.length === expected,
     `${pages.length} pages are built, expected ${expected}`,
@@ -1766,9 +1767,11 @@ await test("REC-024", "The record system needs nothing outside src/", async (che
 })
 
 await test("REC-025", "Hidden and synthetic records are not emitted", async (check) => {
+  // The site's pages are in the release; the records study is a development page, read from a throwaway demonstration build (D-157).
+  const demo = await demoBuild()
   const pages = (await listFiles(dist)).filter((f) => f.endsWith(".html"))
-  const study = join(dist, "_design/records/index.html")
-  check(pages.includes(study), "the study is not built")
+  check(demo.files.includes("_design/records/index.html"), "the study is not built in the demonstration build")
+  check(!pages.some((p) => p.includes("_design/")), "the release holds a development page")
   const WITHHELD = [
     "must never be shown",
     "Synthetic Student",
@@ -1781,13 +1784,9 @@ await test("REC-025", "Hidden and synthetic records are not emitted", async (che
   for (const page of pages) {
     const html = await readFile(page, "utf8")
     const name = relative(dist, page)
-    // Withheld records appear on no page at all, the study included.
+    // Withheld records appear on no page at all.
     for (const marker of WITHHELD)
       check(!html.includes(marker), `${name} shows "${marker}"`)
-    if (page === study) continue
-    // The editorial study's own fixture is synthetic too, and has nothing to do with records.
-    if (name.startsWith("_design/editorial/") || name.startsWith("_design/quarto/"))
-      continue
     check(
       !/-synthetic-|Synthetic (Lead|Collaborator|Atlas|Toolkit|University|Institute)|Journal of Synthetic Results/.test(
         html,
@@ -1795,7 +1794,8 @@ await test("REC-025", "Hidden and synthetic records are not emitted", async (che
       `${name} carries the synthetic records`,
     )
   }
-  const html = await readFile(study, "utf8")
+  const html = await demo.read("_design/records/index.html")
+  for (const marker of WITHHELD) check(!html.includes(marker), `the study shows "${marker}"`)
   check(
     /Temporary/.test(html) && /Everything named below is invented/.test(html),
     "the study is not marked as synthetic",

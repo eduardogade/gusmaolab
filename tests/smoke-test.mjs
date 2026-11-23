@@ -9,11 +9,15 @@ import { readTokens } from "../src/design/css-tokens.mjs"
 import { collectionById, collectionPrefix } from "../src/editorial/collections.ts"
 import { siteNavigation } from "../src/navigation/index.ts"
 import { studyPaths } from "../src/design/editorial-fixture.ts"
+import { demoBuild } from "./demo-dist.mjs"
 
 // Temporary design studies. They live under /_design/, which no registry path can reach
-// (slugs never start with "_"), and are the only pages allowed outside the navigation
-// registry: the P03 specimen (moved from / in P06) and the P05 folder study.
-const designStudies = [
+// (slugs never start with "_"): the P03 specimen (moved from / in P06) and the P05 folder study, and the others.
+// Since P22 (D-157) they are routed only in development and demonstration builds, so the RELEASE has none of them:
+// `designStudies` is what a release may hold (nothing), and `legacyStudies` is what the demonstration build holds,
+// which this test reads from a throwaway demonstration build for the checks that are about the studies themselves.
+const designStudies = []
+const legacyStudies = [
   "/_design/tokens/",
   "/_design/folders/",
   "/_design/bearnard/",
@@ -56,6 +60,7 @@ const expectedFigures = new Set(
 )
 const specimenFile = fileOf("/_design/tokens/")
 const studyFile = fileOf("/_design/folders/")
+const demo = await demoBuild()
 
 const repo = new URL("../", import.meta.url)
 const dist = fileURLToPath(new URL("dist/", repo))
@@ -162,9 +167,10 @@ for (const file of files) {
       `${file} is ${bytes.length} bytes, too large for the web`,
     )
   } else if (nucleusAsset.test(file)) nucleusBytes += bytes.length
-  else if (file.startsWith("_design/")) studyBytes += bytes.length
   else siteBytes += bytes.length
 }
+// The studies' own size, in the demonstration build (the release holds none: checked below).
+for (const file of demo.files.filter((f) => f.startsWith("_design/") && legacyStudies.some((p) => `${p.slice(1)}index.html` === f || f.startsWith("_design/quarto/assets")))) studyBytes += (await readFile(join(demo.dir, file))).length
 // Generous ceilings, not exact sizes: they catch accidental artwork or bundles. Since P09
 // the site (pages, styles, script), the temporary design studies and the registered
 // illustrations each have their own.
@@ -174,6 +180,8 @@ check(
 )
 // P12: the editorial study adds 30 pages (D-097); the ceiling is for the whole of /_design/.
 check(studyBytes < 1_000_000, `the design studies total ${studyBytes} bytes`)
+check(!files.some((f) => f.startsWith("_design/")), "the release holds a development page under _design/ (D-157)")
+for (const path of legacyStudies) check(demo.files.includes(fileOf(path)), `the demonstration build lacks the study ${path}`)
 // P20: the nucleus's JavaScript has its own ceiling (measured 556 KB, 137 KB gzipped, in P20).
 check(nucleusBytes < 700_000, `the nucleus's scripts total ${nucleusBytes} bytes`)
 check(imageBytes < 600_000, `the illustrations total ${imageBytes} bytes`)
@@ -184,8 +192,9 @@ for (const file of expectedFigures)
 // 3. Every page: document basics, and no script except the folder previews (P07), once,
 //    on pages with folders, and the world clocks' (P16), once, on the page that has them. Then the temporary P03 specimen.
 const htmlFiles = files.filter((file) => file.endsWith(".html"))
-for (const file of htmlFiles) {
-  const page = await readFile(join(dist, file), "utf8")
+const studyPages = legacyStudies.map(fileOf)
+for (const [root, file] of [...htmlFiles.map((f) => [dist, f]), ...studyPages.map((f) => [demo.dir, f])]) {
+  const page = await readFile(join(root, file), "utf8")
   check(/^<!doctype html>/i.test(page), `${file} does not start with a doctype`)
   check(/<html lang="en"[\s>]/.test(page), `${file} lacks <html lang="en">`)
   check(
@@ -216,8 +225,8 @@ for (const file of htmlFiles) {
     `${file} has ${scripts.length} <script> element(s); expected ${expectedScripts}`,
   )
 }
-const html = files.includes(specimenFile)
-  ? await readFile(join(dist, specimenFile), "utf8")
+const html = demo.files.includes(specimenFile)
+  ? await readFile(join(demo.dir, specimenFile), "utf8")
   : ""
 check(/data-specimen="p03"/.test(html), "missing the P03 specimen marker")
 check(/temporary design study/i.test(html), "missing the temporary design study notice")
@@ -316,7 +325,7 @@ for (const path of pagePaths) {
 for (const path of siteNavigation.pagePaths()) {
   check(pagePaths.includes(path), `registered destination ${path} has no built page`)
 }
-for (const path of designStudies) {
+for (const path of legacyStudies) {
   check(path.startsWith("/_design/"), `design study ${path} is not under /_design/`)
   check(
     !siteNavigation.resolve(path).found,
@@ -326,8 +335,8 @@ for (const path of designStudies) {
 
 // 7. The P05 folder study: a temporary page with no links. Its only script is the folder
 //    previews (P07), checked above.
-const study = files.includes(studyFile)
-  ? await readFile(join(dist, studyFile), "utf8")
+const study = demo.files.includes(studyFile)
+  ? await readFile(join(demo.dir, studyFile), "utf8")
   : ""
 check(/data-study="p05-folders"/.test(study), "missing the P05 folder study marker")
 check(

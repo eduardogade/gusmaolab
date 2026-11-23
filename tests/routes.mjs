@@ -5,6 +5,7 @@
 // NAV-024 (link navigation with Back and Forward) needs a real browser; its result is
 // recorded in development/acceptance-matrix.md. These tests prove structure and links;
 // they cannot prove that the folders still look joined, which the browser review checks.
+import { demoBuild } from "./demo-dist.mjs"
 import { readdir, readFile } from "node:fs/promises"
 import { join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -71,9 +72,12 @@ for (const path of siteNavigation.pagePaths()) {
     state: siteNavigation.resolve(path).state,
   })
 }
+// The studies are development pages: since P22 (D-157) a release has none, so they are read from a throwaway
+// demonstration build, and the release is checked to hold none.
+const demo = await demoBuild()
 const studyHtml = new Map()
 for (const path of STUDIES) {
-  studyHtml.set(path, await readFile(fileOf(path), "utf8").catch(() => ""))
+  studyHtml.set(path, await demo.read(`${path.slice(1)}index.html`).catch(() => ""))
 }
 const study = parse(studyHtml.get("/_design/folders/"))
 
@@ -560,10 +564,12 @@ test("NAV-032", "Every approved route is a static page", (check) => {
       `${path} is not built exactly once`,
     )
   }
+  // P22 (D-157): the release holds the registered destinations and nothing else; the studies are in the demonstration build.
   check(
-    builtPaths.length === siteNavigation.pagePaths().length + STUDIES.length,
+    builtPaths.length === siteNavigation.pagePaths().length,
     `dist/ has ${builtPaths.length} pages`,
   )
+  check(!builtPaths.some((p) => p.startsWith("/_design/")), "the release holds a development page")
   const byLevel = [1, 2, 3].map((level) => siteNavigation.folderStaticPaths(level))
   check(
     json(byLevel.map((list) => list.length)) === json([10, 25, 0]),
@@ -609,6 +615,7 @@ test("NAV-032", "Every approved route is a static page", (check) => {
         "[design]/publishing/workflow/index.astro",
         // P22: the development quality overview; static paths only in dev and demo mode.
         "[design]/quality/index.astro",
+        "[design]/quarto/assets/[name]/[file].svg.ts",
         "[design]/quarto/index.astro",
         "[design]/quarto/markdown.astro",
         "[design]/records.astro",
@@ -630,7 +637,7 @@ test("NAV-032", "Every approved route is a static page", (check) => {
       ]),
     `unexpected route files: ${json(routeFiles)}`,
   )
-  for (const path of STUDIES) check(builtPaths.includes(path), `${path} is not built`)
+  for (const path of STUDIES) check(demo.files.includes(`${path.slice(1)}index.html`), `${path} is not in the demonstration build`)
 })
 
 // --- Report -------------------------------------------------------------------------------

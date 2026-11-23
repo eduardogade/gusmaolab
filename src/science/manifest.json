@@ -146,7 +146,7 @@
         "fragmentSha256": "24b3db2ba28e8c184c2e298ca87ac8f42ddcb2682d53111aa71cf868d519b8ea",
         "stub": null,
         "stubSha256": null,
-        "assetDir": "public/_design/quarto/assets/synthetic-specimen",
+        "assetDir": "src/design/quarto/assets/synthetic-specimen",
         "assetsSha256": "779c92834d7f74dbac57f215ef71a429a47162d443021ef5c2a0ea390c4bd081",
         "assets": [
           "fig-spread-output-1.svg"

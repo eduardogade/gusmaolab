@@ -45,7 +45,7 @@ The six states are never merged:
 
 The exit code is 1 for any mandatory FAIL, NOT RUN or unregistered FLAKY. There is no `|| true` anywhere in the pipeline. `QA-001` to `QA-082` are the P22 acceptance items; each one's status is derived from the checks it rests on (`scripts/qa-matrix.mjs`), never typed.
 
-**Findings** are not checks. They are recommendations and limitations (no canonical link tag, no robots.txt or sitemap, GitHub Pages cannot send security headers, orphaned assets) and never fail a run. **Exceptions** (`development/qa-exceptions.json`) are bounded, documented states the audits tolerate and shout about: today the six legacy design studies, a release blocker for P24.
+**Findings** are not checks. They are recommendations and limitations (no canonical link tag, no robots.txt or sitemap, GitHub Pages cannot send security headers, orphaned assets) and never fail a run. **Exceptions** (`development/qa-exceptions.json`) are bounded, documented states the audits tolerate and shout about; the list is empty (the six legacy design studies were its one entry until D-157 gated them).
 
 ## 5. Investigating a failure
 

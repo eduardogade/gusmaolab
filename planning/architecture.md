@@ -58,7 +58,7 @@ The contract (`information-architecture.md`, sections 12 and 14):
 2. Content routes are built from the editorial collections (P10, below), registered with an owning folder, and generate their pages from the same route files. They live under static segments, which outrank the dynamic folder routes, and render through `FolderPage`, so their content opens in the owner's body.
 3. The smoke test fails if a built page is not a registered destination or declared study, or if a destination has no page.
 4. There is no catch-all route, no server rendering, no client-side router and no hydration: tabs are plain links, and Back, Forward and reload work as on any static site. Navigation needs no JavaScript; the one script only shows the folder previews (below).
-5. Temporary design studies live under `/_design/` (D-048, D-055). Whether they are excluded from a published build is part of the deployment decision (D-005).
+5. Temporary design studies live under `/_design/` (D-048, D-055). Since P22 (D-157) every page there, the six studies of P03 to P12 included, is routed only in development and demonstration builds (`demosEnabled()`, D-105): a release holds none, and its output is searched for any path under `/_design/`. The Quarto study's figure is served by a gated route, not copied from `public/`.
 
 ## Client-side enhancement: folder previews (P07)
 

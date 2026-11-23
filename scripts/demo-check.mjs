@@ -121,6 +121,9 @@ export async function publicBuildIssues(dist, root = ROOT) {
     if (rel.startsWith("demo-downloads")) issues.push(`${rel}: a demonstration download`)
     if (rel.startsWith("_design/nucleus")) issues.push(`${rel}: the 3D nucleus prototype`)
     if (rel.startsWith("_design/page-states")) issues.push(`${rel}: the page-states specimen`)
+    // P22 (D-157): every development page is gated now, including the six studies of P03 to P12, so nothing at all may
+    // be under /_design/ in a release: this catches a development page nobody thought to list above.
+    if (rel.startsWith("_design/")) issues.push(`${rel}: a development page or study (nothing under /_design/ belongs in a release)`)
     if (!TEXT.test(file)) continue
     const text = await readFile(file, "utf8")
     // A stylesheet may style the demonstration markup (the rule is shared), so markers are not

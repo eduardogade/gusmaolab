@@ -45,13 +45,8 @@ import {
 const json = (value) => JSON.stringify(value)
 const repo = fileURLToPath(new URL("../", import.meta.url))
 const fixtures = join(repo, "tests/fixtures/editorial")
-const designStudies = [
-  "/_design/tokens/",
-  "/_design/folders/",
-  "/_design/bearnard/",
-  "/_design/records/",
-  ...studyPaths(),
-]
+// P22 (D-157): the design studies are development pages, so this release build holds none of them.
+const designStudies = []
 
 const results = []
 async function test(id, title, body) {
@@ -203,8 +198,8 @@ await test(
     check(extra.length === 0, `unexpected pages: ${extra.join(", ")}`)
     check(!pages.some((f) => f.startsWith("external/")), "an External page was built")
     check(
-      pages.length === 36 + 4 + studyPaths().length + 7,
-      `${pages.length} pages, expected ${36 + 4 + studyPaths().length + 7}`,
+      pages.length === 36 + 7,
+      `${pages.length} pages, expected ${36 + 7}`,
     )
     // One route per entry: no page is generated twice under another name.
     check(

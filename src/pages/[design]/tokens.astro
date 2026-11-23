@@ -19,8 +19,10 @@ import categoriesCss from "../../styles/categories.css?raw"
 import environmentsCss from "../../styles/environments.css?raw"
 import tokensCss from "../../styles/tokens.css?raw"
 
+import { demosEnabled } from "../../editorial/demo.ts"
+
 export function getStaticPaths() {
-  return [{ params: { design: "_design" } }]
+  return demosEnabled() ? [{ params: { design: "_design" } }] : []
 }
 
 const tokens = readTokens(tokensCss, categoriesCss, environmentsCss)

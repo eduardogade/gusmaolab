@@ -4,6 +4,7 @@
 // Whether a navigation actually looks continuous can only be seen in a browser:
 // tests/transitions-browser.mjs (`npm run test:browser`) checks what headless Chrome can
 // measure, and the owner judges the rest on real screens (ISSUE-0004).
+import { demoBuild } from "./demo-dist.mjs"
 import { readFile, readdir } from "node:fs/promises"
 import { join, relative } from "node:path"
 import { fileURLToPath } from "node:url"
@@ -35,8 +36,8 @@ const sources = await Promise.all(
 )
 // Everything a built page asks the browser to apply: inline styles and linked sheets.
 const sheetCache = new Map()
-async function stylesOf(path) {
-  const html = await readFile(join(dist, `${path.slice(1)}index.html`), "utf8").catch(
+async function stylesOf(path, root = dist) {
+  const html = await readFile(join(root, `${path.slice(1)}index.html`), "utf8").catch(
     () => "",
   )
   const inline = [...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map((m) => m[1])
@@ -44,9 +45,9 @@ async function stylesOf(path) {
   for (const [, href] of html.matchAll(
     /<link[^>]+rel="stylesheet"[^>]+href="\/([^"]+)"/g,
   )) {
-    if (!sheetCache.has(href))
-      sheetCache.set(href, await readFile(join(dist, href), "utf8"))
-    linked.push(sheetCache.get(href))
+    const key = `${root}/${href}`
+    if (!sheetCache.has(key)) sheetCache.set(key, await readFile(join(root, href), "utf8"))
+    linked.push(sheetCache.get(key))
   }
   return { html, styles: [...inline, ...linked].join("\n") }
 }
@@ -132,7 +133,10 @@ const studies = [
   "/_design/bearnard/",
   "/_design/records/",
 ]
-for (const path of [...pages, ...studies]) built.set(path, await stylesOf(path))
+// The studies are development pages (P22, D-157): read from a throwaway demonstration build.
+const demo = await demoBuild()
+for (const path of pages) built.set(path, await stylesOf(path))
+for (const path of studies) built.set(path, await stylesOf(path, demo.dir))
 
 test("TRANS-B03", "Every folder page opts in; the design studies do not", (check) => {
   for (const path of pages) {

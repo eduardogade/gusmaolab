@@ -1,6 +1,7 @@
-// Physical-folder component tests (P05): FOLD-001 to FOLD-010. They read the built
-// folder study (dist/_design/folders/) and the P03 specimen (dist/_design/tokens/ since
-// P06), so run `npm run build` first, or `npm run verify`. P06 brought the Overview tab:
+// Physical-folder component tests (P05): FOLD-001 to FOLD-010. They read the folder study
+// (/_design/folders/) and the P03 specimen (/_design/tokens/ since P06) from a throwaway
+// demonstration build (tests/demo-dist.mjs: since P22, D-157, a release has no development
+// page), so they need no build first. P06 brought the Overview tab:
 // every row now has exactly one selected tab. P09-A01 (D-076): eleven sections, and case
 // E shows the categories; tests/categories.mjs checks their colours.
 //
@@ -8,6 +9,7 @@
 // content slot. They cannot prove that the page looks like paper folders; that needs the
 // visual review recorded in development/acceptance-matrix.md.
 import { readFile } from "node:fs/promises"
+import { demoBuild } from "./demo-dist.mjs"
 import { MAX_TAB_LEVELS, siteNavigation } from "../src/navigation/index.ts"
 import {
   childrenOf,
@@ -25,12 +27,13 @@ import {
 const repo = new URL("../", import.meta.url)
 const read = (path) => readFile(new URL(path, repo), "utf8")
 
-let studyHtml, specimenHtml
+let studyHtml, specimenHtml, demo
 try {
-  studyHtml = await read("dist/_design/folders/index.html")
-  specimenHtml = await read("dist/_design/tokens/index.html")
-} catch {
-  console.error("FAIL: the built pages are missing. Run `npm run build` first.")
+  demo = await demoBuild()
+  studyHtml = await demo.read("_design/folders/index.html")
+  specimenHtml = await demo.read("_design/tokens/index.html")
+} catch (error) {
+  console.error(`FAIL: the demonstration build's pages are missing: ${error.message}`)
   process.exit(1)
 }
 const foldersCss = await read("src/styles/folders.css")
@@ -38,7 +41,7 @@ const specimenSheets = [
   ...specimenHtml.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="\/([^"]+)"/g),
 ].map((m) => m[1])
 const specimenCss = (
-  await Promise.all(specimenSheets.map((href) => read(`dist/${href}`)))
+  await Promise.all(specimenSheets.map((href) => demo.read(href)))
 ).join("\n")
 
 const study = parse(studyHtml)

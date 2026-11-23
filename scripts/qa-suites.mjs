@@ -85,6 +85,7 @@ export const HELPERS = [
   { file: "tests/nucleus-fakes.mjs", purpose: "Stand-in browser pieces for the nucleus suites" },
   { file: "tests/demo-run.mjs", purpose: "Runs the Quarto demonstration, for demo-execute and science-restore" },
   { file: "tests/scheduling-ready-build.mjs", purpose: "A throwaway build with scheduling enabled on a synthetic link" },
+  { file: "tests/demo-dist.mjs", purpose: "A throwaway demonstration build, for the tests that read development pages such as the design studies (D-157)" },
   { file: "tests/qa-fixtures.mjs", purpose: "Throwaway copies of a build, with a controlled defect, for the QA system's own tests" },
 ]
 
