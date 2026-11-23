@@ -76,6 +76,8 @@ Quarto and the scientific Python are not installed in CI: the suites that need t
 - Runner numbers are the runner's: its performance run is evaluated against the same budgets and passed, but Home's LCP was 376 ms there against 200 ms on the Mac, and neither replaces the other.
 - A push to `development` also starts eight placeholder workflows that fail at once (KL-129). They are not part of QA and deploy nothing.
 
+**Reproducing the runner's fonts on a Mac.** Set `QA_LINUX_FONTS_DIR` to a folder holding `DejaVuSans.ttf`, `DejaVuSans-Bold.ttf`, `DejaVuSans-Oblique.ttf` and `DejaVuSans-BoldOblique.ttf` (matplotlib ships them: `…/matplotlib/mpl-data/fonts/ttf`) and run any browser suite or `npm run qa`: the test browser then draws every page with DejaVu Sans where the site would use Seravek (bold from weight 600, as a real font setup does) and with Times New Roman, metrically Liberation Serif, where it would use Iowan Old Style. It is off unless the variable is set, it never touches the site, and the failure evidence says which fonts were in use. With it, before any repair, the five font-dependent checks failed the way they failed on the runner; it is how they were rewritten and checked without a 40-minute remote run per attempt. It does not make a Mac a Linux machine: the mono font, the system serif and the font rendering are the Mac's.
+
 ## 8. Performance budgets
 
 `development/qa-budgets.json`. Two kinds:

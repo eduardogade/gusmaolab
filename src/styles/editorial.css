@@ -624,6 +624,15 @@
   color: var(--color-text-secondary);
 }
 
+/*
+ * A link inside a sentence is as tall as its font's glyph box: about 18.6 px at 16 px in DejaVu Sans, the fallback a
+ * Linux machine uses, under the 20 px this site asks of a tap target (found on the first GitHub runs, P22-A01). Padding
+ * makes the box that can be tapped taller without moving a line: inline padding takes no room in the flow.
+ */
+[data-workbench-link] a {
+  padding-block: 0.25em;
+}
+
 [data-demo-section] {
   margin-block-start: var(--space-xl);
   padding-block-start: var(--space-s);

@@ -22,6 +22,7 @@ const {
   resetLog,
   away,
   tabPoint,
+  platformFonts,
   test,
   finish,
 } = await startBrowser({
@@ -82,21 +83,6 @@ const rowsOf = (scope = ".gl-folders") =>
   }))()`)
 const overflow = () =>
   js(`document.documentElement.scrollWidth - document.documentElement.clientWidth`)
-// The layout numbers that P08 must not change on desktop.
-const desktopGeometry = () =>
-  js(`(() => {
-    const r = (el) => el.getBoundingClientRect();
-    const shell = document.querySelector(".page-shell"), paper = [...document.querySelectorAll(".gl-folder__paper")].at(-1);
-    const row = document.querySelector('.gl-folder[data-level="1"] > .gl-folder__strip');
-    return {
-      shell: [Math.round(r(shell).left), Math.round(r(shell).width)],
-      paper: Math.round(r(paper).width),
-      h1: Math.round(r(document.querySelector("main h1")).top + scrollY),
-      rowFits: row.scrollWidth <= row.clientWidth,
-      tabs: [...row.querySelectorAll(".gl-folder-tab")].map((t) => Math.round(r(t).left)),
-    };
-  })()`)
-
 // A browser without scroll-initial-target: the stylesheets lose it and CSS.supports says
 // no, so the row script stands in (P08).
 const NO_NATIVE = `(() => {
@@ -715,41 +701,93 @@ await test(
   },
 )
 
-await test("RESP-015", "Desktop keeps P07's layout (cases G, H)", async (check) => {
-  // Measured on the P07 build (28392b0) before P08 changed anything.
+await test("RESP-015", "Desktop keeps P07's layout in any font (cases G, H): the shell, the paper and the folders' own spacing as measured, and every tab reachable whatever its width", async (check) => {
+  // What P07 measured and a font cannot move (identical in Seravek and in DejaVu Sans, which is what a Linux machine
+  // draws; P22-A01): the shell's left edge and width, the paper's width, the h1's distance below the paper's top edge,
+  // and the seam between the last row and the paper. They are the folders' own padding and the page's own measure.
+  // What the font does move, and this check no longer pins: the height of the rows above the paper (so the h1's page
+  // position) and whether eleven tab labels fit in one row. The first used to be compared with P07's numbers, which
+  // were measured with the system fonts of a Mac, and the first GitHub run drew the same tree 12 px lower; the second is
+  // a question of text width, answered below by what the row does instead: it fits, or it scrolls, and either way
+  // every tab can be reached.
   const P07 = {
-    // /cv/'s h1 sits higher since P17 replaced the scaffold (its "Development scaffolding" overline) with a
-    // destination page that starts at its title; the shell, the paper and the row are P07's.
-    // Home's h1 sits higher since P15 replaced the scaffold with the homepage (its own overline and
-    // type scale): its position is content, not folder geometry. The shell, the paper and the row
-    // are P07's.
-    "1024 /": { shell: [22, 980], paper: 920, h1: 182, rowFits: false },
-    "1024 /cv/": { shell: [22, 980], paper: 890, h1: 212, rowFits: false },
-    "1280 /": { shell: [27, 1226], paper: 1159, h1: 197, rowFits: true },
-    "1280 /cv/": { shell: [27, 1226], paper: 1127, h1: 228, rowFits: true },
-    "1440 /": { shell: [110, 1219], paper: 1150, h1: 206, rowFits: true },
-    "1440 /cv/": { shell: [110, 1219], paper: 1118, h1: 237, rowFits: true },
+    "1024 /": { shell: [22, 980], paper: 920, h1Below: 76, seam: 13 },
+    "1024 /cv/": { shell: [22, 980], paper: 890, h1Below: 41, seam: 13 },
+    "1280 /": { shell: [27, 1226], paper: 1159, h1Below: 83, seam: 14 },
+    "1280 /cv/": { shell: [27, 1226], paper: 1127, h1Below: 48, seam: 14 },
+    "1440 /": { shell: [110, 1219], paper: 1150, h1Below: 87, seam: 14 },
+    "1440 /cv/": { shell: [110, 1219], paper: 1118, h1Below: 52, seam: 14 },
   }
+  const ORDER = siteNavigation.sections.map((node) => node.id)
+  const rowMetrics = []
   for (const [key, expected] of Object.entries(P07)) {
     const [width, path] = key.split(" ")
     await setViewport(Number(width), 900)
     await goto(path)
-    const { tabs, ...now } = await desktopGeometry()
-    check(
-      json(now) === json(expected),
-      `${key}: ${json(now)}, P07 had ${json(expected)}`,
-    )
+    const now = await js(`(() => {
+      const r = (el) => el.getBoundingClientRect();
+      const shell = document.querySelector(".page-shell"), paper = [...document.querySelectorAll(".gl-folder__paper")].at(-1);
+      const strips = [...document.querySelectorAll(".gl-folder__strip")];
+      const h1 = document.querySelector("main h1");
+      return {
+        shell: [Math.round(r(shell).left), Math.round(r(shell).width)],
+        paper: Math.round(r(paper).width),
+        h1Below: Math.round(r(h1).top - r(paper).top),
+        seam: Math.round(r(paper).top - r(strips.at(-1)).bottom),
+        // The h1 reads whole: inside the paper, not clipped, and the next thing starts below it.
+        h1Inside: r(h1).left >= r(paper).left && r(h1).right <= r(paper).right + 0.5,
+        h1Clipped: h1.scrollWidth > h1.clientWidth + 1,
+        h1Overlap: (() => { const next = h1.nextElementSibling; return next ? r(next).top < r(h1).bottom - 1 : false })(),
+        pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    })()`)
+    const { h1Inside, h1Clipped, h1Overlap, pageOverflow, ...geometry } = now
+    check(json(geometry) === json(expected), `${key}: ${json(geometry)}, P07 had ${json(expected)}`)
+    check(h1Inside && !h1Clipped && !h1Overlap, `${key}: the h1 does not read whole (inside the paper ${h1Inside}, clipped ${h1Clipped}, overlapped ${h1Overlap})`)
+    check(pageOverflow <= 0, `${key}: the page scrolls sideways by ${pageOverflow} px`)
+
+    // Every row: its tabs in order, none clipped, and each one reachable: the row fits, or it scrolls, and scrolling
+    // brings a tab inside the row with the tab itself under the pointer.
+    const rows = await js(`(() => [...document.querySelectorAll(".gl-folder__strip")].map((strip, index) => {
+      const tabs = [...strip.querySelectorAll(".gl-folder-tab")];
+      const lefts = tabs.map((t) => t.getBoundingClientRect().left);
+      const fits = strip.scrollWidth <= strip.clientWidth + 1;
+      // A label lies inside its own tab (the tab has the V and a hidden text besides, so its own scroll width says nothing).
+      const clipped = tabs.filter((t) => { const label = t.querySelector(".gl-folder-tab__label"), b = t.getBoundingClientRect(), l = label?.getBoundingClientRect(); return !l || l.left < b.left - 1 || l.right > b.right + 1; }).map((t) => t.dataset.tabId);
+      strip.scrollLeft = 0;
+      const unreachable = [];
+      for (const tab of tabs) {
+        tab.scrollIntoView({ block: "nearest", inline: "nearest" });
+        const s = strip.getBoundingClientRect(), b = tab.getBoundingClientRect();
+        const x = (Math.max(b.left, s.left) + Math.min(b.right, s.right)) / 2, y = b.top + b.height / 2;
+        const hit = document.elementFromPoint(x, y)?.closest(".gl-folder-tab");
+        if (!(b.left >= s.left - 1 && b.right <= s.right + 1 && hit === tab)) unreachable.push(tab.dataset.tabId);
+      }
+      strip.scrollLeft = 0;
+      return { index, ids: tabs.map((t) => t.dataset.tabId), ordered: lefts.every((l, i) => i === 0 || l > lefts[i - 1]), fits, scrolls: ["auto", "scroll"].includes(getComputedStyle(strip).overflowX), width: strip.clientWidth, scrollWidth: strip.scrollWidth, clipped, unreachable };
+    }))()`)
+    rows.forEach((row, i) => {
+      check(row.ordered && row.ids.length > 0, `${key} row ${i}: the tabs are not in a left-to-right order`)
+      check(row.fits || row.scrolls, `${key} row ${i}: the tabs do not fit and the row does not scroll (${row.scrollWidth} px in ${row.width})`)
+      check(row.clipped.length === 0, `${key} row ${i}: a tab's label lies outside its tab: ${json(row.clipped)}`)
+      check(row.unreachable.length === 0, `${key} row ${i}: a tab cannot be reached by scrolling the row: ${json(row.unreachable)}`)
+    })
+    check(json(rows[0].ids) === json(ORDER), `${key}: the global row is ${json(rows[0].ids)}, the registry has ${json(ORDER)}`)
+    rowMetrics.push({ key, width: Number(width), global: { fits: rows[0].fits, client: rows[0].width, scroll: rows[0].scrollWidth } })
   }
-  // Wider than 1440 px the shell keeps its 1440 px width, so the global row still fits.
+  // Wider than 1440 px the shell keeps its 1440 px width, so what the global row has to work with does not change: the
+  // same room, the same tabs, the same overflow (or none), however wide the window.
+  const at1440 = rowMetrics.find((m) => m.key === "1440 /cv/").global
   for (const width of [1920, 2560]) {
     await setViewport(width, 900)
     await goto("/cv/")
-    const now = await desktopGeometry()
-    check(
-      now.shell[1] === 1219 && now.rowFits,
-      `${width} px: shell ${now.shell[1]} px, row fits: ${now.rowFits}`,
-    )
+    const now = await js(`(() => { const s = document.querySelector(".gl-folder__strip"); return { shell: Math.round(document.querySelector(".page-shell").getBoundingClientRect().width), client: s.clientWidth, scroll: s.scrollWidth, fits: s.scrollWidth <= s.clientWidth + 1 } })()`)
+    // Two pixels of tolerance: the same layout rounds to a pixel more or less at another window width.
+    check(now.shell === 1219 && Math.abs(now.client - at1440.client) <= 2 && Math.abs(now.scroll - at1440.scroll) <= 2 && now.fits === at1440.fits, `${width} px: shell ${now.shell} px, the global row ${json(now)}, at 1440 px it was ${json(at1440)}`)
   }
+  // For the record, since it depends on the font: whether the eleven labels fit in one row at the desktop widths.
+  const fonts = await platformFonts()
+  console.log(`  observed (tabs in ${fonts.tab?.[0] ?? "an unknown font"}): the global row ${rowMetrics.filter((m) => m.width >= 1280).map((m) => `${m.key} ${m.global.fits ? "fits" : "scrolls"}`).join(", ")}`)
 })
 
 await test(

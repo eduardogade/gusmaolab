@@ -340,22 +340,40 @@ await test("NUCINT-018B", "No blocked links: the canvas is inert, and every tab,
 
 // --- Layout, responsiveness, preservation -------------------------------------------------------------------------
 
-await test("NUCINT-041B", "P15 composition: the welcome, the tab row and the stage frame have the proportions P15 gave them, at four widths", async (check) => {
-  // Measured on the P19 tree (before P20) with the same method: [x, y, width, height] in page pixels.
+await test("NUCINT-041B", "P15 composition in any font: the tab row, the welcome and the stage frame have P15's widths, places and proportions, in order and without overlap, at four widths", async (check) => {
+  // Measured on the P19 tree (before P20) with the same method: [x, y, width, height] in page pixels. What a font
+  // cannot move stays exact: the row's four numbers, the welcome's x, y and width, the frame's x, width and height (set
+  // by the stage's aspect ratio) were identical in Seravek and in DejaVu Sans, the fallback of a Linux machine
+  // (P22-A01). What it moves is no longer pinned: the welcome's height (its text wraps differently, +45 px at 390 px
+  // in DejaVu Sans) and the frame's y (the stage sits below text of another height). They are checked as relations
+  // instead: the welcome holds its content, the stage is below the welcome, nothing overlaps, the page does not
+  // scroll sideways. The first GitHub run drew the 390 px welcome 101 px taller than the Mac's.
   const P15 = {
-    1440: { nav: [139, 49, 1162, 56], welcome: [185, 171, 1070, 506], frame: [668, 1374, 587, 367] },
-    1280: { nav: [55, 45, 1171, 56], welcome: [97, 162, 1087, 506], frame: [587, 1342, 597, 373] },
-    768: { nav: [38, 28, 692, 56], welcome: [63, 127, 641, 703], frame: [63, null, 641, 401] },
-    390: { nav: [24, 14, 341, 56], welcome: [35, 97, 320, 760], frame: [35, null, 320, 240] },
+    1440: { nav: [139, 49, 1162, 56], welcome: [185, 171, 1070], frame: [668, 587, 367] },
+    1280: { nav: [55, 45, 1171, 56], welcome: [97, 162, 1087], frame: [587, 597, 373] },
+    768: { nav: [38, 28, 692, 56], welcome: [63, 127, 641], frame: [63, 641, 401] },
+    390: { nav: [24, 14, 341, 56], welcome: [35, 97, 320], frame: [35, 320, 240] },
   }
   for (const [width, want] of Object.entries(P15)) {
     // An ordinary window height: the stage is far from the screen, so the model is not loaded and is not awaited.
     await open(Number(width), 900, "/", { waitForModel: false })
-    const now = await js(`(() => { const r = (s) => { const b = document.querySelector(s).getBoundingClientRect(); return [Math.round(b.x), Math.round(b.y + scrollY), Math.round(b.width), Math.round(b.height)] }; return { nav: r('nav[aria-label=Sections]'), welcome: r('[data-home-region=welcome]'), frame: r('[data-stage-frame]'), overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth } })()`)
+    const now = await js(`(() => {
+      const box = (s) => { const el = document.querySelector(s); const b = el.getBoundingClientRect(); return { el, x: Math.round(b.x), y: Math.round(b.y + scrollY), w: Math.round(b.width), h: Math.round(b.height), bottom: b.bottom + scrollY, top: b.top + scrollY } };
+      const nav = box('nav[aria-label=Sections]'), welcome = box('[data-home-region=welcome]'), frame = box('[data-stage-frame]');
+      const lastChild = welcome.el.lastElementChild?.getBoundingClientRect();
+      return {
+        nav: [nav.x, nav.y, nav.w, nav.h], welcome: [welcome.x, welcome.y, welcome.w], frame: [frame.x, frame.w, frame.h],
+        welcomeClipped: welcome.el.scrollHeight > welcome.el.clientHeight + 1 || (lastChild ? lastChild.bottom + scrollY > welcome.bottom + 1 : false),
+        order: { navAboveWelcome: nav.bottom <= welcome.top + 1, welcomeAboveFrame: welcome.bottom <= frame.top + 1 },
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      };
+    })()`)
     for (const key of ["nav", "welcome", "frame"]) {
-      const same = want[key].every((v, i) => v === null || Math.abs(v - now[key][i]) <= 1)
+      const same = want[key].every((v, i) => Math.abs(v - now[key][i]) <= 1)
       check(same, `${width}: ${key} is ${json(now[key])}, P15 had ${json(want[key])}`)
     }
+    check(!now.welcomeClipped, `${width}: the welcome's content is cut off by its box`)
+    check(now.order.navAboveWelcome && now.order.welcomeAboveFrame, `${width}: the regions are not in P15's order, or overlap: ${json(now.order)}`)
     check(now.overflow <= 0, `${width}: the page overflows by ${now.overflow}`)
   }
   await open(1440, 900, "/", { waitForModel: false })
@@ -602,10 +620,23 @@ await test("NUCINT-033B", "Touch: a still nucleus, no response to tapping or to 
   // The folder row still scrolls sideways under touch.
   const row = await js(`(() => { const s = document.querySelector('nav[aria-label=Sections].gl-folder__strip'); s.scrollIntoView({ block: "center" }); const r = s.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, scrolls: s.scrollWidth > s.clientWidth + 1, left: s.scrollLeft, hit: (() => { const e = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return e ? e.tagName.toLowerCase() + (e.className ? "." + String(e.className).split(" ")[0] : "") : null })(), touchAction: getComputedStyle(s).touchAction, overflowX: getComputedStyle(s).overflowX, scrollWidth: s.scrollWidth, clientWidth: s.clientWidth } })()`)
   await sleep(300)
-  const sideways = row.scrolls
-    ? await touchSwipeScrolls(Math.round(row.x), Math.round(row.y), -150, { min: 0, horizontal: true, measure: `document.querySelector('nav[aria-label=Sections].gl-folder__strip').scrollLeft` })
+  // The swipe starts where a finger would: on a tab's label, which is a link. The first GitHub runs (P22-A01) saw nothing move on
+  // a Linux runner by either way of sending the touch, while the same swipe moves the row on a Mac. The row's own padding and
+  // the tab shapes are not links, so the swipe is tried there too and both results are said; the check passes when the row
+  // can be moved by touch at all, and a row that cannot is a failure. Whether a swipe that starts on a link must work on a
+  // phone is for the real-device review (P23): it is not decided here.
+  const strip = `document.querySelector('nav[aria-label=Sections].gl-folder__strip')`
+  const offLink = await js(`(() => { const s = ${strip}; const b = s.getBoundingClientRect(); for (let x = b.left + 4; x < b.right - 4; x += 5) for (const y of [b.top + 4, b.top + b.height / 2, b.bottom - 4]) { const e = document.elementFromPoint(x, y); if (e && s.contains(e) && !e.closest("a")) return { x, y } } return null })()`)
+  const onLinkSwipe = row.scrolls
+    ? await touchSwipeScrolls(Math.round(row.x), Math.round(row.y), -150, { min: 0, horizontal: true, measure: `${strip}.scrollLeft` })
     : { scrolled: false }
-  check(row.scrolls && sideways.scrolled, `the folder row does not scroll sideways with touch (${json(row)}, ${json(sideways)})`)
+  let offLinkSwipe = null
+  if (row.scrolls && !onLinkSwipe.scrolled && offLink) {
+    await js(`${strip}.scrollLeft = 0`)
+    offLinkSwipe = await touchSwipeScrolls(Math.round(offLink.x), Math.round(offLink.y), -150, { min: 0, horizontal: true, measure: `${strip}.scrollLeft` })
+  }
+  if (offLinkSwipe?.scrolled) console.log(`  observed: a swipe that starts on a tab's link did not move the row (${json(onLinkSwipe)}); one that starts on the row's empty part did (${json(offLinkSwipe)})`)
+  check(row.scrolls && (onLinkSwipe.scrolled || offLinkSwipe?.scrolled === true), `the folder row does not scroll sideways with touch (${json(row)}; on a link: ${json(onLinkSwipe)}; off a link at ${json(offLink)}: ${json(offLinkSwipe)})`)
   await send("Emulation.setTouchEmulationEnabled", { enabled: false })
   await send("Emulation.clearDeviceMetricsOverride")
 })

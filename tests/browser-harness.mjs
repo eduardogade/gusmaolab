@@ -43,6 +43,53 @@ export async function serveFolder(folder) {
 export const json = (value) => JSON.stringify(value)
 
 /**
+ * Render the way a Linux runner does (P22-A01). The site's font stacks name fonts that only a Mac has (Seravek first,
+ * Iowan Old Style for headings); on a GitHub runner Chrome falls through to DejaVu Sans and Liberation Serif, which are
+ * wider, and the layout follows. With QA_LINUX_FONTS_DIR set to a folder holding DejaVuSans.ttf, DejaVuSans-Bold.ttf,
+ * DejaVuSans-Oblique.ttf and DejaVuSans-BoldOblique.ttf (matplotlib ships them), every page of the run is drawn with
+ * DejaVu Sans where it would use Seravek and with Times New Roman (metrically Liberation Serif) where it would use Iowan
+ * Old Style, so a layout check can be tried on any machine in the font that broke it on the runner. Off by default and
+ * never part of the site: it only changes what the test browser draws. The fonts are served from a second local server.
+ */
+async function startFontServer(dir) {
+  const server = createServer(async (request, response) => {
+    try {
+      const name = decodeURIComponent(new URL(request.url, "http://localhost").pathname).replace(/^\/+/, "")
+      if (!/^[\w-]+\.ttf$/.test(name)) throw new Error("not a font")
+      const body = await readFile(join(dir, name))
+      response.writeHead(200, { "content-type": "font/ttf", "access-control-allow-origin": "*", "cache-control": "max-age=3600" }).end(body)
+    } catch {
+      response.writeHead(404).end()
+    }
+  })
+  await new Promise((resolve) => server.listen(0, "127.0.0.1", resolve))
+  return { server, base: `http://127.0.0.1:${server.address().port}` }
+}
+const linuxFontsCss = (base) => {
+  const face = (family, style, weight, src) => `@font-face{font-family:${JSON.stringify(family)};font-style:${style};font-weight:${weight};src:${src}}`
+  const sans = (file) => `url(${base}/${file})`
+  const times = (...names) => names.map((n) => `local(${JSON.stringify(n)})`).join(",")
+  return [
+    face("Seravek", "normal", "100 599", sans("DejaVuSans.ttf")), face("Seravek", "normal", "600 900", sans("DejaVuSans-Bold.ttf")),
+    face("Seravek", "italic", "100 599", sans("DejaVuSans-Oblique.ttf")), face("Seravek", "italic", "600 900", sans("DejaVuSans-BoldOblique.ttf")),
+    face("Iowan Old Style", "normal", "100 599", times("Times New Roman", "TimesNewRomanPSMT")), face("Iowan Old Style", "normal", "600 900", times("Times New Roman Bold", "TimesNewRomanPS-BoldMT")),
+    face("Iowan Old Style", "italic", "100 599", times("Times New Roman Italic", "TimesNewRomanPS-ItalicMT")), face("Iowan Old Style", "italic", "600 900", times("Times New Roman Bold Italic", "TimesNewRomanPS-BoldItalicMT")),
+  ].join(" ")
+}
+// Weights 600 and up take the bold face, as a real font setup does with a regular and a bold (the tabs are semibold).
+// For a server the harness does not serve (the dev server): a script puts the style in the page. The harness's own
+// server puts it in the HTML instead, which also works with scripts switched off (the tests that look at the page as
+// the build wrote it).
+const linuxFontsScript = (css) => `(() => {
+  const style = document.createElement("style");
+  style.setAttribute("data-qa-linux-fonts", "");
+  style.textContent = ${JSON.stringify(css)};
+  // The script runs before the document has an element to hold the style.
+  const put = () => (document.documentElement ? (document.documentElement.appendChild(style), true) : false);
+  if (!put()) { const watch = new MutationObserver(() => { if (put()) watch.disconnect(); }); watch.observe(document, { childList: true }); }
+})();`
+
+/**
  * Starts the server and the browser, and returns the helpers the tests use. `ids` are the
  * test IDs reported NOT RUN when no browser can start. `root` is the built folder to serve
  * (dist/ by default; the demonstration build is dist-demo/, P13-A01). `chromeArgs` are extra Chrome flags (P19: software WebGL). `external` is the origin of a
@@ -79,6 +126,8 @@ export async function startBrowser({
   }
   // `serve.withoutInitialTarget`: serve the stylesheets without `scroll-initial-target`,
   // as a browser that lacks it reads them, to test the script that stands in for it (P08).
+  let fontServer = null // QA_LINUX_FONTS_DIR (above)
+  let fontsCss = "" // the style the harness's own server puts in every page, once the fonts are served
   const serve = { withoutInitialTarget: false }
   const server = external ? null : createServer(async (request, response) => {
     let path = decodeURIComponent(new URL(request.url, "http://localhost").pathname)
@@ -87,6 +136,8 @@ export async function startBrowser({
     if (!file.startsWith(dist)) return response.writeHead(403).end()
     try {
       let body = await readFile(file)
+      if (fontsCss && extname(file) === ".html")
+        body = Buffer.from(body.toString("utf8").replace("</head>", `<style data-qa-linux-fonts>${fontsCss}</style></head>`))
       if (serve.withoutInitialTarget && extname(file) === ".css") {
         body = Buffer.from(
           body.toString("utf8").replace(/scroll-initial-target:[^;}]+;?/g, ""),
@@ -148,6 +199,7 @@ export async function startBrowser({
     } catch {}
     chrome.kill()
     server?.close()
+    fontServer?.server.close()
     await sleep(200)
     // Only the temporary profile this run created.
     await rm(profile, { recursive: true, force: true }).catch(() => {})
@@ -160,7 +212,9 @@ export async function startBrowser({
 
   let socket
   let port
-  for (let i = 0; i < 100 && !port; i++) {
+  // Chrome's first start on a cold machine can take longer than a warm one: wait for its port file, not for a time
+  // (the second GitHub run's first suite could not start it within 10 s and the retry did).
+  for (let i = 0; i < 600 && !port; i++) {
     const text = await readFile(join(profile, "DevToolsActivePort"), "utf8").catch(
       () => "",
     )
@@ -168,7 +222,7 @@ export async function startBrowser({
     if (!port) await sleep(100)
   }
   let target
-  for (let i = 0; port && i < 50 && !target; i++) {
+  for (let i = 0; port && i < 300 && !target; i++) {
     const list = await fetch(`http://127.0.0.1:${port}/json/list`)
       .then((r) => r.json())
       .catch(() => [])
@@ -206,16 +260,28 @@ export async function startBrowser({
   // In a QA run (the command sets QA_EVIDENCE_DIR), say once a minute what was last asked of Chrome and whether it has
   // answered. The authoring suite stalled for 900 s on three of the four GitHub runs with nothing in its log; if this
   // line stops appearing the event loop itself is blocked, and if it keeps appearing the last command shows where.
-  let lastCommand = { method: "(none yet)", at: Date.now(), answered: true }
+  let lastCommand = { method: "(none yet)", at: Date.now(), answered: true, expression: "" }
+  let sent = 0
+  // The helper the suite is in (goto, waitForPath, click, ...): a stall with no unanswered command is a wait that is not
+  // a command, and this says which. Set by `trace`, printed with the heartbeat.
+  const doing = { label: "(starting)", at: Date.now() }
+  const trace = (label) => {
+    doing.label = label
+    doing.at = Date.now()
+  }
   if (process.env.QA_EVIDENCE_DIR)
     setInterval(() => {
       const waited = Math.round((Date.now() - lastCommand.at) / 1000)
-      console.error(`[heartbeat ${new Date().toISOString()}] last command to Chrome: ${lastCommand.method}, ${lastCommand.answered ? "answered" : `NOT answered for ${waited} s`}`)
+      const inHelper = Math.round((Date.now() - doing.at) / 1000)
+      console.error(
+        `[heartbeat ${new Date().toISOString()}] ${sent} commands so far; last to Chrome: ${lastCommand.method}${lastCommand.expression ? ` ${JSON.stringify(lastCommand.expression)}` : ""}, ${lastCommand.answered ? "answered" : `NOT answered for ${waited} s`}, ${Math.round((Date.now() - lastCommand.at) / 1000)} s ago; in ${doing.label} for ${inHelper} s`,
+      )
     }, 60_000).unref()
   const send = (method, params = {}) =>
     new Promise((resolve, reject) => {
       const id = ++nextId
-      lastCommand = { method, at: Date.now(), answered: false }
+      sent += 1
+      lastCommand = { method, at: Date.now(), answered: false, expression: method === "Runtime.evaluate" ? String(params.expression ?? "").replace(/\s+/g, " ").slice(0, 120) : "" }
       const timer = setTimeout(() => {
         pending.delete(id)
         reject(new Error(`Chrome did not answer ${method} within ${ANSWER_WITHIN_MS / 1000} s`))
@@ -269,6 +335,14 @@ export async function startBrowser({
   await send("Page.enable")
   await send("Runtime.enable")
   await send("Page.addScriptToEvaluateOnNewDocument", { source: PROBE })
+  if (process.env.QA_LINUX_FONTS_DIR) {
+    fontServer = await startFontServer(process.env.QA_LINUX_FONTS_DIR)
+    const css = linuxFontsCss(fontServer.base)
+    if (external) await send("Page.addScriptToEvaluateOnNewDocument", { source: linuxFontsScript(css) })
+    else fontsCss = css
+  }
+  // With the emulated fonts the page measures with the fallback until they have loaded: wait for them.
+  const fontsReady = () => (fontServer ? js(`document.fonts.ready.then(() => true)`).catch(() => false) : undefined)
 
   async function js(expression) {
     const { result, exceptionDetails } = await send("Runtime.evaluate", {
@@ -296,6 +370,7 @@ export async function startBrowser({
 
   let mouse = { x: 2, y: 2 }
   async function moveTo(x, y, steps = 1, pause = 0) {
+    trace(`moveTo(${Math.round(x)}, ${Math.round(y)})`)
     const from = mouse
     for (let i = 1; i <= steps; i++) {
       await send("Input.dispatchMouseEvent", {
@@ -308,6 +383,7 @@ export async function startBrowser({
     mouse = { x, y }
   }
   async function click(x, y) {
+    trace(`click(${Math.round(x)}, ${Math.round(y)})`)
     await moveTo(x, y)
     for (const type of ["mousePressed", "mouseReleased"]) {
       await send("Input.dispatchMouseEvent", {
@@ -325,6 +401,7 @@ export async function startBrowser({
     Enter: { windowsVirtualKeyCode: 13, code: "Enter", key: "Enter", text: "\r" },
   }
   async function press(name, { shift = false } = {}) {
+    trace(`press(${name})`)
     const key = KEYS[name]
     const modifiers = shift ? 8 : 0
     await send("Input.dispatchKeyEvent", {
@@ -338,10 +415,12 @@ export async function startBrowser({
 
   // Park the pointer on the flannel first, so the new page never loads under a hover.
   async function goto(path) {
+    trace(`goto(${path})`)
     await moveTo(2, 2)
     const loaded = nextEvent("Page.loadEventFired")
     await send("Page.navigate", { url: `${origin}${path}` })
     await loaded
+    await fontsReady()
     await sleep(60)
   }
   /**
@@ -353,6 +432,7 @@ export async function startBrowser({
    * object is there at every arrival and gone within 200 ms, after which a click reaches the link.
    */
   async function viewTransitionOver(timeout = 10_000) {
+    trace("viewTransitionOver")
     const start = Date.now()
     while (Date.now() - start < timeout) {
       const active = await js(
@@ -364,6 +444,7 @@ export async function startBrowser({
     return false
   }
   async function waitForPath(path, timeout = 5000) {
+    trace(`waitForPath(${path}, ${timeout})`)
     const start = Date.now()
     while (Date.now() - start < timeout) {
       const at = await js(
@@ -373,6 +454,7 @@ export async function startBrowser({
         // A cross-document view transition (P09) takes input away from the page while it
         // plays, so arrival means the page is shown and its transition, if any, is over.
         await viewTransitionOver()
+        await fontsReady()
         await sleep(80)
         return true
       }
@@ -450,6 +532,7 @@ export async function startBrowser({
 
   const results = []
   async function test(id, title, body) {
+    trace(`test ${id}`)
     const failures = []
     const check = (ok, message) => ok || failures.push(message)
     try {
@@ -461,6 +544,20 @@ export async function startBrowser({
     console.log(`${failures.length === 0 ? "PASS" : "FAIL"} ${id} ${title}`)
     for (const message of failures.slice(0, 10)) console.log(`  - ${message}`)
     if (failures.length > 0) await captureEvidence(id)
+  }
+  /** The fonts Chrome really used for a paragraph, a tab and a heading of the page now shown, by family name. */
+  async function platformFonts() {
+    const fonts = {}
+    try {
+      await send("DOM.enable")
+      await send("CSS.enable")
+      const { root } = await send("DOM.getDocument", { depth: 0 })
+      for (const [name, selector] of [["text", "main p"], ["tab", ".gl-folder-tab"], ["heading", "h1"]]) {
+        const { nodeId } = await send("DOM.querySelector", { nodeId: root.nodeId, selector })
+        if (nodeId) fonts[name] = (await send("CSS.getPlatformFontsForNode", { nodeId })).fonts.map((f) => `${f.familyName}${f.isCustomFont ? " (emulated)" : ""} (${f.glyphCount} glyphs)`)
+      }
+    } catch {}
+    return fonts
   }
   // Failure evidence (P22, D-153): when the QA command sets QA_EVIDENCE_DIR, a failing check leaves a
   // screenshot, the page address and the visible text of the page behind, so a failure that cannot be
@@ -480,16 +577,7 @@ export async function startBrowser({
         scroll: { top: Math.round(document.documentElement.scrollTop), height: document.documentElement.scrollHeight },
         media: { hover: m("(hover: hover)"), pointerFine: m("(pointer: fine)"), pointerCoarse: m("(pointer: coarse)"), reducedMotion: m("(prefers-reduced-motion: reduce)") },
         text: document.body.innerText.slice(0, 1500) } })()`)
-      note.fonts = {}
-      try {
-        await send("DOM.enable")
-        await send("CSS.enable")
-        const { root } = await send("DOM.getDocument", { depth: 0 })
-        for (const [name, selector] of [["text", "main p"], ["tab", ".gl-folder-tab"], ["heading", "h1"]]) {
-          const { nodeId } = await send("DOM.querySelector", { nodeId: root.nodeId, selector })
-          if (nodeId) note.fonts[name] = (await send("CSS.getPlatformFontsForNode", { nodeId })).fonts.map((f) => `${f.familyName} (${f.glyphCount} glyphs)`)
-        }
-      } catch {}
+      note.fonts = await platformFonts()
       await writeFile(join(dir, `${id}.json`), JSON.stringify(note, null, 2))
     } catch {}
   }
@@ -505,6 +593,7 @@ export async function startBrowser({
    * movement to happen (a fling takes as long as the machine takes), never for a fixed time.
    */
   async function touchSwipeScrolls(x, y, distance, { min = 50, horizontal = false, measure = "document.documentElement.scrollTop" } = {}) {
+    trace(`touchSwipeScrolls(${x}, ${y}, ${distance})`)
     const read = () => js(measure)
     const start = await read()
     const moved = async (ms) => {
@@ -562,6 +651,7 @@ export async function startBrowser({
     resetLog,
     away,
     touchSwipeScrolls,
+    platformFonts,
     tabPoint,
     panelOf,
     test,
