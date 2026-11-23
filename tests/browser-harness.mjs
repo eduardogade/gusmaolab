@@ -333,6 +333,25 @@ export async function startBrowser({
     await loaded
     await sleep(60)
   }
+  /**
+   * Waits until no view transition is running. A cross-document view transition (P09) takes input away from the page
+   * while it runs: a click then reaches the root element, not the link under it. "Running" is the transition object
+   * (`document.activeViewTransition`, which exists from the new page's first frame, while the new state is captured)
+   * as well as its animations (which exist only afterwards): the first GitHub runs (P22-A01) clicked into the window
+   * between the two on a slower machine, and found `html` under every tab. Measured here at 1x, 4x and 8x CPU: the
+   * object is there at every arrival and gone within 200 ms, after which a click reaches the link.
+   */
+  async function viewTransitionOver(timeout = 10_000) {
+    const start = Date.now()
+    while (Date.now() - start < timeout) {
+      const active = await js(
+        `document.activeViewTransition !== null || document.getAnimations().some((a) => a.effect?.pseudoElement?.startsWith("::view-transition"))`,
+      ).catch(() => false)
+      if (!active) return true
+      await sleep(25)
+    }
+    return false
+  }
   async function waitForPath(path, timeout = 5000) {
     const start = Date.now()
     while (Date.now() - start < timeout) {
@@ -342,13 +361,7 @@ export async function startBrowser({
       if (at === path) {
         // A cross-document view transition (P09) takes input away from the page while it
         // plays, so arrival means the page is shown and its transition, if any, is over.
-        for (let i = 0; i < 40; i++) {
-          const playing = await js(
-            `document.getAnimations().some((a) => a.effect?.pseudoElement?.startsWith("::view-transition"))`,
-          ).catch(() => false)
-          if (!playing) break
-          await sleep(25)
-        }
+        await viewTransitionOver()
         await sleep(80)
         return true
       }
@@ -472,33 +485,35 @@ export async function startBrowser({
   // Park the pointer on the flannel, away from every tab.
   const away = () => moveTo(2, 2, 3)
   /**
-   * A touch swipe over (x, y) that moves the content by `distance` px (negative: the page scrolls down), and whether the
-   * page's scroll position then grew by more than `min` px. Two ways to send the touch: Chrome's synthesized scroll
-   * gesture first (the one the touch tests have always used) and, if the page did not scroll, raw touch events, the
-   * lower-level input every platform takes. The first GitHub runner (headless Linux, P22-A01) saw the synthesized
-   * gesture do nothing; the result says which way scrolled, and a swipe that scrolls by neither is a real failure.
-   * It waits for the scroll to happen (a fling takes as long as the machine takes), never for a fixed time.
+   * A touch swipe over (x, y) that moves the content by `distance` px along the page (negative: it scrolls down; with
+   * `horizontal`, sideways), and whether what `measure` reads (the page's scroll position unless told otherwise) then
+   * changed by more than `min`. Two ways to send the touch: Chrome's synthesized scroll gesture first (the one the touch
+   * tests have always used) and, if nothing moved, raw touch events, the lower-level input every platform takes. The
+   * first GitHub runner (headless Linux, P22-A01) saw the synthesized gesture do nothing, upwards and sideways alike;
+   * the result says which way worked, and a swipe that moves nothing by either is a real failure. It waits for the
+   * movement to happen (a fling takes as long as the machine takes), never for a fixed time.
    */
-  async function touchSwipeScrolls(x, y, distance, min = 50) {
-    const top = () => js(`document.documentElement.scrollTop`)
-    const start = await top()
-    const scrolled = async (ms) => {
+  async function touchSwipeScrolls(x, y, distance, { min = 50, horizontal = false, measure = "document.documentElement.scrollTop" } = {}) {
+    const read = () => js(measure)
+    const start = await read()
+    const moved = async (ms) => {
       for (let t = 0; t < ms; t += 100) {
-        if ((await top()) > start + min) return true
+        if (Math.abs((await read()) - start) > min) return true
         await sleep(100)
       }
       return false
     }
-    await send("Input.synthesizeScrollGesture", { x, y, yDistance: distance, gestureSourceType: "touch" })
-    if (await scrolled(3000)) return { scrolled: true, by: "synthesized gesture", from: start, to: await top() }
+    await send("Input.synthesizeScrollGesture", { x, y, [horizontal ? "xDistance" : "yDistance"]: distance, gestureSourceType: "touch" })
+    if (await moved(3000)) return { scrolled: true, by: "synthesized gesture", from: start, to: await read() }
     await send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] })
     for (let i = 1; i <= 10; i++) {
-      await send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x, y: y + (distance * i) / 10 }] })
+      const along = (distance * i) / 10
+      await send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: horizontal ? x + along : x, y: horizontal ? y : y + along }] })
       await sleep(16)
     }
     await send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] })
-    const ok = await scrolled(4000)
-    return { scrolled: ok, by: ok ? "raw touch events" : "neither the synthesized gesture nor raw touch events", from: start, to: await top() }
+    const ok = await moved(4000)
+    return { scrolled: ok, by: ok ? "raw touch events" : "neither the synthesized gesture nor raw touch events", from: start, to: await read() }
   }
 
   /** Ends the run: closes the browser and server, prints the summary, sets the exit code. */
@@ -531,6 +546,7 @@ export async function startBrowser({
     press,
     goto,
     waitForPath,
+    viewTransitionOver,
     state,
     resetLog,
     away,

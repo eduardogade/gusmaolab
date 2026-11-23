@@ -9,7 +9,7 @@ Status: provisional. The six-wave structure is approved. Individual tasks are no
 | III — Publishing & Content | P10–P14 | P10 to P14 completed 2026-11-15; owner reviews of P13's demonstrations and P14's workflow are pending |
 | IV — Website Composition | P15–P18 | P15 to P17 completed 2026-11-16 and P18 on 2026-11-17; owner reviews are pending |
 | V — Advanced Features | P19–P21 | P19 and P20 technically complete 2026-11-21 (the 3D nucleus prototype, then its integration on Home; owner reviews are pending); P21 integration-ready on 2026-11-22 (Schedule with an external provider, switched off until the owner has an account; its operational checks are blocked) |
-| VI — QA & Release | P22–P24 | P22 automated QA complete 2026-11-22 (one `npm run qa` command, audits, accessibility, performance, a CI workflow not yet run on GitHub; Cal.com checks deferred by the owner; the legacy design studies gated out of the release, D-157); P23 and P24 not started |
+| VI — QA & Release | P22–P24 | P22 automated QA complete 2026-11-22 (one `npm run qa` command, audits, accessibility, performance, a CI workflow that has run on GitHub (P22-A01: the static job passes, the browser job is red on five font-baseline checks and one frame-time ceiling that need the owner, ISSUE-0007); Cal.com checks deferred by the owner; the legacy design studies gated out of the release, D-157); P23 and P24 not started |
 
 ## Known prompt titles
 

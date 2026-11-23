@@ -44,7 +44,7 @@ if (!ready.ok) {
 const readyServer = await serveFolder(ready.dist)
 const origins = { release: release.origin, demo: demo.origin, ready: readyServer.origin }
 
-const { send, on, js, setViewport, press, test, finish } = await startBrowser({ ids: IDS, timeout: 600_000, root: "dist", external: release.origin, chromeArgs: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] })
+const { send, on, js, setViewport, press, test, finish, viewTransitionOver } = await startBrowser({ ids: IDS, timeout: 600_000, root: "dist", external: release.origin, chromeArgs: ["--use-angle=swiftshader", "--enable-unsafe-swiftshader", "--ignore-gpu-blocklist"] })
 // Everything the page does is on record: a provider request would be a defect, and is blocked anyway.
 await send("Fetch.enable", { patterns: [{ urlPattern: "https://*" }] })
 const external = []
@@ -218,6 +218,7 @@ await test("QA-INSPECT-01", "The quality overview is reached by clicking from th
   }
   await click('a[href="/_design/site-map/"]')
   check(await waitFor(`location.pathname === "/_design/site-map/"`, 6000), "the site map is not one click from Home")
+  await viewTransitionOver() // the next click must not land in the cross-fade (a runner's first run, P22-A01)
   check(await js(`[...document.querySelectorAll("main a")].some((a) => a.getAttribute("href") === "/_design/quality/" && a.textContent.trim() === "Quality Assurance")`), "the site map does not list Quality Assurance")
   await click('a[href="/_design/quality/"]')
   check(await waitFor(`location.pathname === "/_design/quality/"`, 6000), "did not arrive at the quality overview")

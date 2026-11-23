@@ -602,9 +602,10 @@ await test("NUCINT-033B", "Touch: a still nucleus, no response to tapping or to 
   // The folder row still scrolls sideways under touch.
   const row = await js(`(() => { const s = document.querySelector('nav[aria-label=Sections].gl-folder__strip'); s.scrollIntoView({ block: "center" }); const r = s.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, scrolls: s.scrollWidth > s.clientWidth + 1, left: s.scrollLeft } })()`)
   await sleep(300)
-  await send("Input.synthesizeScrollGesture", { x: Math.round(row.x), y: Math.round(row.y), xDistance: -150, gestureSourceType: "touch" })
-  await sleep(500)
-  check(row.scrolls && (await js(`document.querySelector('nav[aria-label=Sections].gl-folder__strip').scrollLeft`)) !== row.left, "the folder row does not scroll sideways with touch")
+  const sideways = row.scrolls
+    ? await touchSwipeScrolls(Math.round(row.x), Math.round(row.y), -150, { min: 0, horizontal: true, measure: `document.querySelector('nav[aria-label=Sections].gl-folder__strip').scrollLeft` })
+    : { scrolled: false }
+  check(row.scrolls && sideways.scrolled, `the folder row does not scroll sideways with touch (${json(row)}, ${json(sideways)})`)
   await send("Emulation.setTouchEmulationEnabled", { enabled: false })
   await send("Emulation.clearDeviceMetricsOverride")
 })

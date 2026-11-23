@@ -65,7 +65,16 @@ Nineteen provider-dependent scheduling checks (SCH-013B, 014, 015B, 021 to 035, 
 
 `.github/workflows/quality.yml`, **Quality Assurance**, on pull requests to `development` or `main`, pushes to `development`, and manual runs. Two jobs: **static** (`node scripts/qa.mjs --profile quick`) and **browser** (`--profile full --only environment,build,demo-build,browser,performance`; a manual run can choose `deep`). Node comes from `.node-version`, dependencies from `npm ci`, Chrome is the runner's own. Permissions are `contents: read`; checkouts keep no credentials; there is no secret; reports are kept 14 days and logs and screenshots only when a job fails. **It verifies and never deploys**; the placeholder workflows beside it are untouched, and the release workflow is P24's.
 
-Quarto and the scientific Python are not installed in CI: the suites that need them report SKIPPED (the offline checks of committed generated files still run). Third-party actions are pinned to major versions (`@v4`), not commit SHAs; pinning to SHAs is a P24 hardening step. **The workflow has not been run on GitHub**: it was validated locally (YAML parsed, structure and policy tested by `tests/qa.mjs`), and its first remote run happens on the first push.
+Quarto and the scientific Python are not installed in CI: the suites that need them report SKIPPED (the offline checks of committed generated files still run). Third-party actions are pinned to major versions (`@v4`), not commit SHAs; pinning to SHAs is a P24 hardening step.
+
+**It has run on GitHub (P22-A01, 2026-11-23).** What the first runs taught, and where it stands (`debugging/investigations/ISSUE-0007.md` has the evidence):
+
+- Both jobs check out the **full history** (`fetch-depth: 0`). The preservation guards in the unit suites compare the tree with fixed earlier commits; in the default one-commit checkout, five of them failed and 27 were SKIPPED. **QA-ENV-06** now fails a shallow clone, with the fix in its message, wherever QA runs.
+- The runner has **no pointing device**, so Chrome reports `pointer: none` and `hover: none`. The harness (`tests/browser-harness.mjs`) states a desktop mouse; touch tests turn touch emulation on, which overrides it.
+- The runner's fonts are **DejaVu Sans and Liberation Serif**, because the font stacks name fonts it does not have. Layout follows the font: five checks that compare with geometry measured on the Mac fail there (KL-127). A failing check's evidence (`qa-report/evidence/<ID>.json`) records the pointer and hover, the scroll position and the fonts Chrome actually used, so a failure that only happens on the runner says which machine it was.
+- The **static job passes** on the clean runner. Its 13 SKIPPED checks need Quarto, the scientific environment or the gitignored Bearnard masters (`brand/bearnard/` is not in a checkout), and each is named in the report. The 19 Cal.com checks are DEFERRED there exactly as on the Mac. The **browser job takes 30 to 45 minutes** and is red until the owner decides ISSUE-0007's three questions.
+- Runner numbers are the runner's: its performance run is evaluated against the same budgets and passed, but Home's LCP was 376 ms there against 200 ms on the Mac, and neither replaces the other.
+- A push to `development` also starts eight placeholder workflows that fail at once (KL-129). They are not part of QA and deploy nothing.
 
 ## 8. Performance budgets
 
@@ -85,6 +94,6 @@ To change a budget: run `npm run qa`, read the measured number, change the file,
 
 ## 10. What QA does not show, and what is left for P23
 
-Automated checks find defects; they do not establish quality. In particular, **a clean axe-core run is not a claim of WCAG compliance**: automated rules find only part of the accessibility problems. Chromium only: no Safari, Firefox, real phone or screen reader was used.
+Automated checks find defects; they do not establish quality. In particular, **a clean axe-core run is not a claim of WCAG compliance**: automated rules find only part of the accessibility problems. Chromium only (on a Mac and on GitHub's Linux runner): no Safari, Firefox, real phone or screen reader was used.
 
 For P23, by hand: read the pages in a screen reader (VoiceOver, NVDA) for reading order and the meaning of links in context; the colour contrast axe lists as "needs review" on every page (the flannel and the folder paper), at the real colours; keyboard flow through the previews and the Home tab row at 1280 px and on a trackpad; zoom to 200 % and 400 %; Safari and Firefox for navigation and the folder geometry, and a touch device for the still nucleus and the scrolling rows; the nucleus's look and motion at real frame rates (the tests draw with software WebGL); Bearnard images at their delivered sizes; the order, wording and length of every owner-facing page; the Home sticky row costs (D-144, accepted) only if the owner wants to revisit them.
