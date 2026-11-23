@@ -600,7 +600,7 @@ await test("NUCINT-033B", "Touch: a still nucleus, no response to tapping or to 
   const swiped = await touchSwipeScrolls(Math.round(where.x), Math.round(where.y), -250)
   check(swiped.scrolled, `a swipe over the nucleus did not scroll the page (${json(swiped)}; document ${await js(`document.documentElement.scrollHeight`)} px, window ${await js(`innerHeight`)} px, gesture at ${json(where)})`)
   // The folder row still scrolls sideways under touch.
-  const row = await js(`(() => { const s = document.querySelector('nav[aria-label=Sections].gl-folder__strip'); s.scrollIntoView({ block: "center" }); const r = s.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, scrolls: s.scrollWidth > s.clientWidth + 1, left: s.scrollLeft } })()`)
+  const row = await js(`(() => { const s = document.querySelector('nav[aria-label=Sections].gl-folder__strip'); s.scrollIntoView({ block: "center" }); const r = s.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, scrolls: s.scrollWidth > s.clientWidth + 1, left: s.scrollLeft, hit: (() => { const e = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return e ? e.tagName.toLowerCase() + (e.className ? "." + String(e.className).split(" ")[0] : "") : null })(), touchAction: getComputedStyle(s).touchAction, overflowX: getComputedStyle(s).overflowX, scrollWidth: s.scrollWidth, clientWidth: s.clientWidth } })()`)
   await sleep(300)
   const sideways = row.scrolls
     ? await touchSwipeScrolls(Math.round(row.x), Math.round(row.y), -150, { min: 0, horizontal: true, measure: `document.querySelector('nav[aria-label=Sections].gl-folder__strip').scrollLeft` })

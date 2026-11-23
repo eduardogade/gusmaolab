@@ -203,9 +203,19 @@ export async function startBrowser({
   // A command Chrome never answers used to wait for ever, and the suite with it (the authoring suite stalled for the
   // orchestrator's 900 s on the second GitHub run, P22-A01, with nothing to show where). It now fails, naming the command.
   const ANSWER_WITHIN_MS = 120_000
+  // In a QA run (the command sets QA_EVIDENCE_DIR), say once a minute what was last asked of Chrome and whether it has
+  // answered. The authoring suite stalled for 900 s on three of the four GitHub runs with nothing in its log; if this
+  // line stops appearing the event loop itself is blocked, and if it keeps appearing the last command shows where.
+  let lastCommand = { method: "(none yet)", at: Date.now(), answered: true }
+  if (process.env.QA_EVIDENCE_DIR)
+    setInterval(() => {
+      const waited = Math.round((Date.now() - lastCommand.at) / 1000)
+      console.error(`[heartbeat ${new Date().toISOString()}] last command to Chrome: ${lastCommand.method}, ${lastCommand.answered ? "answered" : `NOT answered for ${waited} s`}`)
+    }, 60_000).unref()
   const send = (method, params = {}) =>
     new Promise((resolve, reject) => {
       const id = ++nextId
+      lastCommand = { method, at: Date.now(), answered: false }
       const timer = setTimeout(() => {
         pending.delete(id)
         reject(new Error(`Chrome did not answer ${method} within ${ANSWER_WITHIN_MS / 1000} s`))
@@ -213,6 +223,7 @@ export async function startBrowser({
       pending.set(id, {
         resolve: (value) => {
           clearTimeout(timer)
+          if (lastCommand.method === method) lastCommand.answered = true
           resolve(value)
         },
         reject: (error) => {

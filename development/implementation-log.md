@@ -1121,6 +1121,6 @@ O trabalho começou na branch `development` com alterações alheias, inclusive 
 
 **Reproduced locally before repairing:** the shallow checkout (a depth-1 clone fails the same checks), the missing pointer (Chrome's pointer settings set to none fail the same nucleus checks; the explicit desktop pointer passes them), the view-transition hit-test (measured at 1x, 4x and 8x CPU). **Not reproducible here:** the font geometry (no Linux fonts), the touch gesture, the intermittent stall of the authoring suite.
 
-**Verified.** `npm run qa` (full) on the Mac before each push: 830 PASS, 19 DEFERRED, 0 FAIL, 0 NOT RUN, 0 FLAKY. Remote results are in ISSUE-0007's table; the last commit's repairs had not run on GitHub when this was written.
+**Verified.** `npm run qa` (full) on the Mac before each push: 830 PASS, 19 DEFERRED, 0 FAIL, 0 NOT RUN, 0 FLAKY. Remote results are in ISSUE-0007's table (four runs; the fourth, on `ae2e961`: static PASS, browser 160 of 169 with the open items listed there). A fifth run is started by the push that carries this record and was not awaited.
 
 **Not done:** P23, P24, any change to `main`, the Pages repository, scheduling, the CV sources or the Bearnard masters.
