@@ -200,10 +200,26 @@ export async function startBrowser({
         listener(message.params)
     }
   })
+  // A command Chrome never answers used to wait for ever, and the suite with it (the authoring suite stalled for the
+  // orchestrator's 900 s on the second GitHub run, P22-A01, with nothing to show where). It now fails, naming the command.
+  const ANSWER_WITHIN_MS = 120_000
   const send = (method, params = {}) =>
     new Promise((resolve, reject) => {
       const id = ++nextId
-      pending.set(id, { resolve, reject })
+      const timer = setTimeout(() => {
+        pending.delete(id)
+        reject(new Error(`Chrome did not answer ${method} within ${ANSWER_WITHIN_MS / 1000} s`))
+      }, ANSWER_WITHIN_MS)
+      pending.set(id, {
+        resolve: (value) => {
+          clearTimeout(timer)
+          resolve(value)
+        },
+        reject: (error) => {
+          clearTimeout(timer)
+          reject(error)
+        },
+      })
       socket.send(JSON.stringify({ id, method, params }))
     })
   // Every occurrence of a protocol event, until the returned function is called (P09).
@@ -455,6 +471,35 @@ export async function startBrowser({
   }
   // Park the pointer on the flannel, away from every tab.
   const away = () => moveTo(2, 2, 3)
+  /**
+   * A touch swipe over (x, y) that moves the content by `distance` px (negative: the page scrolls down), and whether the
+   * page's scroll position then grew by more than `min` px. Two ways to send the touch: Chrome's synthesized scroll
+   * gesture first (the one the touch tests have always used) and, if the page did not scroll, raw touch events, the
+   * lower-level input every platform takes. The first GitHub runner (headless Linux, P22-A01) saw the synthesized
+   * gesture do nothing; the result says which way scrolled, and a swipe that scrolls by neither is a real failure.
+   * It waits for the scroll to happen (a fling takes as long as the machine takes), never for a fixed time.
+   */
+  async function touchSwipeScrolls(x, y, distance, min = 50) {
+    const top = () => js(`document.documentElement.scrollTop`)
+    const start = await top()
+    const scrolled = async (ms) => {
+      for (let t = 0; t < ms; t += 100) {
+        if ((await top()) > start + min) return true
+        await sleep(100)
+      }
+      return false
+    }
+    await send("Input.synthesizeScrollGesture", { x, y, yDistance: distance, gestureSourceType: "touch" })
+    if (await scrolled(3000)) return { scrolled: true, by: "synthesized gesture", from: start, to: await top() }
+    await send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] })
+    for (let i = 1; i <= 10; i++) {
+      await send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x, y: y + (distance * i) / 10 }] })
+      await sleep(16)
+    }
+    await send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] })
+    const ok = await scrolled(4000)
+    return { scrolled: ok, by: ok ? "raw touch events" : "neither the synthesized gesture nor raw touch events", from: start, to: await top() }
+  }
 
   /** Ends the run: closes the browser and server, prints the summary, sets the exit code. */
   async function finish() {
@@ -489,6 +534,7 @@ export async function startBrowser({
     state,
     resetLog,
     away,
+    touchSwipeScrolls,
     tabPoint,
     panelOf,
     test,

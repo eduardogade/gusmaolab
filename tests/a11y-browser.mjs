@@ -197,6 +197,9 @@ await test("A11Y-NUCLEUS", "Without WebGL the nucleus is a still picture, the ta
 
 await test("A11Y-CLOCKS", "The eight clocks pair each city with its time, in 24-hour form, and are not a live region", async (check) => {
   await goto("release", "/")
+  // The page is static: the clocks read --:-- until the page's own script fills them. Wait for that state, not for
+  // a time (the first GitHub run, P22-A01, read them before a slower machine had run the script).
+  await waitFor(`(() => { const r = document.querySelector('[data-home-region="clocks"]'); const t = r ? [...r.querySelectorAll("time, [data-clock-time]")] : []; return t.length === 8 && t.every((e) => /\\d\\d:\\d\\d/.test(e.textContent)) })()`, 10000)
   const clocks = await js(`(() => { const r = document.querySelector('[data-home-region="clocks"]'); if (!r) return null; const items = [...r.querySelectorAll("li, [data-clock]")].filter((el) => el.querySelector("time, [data-clock-time]")); return { count: items.length, live: r.querySelectorAll('[aria-live], [role="status"], [role="alert"], [role="log"]').length + (r.matches('[aria-live], [role="status"], [role="alert"], [role="log"]') ? 1 : 0), rows: items.map((el) => ({ text: el.innerText.replace(/\\s+/g, " ").trim(), time: (el.querySelector("time, [data-clock-time]")?.textContent ?? "").trim(), datetime: el.querySelector("time")?.getAttribute("datetime") })) } })()`)
   check(clocks !== null && clocks.count === 8, `${clocks?.count} clocks found`)
   if (clocks) {

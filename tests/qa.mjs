@@ -360,7 +360,7 @@ await test("QA-A11Y-01", "Every code block and table of a Quarto article can tak
 
 // P22-A01: the first GitHub run used a depth-1 checkout, in which the guards that compare with earlier commits failed or
 // were SKIPPED. The environment stage must say so, whatever the cause, and the workflow must ask for the history.
-await test("QA-ENV-06", "A shallow checkout fails the environment stage, a complete one passes, and the workflow checks out the full history", async (check) => {
+await test("QA-HISTORY-01", "A shallow checkout fails the environment stage, a complete one passes, and the workflow checks out the full history", async (check) => {
   const dir = await mkdtemp(join(tmpdir(), "gusmaolab-history-"))
   try {
     const clone = join(dir, "clone")

@@ -25,7 +25,7 @@ if (!existsSync(join(dist, "index.html"))) {
   process.exit(2)
 }
 
-const { js, send, setViewport, goto, moveTo, click, press, test, finish, tabPoint, waitForPath, nextEvent } = await startBrowser({
+const { js, send, setViewport, goto, moveTo, click, press, test, finish, tabPoint, waitForPath, nextEvent, touchSwipeScrolls } = await startBrowser({
   ids: IDS,
   timeout: 600_000,
   root: "dist",
@@ -597,10 +597,8 @@ await test("NUCINT-033B", "Touch: a still nucleus, no response to tapping or to 
   check(await js(`getComputedStyle(document.querySelector("nav[aria-label=Sections]")).position`) !== "sticky", "the tab row sticks on a touch device")
   const where = await js(`(() => { const r = document.querySelector("[data-nucleus-frame]").getBoundingClientRect(); return { x: r.x + r.width / 2, y: Math.min(innerHeight - 40, r.y + r.height / 2) } })()`)
   const top = await js(`document.documentElement.scrollTop`)
-  await send("Input.synthesizeScrollGesture", { x: Math.round(where.x), y: Math.round(where.y), yDistance: -250, gestureSourceType: "touch" })
-  // Wait for the scroll to happen (it is a fling: how long it takes depends on the machine), not for a fixed time.
-  const scrolled = await waitFor(`document.documentElement.scrollTop > ${top + 50}`, 6000)
-  check(scrolled, `a swipe over the nucleus did not scroll the page (scrollTop ${top} to ${await js(`document.documentElement.scrollTop`)}, document ${await js(`document.documentElement.scrollHeight`)} px, window ${await js(`innerHeight`)} px, gesture at ${json(where)})`)
+  const swiped = await touchSwipeScrolls(Math.round(where.x), Math.round(where.y), -250)
+  check(swiped.scrolled, `a swipe over the nucleus did not scroll the page (${json(swiped)}; document ${await js(`document.documentElement.scrollHeight`)} px, window ${await js(`innerHeight`)} px, gesture at ${json(where)})`)
   // The folder row still scrolls sideways under touch.
   const row = await js(`(() => { const s = document.querySelector('nav[aria-label=Sections].gl-folder__strip'); s.scrollIntoView({ block: "center" }); const r = s.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, scrolls: s.scrollWidth > s.clientWidth + 1, left: s.scrollLeft } })()`)
   await sleep(300)

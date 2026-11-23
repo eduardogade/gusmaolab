@@ -734,6 +734,10 @@ await test(
         `[...document.querySelectorAll(".gl-folder-preview")].every((p) => getComputedStyle(p).display === "none")`,
       )
       check(hidden, "a preview shows without JavaScript")
+      // Without JavaScript nothing scrolls a row to its selected tab, and where a row is wider than its folder (a wider
+      // font) a tab can lie outside the visible strip: bring it into view, as a reader would by scrolling the row.
+      const reveal = (id) => js(`document.querySelector(${json(`${PAGE} .gl-folder-tab[data-tab-id="${id}"]`)})?.scrollIntoView({ block: "nearest", inline: "nearest" })`)
+      await reveal("writing")
       const writing = await tabPoint(PAGE, "writing")
       await moveTo(writing.x, writing.y, 3)
       await sleep(150)
@@ -746,6 +750,7 @@ await test(
         await waitForPath("/writing/"),
         "the Writing tab does not navigate without JavaScript",
       )
+      await reveal("writing-kosmos")
       const kosmos = await tabPoint(PAGE, "writing-kosmos")
       await clickAndLoad(kosmos)
       check(
