@@ -627,9 +627,13 @@ await test("NUCINT-033B", "Touch: a still nucleus, no response to tapping or to 
   // phone is for the real-device review (P23): it is not decided here.
   const strip = `document.querySelector('nav[aria-label=Sections].gl-folder__strip')`
   const offLink = await js(`(() => { const s = ${strip}; const b = s.getBoundingClientRect(); for (let x = b.left + 4; x < b.right - 4; x += 5) for (const y of [b.top + 4, b.top + b.height / 2, b.bottom - 4]) { const e = document.elementFromPoint(x, y); if (e && s.contains(e) && !e.closest("a")) return { x, y } } return null })()`)
+  // What reaches the page during the swipe: the touch and pointer events, a drag start, a scroll and the highest scroll position
+  // seen, so "never delivered", "delivered and cancelled" and "scrolled and snapped back" can be told apart.
+  await js(`(() => { const s = ${strip}; window.__qaSwipe = { events: {}, maxLeft: s.scrollLeft, pageX: scrollX }; for (const type of ["touchstart", "touchmove", "touchend", "touchcancel", "pointerdown", "pointermove", "pointerup", "pointercancel", "dragstart", "contextmenu", "click", "scroll"]) document.addEventListener(type, (e) => { const q = window.__qaSwipe; q.events[type] = (q.events[type] || 0) + 1; q.maxLeft = Math.max(q.maxLeft, s.scrollLeft); q.pageX = Math.max(q.pageX, scrollX); if (type === "pointerdown" || type === "touchstart") q.first ??= (e.target?.tagName || "").toLowerCase() + "." + String(e.target?.className || "").split(" ")[0] }, { capture: true, passive: true }) })()`)
   const onLinkSwipe = row.scrolls
     ? await touchSwipeScrolls(Math.round(row.x), Math.round(row.y), -150, { min: 0, horizontal: true, measure: `${strip}.scrollLeft` })
     : { scrolled: false }
+  const trace = await js(`window.__qaSwipe`)
   // If the swipe on a link did not move the row, the same swipe on the same link with the browser's link dragging switched
   // off tells whether dragging the link is what took the touch (on Linux a touch that starts on a link can become a drag).
   let offLinkSwipe = null
@@ -641,7 +645,7 @@ await test("NUCINT-033B", "Touch: a still nucleus, no response to tapping or to 
     if (offLink) offLinkSwipe = await touchSwipeScrolls(Math.round(offLink.x), Math.round(offLink.y), -150, { min: 0, horizontal: true, measure: `${strip}.scrollLeft` })
   }
   if (!onLinkSwipe.scrolled && (noDragSwipe?.scrolled || offLinkSwipe?.scrolled)) console.log(`  observed: a swipe that starts on a tab's link did not move the row (${json(onLinkSwipe)}); with link dragging switched off it ${noDragSwipe?.scrolled ? "did" : "did not"} (${json(noDragSwipe)}), and a swipe on the row's empty part ${offLinkSwipe ? (offLinkSwipe.scrolled ? "did" : "did not") : "was not possible (every point of the row is a link)"}`)
-  check(row.scrolls && (onLinkSwipe.scrolled || noDragSwipe?.scrolled === true || offLinkSwipe?.scrolled === true), `the folder row does not scroll sideways with touch (${json(row)}; on a link: ${json(onLinkSwipe)}; on a link with dragging off: ${json(noDragSwipe)}; off a link at ${json(offLink)}: ${json(offLinkSwipe)})`)
+  check(row.scrolls && (onLinkSwipe.scrolled || noDragSwipe?.scrolled === true || offLinkSwipe?.scrolled === true), `the folder row does not scroll sideways with touch (${json(row)}; what reached the page during the swipe on the link: ${json(trace)}; on a link: ${json(onLinkSwipe)}; on a link with dragging off: ${json(noDragSwipe)}; off a link at ${json(offLink)}: ${json(offLinkSwipe)})`)
   await send("Emulation.setTouchEmulationEnabled", { enabled: false })
   await send("Emulation.clearDeviceMetricsOverride")
 })
