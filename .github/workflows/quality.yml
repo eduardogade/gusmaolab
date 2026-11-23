@@ -7,6 +7,9 @@
 # Two jobs, so a static problem is reported in minutes and the browser job's cost is paid only when it can matter:
 #   static   Node, `npm ci`, diagnostics, the production build, every unit suite, the static audits.
 #   browser  the build, the demonstration build, the browser suites (one reported retry), accessibility, performance.
+# Both jobs check out the full history (fetch-depth: 0): the preservation guards in the unit suites compare the tree with
+# fixed earlier commits, and a depth-1 checkout has none of them (the first remote run, P22-A01, failed some of those
+# checks and skipped others for exactly that reason). The environment stage (QA-ENV-06) now fails on a shallow checkout.
 # Quarto and the scientific environment are not installed: the suites that need them report SKIPPED, and say so.
 # Chrome is the runner's own (google-chrome); no other browser is installed, and no cross-browser claim is made.
 name: Quality Assurance
@@ -37,10 +40,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
-      - name: Check out the repository (read-only, no stored credentials)
+      - name: Check out the repository with its full history (read-only, no stored credentials)
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Set up Node.js from .node-version
         uses: actions/setup-node@v4
         with:
@@ -76,10 +80,11 @@ jobs:
     env:
       CHROME_PATH: /usr/bin/google-chrome
     steps:
-      - name: Check out the repository (read-only, no stored credentials)
+      - name: Check out the repository with its full history (read-only, no stored credentials)
         uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Set up Node.js from .node-version
         uses: actions/setup-node@v4
         with:

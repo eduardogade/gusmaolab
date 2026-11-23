@@ -111,12 +111,18 @@ async function clickTab(id, expectedPath) {
     const r = tab.getBoundingClientRect();
     const s = tab.closest(".gl-folder__strip").getBoundingClientRect();
     const left = Math.max(r.left, s.left), right = Math.min(r.right, s.right);
-    return { x: (left + right) / 2, y: r.top + r.height / 2 };
+    const x = (left + right) / 2, y = r.top + r.height / 2;
+    // What the click will hit, for a failure to explain itself (first GitHub run, P22-A01).
+    const hit = document.elementFromPoint(x, y);
+    const what = hit ? hit.tagName.toLowerCase() + (hit.className ? "." + String(hit.className).split(" ")[0] : "") + (hit.closest("[data-tab-id]") ? "[" + hit.closest("[data-tab-id]").dataset.tabId + "]" : "") : null;
+    return { x, y, tab: [Math.round(r.left), Math.round(r.right)], strip: [Math.round(s.left), Math.round(s.right)], hit: what };
   })()`)
   if (point === null) throw new Error(`no tab ${id} on ${await path()}`)
+  lastClick = { id, ...point }
   await click(point.x, point.y)
   return waitForPath(expectedPath, 15_000)
 }
+let lastClick = null
 const inView = (selector) =>
   js(
     `(() => { const el = document.querySelector(${json(selector)}); if (!el) return false; const r = el.getBoundingClientRect(); return r.width > 0 && r.top < innerHeight && r.bottom > 0; })()`,
@@ -206,7 +212,7 @@ await test("AUTH-031", "The workbench is reachable from Home by clicking, and it
   await js(`history.forward()`)
   check(await waitForPath(`${GREENHOUSE}demo-synthetic-signals/`, 15_000), "Forward to the Quarto demonstration")
   // Home: the Greenhouse folder tab returns to the Overview, whose link is still there.
-  check(await clickTab("lecture-notes-greenhouse", GREENHOUSE), "the Greenhouse tab did not return to the Overview")
+  check(await clickTab("lecture-notes-greenhouse", GREENHOUSE), `the Greenhouse tab did not return to the Overview (on ${await path()}; the click: ${json(lastClick)})`)
   check(await inView("[data-workbench-link]") || (await js(`!!document.querySelector("[data-workbench-link]")`)), "the link is gone from the Overview")
   // And the workbench's own way back.
   await clickOn("[data-workbench-link] a", "Publishing Workbench")

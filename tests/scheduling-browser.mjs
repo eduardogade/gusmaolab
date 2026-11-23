@@ -98,9 +98,12 @@ const metrics = () =>
     wide: [...document.querySelectorAll("main *")].filter((el) => el.getBoundingClientRect().right > document.documentElement.clientWidth + 1 && !el.closest(".gl-folder__strip, [data-schedule-frame]")).length,
     rows: document.querySelectorAll(".gl-folder__strip").length,
   })`)
+let lastClick = null
 const clickAt = async (selector) => {
-  const point = await js(`(() => { const el = document.querySelector(${json(selector)}); if (!el) return null; el.scrollIntoView({ block: "center", inline: "center" }); const r = el.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2 } })()`)
+  // `hit` is what the click will reach, for a failure to explain itself (the first GitHub run, P22-A01).
+  const point = await js(`(() => { const el = document.querySelector(${json(selector)}); if (!el) return null; el.scrollIntoView({ block: "center", inline: "center" }); const r = el.getClientRects()[0]; const x = r.x + r.width / 2, y = r.y + r.height / 2; const hit = document.elementFromPoint(x, y); return { x, y, hit: hit ? hit.tagName.toLowerCase() + (hit.getAttribute("href") ? "[" + hit.getAttribute("href") + "]" : "") : null, boxes: el.getClientRects().length } })()`)
   if (point === null) throw new Error(`nothing matches ${selector}`)
+  lastClick = { selector, ...point }
   for (const type of ["mouseMoved", "mousePressed", "mouseReleased"]) await send("Input.dispatchMouseEvent", { type, x: point.x, y: point.y, button: "left", clickCount: 1 })
   await sleep(60)
 }
@@ -129,7 +132,7 @@ await test("SCH-071", "The specimen is reached by clicking from the local homepa
   check(await js(`!!document.querySelector("[data-scheduling-specimen]")`), "no specimen banner")
   check((await js(`document.querySelectorAll(".gl-folder-tab").length`)) >= 11, "the folder tabs are missing")
   await clickAt('[data-scheduling-specimen] a[href="/schedule/"]')
-  check(await waitForPath("/schedule/"), "the real Schedule page is not one click away")
+  check(await waitForPath("/schedule/"), `the real Schedule page is not one click away (the click: ${json(lastClick)})`)
   check(await js(`document.querySelector("[data-schedule]") === null && !!document.querySelector('[data-state-notice="preparation"]')`), "the real, unconfigured page is not the honest notice")
 })
 

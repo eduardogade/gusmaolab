@@ -25,7 +25,10 @@ async function clickOn(selector) {
   const at = await js(`(() => {
     const el = document.querySelector(${json(selector)});
     el.scrollIntoView({ block: "center" });
-    const r = el.getBoundingClientRect();
+    // A link that wraps has one box per line: the box around all of them has its middle between the lines, in
+    // text that is not the link. Click inside the first line's box (found on the first GitHub run, P22-A01,
+    // where the runner's wider fallback font wrapped a citation).
+    const r = el.getClientRects()[0];
     return { x: r.left + Math.min(r.width / 2, 30), y: r.top + r.height / 2 };
   })()`)
   await click(at.x, at.y)

@@ -707,6 +707,21 @@ await test(
   },
 )
 
+// A click that must load a new page, and a failure that says what the click reached (the first GitHub run,
+// P22-A01, timed out here on a runner whose wider fallback font moves the tabs).
+async function clickAndLoad(point) {
+  const hit = await js(
+    `(() => { const e = document.elementFromPoint(${point.x}, ${point.y}); const a = e?.closest("a"); return e ? e.tagName.toLowerCase() + (a ? "[" + a.getAttribute("href") + "]" : "") + " in a " + innerWidth + " px window" : null })()`,
+  )
+  const loaded = nextEvent("Page.loadEventFired")
+  await click(point.x, point.y)
+  try {
+    await loaded
+  } catch (error) {
+    throw new Error(`${error.message}: the click at ${json({ x: Math.round(point.x), y: Math.round(point.y) })} reached ${json(hit)}`)
+  }
+}
+
 await test(
   "PREV-013",
   "Without JavaScript the folders still navigate",
@@ -726,17 +741,13 @@ await test(
         `[...document.querySelectorAll(".gl-folder-preview")].every((p) => getComputedStyle(p).display === "none")`,
       )
       check(still, "hovering shows a preview without JavaScript")
-      let loaded = nextEvent("Page.loadEventFired")
-      await click(writing.x, writing.y)
-      await loaded
+      await clickAndLoad(writing)
       check(
         await waitForPath("/writing/"),
         "the Writing tab does not navigate without JavaScript",
       )
       const kosmos = await tabPoint(PAGE, "writing-kosmos")
-      loaded = nextEvent("Page.loadEventFired")
-      await click(kosmos.x, kosmos.y)
-      await loaded
+      await clickAndLoad(kosmos)
       check(
         await waitForPath("/writing/kosmos/"),
         "Kosmos Series does not navigate without JavaScript",

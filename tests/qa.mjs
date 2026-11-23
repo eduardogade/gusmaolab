@@ -10,17 +10,20 @@
 // workflow has run (it needs a push), or anything the browser suites show (accessibility, performance, the nucleus).
 import { spawnSync } from "node:child_process"
 import { existsSync } from "node:fs"
-import { readFile, readdir } from "node:fs/promises"
+import { mkdtemp, readFile, readdir, rm } from "node:fs/promises"
+import { tmpdir } from "node:os"
 import { join } from "node:path"
 import process from "node:process"
 import { fileURLToPath } from "node:url"
 import { parse as parseYaml } from "yaml"
+import { historyCheck } from "../scripts/qa.mjs"
 import { DEFERRALS, KNOWN_FLAKY, REPORT_SCHEMA, classify, countStatuses, parseChecks, redact, stageFails, suiteStatus, verdict } from "../scripts/qa-lib.mjs"
 import { MATRIX, evaluate } from "../scripts/qa-matrix.mjs"
 import { ALL_SUITES, BROWSER_SUITES, HELPERS, MEASUREMENT_SUITES, ON_DEMAND, UNIT_SUITES } from "../scripts/qa-suites.mjs"
 import { freshness, sourceState } from "../src/quality/source.mjs"
 import { DEFECTS, copyBuild, fingerprint, readReport, runAudits } from "./qa-fixtures.mjs"
 import { DEV_PAGES, QUALITY_PAGE } from "../src/design/site-map.ts"
+import { demoBuild } from "./demo-dist.mjs"
 
 const repo = fileURLToPath(new URL("../", import.meta.url))
 const dist = join(repo, "dist")
@@ -340,6 +343,43 @@ await test("QA-FLAKE-01", "NUC-031 is investigated: the record names the cause w
   const test031 = (await read("tests/nucleus-browser.mjs")).split('await test("NUC-031"')[1].split('await test("NUC-018B"')[0]
   check(!/sleep\(700\)|sleep\(500\)/.test(test031) && /waitFor\(answered/.test(test031), "NUC-031 still waits a fixed time")
   check(/activation\)? ?> 20|> 20/.test(test031), "NUC-031's standard was lowered")
+})
+
+// P22-A01: `.ed__body pre` and `.ed__body table` scroll sideways inside their own box (editorial.css), and a scrolling
+// region the keyboard cannot reach fails WCAG 2.1.1. Whether a table overflows depends on the font (the first GitHub
+// run, on a runner with a wider fallback font, was the first to see it), so axe alone cannot guard this on a machine
+// whose fonts are narrow: the markup is checked, whatever the font.
+await test("QA-A11Y-01", "Every code block and table of a Quarto article can take keyboard focus, so a scrolling one can be scrolled by keyboard", async (check) => {
+  const build = await demoBuild()
+  const article = await build.read("lecture-notes/greenhouse/demo-synthetic-signals/index.html")
+  const elements = [...article.matchAll(/<(pre|table)\b[^>]*>/g)]
+  check(elements.some((m) => m[1] === "table"), "the demonstration article has no table: this check guards nothing")
+  check(elements.some((m) => m[1] === "pre"), "the demonstration article has no code block: this check guards nothing")
+  for (const [tag] of elements) check(/\btabindex="0"/.test(tag), `${tag.slice(0, 80)} cannot take keyboard focus`)
+})
+
+// P22-A01: the first GitHub run used a depth-1 checkout, in which the guards that compare with earlier commits failed or
+// were SKIPPED. The environment stage must say so, whatever the cause, and the workflow must ask for the history.
+await test("QA-ENV-06", "A shallow checkout fails the environment stage, a complete one passes, and the workflow checks out the full history", async (check) => {
+  const dir = await mkdtemp(join(tmpdir(), "gusmaolab-history-"))
+  try {
+    const clone = join(dir, "clone")
+    const made = spawnSync("git", ["clone", "--quiet", "--no-local", "--depth", "1", `file://${repo}`, clone], { encoding: "utf8" })
+    check(made.status === 0, `a shallow clone could not be made: ${made.stderr}`)
+    if (made.status === 0) {
+      const shallow = historyCheck(clone)
+      check(shallow.id === "QA-ENV-06" && shallow.status === "FAIL", `a depth-1 clone reported ${shallow.status}`)
+      check(/fetch-depth: 0/.test(shallow.reasons.join()) && /unshallow/.test(shallow.reasons.join()), "the failure does not say how to fix it")
+      const filled = spawnSync("git", ["-C", clone, "fetch", "--quiet", "--unshallow"], { encoding: "utf8" })
+      check(filled.status === 0, `the clone could not be completed: ${filled.stderr}`)
+      check(historyCheck(clone).status === "PASS", "a clone with its full history did not pass")
+    }
+    check(historyCheck(dir).status === "FAIL", "a folder that is not a git checkout did not fail")
+  } finally {
+    await rm(dir, { recursive: true, force: true })
+  }
+  const jobs = Object.values(workflow.jobs)
+  for (const job of jobs) for (const s of job.steps.filter((x) => x.uses?.startsWith("actions/checkout"))) check(s.with?.["fetch-depth"] === 0, "a checkout in the workflow does not fetch the full history")
 })
 
 let failed = 0

@@ -76,6 +76,22 @@ const tool = (name, args) => run(name, args).stdout?.trim() ?? ""
 
 // --- Stages ----------------------------------------------------------------------------------------------
 
+/**
+ * QA-ENV-06 (P22-A01). The preservation guards in the unit suites compare the tree with fixed earlier commits. In a shallow
+ * checkout (the default of actions/checkout) those commits do not exist: some guards then fail with "bad revision" and
+ * others report SKIPPED, so the run would be quietly smaller than the one on a developer's machine. A shallow checkout is
+ * therefore a failure of the environment, said once and plainly, not a scatter of unrelated failures.
+ */
+export function historyCheck(root = ROOT) {
+  const out = spawnSync("git", ["-C", root, "rev-parse", "--is-shallow-repository"], { encoding: "utf8" })
+  const answer = out.status === 0 ? out.stdout.trim() : ""
+  const id = "QA-ENV-06"
+  const title = "The git history is complete, so the guards that compare with earlier commits can run"
+  if (answer === "false") return { id, title, status: "PASS", reasons: [] }
+  if (answer === "true") return { id, title, status: "FAIL", reasons: ["this checkout is shallow: the commits the preservation guards compare with are missing, so they would fail or be SKIPPED. In GitHub Actions use actions/checkout with `fetch-depth: 0`; locally run `git fetch --unshallow`."] }
+  return { id, title, status: "FAIL", reasons: ["git could not say whether the history is complete (not a git checkout, or git is missing)"] }
+}
+
 function envStage(context) {
   const checks = []
   const wanted = readFileSync(join(ROOT, ".node-version"), "utf8").trim()
@@ -97,6 +113,7 @@ function envStage(context) {
   checks.push({ id: "QA-ENV-03", title: "Direct dependencies match the lockfile and the installed packages", status: reasons.length === 0 ? "PASS" : "FAIL", reasons })
   const src = sourceState()
   checks.push({ id: "QA-ENV-04", title: "A git checkout is available, so the report can name its source state", status: src.head ? "PASS" : "FAIL", reasons: src.head ? [] : ["not a git checkout"] })
+  checks.push(historyCheck())
   if (context.needsBrowser) {
     const chrome = chromePath()
     checks.push({ id: "QA-ENV-05", title: "Chrome or Chromium is available for the browser stages", status: chrome ? "PASS" : "NOT RUN", reasons: chrome ? [] : ["no Chrome or Chromium found (set CHROME_PATH); the browser stages cannot run, which is NOT RUN, not a pass"] })

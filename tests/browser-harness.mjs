@@ -129,6 +129,13 @@ export async function startBrowser({
       "--no-default-browser-check",
       "--disable-extensions",
       "--hide-scrollbars",
+      // A desktop with a mouse, stated and not inherited (P22-A01). The pages read the pointer and hover
+      // capabilities (the nucleus treats `(hover: none), (pointer: coarse)` as touch and stays still; Home's sticky
+      // tab row needs `(hover: hover) and (pointer: fine)`). A CI runner has no pointing device: Chrome then reports
+      // pointer: none and hover: none, the pages rightly behave as for a touch visitor, and every check written
+      // for a mouse fails (the first GitHub run lost thirteen that way). This changes nothing on a machine with a
+      // mouse, and the touch tests are unaffected: touch emulation overrides it (checked).
+      "--blink-settings=primaryPointerType=4,availablePointerTypes=4,primaryHoverType=2,availableHoverTypes=2",
       ...chromeArgs,
       "about:blank",
     ],
@@ -425,7 +432,24 @@ export async function startBrowser({
       await mkdir(dir, { recursive: true })
       const { data } = await send("Page.captureScreenshot", { format: "png" })
       await writeFile(join(dir, `${id}.png`), Buffer.from(data, "base64"))
-      const note = await js(`({ url: location.pathname + location.search, width: innerWidth, height: innerHeight, text: document.body.innerText.slice(0, 1500) })`)
+      // What the page was drawn in (P22-A01): a failure that only happens on another machine is usually the machine.
+      // The pointer and hover the page saw, the scroll position, and the fonts Chrome really used (the font stacks
+      // name fonts that a Linux runner does not have, and the layout follows the font that was found).
+      const note = await js(`(() => { const m = (q) => matchMedia(q).matches; return {
+        url: location.pathname + location.search, width: innerWidth, height: innerHeight, devicePixelRatio,
+        scroll: { top: Math.round(document.documentElement.scrollTop), height: document.documentElement.scrollHeight },
+        media: { hover: m("(hover: hover)"), pointerFine: m("(pointer: fine)"), pointerCoarse: m("(pointer: coarse)"), reducedMotion: m("(prefers-reduced-motion: reduce)") },
+        text: document.body.innerText.slice(0, 1500) } })()`)
+      note.fonts = {}
+      try {
+        await send("DOM.enable")
+        await send("CSS.enable")
+        const { root } = await send("DOM.getDocument", { depth: 0 })
+        for (const [name, selector] of [["text", "main p"], ["tab", ".gl-folder-tab"], ["heading", "h1"]]) {
+          const { nodeId } = await send("DOM.querySelector", { nodeId: root.nodeId, selector })
+          if (nodeId) note.fonts[name] = (await send("CSS.getPlatformFontsForNode", { nodeId })).fonts.map((f) => `${f.familyName} (${f.glyphCount} glyphs)`)
+        }
+      } catch {}
       await writeFile(join(dir, `${id}.json`), JSON.stringify(note, null, 2))
     } catch {}
   }

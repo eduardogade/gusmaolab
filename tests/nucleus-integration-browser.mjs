@@ -598,8 +598,9 @@ await test("NUCINT-033B", "Touch: a still nucleus, no response to tapping or to 
   const where = await js(`(() => { const r = document.querySelector("[data-nucleus-frame]").getBoundingClientRect(); return { x: r.x + r.width / 2, y: Math.min(innerHeight - 40, r.y + r.height / 2) } })()`)
   const top = await js(`document.documentElement.scrollTop`)
   await send("Input.synthesizeScrollGesture", { x: Math.round(where.x), y: Math.round(where.y), yDistance: -250, gestureSourceType: "touch" })
-  await sleep(600)
-  check((await js(`document.documentElement.scrollTop`)) > top + 50, "a swipe over the nucleus did not scroll the page")
+  // Wait for the scroll to happen (it is a fling: how long it takes depends on the machine), not for a fixed time.
+  const scrolled = await waitFor(`document.documentElement.scrollTop > ${top + 50}`, 6000)
+  check(scrolled, `a swipe over the nucleus did not scroll the page (scrollTop ${top} to ${await js(`document.documentElement.scrollTop`)}, document ${await js(`document.documentElement.scrollHeight`)} px, window ${await js(`innerHeight`)} px, gesture at ${json(where)})`)
   // The folder row still scrolls sideways under touch.
   const row = await js(`(() => { const s = document.querySelector('nav[aria-label=Sections].gl-folder__strip'); s.scrollIntoView({ block: "center" }); const r = s.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, scrolls: s.scrollWidth > s.clientWidth + 1, left: s.scrollLeft } })()`)
   await sleep(300)

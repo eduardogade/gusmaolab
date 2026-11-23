@@ -48,10 +48,14 @@ if (headings.some((heading) => heading.depth === 1)) {
 }
 const context = await readingContextFor(collection, entry.id, demo)
 const Layout = EDITORIAL_LAYOUTS[collection]
-// Quarto writes code blocks as plain <pre> elements that scroll sideways when a line is long, and a scrolling
-// region the keyboard cannot reach fails WCAG 2.1.1 (found by axe-core in P22). Shiki's blocks already carry
-// tabindex="0"; this gives the Quarto ones the same, in memory, without touching the generated article.
-const keyboardScrollable = (html: string): string => html.replace(/<pre\b(?![^>]*\btabindex=)/g, '<pre tabindex="0"')
+// Quarto writes code blocks as plain <pre> elements that scroll sideways when a line is long, and tables that
+// do the same (`.ed__body table` is a scrolling box, editorial.css). A scrolling region the keyboard cannot
+// reach fails WCAG 2.1.1: axe-core found the <pre> case in P22, and the table case on the first GitHub run
+// (P22-A01), where the runner's wider fallback font made a table overflow. Shiki's blocks already carry
+// tabindex="0"; this gives the Quarto <pre> and <table> elements the same, in memory, without touching the
+// generated article. (Tables in plain Markdown entries are not covered: see debugging/open-issues.md.)
+const keyboardScrollable = (html: string): string =>
+  html.replace(/<(pre|table)\b(?![^>]*\btabindex=)/g, '<$1 tabindex="0"')
 ---
 
 <Layout collection={collection} data={data} context={context} headings={headings}>
