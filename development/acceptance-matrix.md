@@ -929,3 +929,20 @@ Status values: **Passed** (run and observed in this milestone's QA run), **Defer
 | G-P22-13 | The legacy design studies are absent from the release build | **Passed** (D-157, ISSUE-0006 resolved: QA-ROUTE-07 and the release search fail on any path under `/_design/`; the release has 37 pages) |
 | G-P22-14 | Manual review (P23): screen readers, Safari and Firefox, real devices, contrast "needs review", nucleus look and motion | **Waiting** (`development/quality-assurance.md`, section 10) |
 | G-P22-15 | The QA workflow runs on GitHub and agrees with the local run | **Passed (run 11, `cade93a`, 2026-11-24), with its history stated.** Static job: 652 PASS, 13 SKIPPED (Quarto, the scientific environment, the gitignored Bearnard masters; **not run on GitHub**), 19 DEFERRED (Cal.com), 0 FAIL. Browser job: 184 PASS, 0 FAIL, 0 NOT RUN, 0 FLAKY, on the slow AMD EPYC 7763. Counted over the five executions of commits carrying the owner's decisions (runs 9 to 11): the browser job passed four times and failed once (NUC-024B, a fixed wait, repaired), the static job passed four times and failed once (QA-HISTORY-01's clean-up of a throwaway clone, repaired). The local run (837 PASS, 19 DEFERRED) and the browser stage with the runner's fonts emulated (176 PASS) agree. The 19 Cal.com checks stay DEFERRED there |
+
+## P23 — Manual browser review and refinement (2026-11-24)
+
+| ID | Gate | Result |
+| --- | --- | --- |
+| G-P23-01 | Every one of the 36 registered destinations opened in a real browser: one `<h1>`, the right category, the right selected tab on every row, no sideways page scroll, no console error | **Passed** in Chrome 158 at 1440 and 390 px (the only console line is the missing favicon, P23-F07); Firefox 159 on ten of them |
+| G-P23-02 | The physical-folder navigation, Home's sticky row (D-144), hover previews, Back and Forward, deep entry, no JavaScript | **Passed** (Chrome); Firefox: previews, click, Back, Forward pass and the row is not sticky, as accepted |
+| G-P23-03 | Home keeps its approved composition; the nucleus responds; the eight clocks are accurate and readable | **Passed** at nine widths from 320 to 2560 px; layout shift 0.0000 |
+| G-P23-04 | KL-132 evaluated at 320 px/150 %, 390 px/200 %, 768 px/200 % | **Repaired** (D-161, CLOCK-034C); ordinary composition identical to 0.1 px |
+| G-P23-05 | Keyboard-only review: order, focus visibility, traps, hidden stops, a bypass | **Passed after a repair**: a skip link (P23-F01, A11Y-SKIP); display equations made reachable (P23-F02, A11Y-SCROLL) |
+| G-P23-06 | Manual contrast review in the five palettes | **Passed**: about 1,000 rendered text elements on nine routes and the hover preview meet 4.5:1 or 3:1; 96 tab labels measured from pixels, 4.57:1 or more |
+| G-P23-07 | Enlarged text (150, 200 percent) and browser zoom (200, 400 percent) | **Passed**; two wrapping limits **accepted** (KL-133, KL-134) |
+| G-P23-08 | Touch review | **Passed in emulation only**; a physical device is **Not tested** (KL-135) |
+| G-P23-09 | Safari, VoiceOver, NVDA | **Not tested** (KL-135); owner walkthroughs written |
+| G-P23-10 | Editorial layouts, Quarto articles, Research, CV, Lab, Writing, Bearnard's Area, Contact, Schedule (disabled, no provider request), Downloads, 404 | **Passed**; Contact's missing channel is an **owner decision** (P23-F08) |
+| G-P23-11 | Approved designs preserved: palettes, tokens, folders, tab order and labels, Home composition, Bearnard, nucleus, D-144, D-157 to D-160, scheduling off | **Passed** (QA-PRESERVE-05 and the older guards) |
+| G-P23-12 | The P24 handoff exists | **Done** (`development/p24-handoff.md`) |

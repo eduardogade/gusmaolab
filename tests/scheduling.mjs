@@ -14,7 +14,7 @@
 // that the owner is emailed, that accepting or declining notifies the visitor, that conflicts and holds
 // work, and that a confirmed booking reaches a calendar. Those need the owner's provider account
 // (development/scheduling-guide.md, "Testing safely"); no check here uses one.
-import { withoutApproved } from "./approved-changes.mjs"
+import { exemptionLines, withoutApproved } from "./approved-changes.mjs"
 import { spawnSync } from "node:child_process"
 import { existsSync } from "node:fs"
 import { readFile, readdir } from "node:fs/promises"
@@ -533,11 +533,12 @@ await test("SCH-061", "D-144, with its two accepted trade-offs, is unchanged and
   const was = gitAvailable ? paragraph(git("show", `${BASE}:development/decisions.md`).stdout) : undefined
   check(was !== undefined && paragraph(now) === was, "the D-144 paragraph differs from the one P21 began with")
   check(/1 px/.test(was ?? "") && /z-index/.test(was ?? ""), "D-144 no longer names both costs")
-  check(changedSinceBase(["tests/home-browser.mjs"]).length === 0, "the HOME-026 exemption was edited")
+  // tests/home-browser.mjs gained a check for the site's name (HOME-027B, D-161); HOME-026's exemption lines are what must not move.
+  const homeThen = gitAvailable ? exemptionLines(git("show", `${BASE}:tests/home-browser.mjs`).stdout) : undefined
+  check(homeThen !== undefined && homeThen.length >= 1 && json(exemptionLines(await read("tests/home-browser.mjs"))) === json(homeThen), "the HOME-026 exemption was edited")
   // tests/clocks-browser.mjs gained checks for the short date (D-158); CLOCK-033B's exemption lines are what must not move.
-  const exemption = (text) => text.split("\n").filter((l) => /gl-home-tabs-raise|Except the scroll-driven z-index raise/.test(l))
-  const clocksThen = gitAvailable ? exemption(git("show", `${BASE}:tests/clocks-browser.mjs`).stdout) : undefined
-  check(clocksThen !== undefined && clocksThen.length >= 2 && json(exemption(await read("tests/clocks-browser.mjs"))) === json(clocksThen), "the CLOCK-033B exemption was edited")
+  const clocksThen = gitAvailable ? exemptionLines(git("show", `${BASE}:tests/clocks-browser.mjs`).stdout) : undefined
+  check(clocksThen !== undefined && clocksThen.length >= 2 && json(exemptionLines(await read("tests/clocks-browser.mjs"))) === json(clocksThen), "the CLOCK-033B exemption was edited")
 })
 
 await unchanged("SCH-062", "The P07 previews are unchanged", ["src/scripts/folder-previews.ts", "src/scripts/folder-rows.ts"])

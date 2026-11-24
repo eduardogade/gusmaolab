@@ -83,6 +83,18 @@
     overflow-wrap: anywhere;
   }
 
+  /*
+   * The site's name is one word and cannot wrap. The display size has a floor of 2.5rem, which is wider than the 254 px
+   * column of a 320 px screen (and of a 1280 px window at 400 percent zoom) by a few pixels in the widest of the heading
+   * fonts, so the name broke as "GusmaoLa / b" (P23, D-161). Below 21rem the floor is lower; text enlarged in the
+   * browser's settings enlarges the rem and this rule with it.
+   */
+  @media (max-width: 21rem) {
+    .welcome__title {
+      font-size: 2.3rem;
+    }
+  }
+
   .welcome__lede {
     max-inline-size: var(--measure-narrow);
     color: var(--color-text-heading);
@@ -322,33 +334,47 @@
     column-gap: var(--space-l);
   }
 
+  /*
+   * A clock is its place and its reading side by side. The place (city over country) is as wide as the row leaves room for,
+   * never narrower than its longest word, and when that word and the reading cannot sit on one line the reading drops to its
+   * own line at the end of the row, instead of the city being broken inside a word (KL-132, P23, D-161). It never happens
+   * at the default text size from 320 px up, nor at 150 percent from 390 px, nor at 200 percent from 768 px: it happens
+   * where the text was enlarged past what the row can hold.
+   */
   .clock {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    grid-template-areas:
-      "city reading"
-      "place reading";
+    display: flex;
+    flex-wrap: wrap;
+    align-items: stretch;
     column-gap: var(--space-xs);
-    align-items: center;
+    row-gap: var(--space-3xs);
     min-block-size: 3.75rem;
     padding-block: var(--space-2xs);
     border-block-end: var(--border-width-hairline) solid var(--color-folder-border);
   }
 
+  /* City over country, each centred in its half of the height the reading gives the row (as when the row was a grid). */
+  .clock__where {
+    flex: 1 1 min-content;
+    min-inline-size: 0;
+    display: grid;
+    grid-template-rows: auto auto;
+    align-items: center;
+  }
+
   .clock__city {
-    grid-area: city;
+    display: block;
     font-family: var(--font-heading);
     font-size: var(--font-size-h4);
     line-height: var(--line-height-ui);
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
 
   .clock__place {
-    grid-area: place;
+    display: block;
     color: var(--color-text-muted);
     font-size: var(--font-size-xs);
     line-height: var(--line-height-ui);
-    overflow-wrap: anywhere;
+    overflow-wrap: break-word;
   }
 
   /*
@@ -362,7 +388,9 @@
    *  - the time's digits are tabular and its placeholder is as wide as a time.
    */
   .clock__reading {
-    grid-area: reading;
+    flex: 0 0 auto;
+    align-self: center;
+    margin-inline-start: auto;
     display: grid;
     justify-items: end;
     max-inline-size: 11rem;

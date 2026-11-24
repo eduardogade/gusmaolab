@@ -46,8 +46,14 @@ const { title, description, category = "core", environment, main = true } = Astr
   </head>
   <body class="gl-flannel">
     {
+      /* Bypass block (P23, D-161, WCAG 2.4.1): the folder rows hold about forty links before any content, because a
+         folder's preview lists its children and those links are in the tab order. The first Tab stop skips them.
+         Hidden until it has focus. Every folder page and the error page have `<main id="content">`. */
+    }
+    <a class="gl-skip-link" href="#content">Skip to main content</a>
+    {
       main ? (
-        <main>
+        <main id="content">
           <slot />
         </main>
       ) : (

@@ -652,7 +652,8 @@ await test("NUC-039", "Physical folders and navigation are unchanged", async (ch
 
 await test("NUC-040", "The five locked palettes are unchanged, and the nucleus adds no site token", async (check, skip) => {
   if (!gitAvailable) return skip("git is not available")
-  const touched = changedSinceBase(["src/styles/categories.css", "src/styles/tokens.css", "src/styles/environments.css", "src/styles/global.css", "src/design/contract.mjs", "src/design/css-tokens.mjs"])
+  // global.css gained the skip link's rules (D-161, P23); QA-PRESERVE-05 checks that no colour, palette or token was added to it.
+  const touched = withoutApproved(changedSinceBase(["src/styles/categories.css", "src/styles/tokens.css", "src/styles/environments.css", "src/styles/global.css", "src/design/contract.mjs", "src/design/css-tokens.mjs"]))
   check(touched.length === 0, `a style or palette file changed: ${json(touched)}`)
   const styles = (await Promise.all((await readdir(join(repo, "src/styles"))).map((f) => read(`src/styles/${f}`)))).join("\n")
   check(!/visualization\/nucleus|nucleus__|data-nucleus|\.nucleus\b/.test(styles), "a global stylesheet styles the nucleus figure")

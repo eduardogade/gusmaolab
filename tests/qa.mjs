@@ -24,7 +24,7 @@ import { freshness, sourceState } from "../src/quality/source.mjs"
 import { DEFECTS, copyBuild, fingerprint, readReport, runAudits } from "./qa-fixtures.mjs"
 import { DEV_PAGES, QUALITY_PAGE } from "../src/design/site-map.ts"
 import { demoBuild } from "./demo-dist.mjs"
-import { withoutApproved } from "./approved-changes.mjs"
+import { D161_FILES, exemptionLines, withoutApproved } from "./approved-changes.mjs"
 
 const repo = fileURLToPath(new URL("../", import.meta.url))
 const dist = join(repo, "dist")
@@ -323,11 +323,12 @@ await test("QA-PRESERVE-01", "D-144, with its two accepted trade-offs, is unchan
   const paragraph = (text) => /\*\*D-144\.\*\*[\s\S]*?(?=\n\n|$)/.exec(text)?.[0].trim()
   const was = gitOk ? paragraph(git("show", `${BASE}:development/decisions.md`).stdout) : undefined
   check(was !== undefined && paragraph(await read("development/decisions.md")) === was, "D-144 differs from the paragraph P22 began with")
-  check(changedSinceBase(["src/styles/home-tabs.css", "tests/home-browser.mjs"]).length === 0, "home-tabs.css or the HOME-026 exemption changed")
-  // tests/clocks-browser.mjs gained checks for the short date (D-158); CLOCK-033B's exemption lines are what must not move.
-  const exemption = (text) => text.split("\n").filter((l) => /gl-home-tabs-raise|Except the scroll-driven z-index raise/.test(l))
-  const clocksThen = gitOk ? exemption(git("show", `${BASE}:tests/clocks-browser.mjs`).stdout) : undefined
-  check(clocksThen !== undefined && clocksThen.length >= 2 && json(exemption(await read("tests/clocks-browser.mjs"))) === json(clocksThen), "the CLOCK-033B exemption was edited")
+  check(changedSinceBase(["src/styles/home-tabs.css"]).length === 0, "home-tabs.css changed")
+  // tests/home-browser.mjs gained HOME-027B and tests/clocks-browser.mjs gained checks for the short date (D-158, D-161); the exemptions' lines must not move.
+  const homeThen = gitOk ? exemptionLines(git("show", `${BASE}:tests/home-browser.mjs`).stdout) : undefined
+  check(homeThen !== undefined && homeThen.length >= 1 && json(exemptionLines(await read("tests/home-browser.mjs"))) === json(homeThen), "the HOME-026 exemption was edited")
+  const clocksThen = gitOk ? exemptionLines(git("show", `${BASE}:tests/clocks-browser.mjs`).stdout) : undefined
+  check(clocksThen !== undefined && clocksThen.length >= 2 && json(exemptionLines(await read("tests/clocks-browser.mjs"))) === json(clocksThen), "the CLOCK-033B exemption was edited")
   const home = await read("tests/home-browser.mjs")
   const clocks = await read("tests/clocks-browser.mjs")
   check((home.match(/gl-home-tabs-raise/g) ?? []).length >= 1 && (clocks.match(/gl-home-tabs-raise/g) ?? []).length >= 1, "an exemption no longer names the one animation")
@@ -343,6 +344,20 @@ await test("QA-PRESERVE-04", "The navigation registry, the folder components and
   // The world clocks' short date (D-158, owner-approved in P22-A01) is the one change to these paths; tests/approved-changes.mjs names its files.
   const touched = withoutApproved(changedSinceBase(["src/navigation", "src/components/folders", "src/styles/folders.css", "src/styles/categories.css", "src/styles/tokens.css", "src/styles/home-tabs.css", "src/visualization", "src/home", "src/components/home", "src/pages/index.astro"]))
   check(touched.length === 0, `changed: ${json(touched)}`)
+})
+await test("QA-PRESERVE-05", "P23 changed only the files D-161 names, and added no palette, token or colour to a stylesheet", async (check) => {
+  if (!gitOk) return
+  const P23_BASE = "183b5a4" // the head P23 began from
+  const run = (...args) => git(...args).stdout.split("\n").filter(Boolean)
+  if (git("cat-file", "-e", P23_BASE).status !== 0) return
+  const changed = [...new Set([...run("diff", "--name-only", P23_BASE, "--", "src"), ...run("ls-files", "--others", "--exclude-standard", "--", "src")])]
+  check(changed.every((f) => D161_FILES.includes(f)), `P23 changed source files D-161 does not name: ${json(changed.filter((f) => !D161_FILES.includes(f)))}`)
+  const decision = /\*\*D-161\.\*\*[\s\S]*?(?=\n\n|$)/.exec(await read("development/decisions.md"))?.[0] ?? ""
+  for (const file of D161_FILES) check(decision.includes(`\`${file}\``) || decision.includes(`\`${file.split("/").pop()}\``), `D-161 does not name ${file}`)
+  const added = git("diff", P23_BASE, "--unified=0", "--", "src/styles").stdout.split("\n").filter((l) => l.startsWith("+") && !l.startsWith("+++") && !/^\+\s*(\/\*|\*)/.test(l))
+  const colours = added.filter((l) => /#[0-9a-fA-F]{3,8}\b|--palette-|\b(rgb|hsl|oklch|color-mix)\(|--color-[\w-]+\s*:/.test(l))
+  check(colours.length === 0, `P23 added a colour, a palette reference or a colour token to a stylesheet: ${json(colours.slice(0, 3))}`)
+  check(changedSinceBase(["src/navigation", "src/components/folders", "src/styles/folders.css", "src/styles/categories.css", "src/styles/tokens.css", "src/styles/environments.css", "src/styles/home-tabs.css"]).length === 0, "a palette, the navigation or the folders' geometry changed")
 })
 await test("QA-DOC-01", "The guide states what automated accessibility checking cannot show, and what is left for P23", async (check) => {
   const guide = await read("development/quality-assurance.md")

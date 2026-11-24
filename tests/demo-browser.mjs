@@ -76,7 +76,7 @@ await test(
       const text = plain().getBoundingClientRect();
       const bib = [...document.querySelectorAll(".csl-entry")];
       return {
-        equation: inside(eq), equationBox: ["auto", "scroll"].includes(getComputedStyle(eq).overflowX),
+        equation: inside(eq), equationBox: ["auto", "scroll"].includes(getComputedStyle(blockMath).overflowX) && blockMath.tabIndex >= 0 && inside(blockMath) && getComputedStyle(eq).overflowX === "visible",
         mathDrawn: blockMath.getBoundingClientRect().width > 20,
         figure: inside(fig), figureLoaded: fig.complete && fig.naturalWidth > 0,
         figureRatio: Math.abs(fig.clientWidth / fig.clientHeight - fig.naturalWidth / fig.naturalHeight) < 0.05,

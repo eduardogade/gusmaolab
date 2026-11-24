@@ -371,7 +371,7 @@ await test("CLOCK-034B", "Filling the clocks does not move the layout, on any da
 await test("CLOCK-034C", "Cities and countries stay whole words and the date stays on one line, on the longest dates, at any width and text size", async (check) => {
   // A word is split when its own client rectangles sit on more than one line.
   const WORDS = `(() => {
-    const broken = [], oneLine = [], overflow = [];
+    const broken = [], oneLine = [], overflow = [], overlapping = [], stacked = [];
     for (const li of document.querySelectorAll("[data-clock-id]")) {
       for (const el of li.querySelectorAll(".clock__city, .clock__place")) {
         const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
@@ -385,16 +385,19 @@ await test("CLOCK-034C", "Cities and countries stay whole words and the date sta
       const date = li.querySelector("[data-clock-date-short]");
       if (date) { const range = document.createRange(); range.selectNodeContents(date); if (new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size !== 1) oneLine.push(li.dataset.clockId + ": " + date.textContent); }
       if (li.scrollWidth > li.clientWidth + 1) overflow.push(li.dataset.clockId);
+      // The place and the reading are side by side, or the reading is under the place: never one on the other (KL-132, P23, D-161).
+      const w = li.querySelector(".clock__where").getBoundingClientRect(), r = li.querySelector("[data-clock-reading]").getBoundingClientRect();
+      if (Math.min(w.right, r.right) - Math.max(w.left, r.left) > 1 && Math.min(w.bottom, r.bottom) - Math.max(w.top, r.top) > 1) overlapping.push(li.dataset.clockId);
+      if (r.top >= w.bottom - 1) stacked.push(li.dataset.clockId);
     }
-    return { broken, oneLine, overflow, page: document.documentElement.scrollWidth - document.documentElement.clientWidth };
+    return { broken, oneLine, overflow, overlapping, stacked, page: document.documentElement.scrollWidth - document.documentElement.clientWidth };
   })()`
   await useClock("2026-09-30T20:00:20Z")
-  // Text size is a root font size here (Chrome's text-only zoom is the same rem change). The last flag says whether
-  // a city must also stay whole: it does wherever the column has room for it (measured, in both font setups, with a
-  // margin of 14 px or more); at 390 px with text doubled and at 320 px with text at 150% the reading column and the
-  // city's word cannot both fit in a one-column row, the city wraps inside its own column, and what is asserted is that
-  // nothing overflows, is clipped or moves a date onto a second line (KL-132 records the geometry).
-  for (const [width, scale, whole] of [[320, 1, true], [390, 1, true], [768, 1, true], [1024, 1, true], [1280, 1, true], [1440, 1, true], [1280, 2, true], [768, 2, true], [390, 1.5, true], [390, 2, false], [320, 1.5, false]]) {
+  // Text size is a root font size here (Chrome's text-only zoom is the same rem change). Every case holds the same standard now: no
+  // city or country word is split, and the date is one line. Where the enlarged text leaves the row too narrow for the longest
+  // word beside the reading (KL-132: 390 px with text doubled, 320 px with text at 150 percent) the reading drops to its own line
+  // at the end of the row (D-161); at the default text size, from 320 px up, it never does.
+  for (const [width, scale] of [[320, 1], [360, 1], [390, 1], [430, 1], [768, 1], [1024, 1], [1280, 1], [1440, 1], [1280, 2], [768, 2], [390, 1.5], [390, 2], [320, 1.5], [320, 2], [768, 3]]) {
     await setViewport(width, 900, width < 768)
     await goto("/")
     await until(async () => (await readClocks()).every((c) => c.state === "live"))
@@ -402,9 +405,12 @@ await test("CLOCK-034C", "Cities and countries stay whole words and the date sta
     await sleep(100)
     const m = await js(WORDS)
     const where = `${width}px${scale === 1 ? "" : `, text ${scale * 100}%`}`
-    if (whole) check(m.broken.length === 0, `${where}: a word is split across lines: ${json(m.broken)}`)
+    check(m.broken.length === 0, `${where}: a word is split across lines: ${json(m.broken)}`)
     check(m.oneLine.length === 0, `${where}: a date is on more than one line: ${json(m.oneLine)}`)
     check(m.overflow.length === 0 && m.page <= 0, `${where}: overflow ${json(m)}`)
+    check(m.overlapping.length === 0, `${where}: a reading lies over its place: ${json(m.overlapping)}`)
+    if (scale === 1) check(m.stacked.length === 0, `${where}: a reading dropped beneath its place at the default text size: ${json(m.stacked)}`)
+    if (width === 320 && scale === 1.5) check(m.stacked.length >= 1, `${where}: no reading was stacked where the row cannot hold the longest name (the check guards nothing)`)
   }
 })
 

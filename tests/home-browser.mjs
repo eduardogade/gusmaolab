@@ -9,7 +9,7 @@
 // the owner likes it. Without a browser or dist-demo/ every check is reported NOT RUN (exit 2).
 import { json, startBrowser } from "./browser-harness.mjs"
 
-const IDS = ["HOME-009B", "HOME-010B", "HOME-022B", "HOME-023", "HOME-024", "HOME-025", "HOME-026"]
+const IDS = ["HOME-009B", "HOME-010B", "HOME-022B", "HOME-023", "HOME-024", "HOME-025", "HOME-026", "HOME-027B"]
 const { js, send, press, setViewport, goto, test, finish } = await startBrowser({
   ids: IDS,
   timeout: 300_000,
@@ -112,6 +112,18 @@ await test("HOME-022B", "The specimen shows three synthetic posts, drawn by the 
   check(link === "/_design/home/", `the real homepage links ${link}`)
   const real = await js(`({ empty: !!document.querySelector("[data-updates-empty]"), list: !!document.querySelector("[data-updates-list]") })`)
   check(real.empty && !real.list, `the real homepage is not honest about the empty Blog ${json(real)}`)
+})
+
+// P23 (D-161): at 320 px, the narrowest width WCAG 1.4.10 asks for, and a 1280 px window at 400 percent zoom, the display size
+// was a few pixels too wide for the name in the widest of the heading fonts, and it broke as "GusmaoLa / b".
+await test("HOME-027B", "The site's name is one line, in one piece, at every phone width from 320 px, and at tablet and laptop widths", async (check) => {
+  for (const width of [320, 330, 340, 360, 375, 390, 412, 430, 600, 768, 1024, 1280, 1440]) {
+    await setViewport(width, 900, width < 768)
+    await goto("/")
+    const m = await js(`(() => { const t = document.querySelector(".welcome__title"); const range = document.createRange(); range.selectNodeContents(t); const tops = new Set([...range.getClientRects()].map((r) => Math.round(r.top))); const r = t.getBoundingClientRect(); const paper = document.querySelector(".gl-folder__paper").getBoundingClientRect(); return { lines: tops.size, text: t.textContent.trim(), inside: r.left >= paper.left - 1 && r.right <= paper.right + 1, sideways: document.documentElement.scrollWidth - document.documentElement.clientWidth } })()`)
+    check(m.lines === 1 && m.text === "GusmaoLab", `${width}px: the name is on ${m.lines} lines: "${m.text}"`)
+    check(m.inside && m.sideways <= 0, `${width}px: the name leaves the paper or the page scrolls sideways: ${json(m)}`)
+  }
 })
 
 await test("HOME-024", "Every homepage link is reachable by keyboard, with a visible focus", async (check) => {

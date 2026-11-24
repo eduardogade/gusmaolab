@@ -6,7 +6,7 @@
 //
 // NUCINT-001..054 are the P20 prompt's own list; a check that needs a browser says so and is in the
 // other file. Every check here is a fact about code or the build, never about how it looks.
-import { withoutApproved } from "./approved-changes.mjs"
+import { withoutApproved, withoutNarrowTitleRule } from "./approved-changes.mjs"
 import { spawnSync } from "node:child_process"
 import { existsSync } from "node:fs"
 import { readFile, readdir } from "node:fs/promises"
@@ -714,7 +714,8 @@ await test("NUCINT-041", "P15 composition: the regions, their order and the stag
     const then = git("show", `${BASE}:src/styles/home.css`).stdout
     const now = await read("src/styles/home.css")
     // Section 4 (the world clocks) is the one other section the owner approved a change to (D-158).
-    const cut = (t) => [t.slice(0, t.indexOf("/* 3. The nucleus stage")), t.slice(t.indexOf("/* 5. Recent Blog"))]
+    // The site's name below 21rem (D-161, P23) is the one other rule of the welcome section that changed.
+    const cut = (raw) => { const t = withoutNarrowTitleRule(raw); return [t.slice(0, t.indexOf("/* 3. The nucleus stage")), t.slice(t.indexOf("/* 5. Recent Blog"))] }
     check(json(cut(then)) === json(cut(now)), "home.css changed outside the nucleus stage's and the world clocks' sections")
   }
 })
@@ -736,7 +737,8 @@ await test("NUCINT-044", "Folder geometry: components, styles, navigation and la
 })
 
 await test("NUCINT-045", "Five palettes: the stylesheets, tokens and contract are untouched, and no site token was added for the nucleus", async (check) => {
-  const touched = changed(["src/styles/categories.css", "src/styles/tokens.css", "src/styles/environments.css", "src/styles/global.css", "src/design/contract.mjs", "src/design/css-tokens.mjs"], P19_START)
+  // global.css gained the skip link's rules (D-161, P23); QA-PRESERVE-05 checks that no colour, palette or token was added to it.
+  const touched = withoutApproved(changed(["src/styles/categories.css", "src/styles/tokens.css", "src/styles/environments.css", "src/styles/global.css", "src/design/contract.mjs", "src/design/css-tokens.mjs"], P19_START))
   check(touched.length === 0, `a palette or token file changed: ${json(touched)}`)
   const css = await read("src/styles/home.css")
   check(!/#[0-9a-f]{3,8}\b/i.test(css.slice(css.indexOf("3. The nucleus stage"), css.indexOf("4. World clocks"))), "the stage uses a raw colour")

@@ -932,17 +932,26 @@
  * face (global.css). Nothing here is loaded for an article without it, beyond these rules.
  */
 
-/* Equations: a display formula, and the span that names it, scroll inside the column. */
+/*
+ * Equations: a display formula scrolls inside the column, and the formula itself is the scrolling box: a browser gives a
+ * display `<math>` its own overflow, and a second box around it (the span that names it) would be a scrolling region
+ * with nothing to focus (Firefox scrolled both). EditorialEntry.astro gives the `<math>` tabindex="0" (P23, D-161).
+ */
 .ed__body math {
   font-size: 1.08em;
+}
+
+.ed__body math[display="block"] {
+  max-inline-size: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
 }
 
 .ed__body span[id^="eq-"] {
   display: block;
   max-inline-size: 100%;
-  overflow-x: auto;
+  overflow-x: visible;
   padding-block: var(--space-2xs);
-  overscroll-behavior-inline: contain;
 }
 
 /* Figures and tables carry their number and caption. */

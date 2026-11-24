@@ -67,8 +67,10 @@ const places = CLOCK_LOCATIONS.map((place) => ({
     {
       places.map(({ id, city, place, timeZone, reading }) => (
         <li class="clock" data-clock-id={id} data-time-zone={timeZone} data-clock-state={reading ? "simulated" : "pending"}>
-          <span class="clock__city">{city}</span>
-          <span class="clock__place">{place}</span>
+          <div class="clock__where">
+            <span class="clock__city">{city}</span>
+            <span class="clock__place">{place}</span>
+          </div>
           <span class="clock__reading" data-clock-reading aria-hidden={reading ? undefined : "true"}>
             {
               reading ? (

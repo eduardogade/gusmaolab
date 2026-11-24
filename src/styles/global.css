@@ -303,6 +303,35 @@ body {
   overscroll-behavior-inline: contain;
 }
 
+/*
+ * The skip link (P23, D-161): the first Tab stop of every page, drawn only while it has focus, as a plain card in the
+ * corner with the page's own tokens. It is not a navigation aid and adds no colour or motion.
+ */
+.gl-skip-link {
+  position: fixed;
+  inset-block-start: var(--space-xs);
+  inset-inline-start: var(--space-xs);
+  z-index: 1000;
+  padding: var(--space-2xs) var(--space-s);
+  border: var(--border-width-thin) solid var(--color-folder-recess);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-card);
+  color: var(--color-text-primary);
+  font-family: var(--font-label);
+  font-weight: var(--font-weight-semibold);
+}
+
+.gl-skip-link:not(:focus) {
+  overflow: hidden;
+  inline-size: 1px;
+  block-size: 1px;
+  margin: -1px;
+  padding: 0;
+  border: 0;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
 .gl-visually-hidden {
   position: absolute;
   overflow: hidden;

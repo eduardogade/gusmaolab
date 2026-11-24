@@ -56,8 +56,12 @@ const Layout = EDITORIAL_LAYOUTS[collection]
 // It covers a Quarto article's HTML and the HTML Astro rendered from a Markdown entry (`entry.rendered.html`,
 // the same string `<Content />` writes), so a wide table in plain Markdown is reachable too (D-160). The cost is
 // one extra tab stop for a table that never scrolls: a static build cannot know the reader's fonts or width.
+// A display equation (`<math display="block">`) is the third scrolling region: on a phone, or with enlarged text, a wide
+// formula scrolls inside its own box (P23, D-161), and the box is the `<math>` itself, in Chrome and in Firefox.
 const keyboardScrollable = (html: string): string =>
-  html.replace(/<(pre|table)\b(?![^>]*\btabindex=)/g, '<$1 tabindex="0"')
+  html.replace(/<(?:pre|table)\b(?![^>]*\btabindex=)|<math\b(?=[^>]*\bdisplay="block")(?![^>]*\btabindex=)[^>]*>/g, (tag) =>
+    tag.startsWith("<math") ? `${tag.slice(0, -1)} tabindex="0">` : `${tag} tabindex="0"`,
+  )
 const markdownHtml = rendered === undefined ? undefined : (entry as { rendered?: { html?: string } }).rendered?.html
 ---
 

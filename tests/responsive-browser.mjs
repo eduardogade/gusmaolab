@@ -521,6 +521,8 @@ await test(
         await press("Tab")
         const now = await js(`(() => {
         const a = document.activeElement, tab = a.closest(".gl-folder-tab");
+        // The skip link (P23, D-161) is the first Tab stop of every page: it is not a tab, and the walk goes on past it.
+        if (a.matches(".gl-skip-link")) return { id: "skip" };
         if (!tab || a.closest(".gl-folder-preview")) return { id: a.closest(".gl-folder-preview") ? "preview" : a.tagName };
         const row = tab.closest(".gl-folder__strip"), s = getComputedStyle(row);
         const r = row.getBoundingClientRect(), b = a.getBoundingClientRect();
@@ -534,7 +536,7 @@ await test(
           pageY: scrollY,
         };
       })()`)
-        if (now.id === "preview") continue
+        if (now.id === "preview" || now.id === "skip") continue
         // Past the last tab, or back at the first: headless Chrome wraps focus around.
         if (!now.level || seen.some((t) => t.id === now.id)) break
         seen.push(now)

@@ -343,7 +343,8 @@ check(
   /temporary design study/i.test(study),
   "the folder study lacks its temporary notice",
 )
-check(!/<a\s/i.test(study), "the folder study contains a link")
+// The skip link (P23, D-161) is the one link every page has first; the study has no other.
+check(!/<a\s/i.test(study.replace(/<a class="gl-skip-link"[^>]*>[^<]*<\/a>/, "")), "the folder study contains a link")
 const destinations = siteNavigation.pagePaths()
 const built = destinations.filter((path) => pagePaths.includes(path)).length
 

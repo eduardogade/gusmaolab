@@ -20,7 +20,7 @@ import { fileURLToPath } from "node:url"
 import { json, serveFolder, sleep, startBrowser } from "./browser-harness.mjs"
 import { buildWith } from "./scheduling-ready-build.mjs"
 
-const IDS = ["A11Y-001", "A11Y-002", "A11Y-KEYBOARD", "A11Y-FOCUS", "A11Y-MOTION", "A11Y-NUCLEUS", "A11Y-CLOCKS", "QA-INSPECT-01", "QA-INSPECT-02"]
+const IDS = ["A11Y-001", "A11Y-002", "A11Y-KEYBOARD", "A11Y-FOCUS", "A11Y-MOTION", "A11Y-NUCLEUS", "A11Y-CLOCKS", "A11Y-SKIP", "A11Y-SCROLL", "QA-INSPECT-01", "QA-INSPECT-02"]
 const repo = fileURLToPath(new URL("../", import.meta.url))
 const releaseDir = join(repo, "dist")
 const demoDir = join(repo, "dist-demo")
@@ -143,6 +143,64 @@ await test("A11Y-KEYBOARD", "Every top-level tab is reachable by keyboard on Hom
   check(ids.length >= 11, `only ${ids.length} tabs reached by Tab: ${json(ids)}`)
   check(json(ids.slice(0, 11)) === json(["home", "about", "contact", "schedule", "portfolio", "cv", "lab", "blog", "lecture-notes", "writing", "bearnards-area"]), `the tab order is ${json(ids)}`)
   check(noRing.length === 0, `no focus indicator on: ${json(noRing)}`)
+})
+
+// P23 (D-161, WCAG 2.4.1): the folder rows hold about forty links before any content, because every folder's preview lists its
+// children and those links are in the tab order. The first Tab stop is a link that skips them.
+await test("A11Y-SKIP", "A skip link is the first Tab stop on every kind of page, is drawn only while focused, and puts the next Tab in the content", async (check) => {
+  const luminance = (rgb) => {
+    const [r, g, b] = rgb.match(/[\d.]+/g).slice(0, 3).map((v) => { const c = Number(v) / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4 })
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b
+  }
+  for (const [source, path] of [["release", "/"], ["release", "/lab/"], ["release", "/cv/teaching/"], ["release", "/404.html"], ["demo", "/lecture-notes/greenhouse/demo-synthetic-signals/"]]) {
+    await goto(source, path)
+    await js(`document.activeElement?.blur(); window.scrollTo(0, 0)`)
+    const hidden = await js(`(() => { const e = document.querySelector(".gl-skip-link"); const r = e.getBoundingClientRect(); return { width: r.width, height: r.height, first: document.querySelector("body > a, body a") === e } })()`)
+    check(hidden.first && hidden.width <= 2 && hidden.height <= 2, `${path}: the skip link is the page's first link and is drawn when it has no focus: ${json(hidden)}`)
+    await press("Tab")
+    const at = await js(`(() => { const e = document.activeElement; const r = e.getBoundingClientRect(); const cs = getComputedStyle(e); return { cls: e.className, text: e.textContent.trim(), href: e.getAttribute("href"), drawn: r.width > 100 && r.height > 20 && r.left >= 0 && r.top >= 0 && r.right <= innerWidth && r.bottom <= innerHeight, color: cs.color, background: cs.backgroundColor, ring: cs.outlineStyle !== "none" && parseFloat(cs.outlineWidth) > 0, target: !!document.querySelector("main#content") } })()`)
+    check(at.cls === "gl-skip-link" && at.href === "#content" && /skip/i.test(at.text), `${path}: the first Tab stop is ${json(at)}`)
+    check(at.drawn && at.ring, `${path}: the focused skip link is not drawn on screen with a focus ring: ${json(at)}`)
+    const [a, b] = [luminance(at.color), luminance(at.background)]
+    check((Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) >= 4.5, `${path}: the skip link's text has less than 4.5:1 against its card (${at.color} on ${at.background})`)
+    check(at.target, `${path}: there is no main#content for it to go to`)
+    await press("Enter")
+    check((await js(`location.hash`)) === "#content", `${path}: Enter did not follow the link (hash ${await js(`location.hash`)})`)
+    await press("Tab")
+    // A page whose content has nothing to focus (a page in preparation) has nowhere to land: the Tab then leaves the page's
+    // links, and must not return to the folder rows the skip link skipped.
+    const content = await js(`({ focusable: !!document.querySelector("main a[href], main button, main [tabindex='0']"), inMain: !!document.activeElement?.closest("main"), inRows: !!document.activeElement?.closest(".gl-folder__strip"), at: document.activeElement?.tagName + " " + (document.activeElement?.textContent || "").trim().slice(0, 30) })`)
+    check(content.focusable ? content.inMain : !content.inRows, `${path}: after the skip link the next Tab went to ${json(content)}`)
+  }
+})
+
+// P23 (D-161): a region that scrolls sideways must be reachable by keyboard (WCAG 2.1.1). Chrome and Firefox scroll a wide display
+// equation inside the <math> itself; code blocks and tables are D-160's. Checked on the articles, on a phone, with the text enlarged
+// and on a laptop, whatever the fonts: every region that has something to scroll can take focus. The folder rows scroll by design
+// (P08) and are reached by their own links.
+await test("A11Y-SCROLL", "Every region of an article that scrolls sideways can take keyboard focus, on a phone, with enlarged text and on a laptop", async (check) => {
+  const scrollers = `[...document.querySelectorAll("main *")].filter((e) => { const cs = getComputedStyle(e); return (cs.overflowX === "auto" || cs.overflowX === "scroll") && e.scrollWidth > e.clientWidth + 1 && e.getBoundingClientRect().width > 0 && !e.closest(".gl-folder__strip") }).map((e) => ({ el: e.tagName.toLowerCase() + (e.id ? "#" + e.id.slice(0, 16) : "") + "." + String(e.className).split(" ")[0].slice(0, 20), focusable: e.tabIndex >= 0 }))`
+  let seen = 0
+  let equations = 0
+  for (const [width, scale] of [[320, 1], [390, 1], [390, 2], [768, 2], [1280, 1]]) {
+    await setViewport(width, 900)
+    for (const path of ["/lecture-notes/greenhouse/demo-synthetic-signals/", "/lecture-notes/greenhouse/demo-scientific-markdown/", "/lecture-notes/greenhouse/demo-markdown-and-quarto/"]) {
+      await goto("demo", path)
+      if (scale !== 1) await js(`(() => { const s = document.createElement("style"); s.textContent = "html { font-size: ${scale * 100}% !important }"; document.head.append(s) })()`)
+      await sleep(200)
+      const found = await js(scrollers)
+      seen += found.length
+      const loose = found.filter((f) => !f.focusable)
+      check(loose.length === 0, `${path} at ${width} px${scale === 1 ? "" : `, text ${scale * 100}%`}: a scrolling region cannot take keyboard focus: ${json(loose)}`)
+      if (path.includes("synthetic-signals")) equations += await js(`document.querySelectorAll("main math[display=block][tabindex='0']").length`)
+    }
+  }
+  await setViewport(1280, 900)
+  check(seen >= 10, `only ${seen} scrolling regions were found across the articles: the check guards too little`)
+  check(equations >= 10, `only ${equations} display equations were seen with a tab stop`)
+  // Two nested boxes around one equation would be a scroller with nothing to focus (Firefox scrolled both before D-161).
+  await goto("demo", "/lecture-notes/greenhouse/demo-synthetic-signals/")
+  check((await js(`[...document.querySelectorAll("main span[id^='eq-']")].filter((s) => getComputedStyle(s).overflowX !== "visible").length`)) === 0, "the span that names an equation is a second scrolling box")
 })
 
 await test("A11Y-FOCUS", "Links and controls on representative pages show a focus indicator", async (check) => {

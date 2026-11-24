@@ -56,7 +56,9 @@ await test(
       const fig = document.querySelector(".quarto-float-fig img");
       const table = document.querySelector("table");
       return {
-        equation: inside(math), equationScrolls: getComputedStyle(math).overflowX,
+        // The equation's scrolling box is the <math> itself (P23, D-161) and the span that names it is not a second box. That the <math> takes keyboard
+        // focus is A11Y-SCROLL's, on the demonstration articles: this page is the development study, which draws the article's HTML without that step.
+        equation: inside(math), equationScrolls: getComputedStyle(blockMath).overflowX, equationInside: inside(blockMath), equationSpanBox: getComputedStyle(math).overflowX,
         mathFont: getComputedStyle(blockMath).fontFamily,
         figure: inside(fig), figureRatio: fig.naturalWidth > 0 ? Math.abs(fig.clientWidth / fig.clientHeight - fig.naturalWidth / fig.naturalHeight) < 0.05 : false,
         figureLoaded: fig.complete && fig.naturalWidth > 0,
@@ -84,6 +86,10 @@ await test(
       check(
         ["auto", "scroll"].includes(r.equationScrolls),
         `${width} px: the equation does not scroll inside its column`,
+      )
+      check(
+        r.equationInside === true && r.equationSpanBox === "visible",
+        `${width} px: the equation's scrolling box is wider than the column, or the span around it is a second box (${json({ inside: r.equationInside, span: r.equationSpanBox })})`,
       )
       check(
         ["auto", "scroll"].includes(r.tableScroll),
