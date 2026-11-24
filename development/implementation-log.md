@@ -1144,3 +1144,36 @@ O trabalho começou na branch `development` com alterações alheias, inclusive 
 **P23 close-out (2026-11-24).** The owner's final-acceptance follow-up approved F01 to F04, accepted F06 and F09, deferred F07 to P24, and asked for F05 to be revisited before P23 closed. Began on `development` at `e59759f`, clean, equal to `origin/development`. **F05:** an inline formula wider than the column was measured at 320 px with text at 300 percent (423 px in a 102 px column) and at 390 px with text doubled; the paper (`overflow-x: auto`) is the scroller, the document does not scroll, and the paper's range reaches the formula's far end. With real keys: in Chrome 158, Tab, Enter on the skip link, Tab, then ArrowRight seven times reaches the end; in Firefox 159 (WebDriver BiDi key input) eleven presses. With no focus inside the paper the arrow keys scroll the page, not the paper. Verdict: not an access loss, so no stylesheet or markup changed for it; KL-133 restated; A11Y-SCROLL gained the check, which fails when the paper's overflow is hidden. **A defect in F01 found on the way:** in Firefox 159 the skip link left focus on itself and the next Tab went to the first folder tab. Confirmed in isolation (the same page with `tabindex="-1"` set on `main#content` at run time behaves correctly, without it not). Repaired with that attribute in `BaseLayout.astro`, `FolderPage.astro` and `ErrorPage.astro` and `main#content:focus { outline: none }` in `global.css` (Chrome drew a 3 px ring round the whole page once the target could take focus); D-162. Checked in Firefox on Home, a folder page, an article and the 404 page with the built output. A11Y-SKIP gained the check that the target takes focus; negative controls: without the attribute it fails on four of the five pages (the fifth, the 404 page, was not covered by the mutation's pattern), with the paper's overflow hidden A11Y-SCROLL fails twice, and an extra attribute on `FolderPage.astro`'s `<main>` fails QA-PRESERVE-05. `FolderPage.astro` and `ErrorPage.astro` are guarded by older suites: `tests/approved-changes.mjs` gained `D162_FILES` and `skipTargetOnly()` and NUC-037, NUC-039, NUC-046, NUCINT-044, QTO-028 and P13A-027 subtract exactly that change (SCH-063 and SCH-068 and QA-STATE-01 follow); QA-PRESERVE-05 holds both files to the one line. `development/p24-handoff.md` gained a release-readiness checklist, including that `development` and `origin/main` have diverged (63 and 10 commits on 2026-11-24, merge base `6eedf02`). **Local verification:** `npm run qa` on the finished source tree: 841 PASS, 0 FAIL, 0 SKIPPED, 19 DEFERRED, 0 NOT RUN, 0 FLAKY (every stage PASS); `a11y-browser` again with the runner's fonts emulated: 11 of 11. **Not tested:** Safari, a physical device, a screen reader; the 13 static checks that skip on GitHub; the 19 Cal.com checks (DEFERRED). Nothing deployed; `main` untouched.
 
 **P23 close-out, owner confirmation (2026-11-24).** The owner confirmed D-162 (the one-attribute change to `FolderPage.astro` and `ErrorPage.astro`, and the same attribute in `BaseLayout.astro`). The record of that confirmation is one sentence in `development/decisions.md`; no source, test or stylesheet changed. The owner's acceptance of P23 as a whole is still the owner's, and P24 is not started.
+
+**P24 — Release preparation (2026-11-24).**
+
+- **Start.** Began on `development` at `1bbcfa9`, equal to `origin/development`. The tree was clean except two untracked files the owner had added to `brand/`.
+- **Preflight (read only).**
+  - The Git state was audited (`p24-release.md`, sections 1 and 2).
+  - A trial merge of `origin/main` into `development` was made in a throwaway worktree and removed afterwards. It was conflict-free and added exactly 167 ignored files; with them removed, its tree equals `development`'s.
+  - Production topology read with `gh api`, `dig`, `curl` and `openssl`: Pelican, the orphan force-push to `eduardogade.github.io`, Cloudflare proxying with its edge certificate, Email Routing, and HTTP not redirected.
+  - Found ISSUE-0008: `origin/main` tracks the private CV working folder since `1e1c52b`. File names were listed only; nothing was opened.
+- **Implemented.**
+  - The favicon moved from `brand/` to `public/`.
+  - `src/release/metadata.ts`, with `BaseLayout.astro` emitting the canonical, Open Graph and icon tags.
+  - The `robots.txt` and `sitemap.xml` endpoints.
+  - Nine profiles in `src/data/contact.ts`.
+  - `release.yml`; `release-check.mjs` and `smoke.mjs`, with `npm run release:check` and `npm run smoke`; `tests/release.mjs`, added to `npm test` and the QA inventory.
+  - SHA pins in `quality.yml`, and the eight placeholder workflows removed.
+  - The remote URL set to the canonical repository name.
+  - D-163, D-164 and D-165; ISSUE-0008; `development/p24-release.md` and `development/operations.md`.
+- **Guards adjusted, each by decision and none loosened in what it protects.**
+  - AUTH-025 and EDIT-019 inspect the sitemap instead of forbidding one.
+  - QTO-014, UTIL-047 and SCH-019 set aside the page's own canonical link.
+  - UTIL-003 decodes `&amp;`.
+  - The smoke test and NAV-032 list the new root files.
+  - NUC-037, NUC-046, NUCINT-053, SCH-068 and QA-PRESERVE-05 subtract `D163_FILES` and `D164_FILES`, which D-163 and D-164 name.
+  - QA-CI-01 now requires SHA pins; QA-CI-02 expects exactly `release.yml` beside `quality.yml`.
+  - A `noindex` on the 404 page was tried and removed: QA-META-10 forbids it, and the status 404 suffices.
+- **Checks.**
+  - `scripts/release-check.mjs dist`: PASS. REL-024's controlled defects are each detected.
+  - `scripts/smoke.mjs` against a local `astro preview` of the build: 9 of 9.
+  - Against the live Pelican site, as a baseline: fails as expected. SMOKE-09 fails because HTTP answers 200 without a redirect; SMOKE-10 (apex to www) passes.
+  - `npm run qa` (full, Node 26, outside micromamba): 864 PASS, 5 FAIL, 0 SKIPPED, 19 DEFERRED, 0 NOT RUN, 0 FLAKY. All five are the Bearnard guards seeing the owner's untracked `brand/bearnard-favicon-full.png`, a true finding left for the owner. Every other stage passed, browser and performance included.
+  - Contact inspected at 1440, 1280, 768 and 390 px.
+- **Not done (owner's gate).** The reconciliation, the deploy key and environment, Cloudflare, the release, and the history decision for ISSUE-0008. **Not tested:** Safari, a device, a screen reader, and the live site after a release.

@@ -11,6 +11,10 @@ import "../styles/home.css"
 // The content states, folder guides and related links (P17): global too, for the same reason.
 import "../styles/states.css"
 import type { ArchiveCategory, SectionEnvironment } from "../navigation/index.ts"
+// Release metadata (P24, D-163): a canonical address and Open Graph only in a release build, never on the 404 page or a
+// development page; the owner's favicon.
+import { demosEnabled } from "../editorial/demo.ts"
+import { canonicalUrl, SITE_NAME } from "../release/metadata.ts"
 
 interface Props {
   title: string
@@ -34,6 +38,9 @@ interface Props {
 }
 
 const { title, description, category = "core", environment, main = true } = Astro.props
+// No `noindex` anywhere (QA-META-10): the 404 page is served with the status 404 and states no canonical address, and
+// a development page exists only in development and demonstration builds, which are never published.
+const canonical = canonicalUrl(Astro.url.pathname, Astro.site, !demosEnabled())
 ---
 
 <!doctype html>
@@ -43,6 +50,13 @@ const { title, description, category = "core", environment, main = true } = Astr
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     {description && <meta name="description" content={description} />}
     <title>{title}</title>
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48 64x64 128x128 256x256" />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <meta property="og:site_name" content={SITE_NAME} />
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    {canonical && <meta property="og:url" content={canonical} />}
   </head>
   <body class="gl-flannel">
     {

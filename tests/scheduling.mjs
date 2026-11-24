@@ -340,7 +340,9 @@ await test("SCH-019", "Third-party resources follow the narrow policy: one provi
   const hosts = new Set([...external(readyHtml)].filter((h) => !IGNORED.has(h) && !/^(three\.js|threejs\.org|github\.com|doi\.org)/.test(h)))
   for (const host of hosts) check(["cal.com", "app.cal.com"].includes(host), `the ready Schedule page reaches ${host}`)
   check(/https:\/\/cal\.com\/privacy/.test(readyHtml) && /rel="noopener"/.test(readyHtml), "the privacy link is missing or unprotected")
-  check(!/<(script|link|img|iframe)\b[^>]*(src|href)="https?:\/\/(?!cal\.com)/i.test(readyHtml), "a resource tag loads from another origin")
+  // The page's own canonical address (P24, D-163) loads nothing; it is the only absolute <link> allowed besides the provider.
+  const resources = readyHtml.replace(/<link rel="canonical" href="https:\/\/www\.gusmaolab\.org\/[^"]*">/g, "")
+  check(!/<(script|link|img|iframe)\b[^>]*(src|href)="https?:\/\/(?!cal\.com)/i.test(resources), "a resource tag loads from another origin")
   check(!/<iframe/i.test(readyHtml) && !/<script[^>]+src="https?:/i.test(readyHtml), "the page includes a frame or a remote script before the visitor presses the button")
   check((await read("src/scheduling/config.ts")).includes('EMBED_ORIGIN = "https://app.cal.com"'), "the origin constant changed")
   // No Content-Security-Policy is deployed: GitHub Pages cannot send response headers, and a <meta> policy could not carry frame rules. Say so, rather than imply one.

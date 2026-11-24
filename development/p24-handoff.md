@@ -1,5 +1,7 @@
 # P24 handoff — what the release needs (written in P23, 2026-11-24)
 
+> **P24 (2026-11-24):** the preparation is done. The release plan, the reconciliation of `main` and the authorization request are in `development/p24-release.md`; the long-term guide is `development/operations.md`. Done: the favicon (the owner's), canonical and Open Graph metadata, `robots.txt` and the sitemap (D-163), the owner's public profiles on Contact (D-164), the manual release workflow, action pinning, the placeholder workflows retired and the repository's canonical name (D-165). Still open: the owner's cutover authorization, an email address (optional, the owner's choice), the deploy key and `production` environment, Cloudflare's Always Use HTTPS, and Safari, device and screen-reader checks. This file is kept as P23 wrote it below.
+
 P24 deploys and hands over; P23 only records. Nothing below was done in P23.
 
 ## Release-readiness checklist (concise; written at the P23 close-out)

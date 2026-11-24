@@ -49,6 +49,7 @@ export const UNIT_SUITES = [
   unit("scheduling", "Scheduling configuration, loader, time zones and privacy; the provider is never contacted (P21)", ["dist", "git"]),
   unit("records", "Canonical records model and projections (P11)", ["quarto"]),
   unit("cv", "The CV as the owner's source of truth, with synthetic data only (P11-A01)", ["dist", "quarto"]),
+  unit("release", "Release configuration, metadata, artifact boundary and preservation before the cutover: REL-001 to REL-056 where they can be decided (P24)", ["dist", "git"]),
   unit("qa", "The quality system itself: inventory, result states, exit policy, audits and a controlled failure (P22)", ["dist", "git"]),
 ]
 

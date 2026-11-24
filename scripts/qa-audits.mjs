@@ -207,8 +207,8 @@ export function auditMetadata(pages, { allowedHosts = ["www.gusmaolab.org"] } = 
   checks.push(check("QA-META-06", "Heading levels never skip a level on the way down", r((f) => { let prev = 0; for (const h of f.headings) { if (prev > 0 && h > prev + 1) return `h${prev} is followed by h${h}`; prev = h } return null })))
   checks.push(check("QA-META-07", "Every page has a viewport", r((f) => (f.viewport === 1 ? null : "no viewport meta"))))
   checks.push(check("QA-META-08", "Duplicate element IDs do not occur", r((f) => { const d = [...f.ids].filter(([, n]) => n > 1).map(([id]) => id); return d.length ? `duplicate ids: ${d.slice(0, 5).join(", ")}` : null })))
-  // Canonical: the site's strategy is the trailing-slash URL on one host (planning/information-architecture.md, section 6). No
-  // canonical element is emitted; if one ever appears it must agree with the page, and no page may name another host variant.
+  // Canonical: the site's strategy is the trailing-slash URL on one host (planning/information-architecture.md, section 6). Since P24
+  // (D-163) a release page states it; each canonical element must agree with its page, and no page may name another host variant.
   const canon = []
   for (const p of pages.values()) {
     for (const c of p.facts.canonical) if (c !== `${SITE_ORIGIN}${p.url}`) canon.push(`${p.url}: canonical ${c} is not ${SITE_ORIGIN}${p.url}`)

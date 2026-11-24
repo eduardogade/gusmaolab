@@ -28,8 +28,22 @@ export const D161_FILES = ["src/layouts/BaseLayout.astro", "src/styles/global.cs
  */
 export const D162_FILES = ["src/layouts/FolderPage.astro", "src/layouts/ErrorPage.astro"]
 
+/**
+ * D-163 (P24, 2026-11-24, the owner's release prompt): release metadata. Every page gains the owner's favicon and Open Graph tags, and a
+ * release build states each public page's canonical address (`BaseLayout.astro`, already D-161's, with the rules in
+ * `src/release/metadata.ts`); the build writes robots.txt and a public sitemap. The two endpoints are the only files this decision adds
+ * under a guarded path. No page's content, layout, style or script changes.
+ */
+export const D163_FILES = ["src/pages/sitemap.xml.ts", "src/pages/robots.txt.ts"]
+
+/**
+ * D-164 (P24, 2026-11-24): the owner gave nine public profiles for the Contact page in the P24 prompt; they are entries in the one list
+ * of public channels (P18), which exists for this. No email address and no telephone number is added.
+ */
+export const D164_FILES = ["src/data/contact.ts"]
+
 /** Every file an owner-approved or owner-requested decision allowed to change since an older guard's base. */
-export const APPROVED_FILES = [...new Set([...D158_FILES, ...D161_FILES, ...D162_FILES])]
+export const APPROVED_FILES = [...new Set([...D158_FILES, ...D161_FILES, ...D162_FILES, ...D163_FILES, ...D164_FILES])]
 
 /** `files` without the ones a recorded decision allowed to change. */
 export const withoutApproved = (files, approved = APPROVED_FILES) => files.filter((f) => !approved.includes(f))

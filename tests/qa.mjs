@@ -24,7 +24,7 @@ import { freshness, sourceState } from "../src/quality/source.mjs"
 import { DEFECTS, copyBuild, fingerprint, readReport, runAudits } from "./qa-fixtures.mjs"
 import { DEV_PAGES, QUALITY_PAGE } from "../src/design/site-map.ts"
 import { demoBuild } from "./demo-dist.mjs"
-import { D161_FILES, D162_FILES, exemptionLines, skipTargetOnly, withoutApproved } from "./approved-changes.mjs"
+import { D161_FILES, D162_FILES, D163_FILES, D164_FILES, exemptionLines, skipTargetOnly, withoutApproved } from "./approved-changes.mjs"
 
 const repo = fileURLToPath(new URL("../", import.meta.url))
 const dist = join(repo, "dist")
@@ -297,14 +297,16 @@ await test("QA-CI-01", "The workflow installs from the lockfile with the project
   check(Object.keys(workflow.jobs).join() === "static,browser", `jobs: ${Object.keys(workflow.jobs)}`)
   check(workflow.on.pull_request && workflow.on.push.branches.includes("development") && workflow.on.workflow_dispatch, "the triggers are not pull requests, development pushes and manual runs")
   check(Object.values(workflow.jobs).every((j) => typeof j["timeout-minutes"] === "number"), "a job has no timeout")
-  check(steps.every((s) => !s.uses || /^actions\/(checkout|setup-node|upload-artifact)@v\d+$/.test(s.uses)), `an unexpected action: ${steps.filter((s) => s.uses).map((s) => s.uses)}`)
+  // P24 (D-165): every action is pinned to a full commit SHA, never a movable tag; the version is the comment beside it.
+  check(steps.every((s) => !s.uses || /^actions\/(checkout|setup-node|upload-artifact)@[0-9a-f]{40}$/.test(s.uses)), `an unexpected or unpinned action: ${steps.filter((s) => s.uses).map((s) => s.uses)}`)
+  check(workflowText.split("\n").filter((l) => /^\s*uses:/.test(l)).every((l) => /@[0-9a-f]{40} # v\d+\.\d+\.\d+$/.test(l)), "a pinned action has no version comment")
 })
 await test("QA-CI-02", "The workflow verifies and never deploys or publishes", async (check) => {
   check(!/deploy|pages:|gh-pages|actions\/deploy-pages|upload-pages-artifact|publish|release|git push|environment:/i.test(workflowText.replace(/^\s*#.*$/gm, "")), "the workflow deploys, publishes or pushes")
   check(!/secrets\.|GITHUB_TOKEN|id-token/.test(workflowText.replace(/^\s*#.*$/gm, "")), "the workflow uses a secret or a token")
-  const placeholders = (await readdir(join(repo, ".github/workflows"))).filter((f) => f !== "quality.yml")
-  check(placeholders.length === 8, `${placeholders.length} other workflow files`)
-  check(changedSinceBase(placeholders.map((f) => `.github/workflows/${f}`)).length === 0, "a placeholder workflow was changed (the release workflow is not P22's to touch)")
+  // P24 (D-165) retired the eight commented-out placeholders and added the manual release workflow, which is not QA's.
+  const others = (await readdir(join(repo, ".github/workflows"))).filter((f) => f !== "quality.yml")
+  check(json(others) === json(["release.yml"]), `other workflow files: ${json(others)}`)
 })
 await test("QA-CI-03", "The workflow has the least privilege: read-only contents, no stored credentials, small artifacts, no secret", async (check) => {
   check(json(workflow.permissions) === json({ contents: "read" }), json(workflow.permissions))
@@ -345,14 +347,16 @@ await test("QA-PRESERVE-04", "The navigation registry, the folder components and
   const touched = withoutApproved(changedSinceBase(["src/navigation", "src/components/folders", "src/styles/folders.css", "src/styles/categories.css", "src/styles/tokens.css", "src/styles/home-tabs.css", "src/visualization", "src/home", "src/components/home", "src/pages/index.astro"]))
   check(touched.length === 0, `changed: ${json(touched)}`)
 })
-await test("QA-PRESERVE-05", "P23 changed only the files D-161 and D-162 name, the two layouts only by one attribute, and added no palette, token or colour to a stylesheet", async (check) => {
+await test("QA-PRESERVE-05", "P23 and P24 changed only the source files D-161 to D-164 name (and src/release/), the two layouts only by one attribute, and added no palette, token or colour to a stylesheet", async (check) => {
   if (!gitOk) return
   const P23_BASE = "183b5a4" // the head P23 began from
   const run = (...args) => git(...args).stdout.split("\n").filter(Boolean)
   if (git("cat-file", "-e", P23_BASE).status !== 0) return
   const changed = [...new Set([...run("diff", "--name-only", P23_BASE, "--", "src"), ...run("ls-files", "--others", "--exclude-standard", "--", "src")])]
-  const named = [...D161_FILES, ...D162_FILES]
-  check(changed.every((f) => named.includes(f)), `P23 changed source files D-161 and D-162 do not name: ${json(changed.filter((f) => !named.includes(f)))}`)
+  // P24 (D-163, D-164) adds the release metadata, under its own folder src/release/, and the owner's public profiles.
+  const named = [...D161_FILES, ...D162_FILES, ...D163_FILES, ...D164_FILES]
+  const unnamed = changed.filter((f) => !named.includes(f) && !f.startsWith("src/release/"))
+  check(unnamed.length === 0, `source files changed that D-161 to D-164 do not name: ${json(unnamed)}`)
   const decisions = await read("development/decisions.md")
   const decision = /\*\*D-161\.\*\*[\s\S]*?(?=\n\n|$)/.exec(decisions)?.[0] ?? ""
   for (const file of D161_FILES) check(decision.includes(`\`${file}\``) || decision.includes(`\`${file.split("/").pop()}\``), `D-161 does not name ${file}`)
@@ -360,6 +364,11 @@ await test("QA-PRESERVE-05", "P23 changed only the files D-161 and D-162 name, t
   const close = /\*\*D-162\.\*\*[\s\S]*?(?=\n\n|$)/.exec(decisions)?.[0] ?? ""
   for (const file of D162_FILES) check(close.includes(`\`${file}\``), `D-162 does not name ${file}`)
   for (const file of D162_FILES) check(skipTargetOnly(git("diff", P23_BASE, "--", file).stdout), `${file} changed beyond tabindex="-1" on <main id="content"> (D-162)`)
+  // P24: each list of files is named by its own decision, so a list cannot be widened by editing tests/approved-changes.mjs alone.
+  for (const [id, files] of [["D-163", D163_FILES], ["D-164", D164_FILES]]) {
+    const text = new RegExp(`\\*\\*${id}\\.\\*\\*[\\s\\S]*?(?=\\n\\n|$)`).exec(decisions)?.[0] ?? ""
+    for (const file of files) check(text.includes(`\`${file}\``), `${id} does not name ${file}`)
+  }
   const added = git("diff", P23_BASE, "--unified=0", "--", "src/styles").stdout.split("\n").filter((l) => l.startsWith("+") && !l.startsWith("+++") && !/^\+\s*(\/\*|\*)/.test(l))
   const colours = added.filter((l) => /#[0-9a-fA-F]{3,8}\b|--palette-|\b(rgb|hsl|oklch|color-mix)\(|--color-[\w-]+\s*:/.test(l))
   check(colours.length === 0, `P23 added a colour, a palette reference or a colour token to a stylesheet: ${json(colours.slice(0, 3))}`)

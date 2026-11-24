@@ -536,7 +536,8 @@ await test(
         )
       if (file.endsWith(".html"))
         check(
-          !/<link[^>]+(?:bootstrap|quarto)/i.test(text) && !/<style/.test(bodyOf(text)),
+          // A canonical address (P24, D-163) is not a stylesheet, and an article's own URL may contain "quarto".
+          !/<link[^>]+(?:bootstrap|quarto)/i.test(text.replace(/<link rel="canonical"[^>]*>/g, "")) && !/<style/.test(bodyOf(text)),
           `${file} loads Quarto's styles`,
         )
     }

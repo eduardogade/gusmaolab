@@ -581,3 +581,39 @@ The owner accepted the two costs of the sticky row (D-144, 2026-11-22). Pending:
 The whole site was reviewed in real browsers (Chrome 158, Chrome with touch emulation, Firefox 159; Safari, a physical phone and a screen reader **not tested**, KL-135): `development/p23-review.md` holds the findings, the review matrix and the owner walkthroughs, the screenshots are in `qa-report/p23/` (gitignored). Four defects were repaired by the smallest change (D-161): a skip link (every page had forty folder links before its content), display equations reachable by keyboard, a world clock whose reading drops beneath its place when enlarged text leaves the row too narrow (KL-132), and the site's name at 320 px. Accepted: inline formulas that cannot wrap (KL-133), one-word headings that wrap inside the word at extreme enlargement (KL-134). Owner decision needed before release: Contact lists no channel, so Schedule's "please use Contact" leads nowhere (P23-F08). `development/p24-handoff.md` lists what the release needs. Nothing was deployed; `main`, the Pages repository, scheduling, the CV sources and the Bearnard masters are untouched.
 
 **Close-out (D-162).** The owner's final-acceptance follow-up asked for F05 to be revisited. A keyboard-only user *can* reach the whole of an inline formula wider than the column (the paper is the scroller and its range reaches the formula; the arrow keys scroll it from focus inside the article; Chrome 158 and Firefox 159, real keys), so KL-133 stays as a reading cost and A11Y-SCROLL now holds the property. Testing that in Firefox found a defect in F01: the skip link left focus on itself there, so the next Tab returned to the first folder tab. `<main id="content">` now has `tabindex="-1"` (`BaseLayout.astro`, `FolderPage.astro`, `ErrorPage.astro`) and no ring (`global.css`); A11Y-SKIP checks that the target takes focus. The two layouts changed by that one attribute only, and QA-PRESERVE-05 holds them to it. Safari, a physical device and a screen reader are still **not tested**. Nothing was deployed; `main` was not touched.
+
+## P24 — Release preparation (2026-11-24)
+
+P23 was accepted by the owner, D-162 included. P24 prepared the production release and **stopped at the owner's gate**. Nothing in production changed: no deployment, no change to `main`, the Pages repository, DNS, Cloudflare or any GitHub setting. `www.gusmaolab.org` still serves the Pelican site. **Status: P24 RELEASE CANDIDATE READY — OWNER CUTOVER AUTHORIZATION PENDING** (`development/p24-release.md`).
+
+- **Metadata (D-163).**
+  - A release page states one canonical address on `https://www.gusmaolab.org` and Open Graph tags; development, demonstration and 404 pages state none.
+  - Every page names the owner's `public/favicon.ico`, moved unchanged from `brand/`.
+  - `robots.txt` and `/sitemap.xml` are written by the build. The sitemap lists Home and the `ready` folders (4 URLs today) plus published entries (none yet).
+- **Contact (D-164).**
+  - The nine public profiles the owner gave are listed, so Contact's state is now `ready`. LinkedIn, ResearchGate and Medium are not verified (the sites refuse automated requests).
+  - No email address and no telephone number. The email gate is the owner's.
+- **Release machinery (D-165, proposed).**
+  - `.github/workflows/release.yml`: manual, one named commit on both `main` and `development` with a passed QA run, the `production` environment, a deploy key, a commit on top of the previous site.
+  - `scripts/release-check.mjs` checks a release tree; `scripts/smoke.mjs` checks the live site.
+  - Every action is pinned to a full SHA; the eight placeholder workflows are removed (KL-129 resolved).
+  - The local remote uses the canonical name `eduardogade/gusmaolab`.
+- **Git.**
+  - `origin/main` has 10 commits `development` lacks: the owner's snapshot `1e1c52b`, and sample-code pull requests #124 to #127. A trial merge is conflict-free, and with the 167 ignored files removed its tree equals `development`'s.
+  - The reconciliation is proposed, not done.
+  - `origin/main` exposes the private CV working folder (**ISSUE-0008**, open).
+- **Tests.** `tests/release.mjs` (REL-001 to REL-056, as far as they can be decided before the cutover): 28 checks pass. REL-013, REL-014 and REL-029 to REL-039 are **PENDING** (an email address; the live site).
+- **Local `npm run qa`:** 864 PASS, **5 FAIL**, 0 SKIPPED, 19 DEFERRED, 0 NOT RUN, 0 FLAKY. The five failures are the Bearnard preservation guards (NUC-041, NUCINT-042, SCH-070, QA-PRESERVE-03; QA-STATE-01 follows from SCH-070). They detect an untracked image the owner added to `brand/` (`brand/bearnard-favicon-full.png`), which P24 did not touch and which awaits the owner's word. Every browser, accessibility, audit and performance stage passed.
+- **Visual check.** The Contact page was checked at 1440, 1280, 768 and 390 px: no sideways scroll, and the favicon is served.
+- **Not tested:** Safari, a physical device, a screen reader, and everything live.
+- **Owner decisions waiting:**
+  - ISSUE-0008;
+  - the reconciliation;
+  - Option A, plus the deploy key, environment and secret;
+  - Cloudflare's Always Use HTTPS;
+  - the pull requests into `main`;
+  - the contact gate and WhatsApp;
+  - `brand/bearnard-favicon-full.png`;
+  - the favicon's weight (149 KB);
+  - the legacy URLs that will answer 404;
+  - the release itself.

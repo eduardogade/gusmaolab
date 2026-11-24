@@ -813,12 +813,14 @@ await test(
         /synthetic/i.test(await readFile(file, "utf8")),
         `${relative(root, file)} is not labelled synthetic`,
       )
-    // No generated feed or sitemap lists study pages.
+    // No generated feed lists study pages, and the public sitemap (P24, D-163) names none.
     const all = (await listFiles(dist)).map((f) => relative(dist, f))
     check(
-      !all.some((f) => /sitemap|feed|rss|atom/i.test(f)),
-      "a sitemap or feed was generated",
+      !all.some((f) => /feed|rss|atom/i.test(f)),
+      "a feed was generated",
     )
+    const sitemap = all.includes("sitemap.xml") ? await readFile(join(dist, "sitemap.xml"), "utf8") : ""
+    check(!/_design|fixture|demo-|synthetic/i.test(sitemap), "the sitemap lists a study, a fixture or a demonstration")
   },
 )
 

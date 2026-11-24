@@ -116,6 +116,8 @@ for (const file of files.filter((f) => f.endsWith("/index.html"))) {
 expectedPages.push(...editorialPages)
 // P18 (D-128): the custom 404 page, the one file a static host serves for an address that matches no page.
 expectedPages.push("404.html")
+// P24 (D-163): the owner's favicon, robots.txt and the public sitemap, at the root where browsers and crawlers look.
+expectedPages.push("favicon.ico", "robots.txt", "sitemap.xml")
 
 // 1. Only the expected pages and stylesheets, and nothing private.
 const unexpected = files.filter(

@@ -155,7 +155,9 @@ await test("UTIL-003", "Approved contact methods render, grouped by use, as real
     const item = rendered.find((el) => el.attrs["data-channel"] === channel.id)
     const link = item && elements(item).find((el) => el.tag === "a")
     check(link !== undefined, `the channel ${channel.id} is not a link`)
-    check(link?.attrs.href === (channel.kind === "email" ? mailtoHref(channel.destination) : channel.destination), `${channel.id}: wrong link ${link?.attrs.href}`)
+    // The parser keeps entities as written: a profile URL with a query (P24's Google Scholar) has `&amp;` in the HTML.
+    const href = link?.attrs.href?.replace(/&amp;/g, "&")
+    check(href === (channel.kind === "email" ? mailtoHref(channel.destination) : channel.destination), `${channel.id}: wrong link ${link?.attrs.href}`)
   }
   // The grouping helper: the page's order, empty uses omitted.
   const groups = groupByUse([GOOD, { ...GOOD, id: "email-collab", destination: "b.person@university.edu", use: "collaboration" }])
@@ -610,7 +612,9 @@ await test("UTIL-047", "No unexpected script, dependency or external form depend
   const pages = files.filter((f) => f.endsWith(".html") && !f.includes("/_design/"))
   for (const file of pages) {
     const html = await readFile(file, "utf8")
-    check(!/<form\b|<iframe\b|<script[^>]+src="https?:|<link[^>]+href="https?:/i.test(html), `${file.replace(dist, "")}: a form, frame or external script/stylesheet`)
+    // A canonical address (P24, D-163) names the page itself and loads nothing; every other absolute <link> still fails.
+    const loaded = html.replace(/<link rel="canonical" href="https:\/\/www\.gusmaolab\.org\/[^"]*">/g, "")
+    check(!/<form\b|<iframe\b|<script[^>]+src="https?:|<link[^>]+href="https?:/i.test(loaded), `${file.replace(dist, "")}: a form, frame or external script/stylesheet`)
   }
   if (gitAvailable) {
     const before = git("show", `${BASE}:package.json`).stdout

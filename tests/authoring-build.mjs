@@ -156,7 +156,11 @@ try {
     const index = await text(release, "/lecture-notes/greenhouse/")
     check(!index.includes("a-draft-article"), "a draft is in the Greenhouse index")
     check(!/Draft preview/.test(all), "the draft notice is in the release build")
-    check(!release.files.some((f) => /sitemap|rss|atom|feed/i.test(f)), "a sitemap or feed exists, which must be checked for drafts")
+    check(!release.files.some((f) => /rss|atom|feed/i.test(f)), "a feed exists, which must be checked for drafts")
+    // P24 (D-163): the public sitemap exists, and it is checked here: it names no draft, and lists the published fixture.
+    check(release.files.includes("sitemap.xml"), "the release build has no sitemap")
+    const sitemap = release.files.includes("sitemap.xml") ? await readFile(join(release.dist, "sitemap.xml"), "utf8") : ""
+    check(!/a-draft-article|draft-lesson/.test(sitemap), "the sitemap lists a draft")
     // The demonstration build is not a draft preview either: only the dev server routes drafts.
     check(!demo.files.some((f) => f.includes("a-draft-article") || f.includes("draft-lesson")), "a draft has a page in the demonstration build")
   })

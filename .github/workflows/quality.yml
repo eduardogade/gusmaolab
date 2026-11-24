@@ -1,5 +1,7 @@
 # Quality assurance (P22, D-156). Verifies; it never deploys. It publishes nothing, has no write access to the
-# repository, uses no secret, and the legacy placeholder workflows beside it are untouched. What it runs is the
+# repository and uses no secret. Releasing is a separate, manual workflow (release.yml, P24, D-165), and the eight
+# commented-out placeholder workflows that stood beside this one are retired (D-165). Every action is pinned to the
+# full commit SHA of a verified upstream release, with the version in a comment (P24, D-165). What it runs is the
 # same command a developer runs locally (`npm run qa`, scripts/qa.mjs), so a result here and a result there mean
 # the same thing: PASS, FAIL, SKIPPED, DEFERRED, NOT RUN or FLAKY, with a mandatory FAIL, NOT RUN or
 # unregistered FLAKY failing the job. The Cal.com booking checks are DEFERRED (owner decision) and do not fail it.
@@ -41,12 +43,12 @@ jobs:
     timeout-minutes: 25
     steps:
       - name: Check out the repository with its full history (read-only, no stored credentials)
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
           fetch-depth: 0
       - name: Set up Node.js from .node-version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: .node-version
           cache: npm
@@ -56,7 +58,7 @@ jobs:
         run: node scripts/qa.mjs --profile quick
       - name: Keep the report (small)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: qa-report-static
           path: |
@@ -66,7 +68,7 @@ jobs:
           if-no-files-found: warn
       - name: Keep the logs, only when something failed
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: qa-logs-static
           path: qa-report/logs/
@@ -81,12 +83,12 @@ jobs:
       CHROME_PATH: /usr/bin/google-chrome
     steps:
       - name: Check out the repository with its full history (read-only, no stored credentials)
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
           persist-credentials: false
           fetch-depth: 0
       - name: Set up Node.js from .node-version
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: .node-version
           cache: npm
@@ -96,7 +98,7 @@ jobs:
         run: node scripts/qa.mjs --profile ${{ inputs.profile || 'full' }} --only environment,build,demo-build,browser,performance
       - name: Keep the report (small)
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: qa-report-browser
           path: |
@@ -109,7 +111,7 @@ jobs:
           if-no-files-found: warn
       - name: Keep the logs and failure screenshots, only when something failed
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: qa-evidence-browser
           path: |

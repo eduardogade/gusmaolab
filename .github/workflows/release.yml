@@ -1,0 +1,156 @@
+# Release (P24, D-165): publishes ONE named commit of this repository to the GitHub Pages repository that serves
+# https://www.gusmaolab.org (eduardogade/eduardogade.github.io, branch main, with its CNAME). It is the only workflow that
+# deploys, and it is manual: nothing here runs on a push. Releasing it the first time is the production cutover, which
+# needs the owner's separate authorization (development/p24-release.md); a workflow that exists is not a permission to run it.
+#
+#   candidate  no secret. Checks the inputs; checks that the commit is on both main and development (an unexpected
+#              divergence blocks the release) and that the Quality Assurance workflow passed on it; runs the quick QA
+#              profile; builds with `npm run build`; checks the artifact (scripts/release-check.mjs); keeps it for 7 days.
+#   publish    the `production` environment (the owner sets a required reviewer there, and its secret PAGES_DEPLOY_KEY: a
+#              deploy key with write access to the Pages repository only). Replaces the Pages repository's tree with the
+#              artifact plus CNAME and .nojekyll, commits it ON TOP of the previous site (never an orphan, never a force
+#              push, so the previous site is one revert away), pushes, then smoke-tests the live address until it serves
+#              exactly what was built (scripts/smoke.mjs).
+#
+# Every action is pinned to the full commit SHA of a verified upstream release, with the version in a comment.
+name: Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      commit:
+        description: "Full 40-character SHA of the commit to release (it must be on main and on development)"
+        required: true
+        type: string
+      confirm:
+        description: "Type www.gusmaolab.org to confirm the destination"
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  candidate:
+    name: Build and check the release candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - name: Check the inputs
+        env:
+          COMMIT: ${{ inputs.commit }}
+          CONFIRM: ${{ inputs.confirm }}
+        run: |
+          [[ "$COMMIT" =~ ^[0-9a-f]{40}$ ]] || { echo "::error::commit must be a full 40-character lowercase SHA"; exit 1; }
+          [ "$CONFIRM" = "www.gusmaolab.org" ] || { echo "::error::confirm must be exactly www.gusmaolab.org"; exit 1; }
+      - name: Check out the commit with its full history (read-only, no stored credentials)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ inputs.commit }}
+          persist-credentials: false
+          fetch-depth: 0
+      - name: The commit is on main and on development
+        env:
+          COMMIT: ${{ inputs.commit }}
+        run: |
+          git merge-base --is-ancestor "$COMMIT" origin/main || { echo "::error::$COMMIT is not on main: reconcile main first"; exit 1; }
+          git merge-base --is-ancestor "$COMMIT" origin/development || { echo "::error::$COMMIT is not on development: release only accepted development work"; exit 1; }
+      - name: The Quality Assurance workflow passed on this commit
+        env:
+          COMMIT: ${{ inputs.commit }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          result=$(gh run list --repo "$GITHUB_REPOSITORY" --workflow quality.yml --commit "$COMMIT" --status completed --json conclusion --jq '[.[] | select(.conclusion == "success")] | length')
+          [ "$result" -ge 1 ] || { echo "::error::no successful Quality Assurance run on $COMMIT"; exit 1; }
+      - name: Set up Node.js from .node-version
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .node-version
+          cache: npm
+      - name: Install dependencies from the lockfile
+        run: npm ci
+      - name: Quality assurance, quick profile
+        run: node scripts/qa.mjs --profile quick
+      - name: Build the release
+        run: npm run build
+      - name: Check the release artifact
+        run: node scripts/release-check.mjs dist
+      - name: Keep the artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: release-site
+          path: dist/
+          retention-days: 7
+          if-no-files-found: error
+
+  publish:
+    name: Publish to www.gusmaolab.org and smoke-test it
+    needs: candidate
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: production
+      url: https://www.gusmaolab.org/
+    steps:
+      - name: Check out the release scripts at the same commit (read-only, no stored credentials)
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          ref: ${{ inputs.commit }}
+          persist-credentials: false
+      - name: Set up Node.js from .node-version
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version-file: .node-version
+      - name: Take the checked artifact
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+        with:
+          name: release-site
+          path: site
+      - name: Commit the release on top of the previous site and push it
+        id: pages
+        env:
+          COMMIT: ${{ inputs.commit }}
+          PAGES_DEPLOY_KEY: ${{ secrets.PAGES_DEPLOY_KEY }}
+        run: |
+          set -euo pipefail
+          [ -n "$PAGES_DEPLOY_KEY" ] || { echo "::error::the production environment has no PAGES_DEPLOY_KEY"; exit 1; }
+          install -m 700 -d ~/.ssh
+          printf '%s\n' "$PAGES_DEPLOY_KEY" > ~/.ssh/pages_deploy && chmod 600 ~/.ssh/pages_deploy
+          curl -fsSL https://api.github.com/meta | jq -r '.ssh_keys[] | "github.com " + .' > ~/.ssh/known_hosts
+          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/pages_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
+          git clone --depth 1 --branch main git@github.com:eduardogade/eduardogade.github.io.git pages
+          previous=$(git -C pages rev-parse HEAD)
+          find pages -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          cp -R site/. pages/
+          printf 'www.gusmaolab.org\n' > pages/CNAME
+          : > pages/.nojekyll
+          node scripts/release-check.mjs pages --deployment
+          git -C pages add -A
+          git -C pages -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "deploy: eduardogade/gusmaolab@$COMMIT"
+          git -C pages push origin HEAD:main
+          echo "previous=$previous" >> "$GITHUB_OUTPUT"
+          echo "deployed=$(git -C pages rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          rm -f ~/.ssh/pages_deploy
+      - name: Smoke-test the live site until it serves exactly this release
+        run: node scripts/smoke.mjs https://www.gusmaolab.org --dist site --wait 900
+      - name: Record the release
+        if: always()
+        env:
+          COMMIT: ${{ inputs.commit }}
+          PREVIOUS: ${{ steps.pages.outputs.previous }}
+          DEPLOYED: ${{ steps.pages.outputs.deployed }}
+        run: |
+          {
+            echo "### Release"
+            echo "- Source commit: \`$COMMIT\`"
+            echo "- Pages repository commit before: \`${PREVIOUS:-none}\` (the rollback point: revert the deploy commit)"
+            echo "- Pages repository commit after: \`${DEPLOYED:-not pushed}\`"
+            echo "- Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+          } >> "$GITHUB_STEP_SUMMARY"

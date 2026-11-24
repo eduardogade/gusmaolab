@@ -634,6 +634,9 @@ test("NAV-032", "Every approved route is a static page", (check) => {
         // P18: the synthetic download fixtures; static paths only in dev and demo mode.
         "demo-downloads/[file].ts",
         "index.astro",
+        // P24 (D-163): robots.txt and the public sitemap, written by the release build; no page.
+        "robots.txt.ts",
+        "sitemap.xml.ts",
       ]),
     `unexpected route files: ${json(routeFiles)}`,
   )
