@@ -12,8 +12,11 @@
  *
  * Each row is `<li data-clock-id data-time-zone>` holding the city, its country, and a
  * `[data-clock-reading]` with a time (`[data-clock-time]`) and a date (`[data-clock-date]`). The
- * script puts `<time datetime>` elements there. The section is not a live region: a reader who
- * reaches it finds the current times, and nothing is announced when a minute passes.
+ * script puts `<time datetime>` elements there. The date is drawn twice from one reading (P22-A01,
+ * D-158): the short form beside the city ("Wed, 30 Sep", `[data-clock-date-short]`, hidden from
+ * assistive technology) and the full form for it ("Wednesday, 30 September", `[data-clock-date-full]`,
+ * visually hidden). The section is not a live region: a reader who reaches it finds the current
+ * times, and nothing is announced when a minute passes.
  *
  * `instant` is for the development specimen only (/_design/world-clocks/): a fixed ISO instant the
  * component formats, at build time, with the same function the page uses, and marks as simulated so
@@ -71,7 +74,10 @@ const places = CLOCK_LOCATIONS.map((place) => ({
               reading ? (
                 <>
                   <time class="clock__time" data-clock-time datetime={reading.isoDateTime}>{reading.time}</time>
-                  <time class="clock__date" data-clock-date datetime={reading.isoDate}>{reading.date}</time>
+                  <time class="clock__date" data-clock-date datetime={reading.isoDate}>
+                    <span class="clock__date-short" data-clock-date-short aria-hidden="true">{reading.compactDate}</span>
+                    <span class="gl-visually-hidden" data-clock-date-full>{reading.date}</span>
+                  </time>
                 </>
               ) : (
                 <>

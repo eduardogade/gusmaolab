@@ -86,6 +86,8 @@ export const HELPERS = [
   { file: "tests/demo-run.mjs", purpose: "Runs the Quarto demonstration, for demo-execute and science-restore" },
   { file: "tests/scheduling-ready-build.mjs", purpose: "A throwaway build with scheduling enabled on a synthetic link" },
   { file: "tests/demo-dist.mjs", purpose: "A throwaway demonstration build, for the tests that read development pages such as the design studies (D-157)" },
+  { file: "tests/dev-server.mjs", purpose: "Starts `astro dev` for the two dev-server suites, stops it on exit and on a signal, and fails the suite if the port is still open (P22-A01)" },
+  { file: "tests/approved-changes.mjs", purpose: "The files an owner-approved decision (D-158) allowed to change, which the older preservation guards subtract" },
   { file: "tests/qa-fixtures.mjs", purpose: "Throwaway copies of a build, with a controlled defect, for the QA system's own tests" },
 ]
 

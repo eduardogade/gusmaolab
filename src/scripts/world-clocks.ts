@@ -44,6 +44,29 @@ function asTime(el: HTMLElement): HTMLElement {
   return time
 }
 
+/**
+ * The date, drawn twice from one reading (P22-A01, D-158): the short form is what the eye sees and
+ * is hidden from assistive technology; the full form is visually hidden and is what a reader hears.
+ * The two spans are made once and rewritten, so the markup is the one WorldClocks.astro builds.
+ */
+function writeDate(date: HTMLElement, reading: ClockReading): void {
+  let short = date.querySelector<HTMLElement>("[data-clock-date-short]")
+  let full = date.querySelector<HTMLElement>("[data-clock-date-full]")
+  if (!short || !full) {
+    date.textContent = ""
+    short = document.createElement("span")
+    short.className = "clock__date-short"
+    short.setAttribute("data-clock-date-short", "")
+    short.setAttribute("aria-hidden", "true")
+    full = document.createElement("span")
+    full.className = "gl-visually-hidden"
+    full.setAttribute("data-clock-date-full", "")
+    date.append(short, full)
+  }
+  short.textContent = reading.compactDate
+  full.textContent = reading.date
+}
+
 const warned = new Set<string>()
 
 function draw(faces: readonly Face[], regions: readonly HTMLElement[], instant: number): void {
@@ -69,7 +92,7 @@ function draw(faces: readonly Face[], regions: readonly HTMLElement[], instant: 
     face.date = asTime(face.date)
     face.time.textContent = reading.time
     face.time.setAttribute("datetime", reading.isoDateTime)
-    face.date.textContent = reading.date
+    writeDate(face.date, reading)
     face.date.setAttribute("datetime", reading.isoDate)
     face.reading.removeAttribute("aria-hidden")
     face.reading.closest("[data-clock-id]")?.setAttribute("data-clock-state", "live")

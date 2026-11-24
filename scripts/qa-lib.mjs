@@ -172,11 +172,16 @@ export function environmentSummary({ node, npm, platform, arch, cpu, chrome, ci,
 export function redact(text, root) {
   let out = String(text)
   if (root) out = out.split(root.replace(/\/$/, "")).join("<repo>")
+  // A home or temporary directory is hidden only where an absolute path begins (not after a word character, so
+  // `src/components/home/Page.astro` is not a home directory) and never past a quote or a backslash, so the text this runs
+  // over, which is JSON, stays JSON: a failure message that listed two repository paths once swallowed the quote between them
+  // and stopped the report from being written (P22-A01).
+  const start = "(?<![\\w.~-])"
   return out
-    .replace(/\/Users\/[^/\s]+/g, "/Users/<user>")
-    .replace(/\/home\/[^/\s]+/g, "/home/<user>")
-    .replace(/\/private\/var\/folders\/[^\s]+/g, "<tmp>")
-    .replace(/\/var\/folders\/[^\s]+/g, "<tmp>")
+    .replace(new RegExp(`${start}\\/Users\\/[^/\\s"'\\\\]+`, "g"), "/Users/<user>")
+    .replace(new RegExp(`${start}\\/home\\/[^/\\s"'\\\\]+`, "g"), "/home/<user>")
+    .replace(new RegExp(`${start}\\/private\\/var\\/folders\\/[^\\s"'\\\\]+`, "g"), "<tmp>")
+    .replace(new RegExp(`${start}\\/var\\/folders\\/[^\\s"'\\\\]+`, "g"), "<tmp>")
 }
 
 export const REPORT_SCHEMA = "gusmaolab-qa-report/1"

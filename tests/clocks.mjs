@@ -23,9 +23,11 @@ import { msToNextMinute, readClock, tryReadClock } from "../src/home/clock-time.
 import { CLOCK_LOCATIONS, isValidTimeZone } from "../src/home/clocks.ts"
 import { CLOCK_SCENARIOS } from "../src/design/clocks-scenarios.ts"
 import { elements, parse, textOf } from "./html-tree.mjs"
+import { D158_FILES } from "./approved-changes.mjs"
 
 const repo = fileURLToPath(new URL("../", import.meta.url))
 const BASE = "72cd983" // the head P16 began from
+const A01_BASE = "b6d1b6d" // the head the owner-approved short date (D-158) began from
 const json = (value) => JSON.stringify(value)
 const read = (path) => readFile(join(repo, path), "utf8")
 const strip = (source) => source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "")
@@ -148,6 +150,54 @@ await test("CLOCK-007", "Each city shows its own calendar date and weekday", asy
   check(accra.date === "Monday, 16 November", `"${accra.date}"`)
   const dates = new Set(IDS.map((id) => readClock(at("2026-12-31T23:30:00Z"), zoneOf[id]).isoDate))
   check(dates.size === 2, `the eight places show ${dates.size} dates at New Year, expected 2`)
+})
+
+await test("CLOCK-042", "The short date comes from the same reading as the full one (P22-A01, D-158)", async (check) => {
+  // Independent tables: the expected short date is built from the ISO date alone, not from the formatter.
+  const DAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+  const compactOf = (isoDate) => {
+    const day = new Date(`${isoDate}T00:00:00Z`)
+    return `${DAYS[day.getUTCDay()]}, ${day.getUTCDate()} ${MONTHS[day.getUTCMonth()]}`
+  }
+  const shape = /^(Mon|Tue|Wed|Thu|Fri|Sat|Sun), (\d|[12]\d|3[01]) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)$/
+  let seen = 0
+  // Every reference instant at every place, then every hour-of-day step across 2026 and the leap day of 2028.
+  const instants = [...Object.keys(REFERENCE).map(at)]
+  for (let t = at("2026-01-01T00:00:00Z"); t < at("2027-01-01T00:00:00Z"); t += 7 * 3_600_000 + 1_800_000) instants.push(t)
+  instants.push(at("2028-02-29T12:00:00Z"))
+  for (const instant of instants)
+    for (const id of IDS) {
+      const reading = readClock(instant, zoneOf[id])
+      seen++
+      if (reading.compactDate !== compactOf(reading.isoDate) || !shape.test(reading.compactDate)) {
+        check(false, `${new Date(instant).toISOString()} ${id}: "${reading.compactDate}", expected "${compactOf(reading.isoDate)}"`)
+        break
+      }
+      // The full date and the short date name the same weekday, day and month.
+      const [fullWeekday, fullRest] = reading.date.split(", ")
+      const [fullDay, fullMonth] = fullRest.split(" ")
+      const [shortWeekday, shortRest] = reading.compactDate.split(", ")
+      const [shortDay, shortMonth] = shortRest.split(" ")
+      if (!fullWeekday.startsWith(shortWeekday) || !fullMonth.startsWith(shortMonth) || fullDay !== shortDay || fullWeekday !== weekdayOf(reading.isoDate)) {
+        check(false, `${new Date(instant).toISOString()} ${id}: "${reading.date}" and "${reading.compactDate}" differ`)
+        break
+      }
+    }
+  check(seen >= 9000, `only ${seen} readings were compared`)
+  // The owner's longest date, on the instant that the owner named (2026-09-30), at the two ends of the day.
+  const nineThirty = at("2026-09-30T12:00:00Z")
+  check(readClock(nineThirty, "America/Anchorage").compactDate === "Wed, 30 Sep", `"${readClock(nineThirty, "America/Anchorage").compactDate}"`)
+  check(readClock(nineThirty, "America/Anchorage").date === "Wednesday, 30 September", "the full date of Anchorage on 30 September")
+  check(readClock(nineThirty, "Pacific/Auckland").compactDate === "Thu, 1 Oct", `Auckland: "${readClock(nineThirty, "Pacific/Auckland").compactDate}"`)
+  check(readClock(nineThirty, "Pacific/Auckland").date === "Thursday, 1 October", "the full date of Auckland on 1 October")
+  // No engine's own abbreviation ("Sept", "Thurs") and no punctuation of one reaches the page.
+  check(!instants.some((t) => IDS.some((id) => /Sept|Thurs|Tues|\./.test(readClock(t, zoneOf[id]).compactDate))), "a locale abbreviation reached the short date")
+  // The page draws both from the one reading, the short one hidden from assistive technology.
+  const script = strip(await read("src/scripts/world-clocks.ts"))
+  check(/compactDate/.test(script) && /reading\.date\b/.test(script) && /aria-hidden", "true"/.test(script), "the script does not draw both forms from one reading")
+  const component = strip(await read("src/components/home/WorldClocks.astro"))
+  check(/data-clock-date-short aria-hidden="true"/.test(component) && /gl-visually-hidden" data-clock-date-full/.test(component), "the component does not draw both forms")
 })
 
 await test("CLOCK-008", "A city can be on the previous calendar day", async (check) => {
@@ -492,6 +542,25 @@ for (const [id, title, paths] of [
     check(touched.length === 0, `P16 changed protected files: ${json(touched)}`)
   })
 }
+
+await test("CLOCK-043", "The short date is a recorded owner decision, and its files are the ones the older guards allow (P22-A01, D-158)", async (check) => {
+  const decisions = await read("development/decisions.md")
+  const decision = /\*\*D-158\.\*\*[\s\S]*?(?=\n\n|$)/.exec(decisions)?.[0] ?? ""
+  check(/owner/i.test(decision) && /option B/.test(decision) && /Wed, 30 Sep/.test(decision), "D-158 does not record the owner's choice")
+  for (const file of D158_FILES) check(decision.includes(`\`${file}\``), `D-158 does not name ${file}`)
+  check(decision.includes("KL-132"), "D-158 does not record what it does not guarantee")
+  // The places and their order are not part of the approval.
+  // Against the head the adjustment began from (the commit before it), committed or not.
+  const sinceAdjustment = (paths) => {
+    const run = (...args) => spawnSync("git", ["-C", repo, ...args], { encoding: "utf8" })
+    if (run("cat-file", "-e", A01_BASE).status !== 0) return []
+    return [...new Set([...run("diff", "--name-only", A01_BASE, "--", ...paths).stdout.split("\n"), ...run("ls-files", "--others", "--exclude-standard", "--", ...paths).stdout.split("\n")].filter(Boolean))]
+  }
+  check(sinceAdjustment(["src/home/clocks.ts", "src/home/clock-loop.ts"]).length === 0, "the places or the loop changed")
+  check(sinceAdjustment(["src/styles/categories.css", "src/styles/tokens.css", "src/styles/environments.css", "src/design/contract.mjs"]).length === 0, "a palette or token changed")
+  const homeChanged = sinceAdjustment(["src/home", "src/components/home", "src/pages/index.astro", "src/scripts", "src/styles/home.css", "src/styles/home-tabs.css"])
+  check(homeChanged.every((f) => D158_FILES.includes(f)), `the homepage changed beyond D-158: ${json(homeChanged.filter((f) => !D158_FILES.includes(f)))}`)
+})
 
 await test("CLOCK-040", "No development specimen or scenario reaches the release output", async (check) => {
   const issues = await publicBuildIssues(join(repo, "dist"))

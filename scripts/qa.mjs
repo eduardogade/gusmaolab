@@ -149,6 +149,8 @@ export async function main(argv = process.argv.slice(2)) {
   const evidenceDir = join(reportDir, "evidence")
   await rm(logsDir, { recursive: true, force: true })
   await rm(evidenceDir, { recursive: true, force: true })
+  // The measurement files of an earlier run must never be read as this run's (P22-A01).
+  for (const name of ["performance.json", "accessibility.json", "nucleus-frames.json"]) await rm(join(reportDir, name), { force: true })
   await mkdir(logsDir, { recursive: true })
   await mkdir(evidenceDir, { recursive: true })
 
@@ -159,6 +161,7 @@ export async function main(argv = process.argv.slice(2)) {
   const findings = []
   let performance = null
   let accessibility = null
+  let nucleusFrames = null
   const context = { needsBrowser: ["browser", "performance"].some((s) => selected.has(s)), chromeVersion: null }
   const logOf = async (name, text) => {
     const file = join(logsDir, `${name}.log`)
@@ -275,6 +278,8 @@ export async function main(argv = process.argv.slice(2)) {
     if (!browserReady()) record("browser", { status: "NOT RUN", counts: emptyCounts(), durationMs: 0, suites: [], failures: [{ id: "browser", title: STAGE_TITLES.browser, reasons: ["no Chrome or Chromium: the browser stage cannot run (NOT RUN, never a pass)"] }] })
     else await runSuites("browser", BROWSER_SUITES, { retries: profile.retries, repeat: profile.repeat, env: { QA_REPORT_DIR: reportDir, QA_EVIDENCE_DIR: evidenceDir } })
     try { accessibility = JSON.parse(await readFile(join(reportDir, "accessibility.json"), "utf8")) } catch { accessibility = null }
+    // NUC-050's measured distribution and environment (P22-A01, D-159): kept in the report whatever the verdict.
+    try { nucleusFrames = JSON.parse(await readFile(join(reportDir, "nucleus-frames.json"), "utf8")) } catch { nucleusFrames = null }
   } else skipped("browser")
   if (selected.has("performance")) {
     if (!browserReady()) record("performance", { status: "NOT RUN", counts: emptyCounts(), durationMs: 0, suites: [], failures: [{ id: "performance", title: STAGE_TITLES.performance, reasons: ["no Chrome or Chromium"] }] })
@@ -327,6 +332,7 @@ export async function main(argv = process.argv.slice(2)) {
     findings,
     performance,
     accessibility,
+    nucleusFrames,
     matrix: matrix.map((m) => ({ id: m.id, title: m.title, status: m.status, evidence: m.evidence, ...(CAVEATS.has(m.id) && blockers.length > 0 ? { caveat: `Passes with a registered release-blocker exception: ${blockers.map((b) => b.id.replace("F-EXCEPTION:", "")).join(", ")} (see Release blockers).` } : {}) })),
   }
   const clean = JSON.parse(redact(JSON.stringify(report), ROOT))
@@ -391,6 +397,14 @@ function markdown(r) {
     L.push("", "## Performance (median of cold runs)", "", `${r.performance.environment?.summary ?? ""}`, "", "| Page | Runs | LCP ms | CLS | TBT* ms | Requests | JS KB | CSS KB | Images KB |", "| --- | --- | --- | --- | --- | --- | --- | --- | --- |")
     for (const p of r.performance.pages) L.push(`| ${p.name} | ${p.runs} | ${p.median.lcp} (${p.min.lcp}–${p.max.lcp}) | ${p.median.cls} | ${p.median.tbt} | ${p.median.requests} | ${p.median.jsKB} | ${p.median.cssKB} | ${p.median.imagesKB} |`)
     L.push("", "*TBT is approximated from long tasks after first paint, not Lighthouse's own simulation.")
+  }
+  if (r.nucleusFrames?.samples) {
+    const n = r.nucleusFrames, e = n.environment ?? {}
+    L.push("", "## Nucleus frame time (NUC-050, software WebGL)", "", `Profile **${n.profile}**, ceiling ${n.ceilingMs} ms (local reference ${n.referenceMs} ms, CI smoke ${n.ciSmokeMs} ms): **${n.verdict}**. ${e.cpu ?? "?"}, ${e.logicalCores ?? "?"} logical cores, ${e.platform ?? "?"} ${e.arch ?? ""}, ${e.renderer ?? "?"}, canvas ${e.canvasPx ?? "?"}.`, "", `${n.meaning}`, "", "| Sample | Frames | Median ms | p95 ms | Max ms |", "| --- | --- | --- | --- | --- |")
+    for (const s of n.samples) L.push(`| ${s.sample} | ${s.frames} | ${s.medianMs} | ${s.p95Ms} | ${s.maxMs} |`)
+    L.push(`| median of sample medians | ${n.summary?.pooled?.frames ?? ""} (pooled) | **${n.summary?.medianOfSampleMediansMs}** | ${n.summary?.pooled?.p95Ms} | ${n.summary?.pooled?.maxMs} |`)
+    if (n.referenceWorkload) L.push("", `Recorded, not asserted: a plain lit-sphere workload of the same triangle count on the same renderer has a median of ${n.referenceWorkload.medianMs} ms; the nucleus-to-workload ratio is ${n.referenceWorkload.nucleusToWorkloadMedianRatio}.`)
+    L.push("", `*${n.note}*`)
   }
   if (r.accessibility?.pages) {
     L.push("", "## Accessibility (axe-core)", "", `${r.accessibility.pages.length} pages scanned; ${r.accessibility.violations} violation(s) outside the register, ${r.accessibility.registered} registered known issue(s). Automated checks find only part of the WCAG problems; manual review remains for P23.`)

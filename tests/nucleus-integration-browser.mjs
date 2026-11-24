@@ -25,7 +25,7 @@ if (!existsSync(join(dist, "index.html"))) {
   process.exit(2)
 }
 
-const { js, send, setViewport, goto, moveTo, click, press, test, finish, tabPoint, waitForPath, nextEvent, touchSwipeScrolls } = await startBrowser({
+const { js, send, setViewport, goto, moveTo, click, press, test, finish, tabPoint, waitForPath, nextEvent, touchSwipeScrolls, scrollSettled } = await startBrowser({
   ids: IDS,
   timeout: 600_000,
   root: "dist",
@@ -613,39 +613,61 @@ await test("NUCINT-033B", "Touch: a still nucleus, no response to tapping or to 
   const overflow = await js(`document.documentElement.scrollWidth - document.documentElement.clientWidth`)
   check(overflow <= 0, `the page overflows by ${overflow}`)
   check(await js(`getComputedStyle(document.querySelector("nav[aria-label=Sections]")).position`) !== "sticky", "the tab row sticks on a touch device")
-  const where = await js(`(() => { const r = document.querySelector("[data-nucleus-frame]").getBoundingClientRect(); return { x: r.x + r.width / 2, y: Math.min(innerHeight - 40, r.y + r.height / 2) } })()`)
-  const top = await js(`document.documentElement.scrollTop`)
-  const swiped = await touchSwipeScrolls(Math.round(where.x), Math.round(where.y), -250)
-  check(swiped.scrolled, `a swipe over the nucleus did not scroll the page (${json(swiped)}; document ${await js(`document.documentElement.scrollHeight`)} px, window ${await js(`innerHeight`)} px, gesture at ${json(where)})`)
-  // The folder row still scrolls sideways under touch.
-  const row = await js(`(() => { const s = document.querySelector('nav[aria-label=Sections].gl-folder__strip'); s.scrollIntoView({ block: "center" }); const r = s.getBoundingClientRect(); return { x: r.x + r.width / 2, y: r.y + r.height / 2, scrolls: s.scrollWidth > s.clientWidth + 1, left: s.scrollLeft, hit: (() => { const e = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2); return e ? e.tagName.toLowerCase() + (e.className ? "." + String(e.className).split(" ")[0] : "") : null })(), touchAction: getComputedStyle(s).touchAction, overflowX: getComputedStyle(s).overflowX, scrollWidth: s.scrollWidth, clientWidth: s.clientWidth } })()`)
-  await sleep(300)
-  // The swipe starts where a finger would: on a tab's label, which is a link. The first GitHub runs (P22-A01) saw nothing move on
-  // a Linux runner by either way of sending the touch, while the same swipe moves the row on a Mac. The row's own padding and
-  // the tab shapes are not links, so the swipe is tried there too and both results are said; the check passes when the row
-  // can be moved by touch at all, and a row that cannot is a failure. Whether a swipe that starts on a link must work on a
-  // phone is for the real-device review (P23): it is not decided here.
+  // The swipes are aimed (P22-A01, run 8): each one finds its target, hit-tests the point and reads where it starts in one page
+  // evaluation and is sent at once (touchSwipeScrolls with `locate`), after the page has stopped moving. In run 8 the
+  // sideways swipe's first touch landed on a paragraph because the page was still scrolling from the swipe before it.
+  const FRAME = `document.querySelector("[data-nucleus-frame]")`
+  const locateFrame = `(() => { const f = ${FRAME}; const r = f.getBoundingClientRect(); const x = Math.round(r.x + r.width / 2), y = Math.round(Math.min(innerHeight - 40, r.y + r.height / 2)); const e = document.elementFromPoint(x, y); return { x, y, ok: !!e && f.contains(e), hit: e ? e.tagName.toLowerCase() + "." + String(e.className).split(" ")[0] : null } })()`
+  const quiet = await scrollSettled()
+  check(quiet.settled, `the page did not stop moving before the swipe over the nucleus: ${json(quiet)}`)
+  const swiped = await touchSwipeScrolls(0, 0, -250, { locate: locateFrame })
+  check(swiped.scrolled, `a swipe over the nucleus did not scroll the page (${json(swiped)}; document ${await js(`document.documentElement.scrollHeight`)} px, window ${await js(`innerHeight`)} px)`)
+
+  // The folder row still scrolls sideways under touch. First the page is let to stop (the vertical swipe's fling), then the
+  // row is put in the middle of the window and the page is let to stop again: only then is it aimed at.
   const strip = `document.querySelector('nav[aria-label=Sections].gl-folder__strip')`
-  const offLink = await js(`(() => { const s = ${strip}; const b = s.getBoundingClientRect(); for (let x = b.left + 4; x < b.right - 4; x += 5) for (const y of [b.top + 4, b.top + b.height / 2, b.bottom - 4]) { const e = document.elementFromPoint(x, y); if (e && s.contains(e) && !e.closest("a")) return { x, y } } return null })()`)
+  const afterFling = await scrollSettled()
+  await js(`${strip}.scrollIntoView({ block: "center" })`)
+  const afterPlacing = await scrollSettled()
+  check(afterFling.settled && afterPlacing.settled, `the page did not stop moving before the sideways swipe: ${json({ afterFling, afterPlacing })}`)
+  const row = await js(`(() => { const s = ${strip}; return { scrolls: s.scrollWidth > s.clientWidth + 1, left: s.scrollLeft, touchAction: getComputedStyle(s).touchAction, overflowX: getComputedStyle(s).overflowX, scrollWidth: s.scrollWidth, clientWidth: s.clientWidth, tabs: s.querySelectorAll(".gl-folder-tab").length } })()`)
+  check(row.scrolls && row.tabs >= 11, `the row does not overflow its window or lacks tabs: ${json(row)}`)
+  // The point to touch: the row's centre (a tab's label, which is a link: where a finger starts), or a point of the row that is not a link.
+  const rowPoint = `(() => { const s = ${strip}; const r = s.getBoundingClientRect(); const x = Math.round(r.x + r.width / 2), y = Math.round(r.y + r.height / 2); const e = document.elementFromPoint(x, y); return { x, y, ok: !!e && s.contains(e) && r.top >= 0 && r.bottom <= innerHeight, hit: e ? e.tagName.toLowerCase() + "." + String(e.className).split(" ")[0] : null, strip: [Math.round(r.left), Math.round(r.top), Math.round(r.width), Math.round(r.height)], page: scrollY } })()`
+  const offLinkPoint = `(() => { const s = ${strip}; const b = s.getBoundingClientRect(); for (let x = b.left + 4; x < b.right - 4; x += 5) for (const y of [b.top + 4, b.top + b.height / 2, b.bottom - 4]) { const e = document.elementFromPoint(x, y); if (e && s.contains(e) && !e.closest("a")) return { x, y, ok: true, hit: e.tagName.toLowerCase() } } return { x: 0, y: 0, ok: false, hit: "every point of the row is a link" } })()`
   // What reaches the page during the swipe: the touch and pointer events, a drag start, a scroll and the highest scroll position
-  // seen, so "never delivered", "delivered and cancelled" and "scrolled and snapped back" can be told apart.
-  await js(`(() => { const s = ${strip}; window.__qaSwipe = { events: {}, maxLeft: s.scrollLeft, pageX: scrollX }; for (const type of ["touchstart", "touchmove", "touchend", "touchcancel", "pointerdown", "pointermove", "pointerup", "pointercancel", "dragstart", "contextmenu", "click", "scroll"]) document.addEventListener(type, (e) => { const q = window.__qaSwipe; q.events[type] = (q.events[type] || 0) + 1; q.maxLeft = Math.max(q.maxLeft, s.scrollLeft); q.pageX = Math.max(q.pageX, scrollX); if (type === "pointerdown" || type === "touchstart") q.first ??= (e.target?.tagName || "").toLowerCase() + "." + String(e.target?.className || "").split(" ")[0] }, { capture: true, passive: true }) })()`)
-  const onLinkSwipe = row.scrolls
-    ? await touchSwipeScrolls(Math.round(row.x), Math.round(row.y), -150, { min: 0, horizontal: true, measure: `${strip}.scrollLeft` })
-    : { scrolled: false }
+  // seen, whether the first touch was on the row, so "never delivered", "delivered and cancelled", "scrolled and snapped back"
+  // and "aimed at something else" can be told apart.
+  await js(`(() => { const s = ${strip}; window.__qaSwipe = { events: {}, maxLeft: s.scrollLeft, pageX: scrollX }; for (const type of ["touchstart", "touchmove", "touchend", "touchcancel", "pointerdown", "pointermove", "pointerup", "pointercancel", "dragstart", "contextmenu", "click", "scroll"]) document.addEventListener(type, (e) => { const q = window.__qaSwipe; q.events[type] = (q.events[type] || 0) + 1; q.maxLeft = Math.max(q.maxLeft, s.scrollLeft); q.pageX = Math.max(q.pageX, scrollX); if ((type === "pointerdown" || type === "touchstart") && q.first === undefined) { q.first = (e.target?.tagName || "").toLowerCase() + "." + String(e.target?.className || "").split(" ")[0]; q.firstInRow = !!e.target?.closest?.('nav[aria-label=Sections].gl-folder__strip') } }, { capture: true, passive: true }) })()`)
+  const onLinkSwipe = await touchSwipeScrolls(0, 0, -150, { min: 20, horizontal: true, measure: `${strip}.scrollLeft`, locate: rowPoint })
   const trace = await js(`window.__qaSwipe`)
   // If the swipe on a link did not move the row, the same swipe on the same link with the browser's link dragging switched
   // off tells whether dragging the link is what took the touch (on Linux a touch that starts on a link can become a drag).
   let offLinkSwipe = null
   let noDragSwipe = null
-  if (row.scrolls && !onLinkSwipe.scrolled) {
+  if (!onLinkSwipe.scrolled && !onLinkSwipe.targetMissed) {
     await js(`${strip}.scrollLeft = 0; (() => { const s = document.createElement("style"); s.id = "qa-no-link-drag"; s.textContent = "a, a * { -webkit-user-drag: none !important; user-select: none !important; -webkit-touch-callout: none !important }"; document.head.append(s) })()`)
-    noDragSwipe = await touchSwipeScrolls(Math.round(row.x), Math.round(row.y), -150, { min: 0, horizontal: true, measure: `${strip}.scrollLeft` })
+    noDragSwipe = await touchSwipeScrolls(0, 0, -150, { min: 20, horizontal: true, measure: `${strip}.scrollLeft`, locate: rowPoint })
     await js(`document.getElementById("qa-no-link-drag")?.remove(); ${strip}.scrollLeft = 0`)
-    if (offLink) offLinkSwipe = await touchSwipeScrolls(Math.round(offLink.x), Math.round(offLink.y), -150, { min: 0, horizontal: true, measure: `${strip}.scrollLeft` })
+    offLinkSwipe = await touchSwipeScrolls(0, 0, -150, { min: 20, horizontal: true, measure: `${strip}.scrollLeft`, locate: offLinkPoint })
   }
-  if (!onLinkSwipe.scrolled && (noDragSwipe?.scrolled || offLinkSwipe?.scrolled)) console.log(`  observed: a swipe that starts on a tab's link did not move the row (${json(onLinkSwipe)}); with link dragging switched off it ${noDragSwipe?.scrolled ? "did" : "did not"} (${json(noDragSwipe)}), and a swipe on the row's empty part ${offLinkSwipe ? (offLinkSwipe.scrolled ? "did" : "did not") : "was not possible (every point of the row is a link)"}`)
-  check(row.scrolls && (onLinkSwipe.scrolled || noDragSwipe?.scrolled === true || offLinkSwipe?.scrolled === true), `the folder row does not scroll sideways with touch (${json(row)}; what reached the page during the swipe on the link: ${json(trace)}; on a link: ${json(onLinkSwipe)}; on a link with dragging off: ${json(noDragSwipe)}; off a link at ${json(offLink)}: ${json(offLinkSwipe)})`)
+  if (!onLinkSwipe.scrolled && (noDragSwipe?.scrolled || offLinkSwipe?.scrolled)) console.log(`  observed: a swipe that starts on a tab's link did not move the row (${json(onLinkSwipe)}); with link dragging switched off it ${noDragSwipe?.scrolled ? "did" : "did not"} (${json(noDragSwipe)}), and a swipe on the row's empty part ${offLinkSwipe ? (offLinkSwipe.targetMissed ? "was not possible (every point of the row is a link)" : offLinkSwipe.scrolled ? "did" : "did not") : "was not tried"}`)
+  // A gesture that was not aimed at the row proves nothing about the row: it is reported as a targeting failure, apart from a row that does not move.
+  check(!onLinkSwipe.targetMissed, `TARGETING: the swipe point was not on the folder row (${json(onLinkSwipe)})`)
+  check(trace.first === undefined || trace.firstInRow === true, `TARGETING: the first touch landed on ${trace.first}, not on the folder row (${json(trace)}; aimed ${json(onLinkSwipe.aimed)})`)
+  const moved = onLinkSwipe.scrolled || noDragSwipe?.scrolled === true || offLinkSwipe?.scrolled === true
+  check(row.scrolls && moved, `the folder row does not scroll sideways with touch (${json(row)}; what reached the page during the swipe on the link: ${json(trace)}; on a link: ${json(onLinkSwipe)}; on a link with dragging off: ${json(noDragSwipe)}; off a link: ${json(offLinkSwipe)})`)
+  // Every tab can be reached by touch alone: keep swiping the row, and the last tab ends up inside the row's window where a finger would hit it.
+  if (moved) {
+    const lastTab = `(() => { const s = ${strip}; const tabs = [...s.querySelectorAll(".gl-folder-tab")]; const last = tabs[tabs.length - 1]; const b = s.getBoundingClientRect(), r = last.getBoundingClientRect(); const x = Math.round(r.x + r.width / 2), y = Math.round(r.y + r.height / 2); const e = document.elementFromPoint(x, y); return { tab: last.dataset.tabId, inWindow: r.left >= b.left - 1 && r.right <= b.right + 1, hit: !!e && last.contains(e), left: s.scrollLeft, max: s.scrollWidth - s.clientWidth } })()`
+    let end = await js(lastTab)
+    for (let swipes = 0; swipes < 6 && !(end.inWindow && end.hit); swipes++) {
+      const again = await touchSwipeScrolls(0, 0, -200, { min: 0, horizontal: true, measure: `${strip}.scrollLeft`, locate: rowPoint })
+      if (again.targetMissed || !again.scrolled) break
+      end = await js(lastTab)
+    }
+    check(end.inWindow && end.hit, `the last tab cannot be reached by swiping the row: ${json(end)}`)
+  }
   await send("Emulation.setTouchEmulationEnabled", { enabled: false })
   await send("Emulation.clearDeviceMetricsOverride")
 })

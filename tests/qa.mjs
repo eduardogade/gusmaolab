@@ -8,7 +8,7 @@
 // appears, and exits zero again when the defect is removed; the report has its schema and a readable twin; the workflow
 // verifies and never deploys; D-144, the CV and the masters are untouched. What they do not show: that the GitHub Actions
 // workflow has run (it needs a push), or anything the browser suites show (accessibility, performance, the nucleus).
-import { spawnSync } from "node:child_process"
+import { spawn, spawnSync } from "node:child_process"
 import { existsSync } from "node:fs"
 import { mkdtemp, readFile, readdir, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
@@ -24,6 +24,7 @@ import { freshness, sourceState } from "../src/quality/source.mjs"
 import { DEFECTS, copyBuild, fingerprint, readReport, runAudits } from "./qa-fixtures.mjs"
 import { DEV_PAGES, QUALITY_PAGE } from "../src/design/site-map.ts"
 import { demoBuild } from "./demo-dist.mjs"
+import { withoutApproved } from "./approved-changes.mjs"
 
 const repo = fileURLToPath(new URL("../", import.meta.url))
 const dist = join(repo, "dist")
@@ -145,6 +146,14 @@ await test("QA-STATE-04", "An unexecuted mandatory stage or suite is NOT RUN and
   check(verdict([skipped]).exit === 0 && verdict([skipped]).partial === true, "a profile-skipped stage failed the run or was not marked partial")
   const r = redact("/Users/someone/projects/GusmaoLab/x and /private/var/folders/ab/cd/T/foo", "/Users/someone/projects/GusmaoLab")
   check(!/someone/.test(r) && /<repo>/.test(r) && /<tmp>/.test(r), r)
+  // The report is JSON redacted as text (P22-A01): a path inside the repository that has `/home/` or `/Users/` in it is not a home
+  // directory, and a hidden path may never take a quote or a bracket with it. A failure message listing two files once did,
+  // and the QA command stopped with "QA could not run" instead of writing its report.
+  const listed = JSON.stringify({ reasons: ['Home sources changed beyond the stage: ["src/components/home/WorldClocks.astro","src/home/clock-time.ts"]', "/Users/someone/x/y", "file:///home/runner/work/a.mjs:3:4", '"/var/folders/ab/cd/T/foo","next"'] })
+  const kept = redact(listed, "/Users/someone/projects/GusmaoLab")
+  check((() => { try { JSON.parse(kept); return true } catch { return false } })(), `the redacted report is not JSON: ${kept}`)
+  check(kept.includes("src/components/home/WorldClocks.astro") && kept.includes("src/home/clock-time.ts"), `a repository path was taken for a home directory: ${kept}`)
+  check(!/someone|runner|ab\/cd/.test(kept) && /\/Users\/<user>/.test(kept) && /\/home\/<user>/.test(kept) && kept.includes("<tmp>"), `a home or temporary path was not hidden: ${kept}`)
 })
 
 // --- Failures propagate: a controlled defect in a throwaway copy of the build ------------------------------------
@@ -314,7 +323,11 @@ await test("QA-PRESERVE-01", "D-144, with its two accepted trade-offs, is unchan
   const paragraph = (text) => /\*\*D-144\.\*\*[\s\S]*?(?=\n\n|$)/.exec(text)?.[0].trim()
   const was = gitOk ? paragraph(git("show", `${BASE}:development/decisions.md`).stdout) : undefined
   check(was !== undefined && paragraph(await read("development/decisions.md")) === was, "D-144 differs from the paragraph P22 began with")
-  check(changedSinceBase(["src/styles/home-tabs.css", "tests/home-browser.mjs", "tests/clocks-browser.mjs"]).length === 0, "home-tabs.css or the HOME-026 and CLOCK-033B exemptions changed")
+  check(changedSinceBase(["src/styles/home-tabs.css", "tests/home-browser.mjs"]).length === 0, "home-tabs.css or the HOME-026 exemption changed")
+  // tests/clocks-browser.mjs gained checks for the short date (D-158); CLOCK-033B's exemption lines are what must not move.
+  const exemption = (text) => text.split("\n").filter((l) => /gl-home-tabs-raise|Except the scroll-driven z-index raise/.test(l))
+  const clocksThen = gitOk ? exemption(git("show", `${BASE}:tests/clocks-browser.mjs`).stdout) : undefined
+  check(clocksThen !== undefined && clocksThen.length >= 2 && json(exemption(await read("tests/clocks-browser.mjs"))) === json(clocksThen), "the CLOCK-033B exemption was edited")
   const home = await read("tests/home-browser.mjs")
   const clocks = await read("tests/clocks-browser.mjs")
   check((home.match(/gl-home-tabs-raise/g) ?? []).length >= 1 && (clocks.match(/gl-home-tabs-raise/g) ?? []).length >= 1, "an exemption no longer names the one animation")
@@ -327,7 +340,8 @@ await test("QA-PRESERVE-03", "The canonical Bearnard masters and derivatives are
   check(changedSinceBase(["brand", "assets/bearnard", "public/illustrations", "src/illustrations", "scripts/bearnard_derivatives.py"]).length === 0, "a Bearnard file changed")
 })
 await test("QA-PRESERVE-04", "The navigation registry, the folder components and the palettes are unchanged", async (check) => {
-  const touched = changedSinceBase(["src/navigation", "src/components/folders", "src/styles/folders.css", "src/styles/categories.css", "src/styles/tokens.css", "src/styles/home-tabs.css", "src/visualization", "src/home", "src/components/home", "src/pages/index.astro"])
+  // The world clocks' short date (D-158, owner-approved in P22-A01) is the one change to these paths; tests/approved-changes.mjs names its files.
+  const touched = withoutApproved(changedSinceBase(["src/navigation", "src/components/folders", "src/styles/folders.css", "src/styles/categories.css", "src/styles/tokens.css", "src/styles/home-tabs.css", "src/visualization", "src/home", "src/components/home", "src/pages/index.astro"]))
   check(touched.length === 0, `changed: ${json(touched)}`)
 })
 await test("QA-DOC-01", "The guide states what automated accessibility checking cannot show, and what is left for P23", async (check) => {
@@ -349,13 +363,72 @@ await test("QA-FLAKE-01", "NUC-031 is investigated: the record names the cause w
 // runner and then sat for the orchestrator's whole 900 s, because `npx astro dev` stays attached to the test process there
 // (on a Mac it hands off and exits) and its pipe kept the event loop alive. Every run of a failing suite ends the process;
 // a passing one must too, or the orchestrator reports a suite whose checks all passed as failed.
+await test("QA-PERF-POLICY-01", "NUC-050 has an environment-aware policy: a local reference, a separately documented CI smoke ceiling, several samples, and its distribution kept in the report (P22-A01, D-159)", async (check) => {
+  const budgets = JSON.parse(await read("development/qa-budgets.json")).nucleusFrame
+  check(budgets !== undefined, "the budgets file has no nucleusFrame policy")
+  if (!budgets) return
+  const { reference, "ci-smoke": ci } = budgets.profiles ?? {}
+  check(reference?.medianFrameMs === 100, "the local reference is not the 100 ms the nucleus was accepted against")
+  check(ci?.medianFrameMs > reference?.medianFrameMs && ci?.medianFrameMs <= 300, `the CI smoke ceiling ${ci?.medianFrameMs} is not above the reference and within a smoke ceiling`)
+  check(/NOT an acceptable frame time/.test(ci?.meaning ?? "") && /GITHUB_ACTIONS/.test(ci?.applies ?? ""), "the CI ceiling does not say what it is not, or when it applies")
+  check(budgets.samples >= 3 && budgets.minFramesPerSample >= 5, "the policy does not take several samples")
+  const test = await read("tests/nucleus-browser.mjs")
+  const body = test.slice(test.indexOf('await test("NUC-050"'), test.indexOf('await test("NUC-033"'))
+  check(/FRAME_POLICY\.profiles\[FRAME_PROFILE\]/.test(body) && !/median < 100|< 100\)/.test(body), "NUC-050 does not read its ceiling from the policy")
+  check(/nucleus-frames\.json/.test(body) && /GITHUB_ACTIONS/.test(test), "NUC-050 does not keep its measurements or choose its profile from the environment")
+  check(/d\.calls <= 6 && d\.triangles < 140_000/.test(body) && /stillRest\.frames === rest\.frames/.test(body), "the deterministic scene and idle guards left NUC-050")
+  check(!/\.skip|SKIPPED|DEFERRALS/.test(body), "NUC-050 can be skipped or deferred")
+  const workflowText = await read(".github/workflows/quality.yml")
+  check(/qa-report\/nucleus-frames\.json/.test(workflowText), "the workflow does not keep the frame-time record")
+  const qa = await read("scripts/qa.mjs")
+  check(/nucleusFrames/.test(qa) && /Nucleus frame time/.test(qa), "the QA report does not carry the frame-time distribution")
+})
+
 await test("QA-EXIT-02", "A passing browser suite ends its own process, so nothing left running can hold it until the orchestrator's timeout", async (check) => {
   const harness = await read("tests/browser-harness.mjs")
   const finish = harness.slice(harness.indexOf("async function finish()"))
   check(/console\.log\(`PASS: \$\{results\.length\} browser checks[^\n]*\n(\s*\/\/[^\n]*\n)*\s*process\.exit\(0\)/.test(finish), "finish() does not end the process after a passing run")
   for (const file of ["tests/demo-dev-browser.mjs", "tests/authoring-browser.mjs"]) {
     const source = await read(file)
-    check(/process\.on\("exit", stopDev\)/.test(source) && /await finish\(\)\s*$/.test(source.trimEnd()), `${file}: the dev server is not stopped by the exit that finish() now makes`)
+    check(/from "\.\/dev-server\.mjs"/.test(source) && /startDevServer\(/.test(source) && !/spawn\("npx"|spawn\(\s*\n?\s*"npx"/.test(source) && /await finish\(\)\s*$/.test(source.trimEnd()), `${file}: the dev server is not started and stopped by tests/dev-server.mjs, or finish() is not last`)
+  }
+  const helper = await read("tests/dev-server.mjs")
+  check(/process\.on\("exit", stop\)/.test(helper) && /SIGTERM/.test(helper) && /SIGINT/.test(helper), "tests/dev-server.mjs does not stop the server on exit and on a signal")
+})
+
+// P22-A01: the dev-server suites' cleanup is proven, not assumed. A stand-in for `astro dev` behaves the two ways the real
+// one does (a Mac hands off to a detached child; the runner stays attached), and a stand-in suite starts it through the same
+// helper the real suites use and ends three ways. Afterwards nothing may be listening on the port and no process of the
+// stand-in may be alive: the exit of the parent hiding a leaked server would fail here.
+await test("QA-DEVSERVER-01", "A dev server a suite started is gone, port and processes, after a normal exit, a failure and a SIGTERM, for both ways astro dev behaves", async (check) => {
+  const suite = join(repo, "tests/fixtures/dev-server/stand-in-suite.mjs")
+  const listeningOn = (port) => spawnSync("lsof", ["-nP", `-iTCP:${port}`, "-sTCP:LISTEN", "-t"], { encoding: "utf8" }).stdout.split("\n").filter(Boolean)
+  const standIns = () => spawnSync("pgrep", ["-f", "tests/fixtures/dev-server/fake-server.mjs"], { encoding: "utf8" }).stdout.split("\n").filter(Boolean)
+  const settle = async (isDone) => { for (let i = 0; i < 40 && !isDone(); i++) await new Promise((r) => setTimeout(r, 100)) }
+  check(standIns().length === 0, `a stand-in server was already running: ${standIns()}`)
+  for (const mode of ["attached", "handoff"]) {
+    for (const ending of ["exit", "throw", "sigterm"]) {
+      const label = `${mode} / ${ending}`
+      let output = ""
+      const child = spawn(process.execPath, [suite, mode, ending === "sigterm" ? "wait" : ending], { stdio: ["ignore", "pipe", "pipe"] })
+      child.stdout.on("data", (d) => (output += d))
+      child.stderr.on("data", (d) => (output += d))
+      let port = null
+      for (let i = 0; i < 150 && port === null; i++) {
+        port = /STARTED port=(\d+)/.exec(output)?.[1] ?? null
+        if (port === null && child.exitCode !== null) break
+        if (port === null) await new Promise((r) => setTimeout(r, 100))
+      }
+      if (port === null) { check(false, `${label}: the stand-in suite did not start: ${output.slice(0, 300)}`); child.kill("SIGKILL"); continue }
+      check(JSON.parse(/listeners=(\[[^\]]*\])/.exec(output)?.[1] ?? "[]").length >= 1, `${label}: the helper found nothing listening on ${port} while the suite ran (${output.slice(0, 200)})`)
+      if (ending === "sigterm") child.kill("SIGTERM")
+      await new Promise((resolve) => (child.exitCode !== null ? resolve() : child.once("exit", resolve)))
+      await settle(() => listeningOn(port).length === 0 && standIns().length === 0)
+      check(listeningOn(port).length === 0, `${label}: pid(s) ${listeningOn(port)} still listen on ${port} after the suite ended`)
+      check(standIns().length === 0, `${label}: stand-in server process(es) ${standIns()} are still alive`)
+      check(/dev server stopped: port \d+ is closed/.test(output) && !/DEV SERVER LEAK/.test(output), `${label}: the cleanup did not say it closed the port: ${output.slice(0, 300)}`)
+      for (const pid of standIns()) try { process.kill(Number(pid), "SIGKILL") } catch {}
+    }
   }
 })
 
@@ -370,6 +443,18 @@ await test("QA-A11Y-01", "Every code block and table of a Quarto article can tak
   check(elements.some((m) => m[1] === "table"), "the demonstration article has no table: this check guards nothing")
   check(elements.some((m) => m[1] === "pre"), "the demonstration article has no code block: this check guards nothing")
   for (const [tag] of elements) check(/\btabindex="0"/.test(tag), `${tag.slice(0, 80)} cannot take keyboard focus`)
+  // The same for an ordinary Markdown entry (D-160): a wide table written in Markdown reaches the page through
+  // EditorialEntry.astro as `entry.rendered.html`, and gets the same tab stop.
+  let markdownTables = 0
+  for (const page of ["lecture-notes/greenhouse/demo-scientific-markdown/index.html", "lecture-notes/greenhouse/demo-markdown-and-quarto/index.html"]) {
+    const html = await build.read(page)
+    const tags = [...html.slice(html.indexOf("ed__body")).matchAll(/<(pre|table)\b[^>]*>/g)].map((m) => m[0])
+    markdownTables += tags.filter((t) => t.startsWith("<table")).length
+    for (const tag of tags) check(/\btabindex="0"/.test(tag), `${page}: ${tag.slice(0, 80)} cannot take keyboard focus`)
+  }
+  check(markdownTables >= 2, `the demonstration Markdown articles hold ${markdownTables} tables: this half of the check guards nothing`)
+  const component = await read("src/components/editorial/EditorialEntry.astro")
+  check(/entry as \{ rendered\?: \{ html\?: string \} \}\)\.rendered\?\.html/.test(component) && /keyboardScrollable\(markdownHtml\)/.test(component), "EditorialEntry does not give a Markdown entry's HTML the tab stop")
 })
 
 // P22-A01: the first GitHub run used a depth-1 checkout, in which the guards that compare with earlier commits failed or

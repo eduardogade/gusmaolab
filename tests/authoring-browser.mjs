@@ -3,74 +3,24 @@
 // link) and AUTH-045 (the workbench at five widths, no sideways scroll, commands that can be
 // copied). It starts `astro dev` the way `npm run dev` does, or uses the one that is running.
 // Chromium only; no screen reader. The built half of these checks is tests/authoring-build.mjs.
-import { spawn, spawnSync } from "node:child_process"
-import { createServer } from "node:net"
 import process from "node:process"
 import { json, sleep, startBrowser } from "./browser-harness.mjs"
+import { startDevServer } from "./dev-server.mjs"
 
 const IDS = ["AUTH-031", "AUTH-032", "AUTH-045"]
 const GREENHOUSE = "/lecture-notes/greenhouse/"
 
-async function freePort() {
-  return new Promise((resolve) => {
-    const server = createServer()
-    server.listen(0, "127.0.0.1", () => {
-      const { port } = server.address()
-      server.close(() => resolve(port))
-    })
-  })
-}
-
 // --- The dev server, started the way `npm run dev` starts it ----------------------------------
 // Astro allows one dev server per project: if the owner already has one running, it is used, and
-// left running; otherwise this test starts one on a free port and stops it.
-const port = await freePort()
-const dev = spawn(
-  "npx",
-  ["astro", "dev", "--port", String(port), "--host", "127.0.0.1"],
-  {
-    stdio: ["ignore", "pipe", "ignore"],
-    env: { ...process.env, ASTRO_TELEMETRY_DISABLED: "1" },
-    detached: true,
-  },
-)
-let announced = ""
-dev.stdout.on("data", (chunk) => (announced += chunk))
-let origin = `http://127.0.0.1:${port}`
-let started = true
-// `astro dev` hands off to a child: stop whatever listens on the port (CLAUDE.md).
-const stopDev = () => {
-  if (!started) return
-  const listening = spawnSync("lsof", ["-nP", `-iTCP:${port}`, "-sTCP:LISTEN", "-t"], {
-    encoding: "utf8",
-  })
-  for (const pid of listening.stdout.split("\n").filter(Boolean)) {
-    try {
-      process.kill(Number(pid))
-    } catch {}
-  }
-  try {
-    process.kill(-dev.pid)
-  } catch {}
-}
-process.on("exit", stopDev)
-let up = false
-for (let i = 0; i < 240 && !up; i++) {
-  const existing = /already running at (http:\/\/\S+)/.exec(announced)?.[1]
-  if (existing) {
-    origin = existing
-    started = false
-  }
-  up = await fetch(`${origin}${GREENHOUSE}`)
-    .then((r) => r.ok)
-    .catch(() => false)
-  if (!up) await sleep(500)
-}
-if (!up) {
+// left running; otherwise this test starts one on a free port and stops it. tests/dev-server.mjs
+// stops it on exit and on a signal, proves the port is closed, and fails this suite if it is not.
+const dev = await startDevServer({ probe: GREENHOUSE })
+if (dev.origin === null) {
   for (const id of IDS) console.log(`NOT RUN ${id}`)
   console.error("NOT RUN: the dev server did not start")
   process.exit(2)
 }
+const { origin, started } = dev
 console.log(
   `dev server: ${origin} (${started ? "started by this test" : "already running; left running"})`,
 )

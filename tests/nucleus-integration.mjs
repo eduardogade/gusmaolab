@@ -6,6 +6,7 @@
 //
 // NUCINT-001..054 are the P20 prompt's own list; a check that needs a browser says so and is in the
 // other file. Every check here is a fact about code or the build, never about how it looks.
+import { withoutApproved } from "./approved-changes.mjs"
 import { spawnSync } from "node:child_process"
 import { existsSync } from "node:fs"
 import { readFile, readdir } from "node:fs/promises"
@@ -705,14 +706,16 @@ await test("NUCINT-040", "Static HTML: Home is understandable without JavaScript
 await test("NUCINT-041", "P15 composition: the regions, their order and the stage's ratios are unchanged", async (check) => {
   const order = homeEls.filter((el) => "data-home-region" in el.attrs).map((el) => el.attrs["data-home-region"])
   check(json(order) === json(["welcome", "explore", "stage", "updates", "clocks"]), `order ${json(order)}`)
-  const touched = changed(["src/components/home", "src/home", "src/styles/home.css"])
+  // Except the world clocks' short date (D-158, owner-approved in P22-A01; tests/approved-changes.mjs names its files).
+  const touched = withoutApproved(changed(["src/components/home", "src/home", "src/styles/home.css"]))
   check(touched.every((f) => ["src/components/home/NucleusStage.astro", "src/home/nucleus-navigation.ts", "src/styles/home.css"].includes(f)), `Home sources: ${json(touched)}`)
   // Only the stage's section of home.css changed: everything before it and after it is byte-identical.
   if (gitAvailable) {
     const then = git("show", `${BASE}:src/styles/home.css`).stdout
     const now = await read("src/styles/home.css")
-    const cut = (t) => [t.slice(0, t.indexOf("/* 3. The nucleus stage")), t.slice(t.indexOf("/* 4. World clocks"))]
-    check(json(cut(then)) === json(cut(now)), "home.css changed outside the nucleus stage's section")
+    // Section 4 (the world clocks) is the one other section the owner approved a change to (D-158).
+    const cut = (t) => [t.slice(0, t.indexOf("/* 3. The nucleus stage")), t.slice(t.indexOf("/* 5. Recent Blog"))]
+    check(json(cut(then)) === json(cut(now)), "home.css changed outside the nucleus stage's and the world clocks' sections")
   }
 })
 
@@ -724,7 +727,7 @@ await test("NUCINT-042", "Bearnard: assets, registry and component are untouched
 })
 
 await test("NUCINT-043", "World clocks: the clocks' files are untouched, and the eight clocks are on the page", async (check) => {
-  check(changed(["src/home/clock-loop.ts", "src/home/clock-time.ts", "src/home/clocks.ts", "src/scripts/world-clocks.ts", "src/components/home/WorldClocks.astro"], P19_START).length === 0, "the clocks changed")
+  check(withoutApproved(changed(["src/home/clock-loop.ts", "src/home/clock-time.ts", "src/home/clocks.ts", "src/scripts/world-clocks.ts", "src/components/home/WorldClocks.astro"], P19_START)).length === 0, "the clocks changed beyond the owner-approved short date (D-158)")
   check(homeEls.filter((el) => "data-clock" in el.attrs || "data-clock-id" in el.attrs).length >= 8 || (homeHtml.match(/data-clock/g) ?? []).length >= 8, "fewer than eight clocks are on Home")
 })
 

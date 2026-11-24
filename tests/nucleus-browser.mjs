@@ -8,7 +8,8 @@
 // screen reader, or how the nucleus looks to the owner. Without a browser or dist-demo/ every check
 // is reported NOT RUN (exit 2).
 import { existsSync } from "node:fs"
-import { readFile, readdir } from "node:fs/promises"
+import { mkdir, readFile, readdir, writeFile } from "node:fs/promises"
+import { arch, cpus, platform, release } from "node:os"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { json, sleep, startBrowser } from "./browser-harness.mjs"
@@ -358,25 +359,119 @@ await test("NUC-045", "Three.js loads only on the nucleus page, and never on the
   console.log(`  graphics chunk(s): ${chunks.length} file, ${(await Promise.all(chunks.map((c) => readFile(join(dist, "_astro", c))))).map((b) => `${(b.length / 1024).toFixed(0)} KB`).join(", ")} uncompressed`)
 })
 
-await test("NUC-050", "Performance observed in this browser (software WebGL): frame times while responding, and idle", async (check) => {
+// --- NUC-050: frame time, under an environment-aware policy (P22-A01, D-159) ---------------------------------------
+// One threshold could not serve both an Apple M1 Max and a shared four-core runner, because the check measures the
+// machine and the software renderer together. development/qa-budgets.json holds two, with what each one means:
+// "reference" (100 ms, local runs, the standard the nucleus was accepted against) and "ci-smoke" (200 ms, GitHub's
+// runner: a smoke ceiling that catches a renderer gone much slower, never an acceptable frame time). The distribution
+// of every run, with its environment, goes to qa-report/nucleus-frames.json and is kept with the CI report.
+const FRAME_POLICY = JSON.parse(await readFile(fileURLToPath(new URL("../development/qa-budgets.json", import.meta.url)), "utf8")).nucleusFrame
+const FRAME_PROFILE = process.env.QA_PERF_PROFILE ?? (process.env.GITHUB_ACTIONS === "true" ? "ci-smoke" : "reference")
+/** The same quantiles the check always used: the upper median, and the 95th percentile by rank. */
+const spread = (values) => {
+  const sorted = [...values].sort((a, b) => a - b)
+  const at = (q) => sorted[Math.min(sorted.length - 1, Math.floor(sorted.length * q))]
+  return { frames: sorted.length, min: sorted[0], median: at(0.5), p95: at(0.95), max: sorted[sorted.length - 1] }
+}
+const round = (value, places = 1) => (value === undefined || value === null ? value : Number(value.toFixed(places)))
+const roundSpread = (v) => ({ frames: v.frames, minMs: round(v.min), medianMs: round(v.median), p95Ms: round(v.p95), maxMs: round(v.max) })
+/**
+ * A reference workload for the same machine and renderer, drawn with raw WebGL and no site code: a lit sphere of about the
+ * nucleus's triangle count in one draw call, on a canvas of the nucleus's pixel size. It is RECORDED beside the nucleus's
+ * frame time and asserts nothing: whether the ratio of the two is steady from machine to machine (which would make a
+ * machine-relative budget better than a ceiling) is a question the CI reports answer.
+ */
+const REFERENCE_WORKLOAD = `(async (triangles, width, height, frames) => {
+  const canvas = document.createElement("canvas");
+  canvas.width = width; canvas.height = height;
+  canvas.style.cssText = "position:fixed;left:0;top:0;width:" + width + "px;height:" + height + "px;pointer-events:none;opacity:0.01";
+  document.body.append(canvas);
+  const gl = canvas.getContext("webgl", { antialias: true, depth: true });
+  if (!gl) { canvas.remove(); return null; }
+  const info = gl.getExtension("WEBGL_debug_renderer_info");
+  const renderer = info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+  const rings = Math.min(180, Math.max(8, Math.round(Math.sqrt(triangles / 4)))), around = rings * 2;
+  const positions = [], indices = [];
+  for (let i = 0; i <= rings; i++) for (let j = 0; j <= around; j++) { const phi = (i / rings) * Math.PI, theta = (j / around) * Math.PI * 2; positions.push(Math.sin(phi) * Math.cos(theta), Math.cos(phi), Math.sin(phi) * Math.sin(theta)); }
+  for (let i = 0; i < rings; i++) for (let j = 0; j < around; j++) { const a = i * (around + 1) + j, b = a + around + 1; indices.push(a, b, a + 1, b, b + 1, a + 1); }
+  const shader = (type, source) => { const o = gl.createShader(type); gl.shaderSource(o, source); gl.compileShader(o); return o; };
+  const program = gl.createProgram();
+  gl.attachShader(program, shader(gl.VERTEX_SHADER, "attribute vec3 p; uniform float a; varying float l; void main() { float c = cos(a), s = sin(a); vec3 q = vec3(c * p.x + s * p.z, p.y, -s * p.x + c * p.z); l = 0.35 + 0.65 * max(dot(q, normalize(vec3(0.4, 0.6, 0.7))), 0.0); gl_Position = vec4(q.x * 0.9, q.y * 0.9, q.z * 0.5, 1.0); }"));
+  gl.attachShader(program, shader(gl.FRAGMENT_SHADER, "precision mediump float; varying float l; void main() { gl_FragColor = vec4(l, l * 0.9, l * 0.7, 1.0); }"));
+  gl.linkProgram(program); gl.useProgram(program);
+  gl.bindBuffer(gl.ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
+  const at = gl.getAttribLocation(program, "p"); gl.enableVertexAttribArray(at); gl.vertexAttribPointer(at, 3, gl.FLOAT, false, 0, 0);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, gl.createBuffer()); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+  gl.enable(gl.DEPTH_TEST); gl.viewport(0, 0, width, height);
+  const angle = gl.getUniformLocation(program, "a");
+  const intervals = []; let last = performance.now(), turn = 0;
+  await new Promise((resolve) => { const tick = (t) => { intervals.push(t - last); last = t; turn += 0.02; gl.uniform1f(angle, turn); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT); gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT, 0); if (intervals.length > frames) resolve(); else requestAnimationFrame(tick); }; requestAnimationFrame(tick); });
+  canvas.remove(); gl.getExtension("WEBGL_lose_context")?.loseContext();
+  return { renderer, triangles: indices.length / 3, width, height, intervals: intervals.slice(4) };
+})`
+
+await test("NUC-050", "Performance observed in this browser (software WebGL): frame times while responding, several samples, against the policy of this environment; and a resting nucleus", async (check) => {
+  const policy = FRAME_POLICY.profiles[FRAME_PROFILE]
+  check(policy !== undefined, `unknown performance profile "${FRAME_PROFILE}" (QA_PERF_PROFILE): the budgets file has ${Object.keys(FRAME_POLICY.profiles).join(", ")}`)
+  if (policy === undefined) return
   await open(1440, 900)
-  await park()
-  await js(`window.__frames = []; let last = performance.now(); (function tick(t) { window.__frames.push(t - last); last = t; window.__rafId = requestAnimationFrame(tick) })(last)`)
-  const p = await targetPoint("Lab")
-  await moveTo(p.x, p.y, 3, 10)
-  await sleep(3000)
-  const during = await js(`window.__frames.slice(1)`)
-  await park()
-  await sleep(4000)
-  await js(`cancelAnimationFrame(window.__rafId)`)
+  // Each sample starts from a nucleus at rest and gives it the same response: park, wait until the loop has stopped, then record the page's frame intervals while the pointer goes to a target.
+  const samples = []
+  for (let i = 0; i < FRAME_POLICY.samples; i++) {
+    await park()
+    await settleLoop(12_000)
+    await js(`(() => { window.__frames = []; let last = performance.now(); (function tick(t) { window.__frames.push(t - last); last = t; window.__rafId = requestAnimationFrame(tick) })(last) })()`)
+    const p = await targetPoint("Lab")
+    await moveTo(p.x, p.y, 3, 10)
+    await sleep(FRAME_POLICY.sampleMs)
+    // The first two entries are the recorder's own start (an interval of zero, then one measured from before the first frame began).
+    const frames = await js(`window.__frames.slice(2)`)
+    await js(`cancelAnimationFrame(window.__rafId)`)
+    samples.push({ intervals: frames, ...spread(frames.length ? frames : [0]) })
+  }
   const d = await diag()
-  const sorted = [...during].sort((a, b) => a - b)
-  const median = sorted[Math.floor(sorted.length / 2)]
-  const p95 = sorted[Math.floor(sorted.length * 0.95)]
-  console.log(`  observed (software WebGL, ${d.canvas} px canvas, ratio ${d.ratio}): rAF interval median ${median.toFixed(1)} ms, p95 ${p95.toFixed(1)} ms over ${during.length} frames while responding; last draw ${d.lastMs.toFixed(2)} ms (CPU side); ${d.triangles} triangles, ${d.resources} geometries/materials, ${d.calls} draw calls`)
-  check(during.length > 20, "too few animation frames were observed")
-  check(median < 100, `the median frame took ${median.toFixed(0)} ms`)
-  check(d.calls <= 6 && d.triangles < 140_000, "the draw calls or triangles exceed the budget")
+  // Back at rest, nothing further is drawn: the idle guard that belongs with the measurement.
+  await park()
+  await settleLoop(12_000)
+  const rest = await diag()
+  await sleep(1500)
+  const stillRest = await diag()
+  // The same machine and renderer on a plain workload (recorded, not asserted).
+  const canvasSize = await js(`(() => { const c = document.querySelector("[data-nucleus-frame] canvas"); return { w: c.width, h: c.height }; })()`)
+  const reference = await js(`${REFERENCE_WORKLOAD}(${d.triangles}, ${canvasSize.w}, ${canvasSize.h}, 70)`).catch(() => null)
+  const referenceSpread = reference?.intervals?.length ? spread(reference.intervals) : null
+
+  const medians = samples.map((x) => x.median).sort((a, b) => a - b)
+  const medianOfMedians = medians[Math.floor(medians.length / 2)]
+  const pooled = spread(samples.flatMap((x) => x.intervals))
+  const verdict = medianOfMedians < policy.medianFrameMs && samples.every((x) => x.frames >= FRAME_POLICY.minFramesPerSample) ? "within" : "above"
+  const agent = await js(`({ userAgent: navigator.userAgent, hardwareConcurrency: navigator.hardwareConcurrency, devicePixelRatio: devicePixelRatio })`)
+  const record = {
+    schema: "gusmaolab-nucleus-frames/1",
+    generatedAt: new Date().toISOString(),
+    check: "NUC-050",
+    profile: FRAME_PROFILE,
+    ceilingMs: policy.medianFrameMs,
+    referenceMs: FRAME_POLICY.profiles.reference.medianFrameMs,
+    ciSmokeMs: FRAME_POLICY.profiles["ci-smoke"].medianFrameMs,
+    verdict,
+    meaning: policy.meaning,
+    environment: { ci: process.env.GITHUB_ACTIONS === "true", platform: platform(), arch: arch(), osRelease: release(), cpu: cpus()[0]?.model ?? "unknown", logicalCores: cpus().length, browser: agent.userAgent, hardwareConcurrency: agent.hardwareConcurrency, devicePixelRatio: agent.devicePixelRatio, renderer: reference?.renderer ?? "unknown", canvasPx: `${canvasSize.w} x ${canvasSize.h}`, viewport: "1440 x 900" },
+    scene: { triangles: d.triangles, drawCalls: d.calls, resources: d.resources },
+    samples: samples.map(({ intervals, ...rest }, i) => ({ sample: i + 1, ...roundSpread(rest), intervalsMs: intervals.map((v) => round(v)) })),
+    summary: { medianOfSampleMediansMs: round(medianOfMedians), pooled: roundSpread(pooled) },
+    referenceWorkload: referenceSpread ? { what: "a lit sphere of about the nucleus's triangle count, one draw call, the nucleus's canvas size, raw WebGL: the same machine and renderer without the site's code", triangles: reference.triangles, canvasPx: `${reference.width} x ${reference.height}`, ...roundSpread(referenceSpread), nucleusToWorkloadMedianRatio: round(medianOfMedians / referenceSpread.median, 2) } : null,
+    note: "The CI smoke ceiling is not a target for the site and is not evidence that the frame time is acceptable to visitors. Software WebGL is the test browser's, not a visitor's GPU.",
+  }
+  const reportDir = process.env.QA_REPORT_DIR ?? fileURLToPath(new URL("../qa-report/", import.meta.url))
+  await mkdir(reportDir, { recursive: true })
+  await writeFile(join(reportDir, "nucleus-frames.json"), JSON.stringify(record, null, 2))
+  console.log(`  observed (${FRAME_PROFILE} profile, ceiling ${policy.medianFrameMs} ms; software WebGL, ${canvasSize.w} x ${canvasSize.h} px canvas; ${record.environment.cpu}, ${record.environment.logicalCores} cores): rAF interval median of ${samples.length} samples ${medianOfMedians.toFixed(1)} ms (sample medians ${medians.map((v) => v.toFixed(1)).join(", ")}); pooled p95 ${pooled.p95.toFixed(1)} ms, max ${pooled.max.toFixed(1)} ms over ${pooled.frames} frames; ${d.triangles} triangles, ${d.resources} geometries/materials, ${d.calls} draw calls${referenceSpread ? `; plain sphere workload median ${referenceSpread.median.toFixed(1)} ms (ratio ${(medianOfMedians / referenceSpread.median).toFixed(2)})` : ""}`)
+
+  check(samples.every((x) => x.frames >= FRAME_POLICY.minFramesPerSample), `too few animation frames in a sample: ${json(samples.map((x) => x.frames))} (at least ${FRAME_POLICY.minFramesPerSample} each)`)
+  check(medianOfMedians < policy.medianFrameMs, `the median of the sample medians was ${medianOfMedians.toFixed(1)} ms, over the ${FRAME_PROFILE} ceiling of ${policy.medianFrameMs} ms (samples ${json(medians.map((v) => round(v)))}; pooled p95 ${pooled.p95.toFixed(1)} ms; see nucleus-frames.json)`)
+  check(d.calls <= 6 && d.triangles < 140_000, `the draw calls or triangles exceed the budget: ${d.calls} calls, ${d.triangles} triangles`)
+  check(!rest.loop && stillRest.frames === rest.frames, `a resting nucleus kept drawing: loop ${stillRest.loop}, frames ${rest.frames} to ${stillRest.frames}`)
 })
 
 await test("NUC-033", "A touch-oriented device (hover: none, pointer: coarse) gets the still nucleus", async (check) => {

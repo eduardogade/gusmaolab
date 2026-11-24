@@ -52,12 +52,23 @@ const Layout = EDITORIAL_LAYOUTS[collection]
 // do the same (`.ed__body table` is a scrolling box, editorial.css). A scrolling region the keyboard cannot
 // reach fails WCAG 2.1.1: axe-core found the <pre> case in P22, and the table case on the first GitHub run
 // (P22-A01), where the runner's wider fallback font made a table overflow. Shiki's blocks already carry
-// tabindex="0"; this gives the Quarto <pre> and <table> elements the same, in memory, without touching the
-// generated article. (Tables in plain Markdown entries are not covered: see debugging/open-issues.md.)
+// tabindex="0"; this gives every <pre> and <table> the same, in memory, without touching a generated article.
+// It covers a Quarto article's HTML and the HTML Astro rendered from a Markdown entry (`entry.rendered.html`,
+// the same string `<Content />` writes), so a wide table in plain Markdown is reachable too (D-160). The cost is
+// one extra tab stop for a table that never scrolls: a static build cannot know the reader's fonts or width.
 const keyboardScrollable = (html: string): string =>
   html.replace(/<(pre|table)\b(?![^>]*\btabindex=)/g, '<$1 tabindex="0"')
+const markdownHtml = rendered === undefined ? undefined : (entry as { rendered?: { html?: string } }).rendered?.html
 ---
 
 <Layout collection={collection} data={data} context={context} headings={headings}>
-  {science ? <Fragment set:html={keyboardScrollable(science.html)} /> : rendered && <rendered.Content />}
+  {
+    science ? (
+      <Fragment set:html={keyboardScrollable(science.html)} />
+    ) : markdownHtml !== undefined ? (
+      <Fragment set:html={keyboardScrollable(markdownHtml)} />
+    ) : (
+      rendered && <rendered.Content />
+    )
+  }
 </Layout>

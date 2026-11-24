@@ -18,7 +18,7 @@ import { readFile } from "node:fs/promises"
 import { fileURLToPath } from "node:url"
 import { json, sleep, startBrowser } from "./browser-harness.mjs"
 
-const IDS = ["CLOCK-019B", "CLOCK-020B", "CLOCK-021B", "CLOCK-022B", "CLOCK-023B", "CLOCK-024B", "CLOCK-025B", "CLOCK-026B", "CLOCK-028", "CLOCK-030", "CLOCK-031", "CLOCK-032B", "CLOCK-033B", "CLOCK-034B", "CLOCK-041"]
+const IDS = ["CLOCK-019B", "CLOCK-020B", "CLOCK-021B", "CLOCK-022B", "CLOCK-023B", "CLOCK-024B", "CLOCK-025B", "CLOCK-026B", "CLOCK-028", "CLOCK-030", "CLOCK-031", "CLOCK-032B", "CLOCK-033B", "CLOCK-034B", "CLOCK-034C", "CLOCK-034D", "CLOCK-041"]
 const { js, send, setViewport, goto, test, finish } = await startBrowser({
   ids: IDS,
   timeout: 300_000,
@@ -55,7 +55,7 @@ async function useClock(baseIso) {
 const readClocks = () =>
   js(`[...document.querySelectorAll("[data-home-region=clocks] [data-clock-id]")].map((li) => {
     const t = li.querySelector("[data-clock-time]"), d = li.querySelector("[data-clock-date]");
-    return { id: li.dataset.clockId, state: li.dataset.clockState, time: t.textContent, timeAt: t.getAttribute("datetime"), tag: t.localName, date: d.textContent, dateAt: d.getAttribute("datetime"), hidden: li.querySelector("[data-clock-reading]").getAttribute("aria-hidden") };
+    return { id: li.dataset.clockId, state: li.dataset.clockState, time: t.textContent, timeAt: t.getAttribute("datetime"), tag: t.localName, date: d.querySelector("[data-clock-date-short]")?.textContent ?? "", dateFull: d.querySelector("[data-clock-date-full]")?.textContent ?? "", dateAt: d.getAttribute("datetime"), hidden: li.querySelector("[data-clock-reading]").getAttribute("aria-hidden") };
   })`)
 const expected = (iso) => REFERENCE[iso] ?? (() => { throw new Error(`no reference for ${iso}`) })()
 const showsReference = (clocks, iso) =>
@@ -84,7 +84,9 @@ await test("CLOCK-019B", "The clocks fill in when the page loads, each with its 
   check(showsReference(clocks, "2026-11-16T09:00:00Z"), `readings differ from the reference: ${json(clocks)}`)
   check(clocks.every((c) => c.tag === "time"), "a reading is not a <time> element")
   check(clocks.every((c) => /^\d{4}-\d\d-\d\dT\d\d:\d\d$/.test(c.timeAt) && /^\d{4}-\d\d-\d\d$/.test(c.dateAt)), "a datetime attribute is malformed")
-  check(clocks.find((c) => c.id === "anchorage").date === "Monday, 16 November" && clocks.find((c) => c.id === "auckland").date === "Monday, 16 November", "dates")
+  // At 09:00 UTC Anchorage (00:00) and Auckland (22:00) are both on Monday 16 November; the short date is what is seen, the full date what is read.
+  const dates = Object.fromEntries(clocks.map((c) => [c.id, [c.date, c.dateFull]]))
+  check(json(dates.anchorage) === json(["Mon, 16 Nov", "Monday, 16 November"]) && json(dates.auckland) === json(["Mon, 16 Nov", "Monday, 16 November"]), `dates ${json(dates)}`)
   const region = await js(`(() => { const r = document.querySelector("[data-home-region=clocks]"); return { state: r.dataset.clocksState, note: r.querySelector("[data-clocks-note]").textContent }; })()`)
   check(region.state === "live" && /this device’s clock/.test(region.note), `region ${json(region)}`)
 })
@@ -258,11 +260,13 @@ await test("CLOCK-032B", "Each live time sits in its own city's row, with valid 
   await setViewport(1280, 900)
   await goto("/")
   await until(async () => (await readClocks()).every((c) => c.state === "live"))
+  const clocksNow = await readClocks()
   const rows = await js(`[...document.querySelectorAll("[data-home-region=clocks] [data-clock-id]")].map((li) => ({ city: li.querySelector(".clock__city").textContent, id: li.dataset.clockId, zone: li.dataset.timeZone, text: li.innerText.replace(/\\n+/g, " | "), times: li.querySelectorAll("time").length }))`)
   const ref = expected("2026-12-31T23:30:00Z")
   check(rows.every((r) => r.times === 2 && r.text.includes(ref[r.id].slice(11))), `a time is in the wrong row: ${json(rows)}`)
   check(rows.find((r) => r.id === "brasilia").city === "Brasília" && rows.find((r) => r.id === "brasilia").zone === "America/Sao_Paulo", "Brasília")
-  check(rows.find((r) => r.id === "auckland").text.includes("Friday, 1 January") && rows.find((r) => r.id === "anchorage").text.includes("Thursday, 31 December"), "the New Year dates")
+  const dates = Object.fromEntries(clocksNow.map((c) => [c.id, [c.date, c.dateFull]]))
+  check(json(dates.auckland) === json(["Fri, 1 Jan", "Friday, 1 January"]) && json(dates.anchorage) === json(["Thu, 31 Dec", "Thursday, 31 December"]), `the New Year dates: ${json(dates)}`)
   const naming = await js(`(() => { const r = document.querySelector("[data-home-region=clocks]"); return { labelled: document.getElementById(r.getAttribute("aria-labelledby"))?.textContent, hiddenReadings: r.querySelectorAll("[data-clock-reading][aria-hidden]").length }; })()`)
   check(naming.labelled === "Around the world" && naming.hiddenReadings === 0, `region name/hidden readings: ${json(naming)}`)
 })
@@ -284,33 +288,155 @@ await test("CLOCK-033B", "A minute change is not announced", async (check) => {
   check(await js(`document.getAnimations().filter((a) => a.animationName !== "gl-home-tabs-raise").length`) === 0, "the page animates")
 })
 
-await test("CLOCK-034B", "Filling the clocks does not move the layout", async (check) => {
-  const items = () => js(`[...document.querySelectorAll("[data-clock-id]")].map((li) => { const r = li.getBoundingClientRect(); return [Math.round(r.height), Math.round(r.width), Math.round(r.left)]; })`)
-  for (const width of [390, 768, 1440]) {
-    await useClock("2026-11-16T09:00:20Z")
-    await setViewport(width, 900, width < 768)
-    // The clocks as built (script switched off: the placeholders), against the clocks the script has filled.
-    await send("Emulation.setScriptExecutionDisabled", { value: true })
-    let before
-    try {
+/**
+ * What the clocks' boxes are: the list's own size, and for each clock the card, the city, the country and
+ * the reading as [left, top, width, height] measured from the list's top-left corner (what lies above
+ * the clocks does not matter to them), and how many lines the city and the country take. CSS pixels.
+ */
+const GEOMETRY = `(() => {
+  const list = document.querySelector(".clocks__list"), origin = list.getBoundingClientRect();
+  const box = (el) => { const r = el.getBoundingClientRect(); return [r.left - origin.left, r.top - origin.top, r.width, r.height]; };
+  const lines = (el) => { const range = document.createRange(); range.selectNodeContents(el); return new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size; };
+  return { list: [origin.width, origin.height], clocks: [...document.querySelectorAll("[data-clock-id]")].map((li) => {
+    const city = li.querySelector(".clock__city"), place = li.querySelector(".clock__place");
+    return { id: li.dataset.clockId, card: box(li), city: box(city), place: box(place), reading: box(li.querySelector("[data-clock-reading]")), cityLines: lines(city), placeLines: lines(place) };
+  }) };
+})()`
+const geometry = () => js(GEOMETRY)
+/** Two geometries are the same card for card, box for box, to a tolerance of `tolerance` CSS pixels; otherwise, what moved. */
+function sameGeometry(a, b, tolerance) {
+  if (a.clocks.length !== 8 || b.clocks.length !== 8) return `${a.clocks.length} and ${b.clocks.length} clocks`
+  if (Math.abs(a.list[0] - b.list[0]) > tolerance || Math.abs(a.list[1] - b.list[1]) > tolerance) return `the list ${a.list.map((v) => v.toFixed(2))} → ${b.list.map((v) => v.toFixed(2))}`
+  for (let i = 0; i < 8; i++) {
+    for (const key of ["card", "city", "place", "reading"])
+      for (let k = 0; k < 4; k++)
+        if (Math.abs(a.clocks[i][key][k] - b.clocks[i][key][k]) > tolerance) return `${a.clocks[i].id} ${key}[${["left", "top", "width", "height"][k]}] ${a.clocks[i][key][k].toFixed(2)} → ${b.clocks[i][key][k].toFixed(2)}`
+    if (a.clocks[i].cityLines !== b.clocks[i].cityLines || a.clocks[i].placeLines !== b.clocks[i].placeLines) return `${a.clocks[i].id} lines: city ${a.clocks[i].cityLines} → ${b.clocks[i].cityLines}, country ${a.clocks[i].placeLines} → ${b.clocks[i].placeLines}`
+  }
+  return null
+}
+/**
+ * The page with the script switched off, as built: the placeholders, no date. It does not depend on
+ * the instant, so one measurement per width serves every instant below.
+ */
+async function geometryAsBuilt(width) {
+  await setViewport(width, 900, width < 768)
+  await send("Emulation.setScriptExecutionDisabled", { value: true })
+  try {
+    await goto("/")
+    return await geometry()
+  } finally {
+    await send("Emulation.setScriptExecutionDisabled", { value: false })
+  }
+}
+// The tolerance is sub-pixel rounding only: the placeholder and the live reading are laid out by the same
+// engine in the same fonts and the date's column is sized by a line of the widest date, so the boxes are
+// the same to a fraction of a pixel (the widest date of the year is up to 0.1 px wider than that line in
+// the macOS fonts). A box that moved by a pixel is a moved box.
+const SAME_WITHIN = 0.5
+// The widest dates of the year for a proportional font ("Wed, 30 May" and the like), the date the owner named
+// (30 September 2026: Anchorage is on Wednesday 30 September while Auckland is on Thursday 1 October), a date in
+// the middle of the year, and the narrowest (a single digit, "Fri, 1 Jul").
+const DATES = [
+  ["2026-11-16T09:00:20Z", "a November Monday"],
+  ["2026-09-30T20:00:20Z", "Wed, 30 Sep (owner's longest)"],
+  ["2026-05-20T12:00:20Z", "Wed, 20 May (widest in a proportional font)"],
+  ["2026-07-01T12:00:20Z", "Wed, 1 Jul (narrowest)"],
+]
+
+await test("CLOCK-034B", "Filling the clocks does not move the layout, on any date, at any width", async (check) => {
+  for (const width of [320, 390, 768, 1024, 1280, 1440]) {
+    const before = await geometryAsBuilt(width)
+    check(before.clocks.length === 8, `${width}px: ${before.clocks.length} clocks as built`)
+    for (const [instant, label] of DATES) {
+      await useClock(instant)
       await goto("/")
-      before = await items()
-    } finally {
-      await send("Emulation.setScriptExecutionDisabled", { value: false })
+      await until(async () => (await readClocks()).every((c) => c.state === "live"))
+      const after = await geometry()
+      const moved = sameGeometry(before, after, SAME_WITHIN)
+      check(moved === null, `${width}px, ${label}: filling the clocks moved ${moved}`)
+      // The browser's own layout-shift entries: none from the clocks.
+      await sleep(300)
+      const shifts = await js(`window.__shifts.filter((s) => s.nodes.includes("clocks")).reduce((sum, s) => sum + s.value, 0)`)
+      check(shifts === 0, `${width}px, ${label}: the clocks caused a layout shift of ${shifts}`)
+      // A minute change, with other digits, moves nothing either.
+      await js(`window.__setNow(Date.parse("2026-11-16T10:08:00Z")); document.dispatchEvent(new Event("visibilitychange"))`)
+      await until(async () => (await readClocks()).every((c) => c.time.endsWith(":08")))
+      const later = sameGeometry(after, await geometry(), SAME_WITHIN)
+      check(later === null, `${width}px, ${label}: the clocks moved when the digits changed: ${later}`)
     }
+  }
+})
+
+await test("CLOCK-034C", "Cities and countries stay whole words and the date stays on one line, on the longest dates, at any width and text size", async (check) => {
+  // A word is split when its own client rectangles sit on more than one line.
+  const WORDS = `(() => {
+    const broken = [], oneLine = [], overflow = [];
+    for (const li of document.querySelectorAll("[data-clock-id]")) {
+      for (const el of li.querySelectorAll(".clock__city, .clock__place")) {
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode())
+          for (const match of node.data.matchAll(/\\S+/g)) {
+            const range = document.createRange(); range.setStart(node, match.index); range.setEnd(node, match.index + match[0].length);
+            const rects = [...range.getClientRects()];
+            if (new Set(rects.map((r) => Math.round(r.top))).size > 1) broken.push(li.dataset.clockId + ": " + match[0]);
+          }
+      }
+      const date = li.querySelector("[data-clock-date-short]");
+      if (date) { const range = document.createRange(); range.selectNodeContents(date); if (new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size !== 1) oneLine.push(li.dataset.clockId + ": " + date.textContent); }
+      if (li.scrollWidth > li.clientWidth + 1) overflow.push(li.dataset.clockId);
+    }
+    return { broken, oneLine, overflow, page: document.documentElement.scrollWidth - document.documentElement.clientWidth };
+  })()`
+  await useClock("2026-09-30T20:00:20Z")
+  // Text size is a root font size here (Chrome's text-only zoom is the same rem change). The last flag says whether
+  // a city must also stay whole: it does wherever the column has room for it (measured, in both font setups, with a
+  // margin of 14 px or more); at 390 px with text doubled and at 320 px with text at 150% the reading column and the
+  // city's word cannot both fit in a one-column row, the city wraps inside its own column, and what is asserted is that
+  // nothing overflows, is clipped or moves a date onto a second line (KL-132 records the geometry).
+  for (const [width, scale, whole] of [[320, 1, true], [390, 1, true], [768, 1, true], [1024, 1, true], [1280, 1, true], [1440, 1, true], [1280, 2, true], [768, 2, true], [390, 1.5, true], [390, 2, false], [320, 1.5, false]]) {
+    await setViewport(width, 900, width < 768)
     await goto("/")
     await until(async () => (await readClocks()).every((c) => c.state === "live"))
-    const after = await items()
-    check(before.length === 8 && json(before.map((i) => [i[0], i[1], i[2]])) === json(after.map((i) => [i[0], i[1], i[2]])), `${width}px: a clock changed size when filled: ${json(before)} → ${json(after)}`)
-    // The browser's own layout-shift entries: none from the clocks.
-    await sleep(500)
-    const shifts = await js(`window.__shifts.filter((s) => s.nodes.includes("clocks")).reduce((sum, s) => sum + s.value, 0)`)
-    check(shifts === 0, `${width}px: the clocks caused a layout shift of ${shifts}`)
-    // A minute change, with the widest digits, moves nothing either.
-    await js(`window.__setNow(Date.parse("2026-11-16T10:00:00Z")); document.dispatchEvent(new Event("visibilitychange"))`)
-    await sleep(150)
-    check(json(await items()) === json(after), `${width}px: the clocks moved when the digits changed`)
+    if (scale !== 1) await js(`(() => { const style = document.createElement("style"); style.textContent = "html { font-size: ${scale * 100}% !important }"; document.head.append(style); })()`)
+    await sleep(100)
+    const m = await js(WORDS)
+    const where = `${width}px${scale === 1 ? "" : `, text ${scale * 100}%`}`
+    if (whole) check(m.broken.length === 0, `${where}: a word is split across lines: ${json(m.broken)}`)
+    check(m.oneLine.length === 0, `${where}: a date is on more than one line: ${json(m.oneLine)}`)
+    check(m.overflow.length === 0 && m.page <= 0, `${where}: overflow ${json(m)}`)
   }
+})
+
+await test("CLOCK-034D", "The short date is what is seen and the full date is what is read, from one reading", async (check) => {
+  await useClock("2026-09-30T20:00:20Z")
+  await setViewport(1280, 900)
+  await goto("/")
+  await until(async () => (await readClocks()).every((c) => c.state === "live"))
+  const parts = await js(`[...document.querySelectorAll("[data-clock-id]")].map((li) => {
+    const date = li.querySelector("[data-clock-date]"), short = date.querySelector("[data-clock-date-short]"), full = date.querySelector("[data-clock-date-full]");
+    const hidden = getComputedStyle(full), r = full.getBoundingClientRect(), s = short.getBoundingClientRect();
+    return { id: li.dataset.clockId, tag: date.localName, at: date.getAttribute("datetime"), short: short.textContent, shortHidden: short.getAttribute("aria-hidden"), shortW: s.width, full: full.textContent, fullClip: hidden.clipPath, fullBox: [r.width, r.height], fullInline: full.getAttribute("aria-hidden"), kids: date.children.length };
+  })`)
+  const ref = expected("2026-09-30T20:00:00Z")
+  const DAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"], MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+  for (const p of parts) {
+    const day = new Date(`${ref[p.id].slice(0, 10)}T00:00:00Z`)
+    const fullExpected = `${DAYS[day.getUTCDay()]}, ${day.getUTCDate()} ${MONTHS[day.getUTCMonth()]}`
+    const shortExpected = `${DAYS[day.getUTCDay()].slice(0, 3)}, ${day.getUTCDate()} ${MONTHS[day.getUTCMonth()].slice(0, 3)}`
+    check(p.tag === "time" && p.at === ref[p.id].slice(0, 10) && p.kids === 2, `${p.id}: ${json(p)}`)
+    check(p.full === fullExpected && p.short === shortExpected, `${p.id}: "${p.short}" / "${p.full}", expected "${shortExpected}" / "${fullExpected}"`)
+    check(p.shortHidden === "true" && p.fullInline === null && p.shortW > 30, `${p.id}: the short date is read aloud or not drawn: ${json(p)}`)
+    check(p.fullBox[0] <= 1 && p.fullBox[1] <= 1 && /inset/.test(p.fullClip), `${p.id}: the full date is drawn: ${json(p.fullBox)} ${p.fullClip}`)
+  }
+  check(parts.find((p) => p.id === "anchorage").short === "Wed, 30 Sep" && parts.find((p) => p.id === "auckland").short === "Thu, 1 Oct", `the owner's date: ${json(parts.map((p) => p.short))}`)
+  // What assistive technology is given: Chrome's accessibility tree, without the nodes it ignores.
+  await send("Accessibility.enable")
+  const tree = (await send("Accessibility.getFullAXTree")).nodes
+  await send("Accessibility.disable")
+  const named = tree.filter((n) => !n.ignored && n.name?.value).map((n) => n.name.value)
+  check(named.includes("Wednesday, 30 September") && named.includes("Thursday, 1 October"), `the full dates are not in the accessibility tree: ${json(named.filter((v) => /\d/.test(v)).slice(0, 12))}`)
+  check(!named.some((v) => v === "Wed, 30 Sep" || v === "Thu, 1 Oct"), "a short date is in the accessibility tree")
 })
 
 // --- The simulated specimen ------------------------------------------------------------------------------

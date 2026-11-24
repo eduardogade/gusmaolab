@@ -104,6 +104,7 @@ jobs:
             qa-report/latest.md
             qa-report/performance.json
             qa-report/accessibility.json
+            qa-report/nucleus-frames.json
           retention-days: 14
           if-no-files-found: warn
       - name: Keep the logs and failure screenshots, only when something failed

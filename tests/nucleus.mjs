@@ -30,6 +30,7 @@ import { createTubeBuilder, mergeTubes } from "../src/visualization/nucleus/tube
 import { cameraDistance, clientToFrame, project, rotate, targetResponse, unrotate } from "../src/visualization/nucleus/view.ts"
 import { DEV_PAGES, NUCLEUS_PAGE } from "../src/design/site-map.ts"
 import { fakeBrowser, fakeHost, listeners } from "./nucleus-fakes.mjs"
+import { withoutApproved } from "./approved-changes.mjs"
 
 const repo = fileURLToPath(new URL("../", import.meta.url))
 const dist = join(repo, "dist")
@@ -621,7 +622,8 @@ await test("NUC-036", "No blocked navigation: the canvas takes no pointer events
 await test("NUC-037", "Homepage preservation: P15's regions are unchanged; P20 changed the stage, its style and one helper", async (check, skip) => {
   if (!gitAvailable) return skip("git is not available")
   // P19 left Home alone; P20 (D-139) mounts the nucleus in the stage. Everything else of P15 stays as it was.
-  const touched = changedSinceBase(["src/components/home", "src/home", "src/styles/home.css", "src/components/states", "src/site", "src/layouts"])
+  // The world clocks' short date (D-158, owner-approved in P22-A01) is the one change since to the clocks' files; tests/approved-changes.mjs names them.
+  const touched = withoutApproved(changedSinceBase(["src/components/home", "src/home", "src/styles/home.css", "src/components/states", "src/site", "src/layouts"]))
   // P21 (D-149) added a `scheduling` destination source, which touched these four page-state files and nothing of Home.
   const allowed = ["src/components/home/NucleusStage.astro", "src/home/nucleus-navigation.ts", "src/styles/home.css", "src/components/states/DestinationPage.astro", "src/site/coverage.ts", "src/site/destinations.ts", "src/site/facts.ts"]
   check(touched.every((f) => allowed.includes(f)), `Home sources changed beyond the stage: ${json(touched.filter((f) => !allowed.includes(f)))}`)
@@ -637,7 +639,8 @@ await test("NUC-037", "Homepage preservation: P15's regions are unchanged; P20 c
 
 await test("NUC-038", "P16 clocks are unchanged", async (check, skip) => {
   if (!gitAvailable) return skip("git is not available")
-  const touched = changedSinceBase(["src/home/clock-loop.ts", "src/home/clock-time.ts", "src/home/clocks.ts", "src/scripts/world-clocks.ts", "src/components/home/WorldClocks.astro"])
+  // Except the owner-approved short date (D-158): the places (clocks.ts) and the loop (clock-loop.ts) stay exactly as they were.
+  const touched = withoutApproved(changedSinceBase(["src/home/clock-loop.ts", "src/home/clock-time.ts", "src/home/clocks.ts", "src/scripts/world-clocks.ts", "src/components/home/WorldClocks.astro"]))
   check(touched.length === 0, `the clocks changed: ${json(touched)}`)
 })
 

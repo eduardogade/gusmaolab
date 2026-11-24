@@ -353,8 +353,13 @@
 
   /*
    * The reading: the time over the date, at the end of the row. Its footprint is the same before
-   * and after the script fills it (the time's digits are tabular and the placeholder is as wide
-   * as a time; the date line is always one line tall), so nothing moves when it does.
+   * and after the script fills it, and the same on every day of the year (P22-A01, D-158):
+   *  - the date beside the city is the short form ("Wed, 30 Sep", one line, never wrapped), and the
+   *    full form is for assistive technology only;
+   *  - an invisible line of the widest short date, one that takes no height, sizes the column in
+   *    whatever font is drawn, so the column is as wide before the date arrives as after, and the
+   *    city and its country never re-wrap when it does;
+   *  - the time's digits are tabular and its placeholder is as wide as a time.
    */
   .clock__reading {
     grid-area: reading;
@@ -377,7 +382,17 @@
     min-block-size: 1lh;
     color: var(--color-text-secondary);
     font-size: var(--font-size-xs);
+    font-variant-numeric: tabular-nums;
     line-height: var(--line-height-ui);
+    white-space: nowrap;
+  }
+
+  .clock__date::before {
+    content: "Wed, 30 May";
+    display: block;
+    block-size: 0;
+    overflow: hidden;
+    visibility: hidden;
   }
 
   /* Not yet read, and not readable at all: quieter than a time, but the same size, so nothing moves. */

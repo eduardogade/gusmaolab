@@ -44,11 +44,11 @@ export const json = (value) => JSON.stringify(value)
 
 /**
  * Render the way a Linux runner does (P22-A01). The site's font stacks name fonts that only a Mac has (Seravek first,
- * Iowan Old Style for headings); on a GitHub runner Chrome falls through to DejaVu Sans and Liberation Serif, which are
+ * Iowan Old Style and Superclarendon for headings); on a GitHub runner Chrome falls through to DejaVu Sans and Liberation Serif, which are
  * wider, and the layout follows. With QA_LINUX_FONTS_DIR set to a folder holding DejaVuSans.ttf, DejaVuSans-Bold.ttf,
  * DejaVuSans-Oblique.ttf and DejaVuSans-BoldOblique.ttf (matplotlib ships them), every page of the run is drawn with
  * DejaVu Sans where it would use Seravek and with Times New Roman (metrically Liberation Serif) where it would use Iowan
- * Old Style, so a layout check can be tried on any machine in the font that broke it on the runner. Off by default and
+ * Old Style or Superclarendon, so a layout check can be tried on any machine in the font that broke it on the runner. Off by default and
  * never part of the site: it only changes what the test browser draws. The fonts are served from a second local server.
  */
 async function startFontServer(dir) {
@@ -74,6 +74,10 @@ const linuxFontsCss = (base) => {
     face("Seravek", "italic", "100 599", sans("DejaVuSans-Oblique.ttf")), face("Seravek", "italic", "600 900", sans("DejaVuSans-BoldOblique.ttf")),
     face("Iowan Old Style", "normal", "100 599", times("Times New Roman", "TimesNewRomanPSMT")), face("Iowan Old Style", "normal", "600 900", times("Times New Roman Bold", "TimesNewRomanPS-BoldMT")),
     face("Iowan Old Style", "italic", "100 599", times("Times New Roman Italic", "TimesNewRomanPS-ItalicMT")), face("Iowan Old Style", "italic", "600 900", times("Times New Roman Bold Italic", "TimesNewRomanPS-BoldItalicMT")),
+    // The display stack (the Bearnard environment's headings and the homepage's city names) opens with Superclarendon, another Mac-only
+    // font: the runner's evidence names Liberation Serif for those headings too.
+    face("Superclarendon", "normal", "100 599", times("Times New Roman", "TimesNewRomanPSMT")), face("Superclarendon", "normal", "600 900", times("Times New Roman Bold", "TimesNewRomanPS-BoldMT")),
+    face("Superclarendon", "italic", "100 599", times("Times New Roman Italic", "TimesNewRomanPS-ItalicMT")), face("Superclarendon", "italic", "600 900", times("Times New Roman Bold Italic", "TimesNewRomanPS-BoldItalicMT")),
   ].join(" ")
 }
 // Weights 600 and up take the bold face, as a real font setup does with a regular and a bold (the tabs are semibold).
@@ -591,29 +595,67 @@ export async function startBrowser({
    * first GitHub runner (headless Linux, P22-A01) saw the synthesized gesture do nothing, upwards and sideways alike;
    * the result says which way worked, and a swipe that moves nothing by either is a real failure. It waits for the
    * movement to happen (a fling takes as long as the machine takes), never for a fixed time.
+   *
+   * Aim (P22-A01, run 8): a point measured earlier can be somewhere else by the time the gesture is sent. The run-8 trace
+   * showed a sideways swipe on the tab row whose first touch landed on a paragraph of the page, because the page had
+   * scrolled in between. With `locate`, a page expression that returns `{ x, y, ok, ... }`, the target's rectangle is
+   * measured, the point is hit-tested (`ok` says it is on the intended element) and the starting scroll position is read
+   * in ONE page evaluation, and the gesture is sent at once after it: no delay is put between validating the target and
+   * dispatching. A point that is not on the target sends nothing and says so (`targetMissed`). Before a gesture, let the
+   * page's own scrolling settle (`scrollSettled`).
    */
-  async function touchSwipeScrolls(x, y, distance, { min = 50, horizontal = false, measure = "document.documentElement.scrollTop" } = {}) {
-    trace(`touchSwipeScrolls(${x}, ${y}, ${distance})`)
+  async function touchSwipeScrolls(x, y, distance, { min = 50, horizontal = false, measure = "document.documentElement.scrollTop", locate = null } = {}) {
+    trace(`touchSwipeScrolls(${locate ? "located" : `${x}, ${y}`}, ${distance})`)
     const read = () => js(measure)
-    const start = await read()
-    const moved = async (ms) => {
+    /** Where the gesture goes now, and the position it starts from, read in one evaluation. */
+    const aim = async () => {
+      if (!locate) return { at: { x, y, ok: true }, start: await read(), pageY: await js(`scrollY`) }
+      const found = await js(`({ start: (${measure}), at: (${locate}), pageY: scrollY })`)
+      return found
+    }
+    const moved = async (start, ms) => {
       for (let t = 0; t < ms; t += 100) {
         if (Math.abs((await read()) - start) > min) return true
         await sleep(100)
       }
       return false
     }
-    await send("Input.synthesizeScrollGesture", { x, y, [horizontal ? "xDistance" : "yDistance"]: distance, gestureSourceType: "touch" })
-    if (await moved(3000)) return { scrolled: true, by: "synthesized gesture", from: start, to: await read() }
-    await send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [{ x, y }] })
+    const first = await aim()
+    if (!first.at.ok) return { scrolled: false, by: "nothing was sent: the point is not on the intended target", targetMissed: true, aimed: first.at, from: first.start, to: first.start }
+    const point = { x: Math.round(first.at.x), y: Math.round(first.at.y) }
+    await send("Input.synthesizeScrollGesture", { x: point.x, y: point.y, [horizontal ? "xDistance" : "yDistance"]: distance, gestureSourceType: "touch" })
+    if (await moved(first.start, 3000)) return { scrolled: true, by: "synthesized gesture", aimed: first.at, from: first.start, to: await read(), pageMovedBy: (await js(`scrollY`)) - first.pageY }
+    // The raw touch is aimed afresh: the first attempt may have left the page somewhere else.
+    const second = await aim()
+    if (!second.at.ok) return { scrolled: false, by: "nothing more was sent: the point is no longer on the intended target", targetMissed: true, aimed: second.at, from: first.start, to: await read() }
+    const where = { x: Math.round(second.at.x), y: Math.round(second.at.y) }
+    await send("Input.dispatchTouchEvent", { type: "touchStart", touchPoints: [where] })
     for (let i = 1; i <= 10; i++) {
       const along = (distance * i) / 10
-      await send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: horizontal ? x + along : x, y: horizontal ? y : y + along }] })
+      await send("Input.dispatchTouchEvent", { type: "touchMove", touchPoints: [{ x: horizontal ? where.x + along : where.x, y: horizontal ? where.y : where.y + along }] })
       await sleep(16)
     }
     await send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] })
-    const ok = await moved(4000)
-    return { scrolled: ok, by: ok ? "raw touch events" : "neither the synthesized gesture nor raw touch events", from: start, to: await read() }
+    const ok = await moved(second.start, 4000)
+    return { scrolled: ok, by: ok ? "raw touch events" : "neither the synthesized gesture nor raw touch events", aimed: second.at, from: second.start, to: await read(), pageMovedBy: (await js(`scrollY`)) - second.pageY }
+  }
+
+  /**
+   * Waits until the page's own scroll position has not changed for `quietMs`, in frames: a swipe's fling goes on after the
+   * gesture was seen to work, and a target measured while it runs is somewhere else a moment later. Resolves with whether
+   * it settled and where.
+   */
+  async function scrollSettled({ quietMs = 400, timeout = 8000 } = {}) {
+    return js(`new Promise((resolve) => {
+      const begin = performance.now(); let lastY = scrollY, lastX = scrollX, since = performance.now();
+      const tick = (now) => {
+        if (Math.abs(scrollY - lastY) > 0.5 || Math.abs(scrollX - lastX) > 0.5) { lastY = scrollY; lastX = scrollX; since = now; }
+        if (now - since >= ${quietMs}) return resolve({ settled: true, y: scrollY, waitedMs: Math.round(now - begin) });
+        if (now - begin >= ${timeout}) return resolve({ settled: false, y: scrollY, waitedMs: Math.round(now - begin) });
+        requestAnimationFrame(tick);
+      };
+      requestAnimationFrame(tick);
+    })`)
   }
 
   /** Ends the run: closes the browser and server, prints the summary, sets the exit code. */
@@ -656,6 +698,7 @@ export async function startBrowser({
     resetLog,
     away,
     touchSwipeScrolls,
+    scrollSettled,
     platformFonts,
     tabPoint,
     panelOf,

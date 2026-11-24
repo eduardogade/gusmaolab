@@ -14,6 +14,7 @@
 // that the owner is emailed, that accepting or declining notifies the visitor, that conflicts and holds
 // work, and that a confirmed booking reaches a calendar. Those need the owner's provider account
 // (development/scheduling-guide.md, "Testing safely"); no check here uses one.
+import { withoutApproved } from "./approved-changes.mjs"
 import { spawnSync } from "node:child_process"
 import { existsSync } from "node:fs"
 import { readFile, readdir } from "node:fs/promises"
@@ -509,9 +510,10 @@ await test("SCH-055", "No analytics or tracking SDK is introduced", async (check
 
 // --- Regression: nothing outside scheduling moved -------------------------------------------------------------------
 
+// The world clocks' short date (D-158, owner-approved in P22-A01) is the one change since P21 to these files, and tests/approved-changes.mjs names its files.
 const unchanged = (id, title, paths) =>
   test(id, title, async (check) => {
-    const touched = changedSinceBase(paths)
+    const touched = withoutApproved(changedSinceBase(paths))
     check(touched.length === 0, `P21 changed ${json(touched)}`)
   })
 
@@ -531,7 +533,11 @@ await test("SCH-061", "D-144, with its two accepted trade-offs, is unchanged and
   const was = gitAvailable ? paragraph(git("show", `${BASE}:development/decisions.md`).stdout) : undefined
   check(was !== undefined && paragraph(now) === was, "the D-144 paragraph differs from the one P21 began with")
   check(/1 px/.test(was ?? "") && /z-index/.test(was ?? ""), "D-144 no longer names both costs")
-  check(changedSinceBase(["tests/home-browser.mjs", "tests/clocks-browser.mjs"]).length === 0, "the HOME-026 or CLOCK-033B exemption was edited")
+  check(changedSinceBase(["tests/home-browser.mjs"]).length === 0, "the HOME-026 exemption was edited")
+  // tests/clocks-browser.mjs gained checks for the short date (D-158); CLOCK-033B's exemption lines are what must not move.
+  const exemption = (text) => text.split("\n").filter((l) => /gl-home-tabs-raise|Except the scroll-driven z-index raise/.test(l))
+  const clocksThen = gitAvailable ? exemption(git("show", `${BASE}:tests/clocks-browser.mjs`).stdout) : undefined
+  check(clocksThen !== undefined && clocksThen.length >= 2 && json(exemption(await read("tests/clocks-browser.mjs"))) === json(clocksThen), "the CLOCK-033B exemption was edited")
 })
 
 await unchanged("SCH-062", "The P07 previews are unchanged", ["src/scripts/folder-previews.ts", "src/scripts/folder-rows.ts"])

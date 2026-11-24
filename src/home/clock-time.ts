@@ -23,8 +23,15 @@ export interface ClockReading {
   readonly time: string
   /** The zone's local weekday, in full: "Monday". */
   readonly weekday: string
-  /** The zone's local date for a reader: "Monday, 16 November". */
+  /** The zone's local date for a reader, in full: "Monday, 16 November". Assistive technology reads this one. */
   readonly date: string
+  /**
+   * The same local date, short enough to sit beside the city in the approved two-column clock
+   * (P22-A01, D-158): "Mon, 16 Nov". Its weekday and month are the first three letters of the
+   * long names above, so it comes from the same instant, zone, locale and parts as `date` and no
+   * engine's own abbreviation ("Sept", "Thurs") can reach the page.
+   */
+  readonly compactDate: string
   /** The local calendar date, machine-readable: "2026-11-16". */
   readonly isoDate: string
   /** The local civil date and time, machine-readable and offset-free: "2026-11-16T08:42". */
@@ -75,6 +82,7 @@ export function readClock(instant: number | Date, timeZone: string): ClockReadin
     time: `${two(hour)}:${two(minute)}`,
     weekday,
     date: `${weekday}, ${Number(day)} ${month}`,
+    compactDate: `${weekday.slice(0, 3)}, ${Number(day)} ${month.slice(0, 3)}`,
     isoDate,
     isoDateTime: `${isoDate}T${two(hour)}:${two(minute)}`,
   }
