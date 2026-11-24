@@ -646,7 +646,8 @@ await test("NUC-038", "P16 clocks are unchanged", async (check, skip) => {
 
 await test("NUC-039", "Physical folders and navigation are unchanged", async (check, skip) => {
   if (!gitAvailable) return skip("git is not available")
-  const touched = changedSinceBase(["src/components/folders", "src/styles/folders.css", "src/navigation", "src/layouts/FolderPage.astro", "src/scripts/folder-previews.ts", "src/scripts/folder-rows.ts", "src/styles/view-transitions.css"])
+  // FolderPage.astro gained tabindex="-1" on its <main> (D-162, P23 close-out); QA-PRESERVE-05 holds it to that one attribute.
+  const touched = withoutApproved(changedSinceBase(["src/components/folders", "src/styles/folders.css", "src/navigation", "src/layouts/FolderPage.astro", "src/scripts/folder-previews.ts", "src/scripts/folder-rows.ts", "src/styles/view-transitions.css"]))
   check(touched.length === 0, `the folders or navigation changed: ${json(touched)}`)
 })
 
@@ -686,7 +687,8 @@ await test("NUC-043", "The CV files are untouched", async (check, skip) => {
 
 await test("NUC-046", "Contact, downloads, the 404 page and the site map keep working", async (check, skip) => {
   if (!gitAvailable) return skip("git is not available")
-  const touched = changedSinceBase(["src/contact", "src/data/contact.ts", "src/downloads", "src/data/downloads.ts", "src/pages/404.astro", "src/layouts/ErrorPage.astro", "src/components/contact", "src/components/downloads", "scripts/downloads.mjs", "src/site", "scripts/links.mjs"])
+  // ErrorPage.astro gained tabindex="-1" on its <main> (D-162, P23 close-out); QA-PRESERVE-05 holds it to that one attribute.
+  const touched = withoutApproved(changedSinceBase(["src/contact", "src/data/contact.ts", "src/downloads", "src/data/downloads.ts", "src/pages/404.astro", "src/layouts/ErrorPage.astro", "src/components/contact", "src/components/downloads", "scripts/downloads.mjs", "src/site", "scripts/links.mjs"]))
   // P21 (D-149): Schedule became a `scheduling` destination; these three files carry that and nothing about Contact, downloads or the 404 page.
   const P21 = ["src/site/coverage.ts", "src/site/destinations.ts", "src/site/facts.ts"]
   check(touched.filter((f) => !P21.includes(f)).length === 0, `P17/P18 files changed: ${json(touched.filter((f) => !P21.includes(f)))}`)

@@ -2,6 +2,21 @@
 
 P24 deploys and hands over; P23 only records. Nothing below was done in P23.
 
+## Release-readiness checklist (concise; written at the P23 close-out)
+
+Ready (checked by `npm run qa`, run on the tree that is released): the build and the release holds no demonstration or private file; the 36 destinations; the folders, previews, Home, the nucleus and the clocks; the editorial and CV machinery; keyboard flow with a skip link that works in Chrome and Firefox; contrast; the QA workflow on GitHub (static and browser jobs).
+
+Needs the owner before release (blockers, in the order of the sections below):
+
+- [ ] An owner-approved, working **contact channel** in `src/data/contact.ts` (no address is invented; no form).
+- [ ] A **favicon** and `<link rel="icon">`.
+- [ ] The production **hostname, HTTPS and DNS**.
+- [ ] **Reconcile `main` and `development`** (D-082): on 2026-11-24 `development` was 63 commits ahead of `origin/main`, and `origin/main` had 10 commits `development` lacks (merge base `6eedf02`); the local `main` also differs from `origin/main` (1 commit it lacks, 2 it has). Nothing on `main` was touched in P23. Fetch, inspect, reconcile without discarding a commit, then decide the release.
+- [ ] The **release workflow**: pin the actions, a production smoke test, a decision on the eight placeholder workflows and the repository-redirect notice (owner decision F).
+- [ ] The **owner's own checks** that no tool here could make: Safari, a physical phone and tablet, VoiceOver or NVDA (`development/p23-review.md`, section 4).
+
+Not blockers, stated so they are not mistaken for passes: Cal.com stays disabled and its 19 checks DEFERRED; 13 static checks SKIP on GitHub (Quarto, the scientific environment, the protected masters); the metadata findings of KL-126; the accepted limits KL-133 and KL-134.
+
 ## Release blockers (the owner must decide or supply)
 
 1. **Contact has no channel** (P23-F08). Schedule sends visitors to Contact, which says none is approved. Approve at least one channel in `src/data/contact.ts` (no form, no address taken from another file).

@@ -48,12 +48,14 @@ const { title, description, category = "core", environment, main = true } = Astr
     {
       /* Bypass block (P23, D-161, WCAG 2.4.1): the folder rows hold about forty links before any content, because a
          folder's preview lists its children and those links are in the tab order. The first Tab stop skips them.
-         Hidden until it has focus. Every folder page and the error page have `<main id="content">`. */
+         Hidden until it has focus. Every folder page and the error page have `<main id="content" tabindex="-1">`: the target
+         must be able to take focus, or Firefox leaves focus on the link and the next Tab returns to the first folder tab
+         (found by the P23 close-out review, D-162). */
     }
     <a class="gl-skip-link" href="#content">Skip to main content</a>
     {
       main ? (
-        <main id="content">
+        <main id="content" tabindex="-1">
           <slot />
         </main>
       ) : (

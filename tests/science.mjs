@@ -1094,8 +1094,9 @@ await test(
       "the folders or the navigation changed",
     )
     const fp = git("diff", P12, "--", "src/layouts/FolderPage.astro")
+    // The one line P23's close-out changed is <main id="content"> gaining tabindex="-1" (D-162); QA-PRESERVE-05 holds it to that.
     check(
-      fp.split("\n").filter((l) => l.startsWith("-") && !l.startsWith("---")).length ===
+      fp.split("\n").filter((l) => l.startsWith("-") && !l.startsWith("---") && !/<main id="content">$/.test(l)).length ===
         0,
       "FolderPage lost a line",
     )

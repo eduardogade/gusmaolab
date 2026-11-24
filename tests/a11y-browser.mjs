@@ -147,7 +147,7 @@ await test("A11Y-KEYBOARD", "Every top-level tab is reachable by keyboard on Hom
 
 // P23 (D-161, WCAG 2.4.1): the folder rows hold about forty links before any content, because every folder's preview lists its
 // children and those links are in the tab order. The first Tab stop is a link that skips them.
-await test("A11Y-SKIP", "A skip link is the first Tab stop on every kind of page, is drawn only while focused, and puts the next Tab in the content", async (check) => {
+await test("A11Y-SKIP", "A skip link is the first Tab stop on every kind of page, is drawn only while focused, moves focus to the content, and puts the next Tab in it", async (check) => {
   const luminance = (rgb) => {
     const [r, g, b] = rgb.match(/[\d.]+/g).slice(0, 3).map((v) => { const c = Number(v) / 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4 })
     return 0.2126 * r + 0.7152 * g + 0.0722 * b
@@ -166,6 +166,10 @@ await test("A11Y-SKIP", "A skip link is the first Tab stop on every kind of page
     check(at.target, `${path}: there is no main#content for it to go to`)
     await press("Enter")
     check((await js(`location.hash`)) === "#content", `${path}: Enter did not follow the link (hash ${await js(`location.hash`)})`)
+    // The target itself takes focus (D-162): Chrome moves its focus starting point to a target that cannot, but Firefox 159 leaves focus on
+    // the link, and the next Tab then returns to the first folder tab. A target with tabindex="-1" works in both, and draws no ring.
+    const target = await js(`(() => { const m = document.querySelector("main#content"); return { focused: document.activeElement === m, tabindex: m?.getAttribute("tabindex"), outline: m ? getComputedStyle(m).outlineStyle : null, active: document.activeElement?.tagName + "." + document.activeElement?.className } })()`)
+    check(target.focused && target.tabindex === "-1" && target.outline === "none", `${path}: after the skip link, main#content is not the focused element, or draws a ring: ${json(target)}`)
     await press("Tab")
     // A page whose content has nothing to focus (a page in preparation) has nowhere to land: the Tab then leaves the page's
     // links, and must not return to the folder rows the skip link skipped.
@@ -195,6 +199,38 @@ await test("A11Y-SCROLL", "Every region of an article that scrolls sideways can 
       if (path.includes("synthetic-signals")) equations += await js(`document.querySelectorAll("main math[display=block][tabindex='0']").length`)
     }
   }
+  // F05 (P23 close-out, D-162): an inline formula wider than the column. MathML cannot wrap it, so it runs past the column, and the paper
+  // (the folder's page, which scrolls sideways by design, P08) is the scroller. Nothing may clip it, and from the first Tab stop after the skip
+  // link the arrow keys must be able to scroll the paper until the far end of the formula is in view. 320 px with text at 300 percent is the
+  // case where the demonstration's widest inline formula is about four times the column.
+  await setViewport(320, 900)
+  await goto("demo", "/lecture-notes/greenhouse/demo-synthetic-signals/")
+  await js(`(() => { const s = document.createElement("style"); s.textContent = "html { font-size: 300% !important }"; document.head.append(s) })()`)
+  await sleep(300)
+  const WIDEST = `(() => [...document.querySelectorAll("main math:not([display=block])")].sort((a, b) => b.getBoundingClientRect().width - a.getBoundingClientRect().width)[0])()`
+  const paperState = () => js(`(() => { const m = ${WIDEST}; const p = document.querySelector(".gl-folder__paper"); const f = m.getBoundingClientRect(); const pr = p.getBoundingClientRect(); const clip = []; for (let e = m.parentElement; e && e !== p; e = e.parentElement) if (["hidden", "clip"].includes(getComputedStyle(e).overflowX)) clip.push(e.tagName.toLowerCase()); return { column: Math.round(document.querySelector("[data-editorial-body]").getBoundingClientRect().width), formula: Math.round(f.width), past: Math.round(f.right - pr.right), ox: getComputedStyle(p).overflowX, clip, left: Math.round(p.scrollLeft), max: p.scrollWidth - p.clientWidth, focusInPaper: !!document.activeElement?.closest(".gl-folder__paper") } })()`)
+  const start = await paperState()
+  check(start.formula > start.column * 2 && start.past > 0, `the demonstration has no inline formula far wider than the column at 320 px, text 300 percent, so this check guards nothing: ${json(start)}`)
+  check(start.ox === "auto" && start.clip.length === 0, `something clips or hides the paper's overflow, so a formula wider than the column cannot be reached: ${json(start)}`)
+  check(start.max >= start.past - 1, `the paper cannot scroll far enough to show the whole formula: ${json(start)}`)
+  const arrow = async () => {
+    for (const type of ["rawKeyDown", "keyUp"]) await send("Input.dispatchKeyEvent", { type, windowsVirtualKeyCode: 39, code: "ArrowRight", key: "ArrowRight" })
+    await sleep(80)
+  }
+  await press("Tab")
+  await press("Enter")
+  await press("Tab")
+  check((await paperState()).focusInPaper, "after the skip link, the next Tab did not land inside the article, where the arrow keys scroll the paper")
+  await js(`(${WIDEST}).scrollIntoView({ block: "center" })`)
+  let presses = 0
+  for (; presses < 60; presses++) {
+    const now = await paperState()
+    if (now.left >= now.max - 1) break
+    await arrow()
+  }
+  const end = await paperState()
+  check(presses > 0 && end.left > 0, `the arrow keys did not scroll the paper (scrollLeft ${end.left})`)
+  check(end.past <= 1, `after ${presses} presses of ArrowRight the far end of the inline formula is still ${end.past} px past the paper's edge: ${json(end)}`)
   await setViewport(1280, 900)
   check(seen >= 10, `only ${seen} scrolling regions were found across the articles: the check guards too little`)
   check(equations >= 10, `only ${equations} display equations were seen with a tab stop`)

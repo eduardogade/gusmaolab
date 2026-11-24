@@ -733,7 +733,8 @@ await test("NUCINT-043", "World clocks: the clocks' files are untouched, and the
 })
 
 await test("NUCINT-044", "Folder geometry: components, styles, navigation and layouts are untouched", async (check) => {
-  check(changed(["src/components/folders", "src/styles/folders.css", "src/navigation", "src/layouts/FolderPage.astro", "src/scripts/folder-rows.ts", "src/styles/view-transitions.css"], P19_START).length === 0, "the folders or navigation changed")
+  // FolderPage.astro gained tabindex="-1" on its <main> (D-162, P23 close-out); QA-PRESERVE-05 holds it to that one attribute.
+  check(withoutApproved(changed(["src/components/folders", "src/styles/folders.css", "src/navigation", "src/layouts/FolderPage.astro", "src/scripts/folder-rows.ts", "src/styles/view-transitions.css"], P19_START)).length === 0, "the folders or navigation changed")
 })
 
 await test("NUCINT-045", "Five palettes: the stylesheets, tokens and contract are untouched, and no site token was added for the nucleus", async (check) => {

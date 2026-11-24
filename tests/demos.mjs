@@ -21,6 +21,7 @@ import {
   collectionPrefix,
   COLLECTION_IDS,
 } from "../src/editorial/collections.ts"
+import { skipTargetOnly } from "./approved-changes.mjs"
 import { routableRecords } from "../src/editorial/model.ts"
 import { schemaFor } from "../src/editorial/schema.ts"
 import { siteNavigation } from "../src/navigation/index.ts"
@@ -732,7 +733,6 @@ await test("P13A-027", "The physical folders are intact", async (check) => {
     "--",
     "src/components/folders",
     "src/styles/folders.css",
-    "src/layouts/FolderPage.astro",
     "src/navigation",
     "src/styles/view-transitions.css",
     // The two folder scripts, not the folder: P16 added the world clocks' script beside them (D-118).
@@ -740,6 +740,8 @@ await test("P13A-027", "The physical folders are intact", async (check) => {
     "src/scripts/folder-rows.ts",
   ).stdout
   check(diff.trim() === "", "the folders, their styles, navigation or scripts changed")
+  // FolderPage.astro gained tabindex="-1" on its <main> (D-162, P23 close-out) and nothing else.
+  check(skipTargetOnly(git("diff", P13, "--", "src/layouts/FolderPage.astro").stdout), "FolderPage changed beyond D-162")
   const registry = await read("src/navigation/registry.ts")
   check(!/demo/i.test(registry), "the navigation registry names a demonstration")
   const overview = await overviewOf(demoOut)

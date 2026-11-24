@@ -24,7 +24,7 @@ import { freshness, sourceState } from "../src/quality/source.mjs"
 import { DEFECTS, copyBuild, fingerprint, readReport, runAudits } from "./qa-fixtures.mjs"
 import { DEV_PAGES, QUALITY_PAGE } from "../src/design/site-map.ts"
 import { demoBuild } from "./demo-dist.mjs"
-import { D161_FILES, exemptionLines, withoutApproved } from "./approved-changes.mjs"
+import { D161_FILES, D162_FILES, exemptionLines, skipTargetOnly, withoutApproved } from "./approved-changes.mjs"
 
 const repo = fileURLToPath(new URL("../", import.meta.url))
 const dist = join(repo, "dist")
@@ -345,15 +345,21 @@ await test("QA-PRESERVE-04", "The navigation registry, the folder components and
   const touched = withoutApproved(changedSinceBase(["src/navigation", "src/components/folders", "src/styles/folders.css", "src/styles/categories.css", "src/styles/tokens.css", "src/styles/home-tabs.css", "src/visualization", "src/home", "src/components/home", "src/pages/index.astro"]))
   check(touched.length === 0, `changed: ${json(touched)}`)
 })
-await test("QA-PRESERVE-05", "P23 changed only the files D-161 names, and added no palette, token or colour to a stylesheet", async (check) => {
+await test("QA-PRESERVE-05", "P23 changed only the files D-161 and D-162 name, the two layouts only by one attribute, and added no palette, token or colour to a stylesheet", async (check) => {
   if (!gitOk) return
   const P23_BASE = "183b5a4" // the head P23 began from
   const run = (...args) => git(...args).stdout.split("\n").filter(Boolean)
   if (git("cat-file", "-e", P23_BASE).status !== 0) return
   const changed = [...new Set([...run("diff", "--name-only", P23_BASE, "--", "src"), ...run("ls-files", "--others", "--exclude-standard", "--", "src")])]
-  check(changed.every((f) => D161_FILES.includes(f)), `P23 changed source files D-161 does not name: ${json(changed.filter((f) => !D161_FILES.includes(f)))}`)
-  const decision = /\*\*D-161\.\*\*[\s\S]*?(?=\n\n|$)/.exec(await read("development/decisions.md"))?.[0] ?? ""
+  const named = [...D161_FILES, ...D162_FILES]
+  check(changed.every((f) => named.includes(f)), `P23 changed source files D-161 and D-162 do not name: ${json(changed.filter((f) => !named.includes(f)))}`)
+  const decisions = await read("development/decisions.md")
+  const decision = /\*\*D-161\.\*\*[\s\S]*?(?=\n\n|$)/.exec(decisions)?.[0] ?? ""
   for (const file of D161_FILES) check(decision.includes(`\`${file}\``) || decision.includes(`\`${file.split("/").pop()}\``), `D-161 does not name ${file}`)
+  // D-162 (the close-out) adds two layouts, and only one attribute to each: not a licence to change them.
+  const close = /\*\*D-162\.\*\*[\s\S]*?(?=\n\n|$)/.exec(decisions)?.[0] ?? ""
+  for (const file of D162_FILES) check(close.includes(`\`${file}\``), `D-162 does not name ${file}`)
+  for (const file of D162_FILES) check(skipTargetOnly(git("diff", P23_BASE, "--", file).stdout), `${file} changed beyond tabindex="-1" on <main id="content"> (D-162)`)
   const added = git("diff", P23_BASE, "--unified=0", "--", "src/styles").stdout.split("\n").filter((l) => l.startsWith("+") && !l.startsWith("+++") && !/^\+\s*(\/\*|\*)/.test(l))
   const colours = added.filter((l) => /#[0-9a-fA-F]{3,8}\b|--palette-|\b(rgb|hsl|oklch|color-mix)\(|--color-[\w-]+\s*:/.test(l))
   check(colours.length === 0, `P23 added a colour, a palette reference or a colour token to a stylesheet: ${json(colours.slice(0, 3))}`)

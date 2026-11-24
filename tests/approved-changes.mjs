@@ -19,8 +19,17 @@ export const D158_FILES = ["src/home/clock-time.ts", "src/components/home/WorldC
  */
 export const D161_FILES = ["src/layouts/BaseLayout.astro", "src/styles/global.css", "src/styles/home.css", "src/components/home/WorldClocks.astro", "src/components/editorial/EditorialEntry.astro", "src/styles/editorial.css"]
 
+/**
+ * D-162 (P23 close-out, 2026-11-24): the skip link's target takes focus. Firefox 159 leaves focus on the skip link when the target of a
+ * same-page link cannot take focus, so the next Tab returned to the first folder tab and the link skipped nothing (Chrome moves its
+ * starting point and did not show it). `<main id="content">` gains `tabindex="-1"` in the three places that draw it: `BaseLayout.astro`
+ * and `global.css` (already D-161's) and the two layouts below, which are the only files this decision adds. The change to each is one
+ * attribute: `skipTargetOnly()` states exactly that, and QA-PRESERVE-05 holds the two files to it.
+ */
+export const D162_FILES = ["src/layouts/FolderPage.astro", "src/layouts/ErrorPage.astro"]
+
 /** Every file an owner-approved or owner-requested decision allowed to change since an older guard's base. */
-export const APPROVED_FILES = [...new Set([...D158_FILES, ...D161_FILES])]
+export const APPROVED_FILES = [...new Set([...D158_FILES, ...D161_FILES, ...D162_FILES])]
 
 /** `files` without the ones a recorded decision allowed to change. */
 export const withoutApproved = (files, approved = APPROVED_FILES) => files.filter((f) => !approved.includes(f))
@@ -30,3 +39,15 @@ export const exemptionLines = (text) => text.split("\n").filter((l) => /gl-home-
 
 /** home.css without the narrow-screen title rule of D-161, so a guard can compare the rest with an older version of the file. */
 export const withoutNarrowTitleRule = (css) => css.replace(/\n  \/\*\n   \* The site's name is one word[\s\S]*?\n  @media \(max-width: 21rem\) \{[\s\S]*?\n  \}\n/, "")
+
+/**
+ * Whether a `git diff` of FolderPage.astro or ErrorPage.astro holds only D-162's change: one line removed and the same line added with
+ * `tabindex="-1"` as its last attribute. An unchanged file (an empty diff) is also fine. Anything else is a change D-162 does not approve.
+ */
+export function skipTargetOnly(diff) {
+  const lines = diff.split("\n").filter((l) => /^[+-]/.test(l) && !/^(\+\+\+|---)/.test(l))
+  if (lines.length === 0) return true
+  const removed = lines.filter((l) => l.startsWith("-")).map((l) => l.slice(1))
+  const added = lines.filter((l) => l.startsWith("+")).map((l) => l.slice(1))
+  return removed.length === 1 && added.length === 1 && /<main id="content"/.test(removed[0]) && added[0] === removed[0].replace(/>$/, ' tabindex="-1">')
+}

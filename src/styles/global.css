@@ -332,6 +332,14 @@ body {
   white-space: nowrap;
 }
 
+/*
+ * The skip link's target takes focus (tabindex="-1": it is not in the Tab order) so the next Tab starts in the content.
+ * It is not a control, and a ring around the whole page would say nothing (P23 close-out, D-162).
+ */
+main#content:focus {
+  outline: none;
+}
+
 .gl-visually-hidden {
   position: absolute;
   overflow: hidden;
