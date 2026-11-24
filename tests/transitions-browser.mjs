@@ -67,7 +67,16 @@ await send("Page.addScriptToEvaluateOnNewDocument", {
 
 const REDUCED = [{ name: "prefers-reduced-motion", value: "reduce" }]
 const media = (features) => send("Emulation.setEmulatedMedia", { features })
-const navRecord = () => js(`JSON.parse(JSON.stringify(window.__nav ?? null))`)
+// The record of the page just arrived at. Its `reveal` is written when the browser fires `pagereveal`, after the first render, which
+// is after the address has changed: a read made a fixed time after `waitForPath` found no record when the browser was slow (a first
+// attempt of TRANS-009, TRANS-010 and TRANS-012 under emulated Linux fonts, P23), so the read waits for the record it asserts on.
+const navRecord = async () => {
+  for (let waited = 0; waited < 10_000; waited += 50) {
+    if (await js(`window.__nav?.reveal !== undefined`)) break
+    await sleep(50)
+  }
+  return js(`JSON.parse(JSON.stringify(window.__nav ?? null))`)
+}
 
 /** Clicks a tab of the current page and waits for the new page to settle. */
 async function clickTab(id, expectedPath) {
