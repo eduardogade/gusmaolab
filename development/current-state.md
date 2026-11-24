@@ -611,7 +611,7 @@ P23 was accepted by the owner, D-162 included. P24 prepared the production relea
   - Option A, plus the deploy key, environment and secret;
   - Cloudflare's Always Use HTTPS;
   - the pull requests into `main`;
-  - the contact gate and WhatsApp;
+  - WhatsApp (the contact gate is met: the owner accepted the profiles, D-164);
   - `brand/bearnard-favicon-full.png`;
   - the favicon's weight (149 KB);
   - the legacy URLs that will answer 404;

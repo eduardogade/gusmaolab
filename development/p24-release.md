@@ -166,14 +166,14 @@ The release commits on top of `dc0cb6c`, so the previous site stays in the Pages
   - The domain's MX is Cloudflare Email Routing, so the alias can be a routing rule to the owner's inbox. No DNS record changes. Routing receives only: replies leave from the inbox's own address unless sending is set up separately.
   - To add it: create the route, send a test message from an outside account, confirm it arrived, and then tell Claude to add the channel. D-164 records the date, and REL-012 checks that a published address has a decision.
 - **WhatsApp:** not listed. The owner's instruction was conditional, and the condition is not met.
-- **Decision for the owner:** do the profiles satisfy "one approved, working contact channel" for the first release, or must the email come first?
+- **Decided by the owner (2026-11-24, D-164):** the profiles are enough contact for the first release. The email is optional and not a release prerequisite.
 
 ## 11. Owner release checklist (human approvals: not test results)
 
 | Area | Item | Status |
 | --- | --- | --- |
 | Site | Home composition, Bearnard, nucleus, world clocks, navigation, editorial layouts | accepted (P15–P23) |
-| Site | Contact functioning | **owner**: profiles listed; three profile links and the email decision pending |
+| Site | Contact functioning | profiles listed and accepted as the release's contact (D-164); **owner**: click LinkedIn, ResearchGate and Medium once |
 | Site | Schedule honestly disabled; downloads (none approved); 404 | built and checked |
 | Browsers | Chrome, Firefox | checked in P23 |
 | Browsers | Safari; a physical phone or tablet; VoiceOver or NVDA | **owner: perform or waive** |
@@ -189,7 +189,8 @@ The release commits on top of `dc0cb6c`, so the previous site stays in the Pages
 | REL-001 to REL-012, REL-015 to REL-020, REL-023, REL-024 (controlled defects), REL-040 to REL-042, REL-048, REL-052, REL-053, REL-055, REL-056 | **PASS** (automated) | `tests/release.mjs` |
 | REL-021, REL-022, REL-025 to REL-028 | **PASS** (automated) | `scripts/release-check.mjs` through REL-010 and REL-024; QA-META-09; `scripts/demo-check.mjs`; AUTH-025, EDIT-019 |
 | REL-043 to REL-047, REL-049 to REL-051, REL-054 | **PASS** (held by the suites that own them) | home, clocks, nucleus, a11y, content, science, util; QA's SKIPPED list |
-| REL-013, REL-014 | **PENDING**: no email address is approved yet | section 10 |
+| REL-013 | **PASS for six profile links** (200 on 2026-11-24); LinkedIn, ResearchGate and Medium **not verified** (they refuse automated requests: the owner checks them) | section 10 |
+| REL-014 | **NOT APPLICABLE for the first release** by the owner's decision (D-164): no email address is published, so there is no delivery to verify. It applies if one is added | section 10 |
 | REL-029 to REL-039 | **PENDING LIVE VERIFICATION**: they need the real site after an authorized release | `scripts/smoke.mjs` (SMOKE-00 to SMOKE-10), the run summary, section 8 |
 
 ---
@@ -204,7 +205,7 @@ The release commits on top of `dc0cb6c`, so the previous site stays in the Pages
 | Workflow to run | `release.yml` (`workflow_dispatch`, inputs `commit` and `confirm`), environment `production` |
 | Destination repository | `eduardogade/eduardogade.github.io`, branch `main` |
 | Domain | `https://www.gusmaolab.org` (canonical); `gusmaolab.org` redirects to it |
-| Contact channel | the nine profiles (D-164); email only if the owner adds it first |
+| Contact channel | the nine profiles, accepted by the owner as enough for the first release (D-164); no email |
 | Favicon | the owner's `favicon.ico` (six sizes, 16–256 px, 149 KB), unchanged |
 | DNS changes | **none**. Cloudflare setting: Always Use HTTPS |
 | Expected change to the public site | the Pelican site is replaced by the Astro site; legacy URLs answer 404; the ISSUE-0003 files stop being served |
@@ -218,6 +219,6 @@ The release commits on top of `dc0cb6c`, so the previous site stays in the Pages
 1. ~~the reconciliation of `main` (section 3)~~ done on the owner's decision, D-166;
 2. Option A and the release workflow;
 3. the first production deployment, with the source commit named;
-4. whether the profiles are enough contact for the first release.
+4. ~~whether the profiles are enough contact for the first release~~ decided: they are (D-164).
 
 **Nothing in this file is that approval.**

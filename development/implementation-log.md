@@ -1200,3 +1200,5 @@ Both results are recorded in ISSUE-0007, and the first is not converted into a p
   - No workflow ran for the push to `main`. The Pages repository is still `dc0cb6c`, and the live site still serves Pelican.
 - **Local copies.** The local `main` (`ffafcd3`) and the worktree were left alone and removed respectively.
 - **Correction.** `cv/codex-yaml/` does not exist in this checkout: the `cv/` folder was last modified on 2026-11-16 at 17:24, and the reflog shows nothing else. So the earlier warning that a checkout of `main` would *overwrite* a local copy was an unverified inference; it would have written the old files into the tree.
+
+**P24 — the contact gate (2026-11-24).** The owner decided that the nine profiles are enough contact for the first release. This is recorded in D-164, in `p24-release.md` (sections 10, 11, 12 and 13) and in the current state. REL-014 does not apply while no email address is published. Three profile links remain for the owner to check by hand. No source changed.
