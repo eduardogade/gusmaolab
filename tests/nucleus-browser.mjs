@@ -245,16 +245,22 @@ await test("NUC-034", "The nucleus stays whole and recognisable at seven widths,
 await test("NUC-024B", "Resizing the frame resizes the canvas and redraws, with no second canvas", async (check) => {
   await open(1440, 900)
   const before = await diag()
+  // The check asserts a state (the canvas follows the frame), so it waits for that state and not for a time. It used to wait
+  // 600 and 500 ms: a resize is a layout, a resize of the canvas, a redraw of 128 000 triangles in software and a readout
+  // that refreshes every 250 ms, which takes about 400 ms on an idle Mac, seconds on a loaded one, and failed twice in a row on
+  // a GitHub runner with slower cores (run 9, attempt 2, ISSUE-0007). The standard is unchanged: the canvas is 390 px wide, was
+  // redrawn once, is the only canvas, and grows back past 600 px.
+  const canvasReadout = `(document.querySelector('[data-diag="canvas"]')?.textContent ?? "")`
   await js(`document.querySelector('[data-nucleus-set-width="390"]').click()`)
-  await sleep(600)
+  const shrank = await waitFor(`${canvasReadout}.startsWith("390 ×")`, 30_000)
   const small = await js(`(() => { const r = document.querySelector("[data-nucleus-frame] canvas").getBoundingClientRect(); return [Math.round(r.width), Math.round(r.height)] })()`)
   const after = await diag()
-  check(small[0] === 390 && after.canvas.startsWith("390 ×"), `the canvas is ${json(small)} (${after.canvas})`)
+  check(shrank && small[0] === 390 && after.canvas.startsWith("390 ×"), `the canvas is ${json(small)} (${after.canvas}) after a wait of up to 30 s`)
   check(after.frames > before.frames && !after.loop, `frames ${before.frames} to ${after.frames}`)
   check(await js(`document.querySelectorAll("canvas").length`) === 1, "a second canvas appeared")
   await js(`document.querySelector('[data-nucleus-set-width="full"]').click()`)
-  await sleep(500)
-  check((await diag()).canvas.startsWith("700") || Number((await diag()).canvas.split(" ")[0]) > 600, `the canvas did not grow back: ${(await diag()).canvas}`)
+  const grew = await waitFor(`Number(${canvasReadout}.split(" ")[0]) > 600`, 30_000)
+  check(grew, `the canvas did not grow back: ${(await diag()).canvas} after a wait of up to 30 s`)
 })
 
 await test("NUC-025B", "Hidden page pauses the loop; shown again it draws and carries on (simulated visibility)", async (check) => {
