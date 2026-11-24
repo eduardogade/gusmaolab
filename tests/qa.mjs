@@ -463,19 +463,25 @@ await test("QA-HISTORY-01", "A shallow checkout fails the environment stage, a c
   const dir = await mkdtemp(join(tmpdir(), "gusmaolab-history-"))
   try {
     const clone = join(dir, "clone")
-    const made = spawnSync("git", ["clone", "--quiet", "--no-local", "--depth", "1", `file://${repo}`, clone], { encoding: "utf8" })
+    // A throwaway clone must not run git's own housekeeping: after a fetch git starts `maintenance --auto` detached, and a
+    // process still writing under .git/objects is what made the clean-up fail once on GitHub with ENOTEMPTY (run 10, attempt 2;
+    // not reproduced in 30 local tries, so the cause is likely and not proven).
+    const quiet = ["-c", "gc.auto=0", "-c", "maintenance.auto=false", "-c", "gc.autoDetach=false"]
+    const made = spawnSync("git", [...quiet, "clone", "--quiet", "--no-local", "--depth", "1", `file://${repo}`, clone], { encoding: "utf8" })
     check(made.status === 0, `a shallow clone could not be made: ${made.stderr}`)
     if (made.status === 0) {
       const shallow = historyCheck(clone)
       check(shallow.id === "QA-ENV-06" && shallow.status === "FAIL", `a depth-1 clone reported ${shallow.status}`)
       check(/fetch-depth: 0/.test(shallow.reasons.join()) && /unshallow/.test(shallow.reasons.join()), "the failure does not say how to fix it")
-      const filled = spawnSync("git", ["-C", clone, "fetch", "--quiet", "--unshallow"], { encoding: "utf8" })
+      const filled = spawnSync("git", [...quiet, "-C", clone, "fetch", "--quiet", "--unshallow"], { encoding: "utf8" })
       check(filled.status === 0, `the clone could not be completed: ${filled.stderr}`)
       check(historyCheck(clone).status === "PASS", "a clone with its full history did not pass")
     }
     check(historyCheck(dir).status === "FAIL", "a folder that is not a git checkout did not fail")
   } finally {
-    await rm(dir, { recursive: true, force: true })
+    // Node's own retry for the ENOTEMPTY race of removing a tree that something is still writing to; if the folder cannot be
+    // removed after it, the error is not swallowed and the check fails.
+    await rm(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 200 })
   }
   const jobs = Object.values(workflow.jobs)
   for (const job of jobs) for (const s of job.steps.filter((x) => x.uses?.startsWith("actions/checkout"))) check(s.with?.["fetch-depth"] === 0, "a checkout in the workflow does not fetch the full history")
