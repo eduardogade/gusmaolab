@@ -605,6 +605,7 @@ P23 was accepted by the owner, D-162 included. P24 prepared the production relea
 - **Tests.** `tests/release.mjs` (REL-001 to REL-056, as far as they can be decided before the cutover): 28 checks pass. REL-013, REL-014 and REL-029 to REL-039 are **PENDING** (an email address; the live site).
 - **Local `npm run qa`:** 864 PASS, **5 FAIL**, 0 SKIPPED, 19 DEFERRED, 0 NOT RUN, 0 FLAKY. The five failures are the Bearnard preservation guards (NUC-041, NUCINT-042, SCH-070, QA-PRESERVE-03; QA-STATE-01 follows from SCH-070). They detect an untracked image the owner added to `brand/` (`brand/bearnard-favicon-full.png`), which P24 did not touch and which awaits the owner's word. Every browser, accessibility, audit and performance stage passed.
 - **Visual check.** The Contact page was checked at 1440, 1280, 768 and 390 px: no sideways scroll, and the favicon is served.
+- **GitHub, run 45454982289 on `020741d`.** Static job: PASS (681 PASS, 13 SKIPPED, 19 DEFERRED; the four Bearnard guards pass there because the owner's untracked file is not in the checkout). Browser job, attempt 1: **FAIL**, one check (NUCINT-016B, a Home load over 10 s on an Intel Xeon 8370C, on both attempts of its suite). A re-run of the failed job passed (187 PASS, 0 FAIL, 0 FLAKY, AMD EPYC 9V74). The cause is not established, and P24 adds no request in headless Chrome (ISSUE-0007).
 - **Not tested:** Safari, a physical device, a screen reader, and everything live.
 - **Owner decisions waiting:**
   - ISSUE-0008;

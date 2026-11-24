@@ -1177,3 +1177,12 @@ O trabalho começou na branch `development` com alterações alheias, inclusive 
   - `npm run qa` (full, Node 26, outside micromamba): 864 PASS, 5 FAIL, 0 SKIPPED, 19 DEFERRED, 0 NOT RUN, 0 FLAKY. All five are the Bearnard guards seeing the owner's untracked `brand/bearnard-favicon-full.png`, a true finding left for the owner. Every other stage passed, browser and performance included.
   - Contact inspected at 1440, 1280, 768 and 390 px.
 - **Not done (owner's gate).** The reconciliation, the deploy key and environment, Cloudflare, the release, and the history decision for ISSUE-0008. **Not tested:** Safari, a device, a screen reader, and the live site after a release.
+
+**P24 — remote QA (2026-11-24).** Pushed `020741d` to `origin/development`, the only workflow it started being Quality Assurance (the placeholder runs are gone). Run 45454982289:
+
+- **Static job:** PASS, 681 PASS, 13 SKIPPED, 19 DEFERRED.
+- **Browser job, attempt 1:** FAIL. NUCINT-016B failed on both attempts of its suite with `no Page.loadEventFired within 10000 ms` on Home (Intel Xeon 8370C, 24.5 minutes).
+- **Probe:** headless Chrome does not request a favicon (the page loaded in 22 ms, with no request), so P24's head tags add no request.
+- **Re-run of the failed job:** PASS, 187 PASS, 0 FAIL, 0 FLAKY (AMD EPYC 9V74, 15.7 minutes).
+
+Both results are recorded in ISSUE-0007, and the first is not converted into a pass.
