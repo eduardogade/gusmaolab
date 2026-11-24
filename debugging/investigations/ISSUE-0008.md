@@ -4,8 +4,8 @@
 | --- | --- |
 | Issue ID | ISSUE-0008 |
 | Related prompt | P24 (found by the Git preflight, 2026-11-24) |
-| Status | **Open**, awaiting the owner's decision. The proposed reconciliation removes the files from the tip; only the owner can decide about the history |
-| Severity | **High**: private documents are publicly retrievable today |
+| Status | **Resolved at the tip, by the owner's decision (D-166, 2026-11-24): history kept.** `main`'s tip (`58fcc3b`) no longer holds the files; every earlier commit still does, and the contents are treated as exposed since 2026-11-16 |
+| Severity | **High**: private documents were on the public default branch from 2026-11-16 to 2026-11-24, and remain retrievable from its history |
 | Affected component | `origin/main` of the public repository `eduardogade/gusmaolab` (its default branch). The live site is **not** affected: the Pelican build of that commit failed, and nothing was deployed from it |
 
 ## Observed symptoms
@@ -36,8 +36,18 @@ The folder was committed on `main` directly, where `development`'s ignore rules 
 
 ## Validation
 
-Pending. After a reconciliation, `git ls-tree -r --name-only origin/main -- cv/codex-yaml` must print nothing. History stays as the owner decides.
+Done 2026-11-24: after the reconciliation (`58fcc3b`), `git ls-tree -r --name-only origin/main -- cv/codex-yaml` prints nothing. History is kept, as the owner decided (D-166).
 
 ## Relevant commits
 
 `1e1c52b` (adds the files). `5341dcc` and `33cd424` (later commits on `main`). The P24 commit records this issue; it changes nothing on `main`.
+
+## Outcome (2026-11-24)
+
+The owner chose option 1 and not option 3: "Remove from tip only".
+
+- The reconciliation merge `58fcc3b` (parents `2b3b94e` and `33cd424`, tree identical to `development`'s) was pushed to `development` and passed Quality Assurance (run 45472006424). `main` was then fast-forwarded to it.
+- `git ls-tree -r --name-only origin/main -- cv/codex-yaml` prints nothing.
+- The files remain in the history of `1e1c52b`, `5341dcc` and `33cd424`, as chosen.
+- Options 2 and 4 (telling anyone named, protecting `main` or making the repository private) remain the owner's.
+- The local branch `main` (`ffafcd3`, never pushed) still holds the files: never check it out or push it.

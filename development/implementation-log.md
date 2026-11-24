@@ -1186,3 +1186,17 @@ O trabalho começou na branch `development` com alterações alheias, inclusive 
 - **Re-run of the failed job:** PASS, 187 PASS, 0 FAIL, 0 FLAKY (AMD EPYC 9V74, 15.7 minutes).
 
 Both results are recorded in ISSUE-0007, and the first is not converted into a pass.
+
+**P24 — the reconciliation of `main` (2026-11-24, D-166).** The owner answered ISSUE-0008 with "Remove from tip only".
+
+- **The merge.** After a fetch (`origin/main` still `33cd424`, no open pull request), `origin/main` was merged into `development` (`2b3b94e`) in a worktree under the scratchpad, with no conflict.
+  - The first `git rm` was refused, because the merged files were newly staged; it was repeated with `-f` in that worktree only.
+  - With the 167 files removed, the tree equals `development`'s.
+  - Committed as `58fcc3b` (parents `2b3b94e` and `33cd424`). It holds no private or generated path, and only `quality.yml` and `release.yml`.
+- **The pushes.**
+  - Pushed to `development` as a fast-forward. Quality Assurance run 45472006424: static 681 PASS, 13 SKIPPED, 19 DEFERRED; browser 187 PASS, 0 FAIL, 0 FLAKY.
+  - Then, after checking `origin/main` again, pushed to `main` as a fast-forward with no force.
+  - `origin/main` is `58fcc3b`, and its tip has no `cv/codex-yaml/` file and no generated output.
+  - No workflow ran for the push to `main`. The Pages repository is still `dc0cb6c`, and the live site still serves Pelican.
+- **Local copies.** The local `main` (`ffafcd3`) and the worktree were left alone and removed respectively.
+- **Correction.** `cv/codex-yaml/` does not exist in this checkout: the `cv/` folder was last modified on 2026-11-16 at 17:24, and the reflog shows nothing else. So the earlier warning that a checkout of `main` would *overwrite* a local copy was an unverified inference; it would have written the old files into the tree.

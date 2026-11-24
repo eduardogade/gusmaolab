@@ -49,7 +49,7 @@ A published article appears on the site at the next **release**, not at the comm
 
 The workflow publishes only a commit that is on both `main` and `development`, and whose Quality Assurance run passed.
 
-1. Bring `main` up to the commit you want to publish. Use a fast-forward, or a merge that keeps history, done in a separate worktree (`development/p24-release.md`, section 3). Never force-push, and never `git checkout main` in a working tree that holds the private CV folder.
+1. Bring `main` up to the commit you want to publish: a fast-forward push of a commit already on `development`, for example `git push origin <full SHA>:main`. Since D-166 `main` is an ancestor of `development`, so no merge is needed. Never force-push, and never check out the stale local branch `main` (`ffafcd3`).
 2. Start the release, then approve the `production` environment when GitHub asks:
    ```bash
    gh workflow run release.yml --repo eduardogade/gusmaolab --ref main -f commit=<full SHA> -f confirm=www.gusmaolab.org

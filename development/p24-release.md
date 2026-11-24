@@ -2,7 +2,7 @@
 
 Prepared 2026-11-24 on `development`, starting from `1bbcfa9` (equal to `origin/development`, tree clean except two files the owner had just added to `brand/`). Everything below about GitHub, DNS and the live site was **read**, not changed: no setting, branch, DNS record, deployment or Pages repository was touched. The decisions are D-163 (release metadata), D-164 (the public profiles) and D-165 (the release architecture, **proposed**, awaiting the owner).
 
-**Status: P24 RELEASE CANDIDATE READY — OWNER CUTOVER AUTHORIZATION PENDING.** The cutover also waits on owner-side setup (section 7.0) and on the owner's choice about an email address (section 10).
+**Status: P24 RELEASE CANDIDATE READY — OWNER CUTOVER AUTHORIZATION PENDING.** Update, same day: on the owner's decision about ISSUE-0008, the reconciliation of section 3 was carried out (D-166); `main` and `development` are both `58fcc3b` or its descendants, and production is unchanged. The cutover also waits on owner-side setup (section 7.0) and on the owner's choice about an email address (section 10).
 
 ---
 
@@ -35,7 +35,7 @@ The repository's canonical name is `eduardogade/gusmaolab` (GitHub's API `full_n
 
 A trial merge (a throwaway worktree, since removed) showed that `origin/main` merges into `development` **without a conflict**. It adds exactly 167 files and changes nothing else: 17 in `.astro/`, 9 in `__mods6/`, 16 in `cv/codex-yaml/`, 86 in `dist-demo/` and 39 in `science/`. With those removed, the merged tree is **byte-identical** to `development`'s tree (`git write-tree` equal to `development^{tree}`, `81094e1`). The legacy Pelican workflow (`.github/workflows/deploy.yml`) is on `main` only. `development` archived it in P01 (`e33e333`), and the merge removes it from `main`.
 
-## 3. Reconciliation (proposed; needs the owner's approval)
+## 3. Reconciliation (**done 2026-11-24, D-166**: merge `58fcc3b`, `main` fast-forwarded to it)
 
 The strategy is a merge that keeps both histories and makes `main` a fast-forward. It is never a reset, a rebase or a force push.
 
@@ -59,7 +59,7 @@ cd - && git worktree remove ../gusmaolab-reconcile && git pull --ff-only
 Preconditions:
 
 - **Stop new pull requests into `main` until the cutover.** Four merges arrived there between 2026-11-10 and 2026-11-17. Whatever produces them must pause, or the merge must be redone. The release workflow refuses a commit that is not on both branches.
-- Never `git checkout main` in the owner's working tree (see the comment above).
+- Never `git checkout main` in the owner's working tree (see the comment above). Since D-166 `origin/main` no longer holds the private files; the local `main` (`ffafcd3`, never pushed) still does, so never check it out or push it.
 - The private files stay in `main`'s **history** after the merge. Removing them from history means rewriting the public default branch, which is the owner's decision alone (owner's report).
 
 ## 4. The production site today (read on 2026-11-24)
@@ -199,7 +199,7 @@ The release commits on top of `dc0cb6c`, so the previous site stays in the Pages
 | Item | Proposed |
 | --- | --- |
 | Source commit to release | the merge commit of section 3, whose tree equals `development`'s at the P24 commit (named at the gate, once pushed and green) |
-| Git reconciliation | merge `origin/main` into `development` in a separate worktree, removing the 167 ignored paths. Fast-forward `development`, then `main`. No force, no rewrite |
+| Git reconciliation | **done (D-166)**: merge `58fcc3b` of `origin/main` into `development`, the 167 ignored paths removed, made in a separate worktree. `development`, then `main`, fast-forwarded to it after QA passed. No force, no rewrite. At the cutover `main` needs only a fast-forward to the commit released |
 | Pages architecture | Option A: the existing Pages repository, published by `release.yml` |
 | Workflow to run | `release.yml` (`workflow_dispatch`, inputs `commit` and `confirm`), environment `production` |
 | Destination repository | `eduardogade/eduardogade.github.io`, branch `main` |
@@ -215,7 +215,7 @@ The release commits on top of `dc0cb6c`, so the previous site stays in the Pages
 
 **The owner is asked to approve, separately and explicitly:**
 
-1. the reconciliation of `main` (section 3);
+1. ~~the reconciliation of `main` (section 3)~~ done on the owner's decision, D-166;
 2. Option A and the release workflow;
 3. the first production deployment, with the source commit named;
 4. whether the profiles are enough contact for the first release.
