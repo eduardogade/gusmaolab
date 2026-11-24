@@ -18,6 +18,7 @@ import { parse as parseYaml } from "yaml"
 import { publicBuildIssues } from "../scripts/demo-check.mjs"
 import { distIssues } from "../scripts/downloads.mjs"
 import { DEFERRALS } from "../scripts/qa-lib.mjs"
+import { deriveIcon, readIcon } from "../scripts/favicon.mjs"
 import { releaseIssues } from "../scripts/release-check.mjs"
 import { validateChannels } from "../src/contact/channels.ts"
 import { CONTACT_CHANNELS } from "../src/data/contact.ts"
@@ -51,7 +52,6 @@ const release = parseYaml(releaseText)
 const qualityText = await read(".github/workflows/quality.yml")
 const code = (text) => text.replace(/^\s*#.*$/gm, "")
 const workflows = (await readdir(join(repo, ".github/workflows"))).sort()
-const plan = await read("development/p24-release.md")
 async function listFiles(dir, base = dir) {
   const out = []
   for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -66,59 +66,65 @@ const pages = files.filter((f) => f.endsWith(".html"))
 
 // --- Release configuration ----------------------------------------------------------------------------------------
 
-await test("REL-001", "The production source commit is explicit: a required full SHA, checked, and the only ref either job checks out", async (check) => {
+const jobs = release.jobs
+const steps = (job) => jobs[job]?.steps ?? []
+const allSteps = Object.values(jobs).flatMap((j) => j.steps ?? [])
+
+await test("REL-001", "The production source commit is explicit: a required full SHA, checked, and the only ref any job checks out", async (check) => {
   check(json(Object.keys(release.on)) === json(["workflow_dispatch"]), `triggers: ${json(Object.keys(release.on))}`)
   check(release.on.workflow_dispatch.inputs.commit?.required === true, "the commit input is not required")
   check(/\^\[0-9a-f\]\{40\}\$/.test(releaseText), "the commit is not checked to be a full SHA")
-  const checkouts = Object.values(release.jobs).flatMap((j) => j.steps).filter((s) => s.uses?.startsWith("actions/checkout"))
+  const checkouts = allSteps.filter((s) => s.uses?.startsWith("actions/checkout"))
   check(checkouts.length === 2 && checkouts.every((s) => s.with?.ref === "${{ inputs.commit }}"), "a job checks out something other than the named commit")
 })
-await test("REL-002", "Reconciliation preserves history: the plan is a merge with both parents, and nothing force-pushes or rewrites", async (check) => {
-  check(/git merge --no-ff/.test(plan) && /--is-ancestor/.test(plan), "the plan does not describe a merge that keeps both histories")
-  check(!/push\s+(-f|--force)|force_orphan|reset --hard|rebase\b/.test(code(releaseText)), "the release workflow can rewrite history")
-  check(!/git push (-f|--force)|reset --hard/.test(plan.replace(/never[^.\n]*/gi, "")), "the plan has a destructive command")
+await test("REL-002", "History is preserved: main was reconciled by a merge (D-166), and nothing in the release can force-push or rewrite", async (check) => {
+  check(!/push\s+(-f|--force)|force_orphan|reset --hard|rebase\b|git push/.test(code(releaseText)), "the release workflow pushes or rewrites history")
+  const decisions = await read("development/decisions.md")
+  check(/\*\*D-166\.\*\*/.test(decisions) && /58fcc3b/.test(decisions), "the reconciliation of main is not recorded")
+  if (git("cat-file", "-e", "58fcc3b").status === 0) check(git("merge-base", "--is-ancestor", "58fcc3b", "HEAD").status === 0, "the reconciliation merge is not in this branch's history")
 })
 await test("REL-003", "An unexpected divergence blocks the release: the commit must be on main and on development", async (check) => {
   check(/merge-base --is-ancestor "\$COMMIT" origin\/main/.test(releaseText), "no check that the commit is on main")
   check(/merge-base --is-ancestor "\$COMMIT" origin\/development/.test(releaseText), "no check that the commit is on development")
-  check(release.jobs.candidate.steps.find((s) => s.uses?.startsWith("actions/checkout"))?.with?.["fetch-depth"] === 0, "the candidate checkout has no history to compare")
+  check(steps("build").find((s) => s.uses?.startsWith("actions/checkout"))?.with?.["fetch-depth"] === 0, "the build checkout has no history to compare")
 })
-await test("REL-004", "The release publishes the approved source: the artifact built and checked from the named commit, after its QA passed", async (check) => {
-  check(json(release.jobs.publish.needs) === json("candidate"), "publish does not wait for the candidate")
+await test("REL-004", "The release publishes the approved source: built and checked from the named commit after its QA passed, deployed as that artifact", async (check) => {
   check(/gh run list[^\n]*--workflow quality\.yml --commit "\$COMMIT"/.test(releaseText), "no check that Quality Assurance passed on the commit")
-  check(release.jobs.candidate.steps.some((s) => s.run === "npm run build") && release.jobs.candidate.steps.some((s) => s.run === "node scripts/release-check.mjs dist"), "the candidate is not built with npm run build and checked")
-  check(release.jobs.publish.steps.some((s) => s.uses?.startsWith("actions/download-artifact") && s.with?.name === "release-site"), "publish does not take the checked artifact")
-  check(!release.jobs.publish.steps.some((s) => /npm (ci|run build)|astro build/.test(s.run ?? "")), "publish builds again instead of publishing the checked artifact")
+  const order = steps("build").map((s) => s.run ?? s.uses?.split("@")[0])
+  const at = (x) => order.indexOf(x)
+  check(at("npm run build") > -1 && at("node scripts/release-check.mjs dist") > at("npm run build") && at("actions/upload-pages-artifact") > at("node scripts/release-check.mjs dist"), `the build job does not build, check, then upload: ${json(order)}`)
+  check(steps("build").find((s) => s.uses?.startsWith("actions/upload-pages-artifact"))?.with?.path === "dist/", "the Pages artifact is not dist/")
+  check(json(jobs.deploy?.needs) === json("build") && json(jobs.verify?.needs) === json("deploy"), "the jobs are not build, then deploy, then verify")
+  check(steps("deploy").length === 1 && steps("deploy")[0].uses?.startsWith("actions/deploy-pages"), "the deploy job does more than deploy the artifact")
+  check(!allSteps.some((s) => /npm (ci|run build)|astro build/.test(s.run ?? "") && !steps("build").includes(s)), "a job other than build builds the site")
 })
 await test("REL-005", "The QA workflow stays independent and non-deploying", async (check) => {
   check(!/deploy|pages:|gh-pages|upload-pages-artifact|publish|release|git push|environment:|secrets\./i.test(code(qualityText)), "quality.yml deploys or uses a secret")
   check(!("push" in release.on) && !("pull_request" in release.on) && !("schedule" in release.on), "the release workflow runs on its own")
 })
-await test("REL-006", "Production deployment needs explicit authorization: manual dispatch, a typed confirmation, and the production environment", async (check) => {
+await test("REL-006", "Production deployment needs explicit authorization: manual dispatch, a typed confirmation, and the github-pages environment", async (check) => {
   check(release.on.workflow_dispatch.inputs.confirm?.required === true && /\$CONFIRM" = "www\.gusmaolab\.org"/.test(releaseText), "no typed confirmation of the destination")
-  check(release.jobs.publish.environment?.name === "production", "publish is not in the production environment")
-  check(release.jobs.candidate.environment === undefined, "the candidate job holds the environment (and its secret)")
-  check(/required reviewer/i.test(plan), "the plan does not ask for a required reviewer on the environment")
+  check(jobs.deploy?.environment?.name === "github-pages", "the deploy job is not in the github-pages environment")
+  check(jobs.build?.environment === undefined && jobs.verify?.environment === undefined, "a job other than deploy holds the environment")
 })
-await test("REL-007", "No legacy Pelican workflow competes with the Astro release, and only the two intended workflows exist", async (check) => {
+await test("REL-007", "One repository, one deployment: GitHub Pages' own, and nothing of the legacy pipeline", async (check) => {
   check(json(workflows) === json(["quality.yml", "release.yml"]), `workflows: ${json(workflows)}`)
-  for (const file of workflows) check(!/pelican|peaceiris|force_orphan|PAGES_DEPLOY_TOKEN/i.test(code(await read(`.github/workflows/${file}`))), `${file} names the legacy deployment`)
+  for (const file of workflows) check(!/pelican|peaceiris|force_orphan|external_repository|eduardogade\.github\.io|PAGES_DEPLOY_(TOKEN|KEY)|ssh-keyscan|deploy key/i.test(code(await read(`.github/workflows/${file}`))), `${file} names the legacy deployment`)
+  check(!existsSync(join(repo, "_backup")) && !existsSync(join(repo, ".gitmodules")), "the Pelican archive or its submodule is still in the tree (D-168)")
 })
-await test("REL-008", "Workflow permissions are minimal, and the one secret reaches only the publish job", async (check) => {
+await test("REL-008", "Workflow permissions are minimal, and no secret is used", async (check) => {
   check(json(release.permissions) === json({ contents: "read" }), `release permissions: ${json(release.permissions)}`)
-  check(json(release.jobs.candidate.permissions) === json({ contents: "read", actions: "read" }), "the candidate job widens its permissions beyond reading runs")
-  check(release.jobs.publish.permissions === undefined, "the publish job widens its permissions")
-  for (const step of Object.values(release.jobs).flatMap((j) => j.steps).filter((s) => s.uses?.startsWith("actions/checkout"))) check(step.with?.["persist-credentials"] === false, "a checkout keeps its credentials")
-  const secrets = [...releaseText.matchAll(/secrets\.([A-Z_]+)/g)].map((m) => m[1])
-  check(json([...new Set(secrets)]) === json(["PAGES_DEPLOY_KEY"]), `secrets: ${json(secrets)}`)
-  check(!code(JSON.stringify(release.jobs.candidate)).includes("secrets."), "the candidate job reads a secret")
-  check(/StrictHostKeyChecking=yes/.test(releaseText) && /api\.github\.com\/meta/.test(releaseText), "the push does not verify GitHub's host key")
+  check(json(jobs.build?.permissions) === json({ contents: "read", actions: "read" }), "the build job widens its permissions beyond reading runs")
+  check(json(jobs.deploy?.permissions) === json({ pages: "write", "id-token": "write" }), `deploy permissions: ${json(jobs.deploy?.permissions)}`)
+  check(json(jobs.verify?.permissions) === json({ contents: "read" }), `verify permissions: ${json(jobs.verify?.permissions)}`)
+  for (const step of allSteps.filter((s) => s.uses?.startsWith("actions/checkout"))) check(step.with?.["persist-credentials"] === false, "a checkout keeps its credentials")
+  check(!/secrets\./.test(code(releaseText)), "the release workflow reads a secret")
 })
 await test("REL-009", "Every action in every workflow is pinned to a full commit SHA, with its version in a comment", async (check) => {
   for (const file of workflows) {
     const lines = (await read(`.github/workflows/${file}`)).split("\n").filter((l) => /^\s*-?\s*uses:/.test(l))
     check(lines.length > 0, `${file} uses no action`)
-    for (const line of lines) check(/uses: actions\/(checkout|setup-node|upload-artifact|download-artifact)@[0-9a-f]{40} # v\d+\.\d+\.\d+$/.test(line), `${file}: ${line.trim()}`)
+    for (const line of lines) check(/uses: actions\/(checkout|setup-node|upload-artifact|download-artifact|upload-pages-artifact|deploy-pages)@[0-9a-f]{40} # v\d+\.\d+\.\d+$/.test(line), `${file}: ${line.trim()}`)
   }
 })
 await test("REL-010", "No secret, private file or development page is in the release build", async (check) => {
@@ -128,37 +134,58 @@ await test("REL-010", "No secret, private file or development page is in the rel
 
 // --- Contact and branding -----------------------------------------------------------------------------------------
 
+/** The nine profiles the owner approved for the first release (D-164); P24A confirms they are the whole of Contact. */
+const PROFILES = ["linkedin", "orcid", "google-scholar", "researchgate", "github", "dev-to", "medium", "instagram", "facebook"]
+
 await test("REL-011", "The contact configuration is valid", async (check) => {
   check(validateChannels(CONTACT_CHANNELS).length === 0, json(validateChannels(CONTACT_CHANNELS)))
 })
-await test("REL-012", "Every public channel carries the owner's approval date, and no email address is published before it is approved and tested", async (check) => {
-  check(CONTACT_CHANNELS.every((c) => /^\d{4}-\d{2}-\d{2}$/.test(c.approvedOn)), "a channel has no approval date")
-  // D-164: the owner's address is published only after a test message has arrived. Adding one is the owner's step, with D-164 updated.
-  const emails = CONTACT_CHANNELS.filter((c) => c.kind === "email")
-  const decisions = await read("development/decisions.md")
-  for (const email of emails) check(decisions.includes(email.destination), `${email.destination} is published, but no decision records its approval and delivery test`)
-  check(!CONTACT_CHANNELS.some((c) => /whatsapp|wa\.me|\+\d{2}/i.test(c.destination)), "a telephone number or WhatsApp link is published")
+await test("REL-012", "Contact is exactly the nine approved profiles: no email, no telephone, no invented channel (D-164, P24A)", async (check) => {
+  check(json(CONTACT_CHANNELS.map((c) => c.id).sort()) === json([...PROFILES].sort()), `channels: ${json(CONTACT_CHANNELS.map((c) => c.id))}`)
+  check(CONTACT_CHANNELS.every((c) => c.kind === "profile" && /^\d{4}-\d{2}-\d{2}$/.test(c.approvedOn)), "a channel is not an approved profile")
+  check(!CONTACT_CHANNELS.some((c) => /mailto:|@[a-z0-9-]+\.[a-z]|whatsapp|wa\.me|\+\d{2}/i.test(c.destination) && !/medium\.com\/@/.test(c.destination)), "an email address, a telephone number or WhatsApp is published")
+})
+await test("REL-013", "The Contact page shows all nine as working external links, without a script", async (check) => {
+  const html = await readFile(join(dist, "contact/index.html"), "utf8")
+  for (const channel of CONTACT_CHANNELS) {
+    const href = channel.destination.replace(/&/g, "&amp;")
+    check(html.includes(`href="${href}"`) && new RegExp(`data-channel="${channel.id}"`).test(html), `${channel.id} is not a link on the page`)
+  }
+  check((html.match(/Opens an external site\./g) ?? []).length === CONTACT_CHANNELS.length, "an external link does not say it leaves the site")
+  check(!/mailto:|<form\b/.test(html), "the Contact page advertises an email address or has a form")
 })
 await test("REL-015", "Schedule's fallback reaches Contact", async (check) => {
   const html = await readFile(join(dist, "schedule/index.html"), "utf8")
   check(/href="\/contact\/"/.test(html), "the Schedule page does not link to Contact")
 })
-await test("REL-016", "The favicon is the owner's file, unchanged, at the site root", async (check) => {
-  check(existsSync(join(repo, "public/favicon.ico")), "public/favicon.ico is missing")
-  const hash = createHash("sha256").update(await readFile(join(repo, "public/favicon.ico"))).digest("hex")
-  check(hash === "0070d90ee229ff394dea8bdf7e02db99e0e4f1a3d90754c855e6c3c1a5b57eaf", `public/favicon.ico is not the owner's file (sha256 ${hash})`)
-  check(files.includes("favicon.ico"), "the build has no favicon.ico")
+await test("REL-016", "The favicon's one source is the owner's brand/favicon.ico, and the site serves its exact 16/32/48 px derivative", async (check) => {
+  const source = await readFile(join(repo, "brand/favicon.ico"))
+  const hash = createHash("sha256").update(source).digest("hex")
+  check(hash === "0070d90ee229ff394dea8bdf7e02db99e0e4f1a3d90754c855e6c3c1a5b57eaf", `brand/favicon.ico is not the owner's file (sha256 ${hash})`)
+  const derived = deriveIcon(source)
+  check((await readFile(join(repo, "public/favicon.ico"))).equals(derived), "public/favicon.ico is not the derivative of brand/favicon.ico (run `npm run favicon`)")
+  check(files.includes("favicon.ico") && (await readFile(join(dist, "favicon.ico"))).equals(derived), "the build does not serve the derivative")
+  const sourceImages = new Map(readIcon(source).map((i) => [i.width, i.data]))
+  check(readIcon(derived).every((i) => sourceImages.get(i.width)?.equals(i.data)), "an image of the derivative differs from the owner's")
 })
 await test("REL-017", "Every page names the favicon, and nothing names another icon", async (check) => {
   for (const file of pages) {
     const html = await readFile(join(dist, file), "utf8")
     const icons = [...html.matchAll(/<link rel="(?:icon|shortcut icon|apple-touch-icon)"[^>]*>/g)].map((m) => m[0])
-    check(icons.length === 1 && /href="\/favicon\.ico"/.test(icons[0]), `${file}: ${json(icons)}`)
+    check(icons.length === 1 && /href="\/favicon\.ico"/.test(icons[0]) && /sizes="16x16 32x32 48x48"/.test(icons[0]), `${file}: ${json(icons)}`)
   }
 })
-await test("REL-018", "No favicon 404: the file the pages name is in the build (the live answer is SMOKE-04)", async (check) => {
-  // REL-017 holds that /favicon.ico is the only icon any page names; here, that the build serves it.
-  check(files.includes("favicon.ico"), "the build has no favicon.ico, which every page names")
+await test("REL-018", "The 404 page says plainly what happened, shows Bearnard from the registry's not-found role, and links back", async (check) => {
+  const html = await readFile(join(dist, "404.html"), "utf8")
+  check(/<h1[^>]*>This page isn&#39;t in the archive\.<\/h1>|<h1[^>]*>This page isn't in the archive\.<\/h1>/.test(html), "the heading does not say the page is not in the archive")
+  check(/Bearnard checked every folder/.test(html), "the 404 page has no Bearnard line")
+  const img = /<img\b[^>]*class="gl-bearnard[^"]*"[^>]*>/.exec(html)?.[0]
+  // An empty alt (decorative: the text names Bearnard) is written as a bare `alt`, which HTML reads as alt="".
+  check(img !== undefined && /\salt(?:="")?(?=[\s>])/.test(img), "no decorative Bearnard illustration")
+  const src = img && /src="([^"]+)"/.exec(img)?.[1]
+  check(src !== undefined && files.includes(src.slice(1)), `the illustration ${src} is not in the build`)
+  check(/href="\/"/.test(html) && /Start again from Home/.test(html), "no way back to Home")
+  check(!/<script\b/.test(html.replace(/<script type="application\/ld\+json"[\s\S]*?<\/script>/g, "")), "the 404 page loads a script")
 })
 await test("REL-019", "Only approved brand imagery is published: the favicon and the committed Bearnard derivatives", async (check) => {
   const images = files.filter((f) => /\.(png|jpe?g|webp|avif|gif|ico)$/i.test(f))
@@ -212,7 +239,9 @@ await test("REL-024", "The release checks catch what they claim to (controlled d
     await unlink(join(copy, "favicon.ico"))
     check((await releaseIssues(copy)).some((i) => i.includes("favicon")), "a missing favicon is not detected")
     await writeFile(join(copy, "favicon.ico"), icon)
-    check((await releaseIssues(copy, { deployment: true })).some((i) => i.includes("CNAME")), "a deployment without CNAME is not detected")
+    await writeFile(join(copy, "CNAME"), "www.gusmaolab.org\n")
+    check((await releaseIssues(copy)).some((i) => i.includes("CNAME")), "a leftover CNAME file is not detected")
+    await unlink(join(copy, "CNAME"))
     check((await releaseIssues(copy)).length === 0, "restoring the copy does not restore a clean result")
   } finally {
     await rm(copy, { recursive: true, force: true })
@@ -248,7 +277,11 @@ await test("REL-053", "The nineteen scheduling checks remain deferred by the own
 await test("REL-055", "The Bearnard masters stay private: ignored, untracked, never in the build", async (check) => {
   check(git("check-ignore", "-q", "brand/bearnard/bearnard_v1.3.png").status === 0, "brand/bearnard/ is not ignored")
   check(git("ls-files", "brand/bearnard").stdout.trim() === "", "a master is tracked")
-  check(!files.some((f) => /bearnard_v\d|brand\//.test(f)), "a master is in the build")
+  check(!files.some((f) => /bearnard_v\d|bearnard-favicon-full|brand\//.test(f)), "a master is in the build")
+  // P24A (D-168): the owner's full-size image sits with the masters, ignored, and the inventory lists it.
+  check(git("check-ignore", "-q", "brand/bearnard/bearnard-favicon-full.png").status === 0, "the full-size Bearnard image is not with the ignored masters")
+  check(/^brand\/bearnard\/bearnard-favicon-full\.png,.*,unclassified,/m.test(await read("assets/bearnard/inventory.csv")), "the inventory does not list the full-size Bearnard image")
+  check(git("status", "--porcelain", "--", "brand").stdout.trim() === "" || git("status", "--porcelain", "--", "brand").stdout.trim().split("\n").every((l) => / brand\/favicon\.ico$/.test(l)), "something untracked or changed is under brand/")
 })
 await test("REL-056", "The private CV sources stay private: ignored, untracked on this branch, never in the build", async (check) => {
   check(git("check-ignore", "-q", "cv/codex-yaml/CV.proposta.yaml").status === 0, "cv/codex-yaml/ is not ignored")

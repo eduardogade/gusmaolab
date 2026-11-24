@@ -6,7 +6,6 @@
   "include": [".astro/types.d.ts", "**/*"],
   "exclude": [
     "dist",
-    "_backup",
     "brand",
     "_books",
     "_papers",

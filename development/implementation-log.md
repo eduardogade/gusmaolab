@@ -1202,3 +1202,34 @@ Both results are recorded in ISSUE-0007, and the first is not converted into a p
 - **Correction.** `cv/codex-yaml/` does not exist in this checkout: the `cv/` folder was last modified on 2026-11-16 at 17:24, and the reflog shows nothing else. So the earlier warning that a checkout of `main` would *overwrite* a local copy was an unverified inference; it would have written the old files into the tree.
 
 **P24 — the contact gate (2026-11-24).** The owner decided that the nine profiles are enough contact for the first release. This is recorded in D-164, in `p24-release.md` (sections 10, 11, 12 and 13) and in the current state. REL-014 does not apply while no email address is published. Three profile links remain for the owner to check by hand. No source changed.
+
+**P24A — Final release resolution (2026-11-24).** Began on `development` at `e0484a9`, equal to `origin/development`; `origin/main` at `58fcc3b`; no open pull request; 20 extra remote branches, each checked to be fully merged into `origin/main`.
+
+- **Done.**
+  - Removed the Pelican archive and the empty scaffolding (D-168), tagged `pelican-archive-final` (pushed), and dropped `_backup` from `tsconfig.json`, `.pre-commit-config.yaml` and `.prettierignore`.
+  - Moved `public/favicon.ico` back to `brand/favicon.ico`. Added `scripts/favicon.mjs` and generated `public/favicon.ico` (16/32/48 px, the images byte-identical to the source). Changed the icon link's `sizes`.
+  - Moved `brand/bearnard-favicon-full.png` into `brand/bearnard/` (same SHA-256) and added it to the inventory and `SHA256SUMS`.
+  - Gave the approved portrait the `not-found` role. Rewrote the 404 page's lede, with Bearnard beside or beneath the text.
+  - Replaced `release.yml` with the native Pages workflow, and removed `release-check.mjs`'s deployment mode. SMOKE-07 now checks the 404 page's Bearnard image.
+  - Rewrote `tests/release.mjs` for the new architecture (29 checks) and `development/operations.md`. Marked `p24-release.md` superseded.
+  - Recorded D-167 and D-168.
+  - Deleted the 20 merged remote branches and 3 merged local branches, kept the old local `main` as a backup ref, and created the ruleset.
+  - Enabled Pages (`build_type: workflow`) on `eduardogade/gusmaolab`, and tagged `pelican-final` at `dc0cb6c` in `eduardogade/eduardogade.github.io`. A bundle of that repository is in the session's scratchpad, as a temporary copy only.
+- **Guards adjusted, each named by D-168:**
+  - NUC-041, NUCINT-042 and QA-PRESERVE-03 subtract `D168_FILES`. A new helper, `statusWithoutApproved`, applies the same subtraction to `git status`.
+  - SITE-043 and NUCINT-054 allow `brand/favicon.ico` to be staged.
+  - HOME-007 allows exactly the `not-found` role.
+  - QA-PRESERVE-05 includes D-168.
+  - The 404 page's image budget goes from 0 to 190,000 bytes (the owner asked for the picture).
+  - The 404 image is marked decorative with the class the P22 audit accepts.
+- **Checks.**
+  - `npm run check`: 0 errors. `npm run build`: 37 pages.
+  - `scripts/favicon.mjs --check`: PASS. `git diff --check`: clean.
+  - Full `npm run qa`: 870 PASS, 0 FAIL, 0 SKIPPED, 19 DEFERRED, 0 NOT RUN, 0 FLAKY.
+  - Chrome (in-app browser) on `astro preview`:
+    - the 404 page at 1440, 1280, 768 and 390 px, with keyboard order;
+    - Home, nucleus and clocks;
+    - navigation and Back;
+    - Schedule and Contact.
+  - The console showed the expected 404 and one `InvalidStateError` from the cross-fade when the automation pressed Back during it (P24A did not touch the transitions).
+- **No email, booking or Cal.com operation was performed.**

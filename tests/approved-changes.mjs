@@ -42,8 +42,20 @@ export const D163_FILES = ["src/pages/sitemap.xml.ts", "src/pages/robots.txt.ts"
  */
 export const D164_FILES = ["src/data/contact.ts"]
 
+/**
+ * D-168 (P24A, 2026-11-24, the owner's release instruction): the owner's favicon source back at `brand/favicon.ico` (its
+ * derivative is `public/favicon.ico`, made by scripts/favicon.mjs); the 404 page with Bearnard, through the registry's
+ * `not-found` role, which the owner asked for; and the owner's full-size Bearnard image recorded in the inventory. No master
+ * is changed, no derivative is remade, and the folders, palettes and homepage are untouched.
+ */
+export const D168_FILES = ["brand/favicon.ico", "src/illustrations/bearnard.ts", "src/pages/404.astro", "assets/bearnard/inventory.csv", "assets/bearnard/SHA256SUMS", "assets/bearnard/README.md"]
+
 /** Every file an owner-approved or owner-requested decision allowed to change since an older guard's base. */
-export const APPROVED_FILES = [...new Set([...D158_FILES, ...D161_FILES, ...D162_FILES, ...D163_FILES, ...D164_FILES])]
+export const APPROVED_FILES = [...new Set([...D158_FILES, ...D161_FILES, ...D162_FILES, ...D163_FILES, ...D164_FILES, ...D168_FILES])]
+
+/** `git status --porcelain` lines, without the files a recorded decision allowed to change (a rename counts by its new path). */
+export const statusWithoutApproved = (status, approved = APPROVED_FILES) =>
+  status.split("\n").filter(Boolean).filter((line) => !approved.includes(line.slice(3).split(" -> ").pop()))
 
 /** `files` without the ones a recorded decision allowed to change. */
 export const withoutApproved = (files, approved = APPROVED_FILES) => files.filter((f) => !approved.includes(f))

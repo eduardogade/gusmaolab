@@ -30,7 +30,7 @@ import { createTubeBuilder, mergeTubes } from "../src/visualization/nucleus/tube
 import { cameraDistance, clientToFrame, project, rotate, targetResponse, unrotate } from "../src/visualization/nucleus/view.ts"
 import { DEV_PAGES, NUCLEUS_PAGE } from "../src/design/site-map.ts"
 import { fakeBrowser, fakeHost, listeners } from "./nucleus-fakes.mjs"
-import { withoutApproved } from "./approved-changes.mjs"
+import { statusWithoutApproved, withoutApproved } from "./approved-changes.mjs"
 
 const repo = fileURLToPath(new URL("../", import.meta.url))
 const dist = join(repo, "dist")
@@ -662,12 +662,12 @@ await test("NUC-040", "The five locked palettes are unchanged, and the nucleus a
 
 await test("NUC-041", "Bearnard is untouched and not involved", async (check, skip) => {
   if (!gitAvailable) return skip("git is not available")
-  const touched = changedSinceBase(["src/illustrations", "public/illustrations", "assets/bearnard", "scripts/bearnard_derivatives.py", "src/components/bearnard"])
+  const touched = withoutApproved(changedSinceBase(["src/illustrations", "public/illustrations", "assets/bearnard", "scripts/bearnard_derivatives.py", "src/components/bearnard"]))
   check(touched.length === 0, `Bearnard files changed: ${json(touched)}`)
   const sources = (await Promise.all((await readdir(join(repo, "src/visualization/nucleus"))).map((f) => read(`src/visualization/nucleus/${f}`)))).join("\n")
   check(!/bearnard/i.test(sources.replace(/Bearnard[^\n]*\n/g, "")), "the nucleus code mentions Bearnard")
-  const status = git("status", "--porcelain", "--", "brand").stdout.trim()
-  check(status === "", "something under brand/ changed")
+  const status = statusWithoutApproved(git("status", "--porcelain", "--", "brand").stdout)
+  check(status.length === 0, `something under brand/ changed: ${json(status)}`)
 })
 
 await test("NUC-042", "P10 to P14 publishing is unchanged", async (check, skip) => {

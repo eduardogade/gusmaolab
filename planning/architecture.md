@@ -22,7 +22,7 @@ Status: approved direction recorded in P01. The Astro foundation was set up in P
 | `site` | `https://www.gusmaolab.org` |
 | `base` | None: the site is served from the domain root |
 | Build output | `dist/` (gitignored) |
-| TypeScript | Extends `astro/tsconfigs/strict` with `erasableSyntaxOnly` (D-040); excludes `dist`, `_backup`, `brand` and the private folders |
+| TypeScript | Extends `astro/tsconfigs/strict` with `erasableSyntaxOnly` (D-040); excludes `dist`, `brand` and the private folders (the Pelican archive `_backup` was retired in P24A) |
 | Diagnostics | `astro check`, using `@astrojs/check` 0.9.12 and TypeScript 6.0.3 |
 | Styles | Native CSS custom properties in `src/styles/`, imported by `BaseLayout` (D-026). No CSS framework or preprocessor. |
 | Categories (colour) | `data-category` on `<html>` via BaseLayout's `category` prop, and on every top-level tab; the five palettes live only in `src/styles/categories.css` (D-076) |
@@ -349,10 +349,10 @@ environments.css  ten typography and texture tokens per [data-environment]; no c
 | `development/` | Roadmap, current state, decisions, logs, acceptance gates, releases |
 | `debugging/` | Issues, regressions, known limitations, investigations |
 | `assets/bearnard/` | Bearnard inventory and checksums, and since P09 `derivatives.json`, the provenance of the web derivatives. The masters stay in `brand/bearnard/`, which is gitignored. |
-| `_backup/pelican-legacy/` | Archived Pelican site. Not a build input. |
+| `_backup/pelican-legacy/` | Retired in P24A (D-168); in history at the tag `pelican-archive-final`. |
 | `brand/` | Brand assets |
-| `docs/` | Pelican-era planning notes; several are empty placeholders |
-| `cv/`, `publications/`, `scripts/`, `data/`, `hyperglam/` | Retained from the old plan; every tracked file in them is empty, except `scripts/bearnard_derivatives.py` (above) |
+| `docs/` | Retired in P24A (D-168): Pelican-era notes and empty placeholders, in history |
+| `cv/`, `scripts/` | `cv/` is the owner's CV folder (its own rules); `scripts/` holds the project's scripts. The empty placeholders `publications/`, `data/` and `hyperglam/` were retired in P24A (D-168) |
 | `.github/workflows/` | Eight placeholder workflows, all commented out. No active workflow. |
 | `.pre-commit-config.yaml`, `.editorconfig`, `.prettierrc`, `.prettierignore` | Formatting and commit-hook configuration |
 | `_books/`, `_papers/`, `_references/`, `_reports/` | Private workspace, gitignored. Never commit. |
@@ -363,7 +363,7 @@ environments.css  ten typography and texture tokens per [data-environment]; no c
 ## Deployment
 
 - **Legacy:** `_backup/pelican-legacy/.github/workflows/deploy.yml` built Pelican on every push to `main` and force-pushed the output to `eduardogade/eduardogade.github.io` using the `PAGES_DEPLOY_TOKEN` secret. The custom domain came from `content/extra/CNAME` (`www.gusmaolab.org`). The workflow is archived and inactive.
-- **New:** **To be decided**: target repository, workflow, and whether the CNAME and token carry over (D-005). P02 and P03 changed nothing related to deployment.
+- **New (P24A, D-167):** GitHub Pages' own deployment from this repository: `.github/workflows/release.yml` (manual; build, `upload-pages-artifact`, `deploy-pages`, smoke test), custom domain `www.gusmaolab.org` in this repository's Pages settings, DNS at Cloudflare unchanged. No token, key or second repository. `development/operations.md` is the procedure.
 
 ## Local tooling (checked 2026-11-10)
 

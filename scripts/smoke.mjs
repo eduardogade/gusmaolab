@@ -95,7 +95,14 @@ check("SMOKE-06", `The sitemap is served and every address in it answers 200 (${
 // 3. An address that matches no page gets the site's own 404 page, with the status 404 (not /404.html loaded directly).
 const errorTitle = /<title>([^<]*)<\/title>/.exec(await readFile(join(dist, "404.html"), "utf8"))?.[1]
 const missing = await get(at(`/no-such-page-${Date.now().toString(36)}/`))
-check("SMOKE-07", "An unknown address answers 404 with the site's 404 page", missing.res?.status === 404 && errorTitle !== undefined && missing.body.toString().includes(`<title>${errorTitle}</title>`) ? [] : [`status ${missing.res?.status}`])
+const missingProblems = missing.res?.status === 404 && errorTitle !== undefined && missing.body.toString().includes(`<title>${errorTitle}</title>`) ? [] : [`status ${missing.res?.status}`]
+// Its Bearnard illustration (P24A, D-168) and its other images load too: the 404 page is served at any address.
+for (const m of missing.body.toString().matchAll(/<img\b[^>]*?\bsrc="([^"]+)"/gi)) {
+  const { res } = await get(new URL(m[1], at("/")).href)
+  if (res?.status !== 200) missingProblems.push(`404 page image ${m[1]}: ${res?.status}`)
+}
+if (!/<img\b[^>]*gl-bearnard/.test(missing.body.toString())) missingProblems.push("the 404 page shows no Bearnard illustration")
+check("SMOKE-07", "An unknown address answers 404 with the site's 404 page, and its Bearnard illustration loads", missingProblems)
 
 // 4. Development, demonstration and private paths do not exist (generic patterns only).
 const absent = ["/_design/", "/_design/site-map/", "/_design/quality/", "/demo-assets/", "/demo-downloads/", "/dist-demo/", "/qa-report/", "/src/", "/cv/codex-yaml/", "/brand/", "/lecture-notes/greenhouse/demo-synthetic-signals/"]

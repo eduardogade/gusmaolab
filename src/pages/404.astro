@@ -9,6 +9,10 @@
  * destinations from the navigation registry (labels and URLs from `siteNavigation`, so a rename
  * cannot leave a link behind). No tab is selected because no folder owns this URL (ErrorPage).
  * Everything is plain HTML and CSS: it works without JavaScript and loads no script.
+ *
+ * Bearnard (P24A, D-168): the illustration is whichever approved one holds the registry's
+ * `not-found` role (src/illustrations/bearnard.ts), so it can be replaced without touching this page.
+ * The heading says plainly what happened; the joke is in the line after it, never instead of it.
  */
 import BearnardIllustration from "../components/bearnard/BearnardIllustration.astro"
 import ErrorPage from "../layouts/ErrorPage.astro"
@@ -28,31 +32,59 @@ const home = siteNavigation.node("home")
   title="Page not found · GusmaoLab"
   description="This page is not in the GusmaoLab archive. It may have moved, or the address may be mistyped."
 >
-  <div class="gl-prose err" data-not-found>
-    <p class="err__eyebrow">404 · Not filed</p>
-    <h1>This folder isn't in the archive.</h1>
-    <p class="err__lede">
-      The page may have moved, or the address may have a typo. Nothing is wrong on your side.
-    </p>
-    <p><a class="err__home" href={home.path}>Start again from {home.label}</a></p>
-    <nav aria-labelledby="err-where" class="err__where">
-      <h2 id="err-where" class="err__heading">Or open one of these</h2>
-      <ul class="err__list">
-        {
-          SUGGESTED.map(({ node, about }) => (
-            <li>
-              <a href={node.path}>{node.label}</a>
-              <span class="err__about">: {about}</span>
-            </li>
-          ))
-        }
-      </ul>
-    </nav>
-    <BearnardIllustration role="not-found" decorative class="err__art" />
+  <div class="err" data-not-found>
+    <div class="gl-prose err__text">
+      <p class="err__eyebrow">404 · Not filed</p>
+      <h1>This page isn't in the archive.</h1>
+      <p class="err__lede">
+        Bearnard checked every folder, twice, and came back with nothing but his coffee. The page may
+        have wandered off, or the address may have a typo. Nothing is wrong on your side.
+      </p>
+      <p><a class="err__home" href={home.path}>Start again from {home.label}</a></p>
+      <nav aria-labelledby="err-where" class="err__where">
+        <h2 id="err-where" class="err__heading">Or open one of these</h2>
+        <ul class="err__list">
+          {
+            SUGGESTED.map(({ node, about }) => (
+              <li>
+                <a href={node.path}>{node.label}</a>
+                <span class="err__about">: {about}</span>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+    </div>
+    <BearnardIllustration role="not-found" decorative loading="eager" sizes="(min-width: 48rem) 12rem, 9rem" class="err__art decorative" />
   </div>
 </ErrorPage>
 
 <style>
+  /* Text first, Bearnard beside it from tablet width, beneath it on a phone; he is never cropped (his placement). */
+  .err {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: var(--space-l);
+  }
+
+  .err__text {
+    flex: 1 1 22rem;
+    min-inline-size: 0;
+  }
+
+  .err :global(.err__art) {
+    flex: 0 0 auto;
+    inline-size: 9rem;
+    block-size: auto;
+  }
+
+  @media (min-width: 48rem) {
+    .err :global(.err__art) {
+      inline-size: 12rem;
+    }
+  }
+
   .err__eyebrow {
     margin: 0;
     color: var(--color-text-muted);

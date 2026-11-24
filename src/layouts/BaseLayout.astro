@@ -50,7 +50,7 @@ const canonical = canonicalUrl(Astro.url.pathname, Astro.site, !demosEnabled())
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     {description && <meta name="description" content={description} />}
     <title>{title}</title>
-    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48 64x64 128x128 256x256" />
+    <link rel="icon" href="/favicon.ico" sizes="16x16 32x32 48x48" />
     {canonical && <link rel="canonical" href={canonical} />}
     <meta property="og:site_name" content={SITE_NAME} />
     <meta property="og:type" content="website" />

@@ -1,5 +1,7 @@
 # P24 — Release plan and production release authorization request
 
+> **Superseded by P24A (2026-11-24).** The owner chose GitHub Pages' own deployment from this repository (D-167), retired Pelican and cleaned the repository (D-168). The current procedure is `development/operations.md`. This file is kept as the record of P24's analysis: its Git audit and reconciliation (done, D-166) remain accurate; its Option A, deploy key and two-repository workflow were not used.
+
 Prepared 2026-11-24 on `development`, starting from `1bbcfa9` (equal to `origin/development`, tree clean except two files the owner had just added to `brand/`). Everything below about GitHub, DNS and the live site was **read**, not changed: no setting, branch, DNS record, deployment or Pages repository was touched. The decisions are D-163 (release metadata), D-164 (the public profiles) and D-165 (the release architecture, **proposed**, awaiting the owner).
 
 **Status: P24 RELEASE CANDIDATE READY — OWNER CUTOVER AUTHORIZATION PENDING.** Update, same day: on the owner's decision about ISSUE-0008, the reconciliation of section 3 was carried out (D-166); `main` and `development` are both `58fcc3b` or its descendants, and production is unchanged. The cutover also waits on owner-side setup (section 7.0) and on the owner's choice about an email address (section 10).

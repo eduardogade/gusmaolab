@@ -70,7 +70,9 @@ export const ILLUSTRATIONS: readonly BearnardIllustration[] = [
     id: "bearnard-v1.3-portrait",
     master: "brand/bearnard/bearnard_v1.3.png",
     category: "canonical-master",
-    roles: [],
+    // The 404 page (P24A, D-168): the owner asked for Bearnard on the error page, and no error expression exists, so the
+    // approved portrait holds the role. To use another approved illustration there, move the role; the page does not change.
+    roles: ["not-found"],
     alt: "Bearnard, a cheerful dark-furred bear in tortoiseshell glasses, a plaid flannel shirt over a DNA T-shirt and jeans, smiling with a steaming mug in his paw.",
     files: [
       {

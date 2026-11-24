@@ -10,8 +10,6 @@
 # ------------------------------------------------------------------------------
 # 1. Minimal metadata block (required)
 # ------------------------------------------------------------------------------
-# Archived legacy files under _backup/ must stay byte-for-byte unchanged (P01).
-exclude: ^_backup/
 repos:
   - repo: https://github.com/pre-commit/pre-commit-hooks
     rev: v5.0.0

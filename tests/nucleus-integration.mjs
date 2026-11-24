@@ -6,7 +6,7 @@
 //
 // NUCINT-001..054 are the P20 prompt's own list; a check that needs a browser says so and is in the
 // other file. Every check here is a fact about code or the build, never about how it looks.
-import { withoutApproved, withoutNarrowTitleRule } from "./approved-changes.mjs"
+import { statusWithoutApproved, withoutApproved, withoutNarrowTitleRule } from "./approved-changes.mjs"
 import { spawnSync } from "node:child_process"
 import { existsSync } from "node:fs"
 import { readFile, readdir } from "node:fs/promises"
@@ -721,9 +721,9 @@ await test("NUCINT-041", "P15 composition: the regions, their order and the stag
 })
 
 await test("NUCINT-042", "Bearnard: assets, registry and component are untouched, and the nucleus code never names him", async (check) => {
-  const touched = changed(["src/illustrations", "public/illustrations", "assets/bearnard", "scripts/bearnard_derivatives.py", "src/components/bearnard", "src/components/home/HomeWelcome.astro"], P19_START)
+  const touched = withoutApproved(changed(["src/illustrations", "public/illustrations", "assets/bearnard", "scripts/bearnard_derivatives.py", "src/components/bearnard", "src/components/home/HomeWelcome.astro"], P19_START))
   check(touched.length === 0, `Bearnard files changed: ${json(touched)}`)
-  check(git("status", "--porcelain", "--", "brand").stdout.trim() === "", "something under brand/ changed")
+  check(statusWithoutApproved(git("status", "--porcelain", "--", "brand").stdout).length === 0, "something under brand/ changed")
   check(!/bearnard/i.test(strip((await read("src/scripts/home-nucleus.ts")) + (await read("src/home/nucleus-navigation.ts")))), "the glue names Bearnard")
 })
 
@@ -823,7 +823,7 @@ await test("NUCINT-053", "Utility regression: contact, downloads, the 404 page a
 await test("NUCINT-054", "CV preservation: no CV file changed, staged or modified in the working tree", async (check) => {
   check(changed(["cv", "src/cv", "src/data/cv"], P19_START).length === 0, "CV files changed")
   check(git("status", "--porcelain", "--", "cv").stdout.trim() === "", "the working tree has a CV change")
-  check(!lines(git("diff", "--cached", "--name-only")).some((f) => /^(cv\/|_references|_books|_papers|_reports|brand\/)/.test(f)), "a private or CV file is staged")
+  check(!withoutApproved(lines(git("diff", "--cached", "--name-only"))).some((f) => /^(cv\/|_references|_books|_papers|_reports|brand\/)/.test(f)), "a private or CV file is staged")
 })
 
 await test("NUCINT-055", "The tab row stays on screen on Home only, on pointer devices, without touching the folders (D-144)", async (check) => {

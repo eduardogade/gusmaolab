@@ -1,9 +1,8 @@
-// The release artifact check (P24, D-165): what a release build must hold before it is published, read from the built files
-// themselves, never from the source. It runs in the release workflow twice: on `dist/` after `npm run build`, and on the Pages
-// repository's tree just before the push (`--deployment`: CNAME and .nojekyll too). tests/release.mjs runs it on every
-// verification. It needs no dependency, so the publish job can run it without `npm ci`.
+// The release artifact check (P24, D-165; P24A, D-167): what a release build must hold before it is published, read from the
+// built files themselves, never from the source. The release workflow runs it on `dist/` after `npm run build`, before the
+// Pages artifact is uploaded; tests/release.mjs runs it on every verification. It needs no dependency.
 //
-//   node scripts/release-check.mjs [dir] [--deployment]
+//   node scripts/release-check.mjs [dir]
 //
 // `npm run build` (scripts/public-build.mjs) already refuses a demonstration or an unapproved download; this adds the release
 // metadata (canonical addresses, Open Graph, favicon, robots.txt, sitemap) and the public/private boundary of the files.
@@ -46,7 +45,7 @@ const attrs = (html, tag, attr) => [...html.matchAll(new RegExp(`<${tag}\\b[^>]*
 const valueOf = (tagText, name) => new RegExp(`\\b${name}="([^"]*)"`, "i").exec(tagText)?.[1]
 
 /** Every problem with a release tree, as sentences. Empty means it may be published. */
-export async function releaseIssues(dir, { deployment = false } = {}) {
+export async function releaseIssues(dir) {
   const issues = []
   const site = await siteOrigin()
   const files = await walk(dir)
@@ -107,14 +106,9 @@ export async function releaseIssues(dir, { deployment = false } = {}) {
     if (!locs.includes(new URL("/", site).href)) issues.push("sitemap.xml does not list Home")
   }
 
-  // 4. What only the Pages repository's tree has: the custom domain and no Jekyll (Jekyll would drop _astro/).
-  if (deployment) {
-    if (!has.has("CNAME")) issues.push("CNAME is missing")
-    else if ((await readFile(join(dir, "CNAME"), "utf8")).trim() !== site.hostname) issues.push(`CNAME does not say ${site.hostname}`)
-    if (!has.has(".nojekyll")) issues.push(".nojekyll is missing (GitHub Pages would drop the _astro/ folder)")
-  } else {
-    for (const file of ["CNAME", ".nojekyll"]) if (has.has(file)) issues.push(`${file}: belongs to the Pages repository, not to the build`)
-  }
+  // 4. GitHub Pages' own deployment takes the custom domain from the repository's Pages settings and never runs Jekyll, so a
+  // CNAME or .nojekyll file in the build would only be a leftover of the retired two-repository pipeline (D-167).
+  for (const file of ["CNAME", ".nojekyll"]) if (has.has(file)) issues.push(`${file}: not part of a GitHub Pages artifact deployment`)
   return issues
 }
 
@@ -125,11 +119,11 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     console.error(`FAIL: ${dir} is not a directory`)
     process.exit(1)
   }
-  const issues = await releaseIssues(dir, { deployment: args.includes("--deployment") })
+  const issues = await releaseIssues(dir)
   if (issues.length > 0) {
     console.error(`FAIL: the release tree has ${issues.length} problem(s):`)
     for (const issue of issues.slice(0, 40)) console.error(`  - ${issue}`)
     process.exit(1)
   }
-  console.log(`PASS: the release tree ${dir} can be published (${args.includes("--deployment") ? "deployment" : "build"} checks)`)
+  console.log(`PASS: the release tree ${dir} can be published`)
 }

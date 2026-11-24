@@ -616,3 +616,34 @@ P23 was accepted by the owner, D-162 included. P24 prepared the production relea
   - the favicon's weight (149 KB);
   - the legacy URLs that will answer 404;
   - the release itself.
+
+## P24A — Final release resolution (2026-11-24)
+
+The owner settled the release decisions (D-167, D-168): one repository, GitHub Pages' own deployment, Pelican retired, the profiles as Contact, no email or booking tests, Chrome only. Status: **ready for the final domain handover** (the live site is still Pelican until the owner approves the transfer).
+
+- **Repository.**
+  - Removed from the tree, and kept in history at the tag `pelican-archive-final`: the Pelican archive `_backup/` (with its theme submodule), the empty 2025 scaffolding (`docs/`, `data/`, `hyperglam/`, `publications/`) and `.lycheeignore`.
+  - Deleted: the 20 remote branches, all merged into `main`, and the 3 merged local prompt branches.
+  - The stale local `main` is kept as `refs/backup/main-ffafcd3`, and `main` tracks `origin/main`.
+  - A ruleset forbids deleting or force-pushing `main` and `development`.
+  - No pull request was open, so none needed closing.
+- **Brand.**
+  - `brand/favicon.ico` is the favicon's one source. `public/favicon.ico` is its 16/32/48 px derivative (10,401 bytes, images unchanged; `npm run favicon`).
+  - The owner's full-size image is `brand/bearnard/bearnard-favicon-full.png` (ignored, inventoried `unclassified`).
+- **404 page.** It shows Bearnard (the approved portrait, through the registry's `not-found` role) and a friendly line under a plain heading.
+- **Publishing.**
+  - `release.yml` is GitHub Pages' own deployment: build, `upload-pages-artifact` v5.0.0, `deploy-pages` v5.0.1, smoke test. Manual, no secret.
+  - Pages is enabled on `eduardogade/gusmaolab` with the GitHub Actions source; the `github-pages` environment accepts `main` only.
+  - The custom domain still belongs to `eduardogade/eduardogade.github.io`, which is tagged `pelican-final` at `dc0cb6c`.
+- **Local QA:** full `npm run qa`, 870 PASS, 0 FAIL, 0 SKIPPED, 19 DEFERRED, 0 NOT RUN, 0 FLAKY.
+- **Chrome, on the local release build:**
+  - the 404 page at 1440, 1280, 768 and 390 px (status 404, image loads, no script, the skip link and keyboard order work);
+  - Home (nucleus ready, eight clocks);
+  - folder navigation and Back;
+  - Schedule (in preparation, links to Contact, no booking script);
+  - Contact (nine links, no email).
+- **Not done (the owner's):**
+  - approve the domain transfer;
+  - Cloudflare's Always Use HTTPS: `http://www.gusmaolab.org/` still answers 200 without redirecting;
+  - revoke the old personal access token in the owner's GitHub settings once its secret is deleted;
+  - Safari and a phone. A screen reader is not tested.

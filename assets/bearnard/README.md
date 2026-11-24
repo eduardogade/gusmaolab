@@ -41,6 +41,7 @@ Evidence: the P01 brief names Bearnard v1.3 the established canonical identity, 
 | experimental | 1 | rejected | `expressions/bearnard-expression-v1.3-AH.png`, documented as a negative example |
 | working-copy | 3 | duplicates, not authoritative | `expressions2/references/` (copies of the master, A and D) |
 | unclassified | 31 | unresolved | `bears/`: no documentation; these may not depict Bearnard |
+| unclassified | 1 | owner-supplied, kept for future assets | `bearnard-favicon-full.png` (1024 × 1024): added by the owner in P24A (D-168). It is **not** the favicon (the favicon's source is `brand/favicon.ico`) and no derivative is made from it until the owner approves one |
 
 No sticker, Under Construction or error-page illustrations were found by filename. The 17 non-image files in `expressions2/` (prompts, review notes, scripts) are not inventoried.
 

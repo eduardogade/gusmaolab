@@ -24,7 +24,7 @@ import { freshness, sourceState } from "../src/quality/source.mjs"
 import { DEFECTS, copyBuild, fingerprint, readReport, runAudits } from "./qa-fixtures.mjs"
 import { DEV_PAGES, QUALITY_PAGE } from "../src/design/site-map.ts"
 import { demoBuild } from "./demo-dist.mjs"
-import { D161_FILES, D162_FILES, D163_FILES, D164_FILES, exemptionLines, skipTargetOnly, withoutApproved } from "./approved-changes.mjs"
+import { D161_FILES, D162_FILES, D163_FILES, D164_FILES, D168_FILES, exemptionLines, skipTargetOnly, withoutApproved } from "./approved-changes.mjs"
 
 const repo = fileURLToPath(new URL("../", import.meta.url))
 const dist = join(repo, "dist")
@@ -340,23 +340,26 @@ await test("QA-PRESERVE-02", "The versioned CV sources are untouched", async (ch
   check(!(gitOk && git("diff", "--cached", "--name-only").stdout.split("\n").some((f) => /^cv\//.test(f))), "a CV file is staged")
 })
 await test("QA-PRESERVE-03", "The canonical Bearnard masters and derivatives are untouched", async (check) => {
-  check(changedSinceBase(["brand", "assets/bearnard", "public/illustrations", "src/illustrations", "scripts/bearnard_derivatives.py"]).length === 0, "a Bearnard file changed")
+  // P24A (D-168): the favicon's source back in brand/, the 404 page's role and the inventory row are subtracted by decision.
+  const changedBearnard = withoutApproved(changedSinceBase(["brand", "assets/bearnard", "public/illustrations", "src/illustrations", "scripts/bearnard_derivatives.py"]))
+  check(changedBearnard.length === 0, `a Bearnard file changed: ${json(changedBearnard)}`)
+  check(changedSinceBase(["public/illustrations", "scripts/bearnard_derivatives.py"]).length === 0, "a Bearnard derivative or its generator changed")
 })
 await test("QA-PRESERVE-04", "The navigation registry, the folder components and the palettes are unchanged", async (check) => {
   // The world clocks' short date (D-158, owner-approved in P22-A01) is the one change to these paths; tests/approved-changes.mjs names its files.
   const touched = withoutApproved(changedSinceBase(["src/navigation", "src/components/folders", "src/styles/folders.css", "src/styles/categories.css", "src/styles/tokens.css", "src/styles/home-tabs.css", "src/visualization", "src/home", "src/components/home", "src/pages/index.astro"]))
   check(touched.length === 0, `changed: ${json(touched)}`)
 })
-await test("QA-PRESERVE-05", "P23 and P24 changed only the source files D-161 to D-164 name (and src/release/), the two layouts only by one attribute, and added no palette, token or colour to a stylesheet", async (check) => {
+await test("QA-PRESERVE-05", "P23, P24 and P24A changed only the source files D-161 to D-168 name (and src/release/), the two layouts only by one attribute, and added no palette, token or colour to a stylesheet", async (check) => {
   if (!gitOk) return
   const P23_BASE = "183b5a4" // the head P23 began from
   const run = (...args) => git(...args).stdout.split("\n").filter(Boolean)
   if (git("cat-file", "-e", P23_BASE).status !== 0) return
   const changed = [...new Set([...run("diff", "--name-only", P23_BASE, "--", "src"), ...run("ls-files", "--others", "--exclude-standard", "--", "src")])]
   // P24 (D-163, D-164) adds the release metadata, under its own folder src/release/, and the owner's public profiles.
-  const named = [...D161_FILES, ...D162_FILES, ...D163_FILES, ...D164_FILES]
+  const named = [...D161_FILES, ...D162_FILES, ...D163_FILES, ...D164_FILES, ...D168_FILES]
   const unnamed = changed.filter((f) => !named.includes(f) && !f.startsWith("src/release/"))
-  check(unnamed.length === 0, `source files changed that D-161 to D-164 do not name: ${json(unnamed)}`)
+  check(unnamed.length === 0, `source files changed that D-161 to D-168 do not name: ${json(unnamed)}`)
   const decisions = await read("development/decisions.md")
   const decision = /\*\*D-161\.\*\*[\s\S]*?(?=\n\n|$)/.exec(decisions)?.[0] ?? ""
   for (const file of D161_FILES) check(decision.includes(`\`${file}\``) || decision.includes(`\`${file.split("/").pop()}\``), `D-161 does not name ${file}`)
@@ -365,7 +368,7 @@ await test("QA-PRESERVE-05", "P23 and P24 changed only the source files D-161 to
   for (const file of D162_FILES) check(close.includes(`\`${file}\``), `D-162 does not name ${file}`)
   for (const file of D162_FILES) check(skipTargetOnly(git("diff", P23_BASE, "--", file).stdout), `${file} changed beyond tabindex="-1" on <main id="content"> (D-162)`)
   // P24: each list of files is named by its own decision, so a list cannot be widened by editing tests/approved-changes.mjs alone.
-  for (const [id, files] of [["D-163", D163_FILES], ["D-164", D164_FILES]]) {
+  for (const [id, files] of [["D-163", D163_FILES], ["D-164", D164_FILES], ["D-168", D168_FILES]]) {
     const text = new RegExp(`\\*\\*${id}\\.\\*\\*[\\s\\S]*?(?=\\n\\n|$)`).exec(decisions)?.[0] ?? ""
     for (const file of files) check(text.includes(`\`${file}\``), `${id} does not name ${file}`)
   }

@@ -12,7 +12,7 @@
   "pageClasses": {
     "home": { "html": 32000, "js": 6000, "css": 16000, "images": 240000, "scriptFiles": 1 },
     "folder": { "html": 5200, "js": 2200, "css": 15500, "images": 240000, "scriptFiles": 1 },
-    "notFound": { "html": 1600, "js": 0, "css": 12000, "images": 0, "scriptFiles": 0 }
+    "notFound": { "html": 1600, "js": 0, "css": 12000, "images": 190000, "scriptFiles": 0 }
   },
   "measured": {
     "home": { "jsKB": 6, "cssKB": 75, "imagesKB": 200, "htmlKB": 90 },

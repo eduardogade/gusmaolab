@@ -31,6 +31,7 @@ import { pageFacts, recordViews, recordCounts, siteRecordViews } from "../src/si
 import { PAGE_STATES, STATE_HEADINGS } from "../src/site/state.ts"
 import { DEV_PAGES, SITE_MAP } from "../src/design/site-map.ts"
 import { elements, labelOf, layersOf, parse, selectedOf, tabsOf, textOf } from "./html-tree.mjs"
+import { withoutApproved } from "./approved-changes.mjs"
 
 const repo = fileURLToPath(new URL("../", import.meta.url))
 const dist = join(repo, "dist")
@@ -556,7 +557,9 @@ await test("SITE-043", "No private content enters the generated public files", a
   check(!names.some((n) => /(^|\/)(_references|_books|_papers|_reports|brand)(\/|$)/.test(n)), "a private folder is in dist/")
   check(!names.some((n) => /CV\.proposta|cv\.md|identities\.json|manifest\.json$/.test(n)), "a CV file is in dist/")
   const staged = lines(git("diff", "--cached", "--name-only"))
-  check(!staged.some((f) => /^(_references|_books|_papers|_reports|cv\/|brand\/)/.test(f)), `staged private files: ${json(staged)}`)
+  // The owner's favicon source, brand/favicon.ico (P24A, D-168), is the one approved file under brand/.
+  const privateStaged = withoutApproved(staged).filter((f) => /^(_references|_books|_papers|_reports|cv\/|brand\/)/.test(f))
+  check(privateStaged.length === 0, `staged private files: ${json(privateStaged)}`)
   const everything = await readdirText(dist)
   check(!/(^|[\/"'\s])(_references|_papers|_books|_reports)([\/"'\s]|$)|codex-yaml/.test(everything), "a private folder name is in dist/")
 })

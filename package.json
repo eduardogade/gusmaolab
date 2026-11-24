@@ -39,6 +39,7 @@
     "content:publish": "node scripts/content.mjs publish",
     "content:archive": "node scripts/content.mjs archive",
     "links": "node scripts/links.mjs",
+    "favicon": "node scripts/favicon.mjs",
     "release:check": "node scripts/release-check.mjs dist",
     "smoke": "node scripts/smoke.mjs",
     "scheduling:check": "node scripts/scheduling.mjs",

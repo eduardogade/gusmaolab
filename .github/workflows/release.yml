@@ -1,16 +1,14 @@
-# Release (P24, D-165): publishes ONE named commit of this repository to the GitHub Pages repository that serves
-# https://www.gusmaolab.org (eduardogade/eduardogade.github.io, branch main, with its CNAME). It is the only workflow that
-# deploys, and it is manual: nothing here runs on a push. Releasing it the first time is the production cutover, which
-# needs the owner's separate authorization (development/p24-release.md); a workflow that exists is not a permission to run it.
+# Release (P24A, D-167): publishes ONE named commit of this repository with GitHub Pages' own deployment, from this
+# repository, to https://www.gusmaolab.org (the Pages site's custom domain). It is the only workflow that deploys, and it is
+# manual: nothing here runs on a push. No key, no token and no second repository: the deploy job proves who it is with a
+# short-lived OpenID Connect token, which is what `id-token: write` allows.
 #
-#   candidate  no secret. Checks the inputs; checks that the commit is on both main and development (an unexpected
-#              divergence blocks the release) and that the Quality Assurance workflow passed on it; runs the quick QA
-#              profile; builds with `npm run build`; checks the artifact (scripts/release-check.mjs); keeps it for 7 days.
-#   publish    the `production` environment (the owner sets a required reviewer there, and its secret PAGES_DEPLOY_KEY: a
-#              deploy key with write access to the Pages repository only). Replaces the Pages repository's tree with the
-#              artifact plus CNAME and .nojekyll, commits it ON TOP of the previous site (never an orphan, never a force
-#              push, so the previous site is one revert away), pushes, then smoke-tests the live address until it serves
-#              exactly what was built (scripts/smoke.mjs).
+#   build   checks the inputs; checks that the commit is on both main and development (an unexpected divergence blocks
+#           the release) and that the Quality Assurance workflow passed on it; runs the quick QA profile; builds with
+#           `npm run build`; checks the artifact (scripts/release-check.mjs); uploads it as the Pages artifact.
+#   deploy  the `github-pages` environment (only main may deploy to it): GitHub Pages publishes the artifact.
+#   verify  smoke-tests the live address until it serves exactly what was built (scripts/smoke.mjs), and records the
+#           release: the source commit, the deployment URL and the run.
 #
 # Every action is pinned to the full commit SHA of a verified upstream release, with the version in a comment.
 name: Release
@@ -31,11 +29,11 @@ permissions:
   contents: read
 
 concurrency:
-  group: release
+  group: pages
   cancel-in-progress: false
 
 jobs:
-  candidate:
+  build:
     name: Build and check the release candidate
     runs-on: ubuntu-latest
     timeout-minutes: 30
@@ -60,7 +58,7 @@ jobs:
         env:
           COMMIT: ${{ inputs.commit }}
         run: |
-          git merge-base --is-ancestor "$COMMIT" origin/main || { echo "::error::$COMMIT is not on main: reconcile main first"; exit 1; }
+          git merge-base --is-ancestor "$COMMIT" origin/main || { echo "::error::$COMMIT is not on main: fast-forward main to it first"; exit 1; }
           git merge-base --is-ancestor "$COMMIT" origin/development || { echo "::error::$COMMIT is not on development: release only accepted development work"; exit 1; }
       - name: The Quality Assurance workflow passed on this commit
         env:
@@ -82,7 +80,11 @@ jobs:
         run: npm run build
       - name: Check the release artifact
         run: node scripts/release-check.mjs dist
-      - name: Keep the artifact
+      - name: Upload the Pages artifact
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: dist/
+      - name: Keep the build for the smoke test
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: release-site
@@ -90,14 +92,31 @@ jobs:
           retention-days: 7
           if-no-files-found: error
 
-  publish:
-    name: Publish to www.gusmaolab.org and smoke-test it
-    needs: candidate
+  deploy:
+    name: Deploy to GitHub Pages
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy the checked artifact
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+  verify:
+    name: Smoke-test the live site and record the release
+    needs: deploy
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    environment:
-      name: production
-      url: https://www.gusmaolab.org/
+    permissions:
+      contents: read
     steps:
       - name: Check out the release scripts at the same commit (read-only, no stored credentials)
         uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
@@ -108,49 +127,23 @@ jobs:
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version-file: .node-version
-      - name: Take the checked artifact
+      - name: Take the build that was deployed
         uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: release-site
           path: site
-      - name: Commit the release on top of the previous site and push it
-        id: pages
-        env:
-          COMMIT: ${{ inputs.commit }}
-          PAGES_DEPLOY_KEY: ${{ secrets.PAGES_DEPLOY_KEY }}
-        run: |
-          set -euo pipefail
-          [ -n "$PAGES_DEPLOY_KEY" ] || { echo "::error::the production environment has no PAGES_DEPLOY_KEY"; exit 1; }
-          install -m 700 -d ~/.ssh
-          printf '%s\n' "$PAGES_DEPLOY_KEY" > ~/.ssh/pages_deploy && chmod 600 ~/.ssh/pages_deploy
-          curl -fsSL https://api.github.com/meta | jq -r '.ssh_keys[] | "github.com " + .' > ~/.ssh/known_hosts
-          export GIT_SSH_COMMAND="ssh -i $HOME/.ssh/pages_deploy -o IdentitiesOnly=yes -o StrictHostKeyChecking=yes"
-          git clone --depth 1 --branch main git@github.com:eduardogade/eduardogade.github.io.git pages
-          previous=$(git -C pages rev-parse HEAD)
-          find pages -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
-          cp -R site/. pages/
-          printf 'www.gusmaolab.org\n' > pages/CNAME
-          : > pages/.nojekyll
-          node scripts/release-check.mjs pages --deployment
-          git -C pages add -A
-          git -C pages -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" commit -q -m "deploy: eduardogade/gusmaolab@$COMMIT"
-          git -C pages push origin HEAD:main
-          echo "previous=$previous" >> "$GITHUB_OUTPUT"
-          echo "deployed=$(git -C pages rev-parse HEAD)" >> "$GITHUB_OUTPUT"
-          rm -f ~/.ssh/pages_deploy
       - name: Smoke-test the live site until it serves exactly this release
         run: node scripts/smoke.mjs https://www.gusmaolab.org --dist site --wait 900
       - name: Record the release
         if: always()
         env:
           COMMIT: ${{ inputs.commit }}
-          PREVIOUS: ${{ steps.pages.outputs.previous }}
-          DEPLOYED: ${{ steps.pages.outputs.deployed }}
+          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
         run: |
           {
             echo "### Release"
             echo "- Source commit: \`$COMMIT\`"
-            echo "- Pages repository commit before: \`${PREVIOUS:-none}\` (the rollback point: revert the deploy commit)"
-            echo "- Pages repository commit after: \`${DEPLOYED:-not pushed}\`"
+            echo "- Deployed to: ${PAGE_URL:-unknown}"
             echo "- Run: $GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID"
+            echo "- Rollback: run this workflow again with the previous release's commit"
           } >> "$GITHUB_STEP_SUMMARY"
