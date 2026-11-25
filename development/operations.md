@@ -84,15 +84,19 @@ To return to the old Pelican site (an emergency only; its URLs and its exposed o
 
 1. Unarchive `eduardogade/eduardogade.github.io`.
 2. Remove the custom domain from this repository's Pages settings.
-3. Re-enable Pages on that repository (branch `main`, `/`).
-4. Set its custom domain to `www.gusmaolab.org`.
+3. Set the custom domain of that repository's Pages to `www.gusmaolab.org`. Its Pages were never switched off: GitHub does not allow it for a user site through the API, so it still serves the old copy at `eduardogade.github.io`.
 
-Its last site commit is `dc0cb6c`.
+Its last site commit is `dc0cb6c`, tagged `pelican-final`. GitHub added "Delete CNAME" (`da20865`) on top when the domain moved, and setting the domain again restores the file.
 
 ## 8. DNS, HTTPS and mail
 
 - `gusmaolab.org` and `www` are proxied by Cloudflare, and visitors get Cloudflare's certificate. GitHub cannot issue its own while the records are proxied, which is expected. Leave GitHub's "Enforce HTTPS" off, and leave Cloudflare's SSL mode as it is.
-- Cloudflare's **Always Use HTTPS** sends plain HTTP to HTTPS. The smoke test's SMOKE-09 checks it.
+- Cloudflare's **Always Use HTTPS** sends plain HTTP to HTTPS. The smoke test's SMOKE-09 checks it. At the first release it was off, so SMOKE-09 failed.
+- Cloudflare adds two things at its edge, outside the build:
+  - its **Web Analytics** beacon, in pages served to browsers;
+  - its **managed robots.txt** rules, before the site's own `robots.txt`.
+
+  Both are Cloudflare settings. The smoke test's byte comparison does not see the beacon, because it is injected only for browsers.
 - The domain's MX, SPF and DMARC belong to Cloudflare Email Routing. A website change never needs a DNS change, so do not edit them for one.
 
 ## 9. Contact and scheduling

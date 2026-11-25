@@ -1239,3 +1239,15 @@ Both results are recorded in ISSUE-0007, and the first is not converted into a p
   - Tests: REL-018, UTIL-033 and the smoke test require exactly that inline script. UTIL-051 checks the `<noscript>` image with scripts off. The new UTIL-052 fixes `Math.random` to show each slot, and checks that one image loads, decorative and uncropped. HOME-007 requires no role.
   - Budgets for the 404 page: `js` 0 → 256, `html` 1,600 → 2,000 (D-169).
   - The first full QA run failed three ways: NAV-031 and QTO-029 still forbade a script on the 404 page, and QA-BUDGET-01 weighed the four inert copies of the portrait (749,576 bytes). NAV-031 and QTO-029 now allow this one script by name. The weight audit counts the heaviest `<template>` or `<noscript>` alternative, not every copy, and QA-BUDGET-02 tests that. The 404 page now weighs 187,394 bytes of images, the one portrait.
+- **Cutover (the owner approved the transfer on 2026-11-24; done 2026-11-25 UTC).**
+  - Pushed `8d19454` to `development`. GitHub QA run 45520788202 passed: static 683 PASS, 0 FAIL, 13 SKIPPED, 19 DEFERRED; browser 188 PASS, 0 FAIL.
+  - Fast-forwarded `main` to `8d19454` and dispatched `release.yml` (run 45523199842). Build and deploy succeeded.
+  - Then removed the custom domain from `eduardogade/eduardogade.github.io` and set it on `eduardogade/gusmaolab`. The live homepage served the Astro build at the first probe.
+  - GitHub committed "Delete CNAME" (`da20865`) on the old repository. No DNS record was touched.
+  - The verify job's live smoke test: SMOKE-00 to SMOKE-08 and SMOKE-10 PASS, SMOKE-09 FAIL (HTTP answers 200, waiting on Cloudflare's Always Use HTTPS). The run therefore ends as a failure.
+  - `DELETE /pages` on the old repository answered 422: GitHub does not allow it for a user site. The repository is archived, and `eduardogade.github.io` still serves the old copy.
+  - Deleted the unused `PAGES_DEPLOY_TOKEN` secret from `eduardogade/gusmaolab`.
+  - Live checks by hand: `/` 200, a section page 200, an unknown path 404 with the site's page, `/_design/` 404, the favicon byte-identical to the build, `robots.txt` and the sitemap served, the apex redirecting 301 to www.
+  - Chrome on the live site: Home at 1440 and 390 px, Lecture Notes and Back, the 404 page at 1280, 768 and 390 px, Contact and Schedule at 768 px.
+  - Cloudflare's own Web Analytics beacon and managed robots.txt rules appear at the edge. Both were recorded and left alone.
+  - No email, booking or Cal.com operation was performed.

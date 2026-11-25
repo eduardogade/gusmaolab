@@ -16,9 +16,7 @@ Last updated: P14, 2026-11-15. Verified facts only.
   - the **P13 Quarto study** at `/_design/quarto/` (a synthetic scientific article written in Quarto) and `/_design/quarto/markdown/` (its ordinary Markdown counterpart), both in the Greenhouse folder with the P12 layout (`src/pages/[design]/quarto/`, D-098 to D-103).
   - The P09 environments study (`/_design/environments-v2/`) was removed in P09-A01 (D-076).
 - **Editorial entries (P10):** none. The eight collections exist and are empty, so every build page is a folder page or a study; an entry would add one page below its owning folder (see "Editorial collections").
-- **Not implemented:** real section content, the homepage composition, Bearnard on any site page (the foundation exists, below) and a designed 404 page.
-- The archived Pelican site in `_backup/pelican-legacy/` is not built.
-- Nothing has been deployed, and no deployment workflow is active.
+- **Live since P24A (2026-11-25 UTC):** `https://www.gusmaolab.org` serves the release build of `8d19454`, deployed by `.github/workflows/release.yml` to this repository's GitHub Pages (D-167). The Pelican site and its archive are retired (D-168). The sections below describe what each prompt built; the P24A section at the end is the release.
 
 ## Design foundation (P03)
 
@@ -619,7 +617,7 @@ P23 was accepted by the owner, D-162 included. P24 prepared the production relea
 
 ## P24A — Final release resolution (2026-11-24)
 
-The owner settled the release decisions (D-167, D-168): one repository, GitHub Pages' own deployment, Pelican retired, the profiles as Contact, no email or booking tests, Chrome only. Status: **ready for the final domain handover** (the live site is still Pelican until the owner approves the transfer).
+The owner settled the release decisions (D-167, D-168): one repository, GitHub Pages' own deployment, Pelican retired, the profiles as Contact, no email or booking tests, Chrome only. Status: **deployed: Astro is live at `https://www.gusmaolab.org`**. The owner approved the domain transfer on 2026-11-24, and it was done on 2026-11-25 (UTC). One live check fails until the owner turns on Cloudflare's Always Use HTTPS (below).
 
 - **Repository.**
   - Removed from the tree, and kept in history at the tag `pelican-archive-final`: the Pelican archive `_backup/` (with its theme submodule), the empty 2025 scaffolding (`docs/`, `data/`, `hyperglam/`, `publications/`) and `.lycheeignore`.
@@ -634,7 +632,16 @@ The owner settled the release decisions (D-167, D-168): one repository, GitHub P
 - **Publishing.**
   - `release.yml` is GitHub Pages' own deployment: build, `upload-pages-artifact` v5.0.0, `deploy-pages` v5.0.1, smoke test. Manual, no secret.
   - Pages is enabled on `eduardogade/gusmaolab` with the GitHub Actions source; the `github-pages` environment accepts `main` only.
-  - The custom domain still belongs to `eduardogade/eduardogade.github.io`, which is tagged `pelican-final` at `dc0cb6c`.
+  - **Released:** `8d19454` (on `main` and `development`). GitHub QA run 45520788202 passed (static: 683 PASS, 13 SKIPPED, 19 DEFERRED; browser: 188 PASS). Release run 45523199842: build and deploy succeeded, deployment in `github-pages` at `8d19454`.
+  - **Domain moved:** the custom domain was removed from `eduardogade/eduardogade.github.io` and set on `eduardogade/gusmaolab`. GitHub then committed "Delete CNAME" (`da20865`) on the old repository's `main`, on top of `dc0cb6c`. No DNS record was changed.
+  - **Live smoke test (the release's verify job):** 10 PASS, 1 FAIL. SMOKE-09 fails because `http://www.gusmaolab.org/` answers 200 without redirecting, which needs Cloudflare's Always Use HTTPS. The job therefore ends red although the site is deployed. Re-run that job once the setting is on.
+  - **Old site:**
+    - `eduardogade/eduardogade.github.io` is archived (read-only), and its tag `pelican-final` is at `dc0cb6c`.
+    - GitHub refused to switch off Pages for a user site through the API (HTTP 422). The old Pelican copy is therefore still served at `https://eduardogade.github.io/`, though no longer at the domain. The owner can unpublish it in that repository's Settings → Pages (after unarchiving) or delete the repository.
+  - The unused `PAGES_DEPLOY_TOKEN` secret was deleted from `eduardogade/gusmaolab`, which now has no secret. The token itself is the owner's to revoke.
+  - **Cloudflare edge additions, outside the build** (the owner's Cloudflare settings, left unchanged):
+    - Cloudflare Web Analytics injects its beacon script into pages served to browsers. This conflicts with the site's no-analytics stance (P21).
+    - Cloudflare's managed robots.txt prepends its content signals and AI-crawler rules to the site's own `robots.txt`. The sitemap line is still served.
 - **Local QA:** full `npm run qa`, 870 PASS, 0 FAIL, 0 SKIPPED, 19 DEFERRED, 0 NOT RUN, 0 FLAKY.
 - **Chrome, on the local release build:**
   - the 404 page at 1440, 1280, 768 and 390 px (status 404, image loads, no script, the skip link and keyboard order work);
@@ -642,8 +649,15 @@ The owner settled the release decisions (D-167, D-168): one repository, GitHub P
   - folder navigation and Back;
   - Schedule (in preparation, links to Contact, no booking script);
   - Contact (nine links, no email).
+- **Chrome on the live site** (the in-app browser):
+  - Home at 1440 and 390 px: the nucleus reached `ready` at 1440 with its three scripts, and was a still `picture` at 390 (touch emulation). Eight clocks, no sideways scroll, no console error.
+  - Lecture Notes: opened by a click, canonical address correct, and Back returns Home.
+  - The 404 page at 1280, 768 and 390 px: status 404, one Bearnard image loaded, slots 0, 2 and 1 seen.
+  - Contact at 768 px: nine profiles, no email, no telephone, no form.
+  - Schedule at 768 px: in preparation, links Contact, no Cal.com request.
 - **Not done (the owner's):**
-  - approve the domain transfer;
-  - Cloudflare's Always Use HTTPS: `http://www.gusmaolab.org/` still answers 200 without redirecting;
-  - revoke the old personal access token in the owner's GitHub settings once its secret is deleted;
+  - Cloudflare's Always Use HTTPS, then re-run the release's verify job so SMOKE-09 passes;
+  - revoke the old personal access token in the owner's GitHub settings (its secret is deleted);
+  - decide on Cloudflare Web Analytics, and optionally unpublish the old copy at `eduardogade.github.io`;
+  - choose the three 404 images;
   - Safari and a phone. A screen reader is not tested.
