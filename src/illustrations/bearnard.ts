@@ -70,9 +70,8 @@ export const ILLUSTRATIONS: readonly BearnardIllustration[] = [
     id: "bearnard-v1.3-portrait",
     master: "brand/bearnard/bearnard_v1.3.png",
     category: "canonical-master",
-    // The 404 page (P24A, D-168): the owner asked for Bearnard on the error page, and no error expression exists, so the
-    // approved portrait holds the role. To use another approved illustration there, move the role; the page does not change.
-    roles: ["not-found"],
+    // The 404 page draws Bearnard from NOT_FOUND_SLOTS below (D-169), not from a role.
+    roles: [],
     alt: "Bearnard, a cheerful dark-furred bear in tortoiseshell glasses, a plaid flannel shirt over a DNA T-shirt and jeans, smiling with a steaming mug in his paw.",
     files: [
       {
@@ -89,6 +88,18 @@ export const ILLUSTRATIONS: readonly BearnardIllustration[] = [
     placement:
       "Full-length and transparent: stands beside text or at the foot of a column; never cropped.",
   },
+]
+
+/**
+ * The 404 page's three slots (P24A, D-169): on each visit the page shows one of them, chosen at random in the
+ * browser; without JavaScript it shows the first. Each slot is the ID of an approved illustration above. The owner
+ * asked for three and fills them later: until then all three are the portrait, placeholders. To change one, register
+ * the approved illustration above and put its ID here; the page does not change. An unknown ID fails the build.
+ */
+export const NOT_FOUND_SLOTS: readonly [string, string, string] = [
+  "bearnard-v1.3-portrait",
+  "bearnard-v1.3-portrait",
+  "bearnard-v1.3-portrait",
 ]
 
 /** The illustration with this ID; undefined if there is none. */

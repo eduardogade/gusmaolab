@@ -22,7 +22,7 @@ import { fileOf } from "../src/downloads/files.ts"
 import { siteNavigation } from "../src/navigation/index.ts"
 import { CONTACT_PAGE, DOWNLOADS_PAGE, MISSING_PAGE } from "../src/design/site-map.ts"
 
-const IDS = ["UTIL-003B", "UTIL-009", "UTIL-019B", "UTIL-021B", "UTIL-022", "UTIL-025B", "UTIL-029B", "UTIL-032", "UTIL-051"]
+const IDS = ["UTIL-003B", "UTIL-009", "UTIL-019B", "UTIL-021B", "UTIL-022", "UTIL-025B", "UTIL-029B", "UTIL-032", "UTIL-051", "UTIL-052"]
 const dist = fileURLToPath(new URL("../dist-demo/", import.meta.url))
 if (!existsSync(join(dist, "404.html"))) {
   for (const id of IDS) console.log(`NOT RUN ${id}`)
@@ -237,15 +237,52 @@ await test("UTIL-051", "Keyboard focus, reduced motion and no-JavaScript behavio
   await goto(MISSING_PAGE)
   check((await js(`[...document.querySelectorAll("main *")].filter((el) => { const s = getComputedStyle(el); return (s.transitionDuration !== "0s" && s.transitionProperty !== "none") || s.animationName !== "none" }).length`)) === 0, "the 404 page animates")
   await send("Emulation.setEmulatedMedia", { features: [] })
-  // Without JavaScript: the 404 page is plain HTML with no script, so it reads the same with scripts off.
+  // Without JavaScript: the 404 page is plain HTML apart from the choice of Bearnard's slot (D-169), so it reads the same with
+  // scripts off, and its <noscript> shows the first slot.
   await send("Emulation.setScriptExecutionDisabled", { value: true })
   try {
     await goto(MISSING_PAGE)
     const text = await js(`document.body.innerText`)
     check(/isn't in the archive/.test(text) && /Start again from Home/.test(text) && /Portfolio/.test(text), `with scripts off the page says ${json(text.slice(0, 120))}`)
+    const art = await js(`(() => { const art = document.querySelector("[data-not-found-art]"); const r = art.getBoundingClientRect(); return { slot: art.dataset.slot ?? null, width: r.width, height: r.height } })()`)
+    check(art.slot === null && art.width > 100 && art.height > art.width, `with scripts off Bearnard is not shown: ${json(art)}`)
   } finally {
     await send("Emulation.setScriptExecutionDisabled", { value: false })
   }
+  await setViewport(1440, 900)
+})
+
+await test("UTIL-052", "The 404 page shows one of its three Bearnard slots, chosen at random, and loads only that one", async (check) => {
+  // D-169 (P24A). Math.random is fixed before the page's own script runs, so each slot is shown in turn without waiting on chance.
+  for (const [value, expected] of [[0, "0"], [0.5, "1"], [0.999, "2"]]) {
+    const { identifier } = await send("Page.addScriptToEvaluateOnNewDocument", { source: `Math.random = () => ${value}` })
+    try {
+      await setViewport(1280, 900)
+      await goto(MISSING_PAGE)
+      const page = await js(`(async () => {
+        const art = document.querySelector("[data-not-found-art]")
+        const images = [...art.querySelectorAll("img.gl-bearnard")]
+        await Promise.all(images.map((img) => img.decode().catch(() => {})))
+        const r = art.getBoundingClientRect()
+        return {
+          slot: art.dataset.slot, children: art.children.length, images: images.length,
+          left: art.querySelectorAll("template, noscript").length,
+          loaded: images.every((img) => img.complete && img.naturalWidth > 0),
+          decorative: images.every((img) => img.getAttribute("alt") === "" && img.classList.contains("decorative")),
+          fetched: performance.getEntriesByType("resource").filter((e) => e.name.includes("/illustrations/bearnard/")).length,
+          ratio: r.height / r.width,
+        }
+      })()`)
+      check(page.slot === expected && page.children === 1 && page.images === 1 && page.left === 0, `Math.random ${value}: ${json(page)}`)
+      check(page.loaded && page.decorative && page.fetched === 1, `Math.random ${value}: the image is not loaded once and decorative ${json(page)}`)
+      check(Math.abs(page.ratio - 1265 / 640) < 0.05, `Math.random ${value}: Bearnard is cropped or stretched (${page.ratio})`)
+    } finally {
+      await send("Page.removeScriptToEvaluateOnNewDocument", { identifier })
+    }
+  }
+  // Without a fixed value the choice is still one of the three.
+  await goto(MISSING_PAGE)
+  check(["0", "1", "2"].includes(await js(`document.querySelector("[data-not-found-art]").dataset.slot`)), "the slot is not one of the three")
   await setViewport(1440, 900)
 })
 

@@ -630,7 +630,7 @@ The owner settled the release decisions (D-167, D-168): one repository, GitHub P
 - **Brand.**
   - `brand/favicon.ico` is the favicon's one source. `public/favicon.ico` is its 16/32/48 px derivative (10,401 bytes, images unchanged; `npm run favicon`).
   - The owner's full-size image is `brand/bearnard/bearnard-favicon-full.png` (ignored, inventoried `unclassified`).
-- **404 page.** It shows Bearnard (the approved portrait, through the registry's `not-found` role) and a friendly line under a plain heading.
+- **404 page.** It shows Bearnard and a friendly line under a plain heading. Bearnard is one of three slots (`NOT_FOUND_SLOTS`), chosen at random on each visit by one inline script; all three are the portrait until the owner chooses (D-169).
 - **Publishing.**
   - `release.yml` is GitHub Pages' own deployment: build, `upload-pages-artifact` v5.0.0, `deploy-pages` v5.0.1, smoke test. Manual, no secret.
   - Pages is enabled on `eduardogade/gusmaolab` with the GitHub Actions source; the `github-pages` environment accepts `main` only.

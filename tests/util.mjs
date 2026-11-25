@@ -538,7 +538,10 @@ await test("UTIL-031", "Empty collections and pages in preparation are real page
 })
 
 await test("UTIL-033", "The 404 page works without JavaScript", async (check) => {
-  check(![...notFoundHtml.matchAll(/<script\b/gi)].length, "the 404 page ships a script")
+  // D-169 (P24A): one inline script chooses Bearnard's slot; everything else is plain HTML, and a <noscript> shows the first slot.
+  const scripts = [...notFoundHtml.matchAll(/<script\b([^>]*)>/gi)]
+  check(scripts.length === 1 && scripts[0][1] === "", `the 404 page ships ${scripts.length} script(s): ${json(scripts.map((m) => m[0]))}`)
+  check(/<noscript><img\b[^>]*class="gl-bearnard/.test(notFoundHtml), "without JavaScript the 404 page shows no Bearnard")
   check(!/\son[a-z]+=/i.test(notFoundHtml), "the 404 page has an inline event handler")
   const main = inNotFound.find((el) => el.tag === "main")
   check(elements(main).filter((el) => el.tag === "a").every((a) => a.attrs.href?.startsWith("/")), "a recovery link is not a plain anchor")

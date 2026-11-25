@@ -529,7 +529,9 @@ test("NAV-031", "Plain links; navigation needs no JavaScript", (check) => {
       // P21 (D-147, D-150): the Schedule page's one script, rendered only when scheduling is ready (so a
       // release without a booking link ships none), and the development specimen's calendar script.
       file === "components/schedule/ScheduleEmbed.astro" ||
-      file === "design/scheduling/SyntheticCalendar.astro"
+      file === "design/scheduling/SyntheticCalendar.astro" ||
+      // P24A (D-169): the 404 page's inline choice of Bearnard's slot. It is not navigation: the page's links are plain.
+      file === "pages/404.astro"
     check(
       allowed || !/<script\b/i.test(text),
       `src/${file} contains a <script> element`,

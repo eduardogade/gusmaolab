@@ -22,6 +22,7 @@ import { deriveIcon, readIcon } from "../scripts/favicon.mjs"
 import { releaseIssues } from "../scripts/release-check.mjs"
 import { validateChannels } from "../src/contact/channels.ts"
 import { CONTACT_CHANNELS } from "../src/data/contact.ts"
+import { illustrationById, NOT_FOUND_SLOTS } from "../src/illustrations/bearnard.ts"
 import { SCHEDULING_CONFIG } from "../src/data/scheduling.ts"
 import { siteNavigation } from "../src/navigation/index.ts"
 
@@ -175,17 +176,28 @@ await test("REL-017", "Every page names the favicon, and nothing names another i
     check(icons.length === 1 && /href="\/favicon\.ico"/.test(icons[0]) && /sizes="16x16 32x32 48x48"/.test(icons[0]), `${file}: ${json(icons)}`)
   }
 })
-await test("REL-018", "The 404 page says plainly what happened, shows Bearnard from the registry's not-found role, and links back", async (check) => {
+await test("REL-018", "The 404 page says plainly what happened, shows Bearnard from one of the registry's three 404 slots, and links back", async (check) => {
   const html = await readFile(join(dist, "404.html"), "utf8")
   check(/<h1[^>]*>This page isn&#39;t in the archive\.<\/h1>|<h1[^>]*>This page isn't in the archive\.<\/h1>/.test(html), "the heading does not say the page is not in the archive")
   check(/Bearnard checked every folder/.test(html), "the 404 page has no Bearnard line")
-  const img = /<img\b[^>]*class="gl-bearnard[^"]*"[^>]*>/.exec(html)?.[0]
-  // An empty alt (decorative: the text names Bearnard) is written as a bare `alt`, which HTML reads as alt="".
-  check(img !== undefined && /\salt(?:="")?(?=[\s>])/.test(img), "no decorative Bearnard illustration")
-  const src = img && /src="([^"]+)"/.exec(img)?.[1]
-  check(src !== undefined && files.includes(src.slice(1)), `the illustration ${src} is not in the build`)
+  // D-169: three slots, each an inert <template> holding one approved illustration, and a <noscript> showing the first.
+  check(NOT_FOUND_SLOTS.length === 3 && NOT_FOUND_SLOTS.every((id) => illustrationById(id) !== undefined), `the slots are not three approved illustrations: ${json(NOT_FOUND_SLOTS)}`)
+  const slots = [...html.matchAll(/<template data-not-found-slot="(\d)"[^>]*>([\s\S]*?)<\/template>/g)]
+  check(json(slots.map((m) => m[1])) === json(["0", "1", "2"]), `the page holds the slots ${json(slots.map((m) => m[1]))}`)
+  const fallback = /<noscript>([\s\S]*?)<\/noscript>/.exec(html)?.[1]
+  const shown = [...slots.map((m) => m[2]), fallback ?? ""].map((part) => /<img\b[^>]*class="gl-bearnard[^"]*"[^>]*>/.exec(part)?.[0])
+  check(shown.every((img, i) => img !== undefined && img.includes(`data-illustration="${NOT_FOUND_SLOTS[i] ?? NOT_FOUND_SLOTS[0]}"`)), "a slot or the fallback does not show its registered illustration")
+  for (const img of shown.filter(Boolean)) {
+    // An empty alt (decorative: the text names Bearnard) is written as a bare `alt`, which HTML reads as alt="".
+    check(/\salt(?:="")?(?=[\s>])/.test(img) && /class="gl-bearnard decorative"/.test(img), `not a decorative Bearnard illustration: ${img.slice(0, 80)}`)
+    const src = /src="([^"]+)"/.exec(img)?.[1]
+    check(src !== undefined && files.includes(src.slice(1)), `the illustration ${src} is not in the build`)
+  }
   check(/href="\/"/.test(html) && /Start again from Home/.test(html), "no way back to Home")
-  check(!/<script\b/.test(html.replace(/<script type="application\/ld\+json"[\s\S]*?<\/script>/g, "")), "the 404 page loads a script")
+  // The one script is the inline choice of a slot: no file, no request, no storage, no timer, no handler.
+  const scripts = [...html.replace(/<script type="application\/ld\+json"[\s\S]*?<\/script>/g, "").matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/g)]
+  check(scripts.length === 1 && scripts[0][1] === "" && /Math\.random\(\)/.test(scripts[0][2]) && /replaceChildren/.test(scripts[0][2]), `the 404 page's scripts: ${json(scripts.map((m) => m[0].slice(0, 60)))}`)
+  check(scripts.every((m) => !/fetch|XMLHttpRequest|Storage|cookie|setTimeout|setInterval|requestAnimationFrame|import|history|location/.test(m[2])), "the 404 script does more than choose a slot")
 })
 await test("REL-019", "Only approved brand imagery is published: the favicon and the committed Bearnard derivatives", async (check) => {
   const images = files.filter((f) => /\.(png|jpe?g|webp|avif|gif|ico)$/i.test(f))

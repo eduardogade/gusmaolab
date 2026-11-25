@@ -1134,7 +1134,8 @@ await test("QTO-029", "No framework and no new runtime", async (check) => {
   for (const [file, text] of built.text) {
     if (!file.endsWith(".html")) continue
     for (const tag of text.match(/<script[^>]*>/g) ?? [])
-      check(/^<script type="module">$/.test(tag) || /^<script type="module" src="\/_astro\/NucleusStage\.astro_astro_type_script_index_0_lang\.[\w-]+\.js">$/.test(tag), `${file} has ${tag}`)
+      // P24A (D-169): the 404 page's one inline script, which picks Bearnard's slot (tests/release.mjs REL-018 holds its content).
+      check(/^<script type="module">$/.test(tag) || /^<script type="module" src="\/_astro\/NucleusStage\.astro_astro_type_script_index_0_lang\.[\w-]+\.js">$/.test(tag) || (file === "404.html" && tag === "<script>"), `${file} has ${tag}`)
     check(
       !/react|vue|svelte|preact|alpine|jquery/i.test(text.replace(/gl-[\w-]+/g, "")),
       `${file} names a framework`,

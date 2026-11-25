@@ -591,7 +591,7 @@ A role is a place in the site that may show Bearnard. An illustration is assigne
 | `writing` | Writing and the literary collections | None approved yet |
 | `technical-explaining` | Technical explanations and tutorials | None approved yet |
 | `under-construction` | Pages whose content is not written yet | None approved yet |
-| `not-found` | The 404 page | None approved yet |
+| `not-found` | The 404 page | Not used: the page draws its own three slots, `NOT_FOUND_SLOTS` (D-169) |
 | `booking` | The scheduling page | None approved yet |
 
 ### Using the component
@@ -694,7 +694,7 @@ A page that has nothing to show yet is designed, not broken. The system has four
 ## 18. Utility pages (P18)
 
 - **Contact and downloads** reuse the P17 state components and `src/styles/states.css`: a "Related"-style list vocabulary, hairline separators, the page's own type and the open folder's paper. A channel is a link, a short sentence of what it is for, and, for an email, "Opens your email application"; a profile shows its host in muted small text. A download is a restrained list item: a link, a sentence, and a muted line of type, size, version and file name; a planned file is plain secondary text, "Not yet available", with no link or button. Long addresses and file names wrap (`overflow-wrap: anywhere`). No icon, no card, no call-to-action styling.
-- **The 404 page** is the Core atmosphere: the dark shell and one level-1 folder on its reading paper, with no row of tabs (nothing is selected, because no folder owns the address). An eyebrow ("404 · Not filed"), the one heading ("This folder isn't in the archive."), a short line, a way home and four real destinations. No red, no warning colour, no animation, no illustration until the owner assigns the `not-found` role.
+- **The 404 page** is the Core atmosphere: the dark shell and one level-1 folder on its reading paper, with no row of tabs (nothing is selected, because no folder owns the address). An eyebrow ("404 · Not filed"), the one heading ("This folder isn't in the archive."), a short line, a way home and four real destinations. No red, no warning colour, no animation. Bearnard stands beside the text (beneath it on a phone): one of three slots, chosen at random on each visit (D-168, D-169).
 - **No palette, font or motion is added** (SITE-030, UTIL-030, UTIL-045).
 
 ## 19. The 3D nucleus (P19)

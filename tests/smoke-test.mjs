@@ -218,12 +218,12 @@ for (const [root, file] of [...htmlFiles.map((f) => [dist, f]), ...studyPages.ma
   const folders = /class="gl-folders"/.test(page)
   // The world clocks (P16, D-118) add one more module script, on the page that has them: the homepage.
   const clocks = /data-home-region="clocks"/.test(page) ? 1 : 0
-  // The custom 404 page (P18) draws the folder styles but no tabs and ships no script.
+  // The custom 404 page (P18) draws the folder styles but no tabs; its one script is the inline choice of Bearnard's slot (D-169).
   // The nucleus stage (P20, D-139) adds the small external script that loads the graphics on demand.
   const stage = /data-nucleus-stage/.test(page) ? 1 : 0
-  const expectedScripts = file === "404.html" ? 0 : (folders ? 1 : 0) + clocks + stage
+  const expectedScripts = file === "404.html" ? 1 : (folders ? 1 : 0) + clocks + stage
   check(
-    scripts.length === expectedScripts && scripts.every((script) => script === '<script type="module">' || (stage === 1 && /^<script type="module" src="\/_astro\/NucleusStage\.astro_astro_type_script_index_0_lang\.[\w-]+\.js">$/.test(script))),
+    scripts.length === expectedScripts && scripts.every((script) => (file === "404.html" ? script === "<script>" : script === '<script type="module">') || (stage === 1 && /^<script type="module" src="\/_astro\/NucleusStage\.astro_astro_type_script_index_0_lang\.[\w-]+\.js">$/.test(script))),
     `${file} has ${scripts.length} <script> element(s); expected ${expectedScripts}`,
   )
 }

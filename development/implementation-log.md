@@ -1233,3 +1233,9 @@ Both results are recorded in ISSUE-0007, and the first is not converted into a p
     - Schedule and Contact.
   - The console showed the expected 404 and one `InvalidStateError` from the cross-fade when the automation pressed Back during it (P24A did not touch the transitions).
 - **No email, booking or Cal.com operation was performed.**
+- **The 404 page's three slots (D-169), with the owner's approval of the transfer.**
+  - The owner asked for three Bearnard images chosen at random, with placeholders for now. Added `NOT_FOUND_SLOTS` (three portrait IDs) to `src/illustrations/bearnard.ts` and took the `not-found` role off the portrait.
+  - `404.astro` writes each slot as a `<template>`, plus a `<noscript>` with the first, and one inline script picks a slot.
+  - Tests: REL-018, UTIL-033 and the smoke test require exactly that inline script. UTIL-051 checks the `<noscript>` image with scripts off. The new UTIL-052 fixes `Math.random` to show each slot, and checks that one image loads, decorative and uncropped. HOME-007 requires no role.
+  - Budgets for the 404 page: `js` 0 → 256, `html` 1,600 → 2,000 (D-169).
+  - The first full QA run failed three ways: NAV-031 and QTO-029 still forbade a script on the 404 page, and QA-BUDGET-01 weighed the four inert copies of the portrait (749,576 bytes). NAV-031 and QTO-029 now allow this one script by name. The weight audit counts the heaviest `<template>` or `<noscript>` alternative, not every copy, and QA-BUDGET-02 tests that. The 404 page now weighs 187,394 bytes of images, the one portrait.

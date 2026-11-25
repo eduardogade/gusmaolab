@@ -10,7 +10,7 @@
 // workflow has run (it needs a push), or anything the browser suites show (accessibility, performance, the nucleus).
 import { spawn, spawnSync } from "node:child_process"
 import { existsSync } from "node:fs"
-import { mkdtemp, readFile, readdir, rm } from "node:fs/promises"
+import { mkdtemp, readFile, readdir, rm, writeFile } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import process from "node:process"
@@ -19,6 +19,7 @@ import { parse as parseYaml } from "yaml"
 import { historyCheck } from "../scripts/qa.mjs"
 import { DEFERRALS, KNOWN_FLAKY, REPORT_SCHEMA, classify, countStatuses, parseChecks, redact, stageFails, suiteStatus, verdict } from "../scripts/qa-lib.mjs"
 import { MATRIX, evaluate } from "../scripts/qa-matrix.mjs"
+import { pageWeights, readPages } from "../scripts/qa-audits.mjs"
 import { ALL_SUITES, BROWSER_SUITES, HELPERS, MEASUREMENT_SUITES, ON_DEMAND, UNIT_SUITES } from "../scripts/qa-suites.mjs"
 import { freshness, sourceState } from "../src/quality/source.mjs"
 import { DEFECTS, copyBuild, fingerprint, readReport, runAudits } from "./qa-fixtures.mjs"
@@ -396,6 +397,22 @@ await test("QA-FLAKE-01", "NUC-031 is investigated: the record names the cause w
 // runner and then sat for the orchestrator's whole 900 s, because `npx astro dev` stays attached to the test process there
 // (on a Mac it hands off and exits) and its pipe kept the event loop alive. Every run of a failing suite ends the process;
 // a passing one must too, or the orchestrator reports a suite whose checks all passed as failed.
+await test("QA-BUDGET-02", "A page's image weight counts what it always shows plus its heaviest alternative, never every <template> and <noscript> copy (D-169)", async (check) => {
+  const dir = await mkdtemp(join(tmpdir(), "gusmaolab-weights-"))
+  try {
+    await writeFile(join(dir, "a.webp"), Buffer.alloc(100))
+    await writeFile(join(dir, "b.webp"), Buffer.alloc(300))
+    await writeFile(join(dir, "c.webp"), Buffer.alloc(20))
+    const img = (src) => `<img src="/${src}" alt="">`
+    await writeFile(join(dir, "404.html"), `<!doctype html><html lang="en"><body><main>${img("c.webp")}<div><template>${img("a.webp")}</template><template>${img("b.webp")}</template><noscript>${img("a.webp")}</noscript></div></main></body></html>`)
+    await writeFile(join(dir, "index.html"), `<!doctype html><html lang="en"><body><main>${img("a.webp")}${img("b.webp")}</main></body></html>`)
+    const weights = await pageWeights(dir, await readPages(dir))
+    check(weights.get("/404.html")?.images === 320, `the page with alternatives weighs ${weights.get("/404.html")?.images}, not 20 + 300`)
+    check(weights.get("/")?.images === 400, `a page without alternatives weighs ${weights.get("/")?.images}, not 400`)
+  } finally {
+    await rm(dir, { recursive: true, force: true })
+  }
+})
 await test("QA-PERF-POLICY-01", "NUC-050 has an environment-aware policy: a local reference, a separately documented CI smoke ceiling, several samples, and its distribution kept in the report (P22-A01, D-159)", async (check) => {
   const budgets = JSON.parse(await read("development/qa-budgets.json")).nucleusFrame
   check(budgets !== undefined, "the budgets file has no nucleusFrame policy")

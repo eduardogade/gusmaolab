@@ -63,7 +63,10 @@ const textOf = (node) => (node.type === TEXT_NODE ? node.value : (node.children 
 /** What the audits need from one built page. */
 export function readFacts(html) {
   const f = { lang: null, title: null, titles: 0, descriptions: [], viewport: 0, canonical: [], og: 0, robots: [], h1: 0, headings: [], imgs: [], scripts: [], styles: [], inlineStyles: [], urls: [], emails: [], ids: new Map(), stripCount: 0, selected: [], pageState: false }
-  const visit = (node) => {
+  // An image inside a <template> or a <noscript> is an alternative: the page shows one template's content or, without
+  // JavaScript, its <noscript> content, never all of them (the 404 page's Bearnard slots, D-169). `alternative` names the group.
+  let groups = 0
+  const visit = (node, alternative = null) => {
     if (node.type === ELEMENT_NODE) {
       const a = node.attributes ?? {}
       const cls = (a.class ?? "").split(/\s+/)
@@ -83,7 +86,7 @@ export function readFacts(html) {
           break
         case "style": f.inlineStyles.push(textOf(node)); break
         case "script": f.scripts.push({ src: a.src ?? null, text: a.src ? "" : textOf(node), type: a.type ?? "" }); break
-        case "img": f.imgs.push({ src: a.src ?? null, srcset: a.srcset ?? null, alt: a.alt, width: a.width, height: a.height, loading: a.loading, role: a.role, hidden: a["aria-hidden"], style: a.style ?? "", cls }); break
+        case "img": f.imgs.push({ src: a.src ?? null, srcset: a.srcset ?? null, alt: a.alt, width: a.width, height: a.height, loading: a.loading, role: a.role, hidden: a["aria-hidden"], style: a.style ?? "", cls, alternative }); break
         case "h1": f.h1 += 1; f.headings.push(1); break
         case "h2": case "h3": case "h4": case "h5": case "h6": f.headings.push(Number(node.name[1])); break
         default: break
@@ -96,7 +99,8 @@ export function readFacts(html) {
     } else if (node.type === TEXT_NODE) {
       for (const m of node.value.matchAll(/[A-Za-z0-9._%+-]+@[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)+/g)) f.emails.push(m[0])
     }
-    for (const child of node.children ?? []) visit(child)
+    const inner = node.type === ELEMENT_NODE && (node.name === "template" || node.name === "noscript") ? (alternative ?? `${node.name}-${groups++}`) : alternative
+    for (const child of node.children ?? []) visit(child, inner)
   }
   visit(parse(html))
   return f
@@ -399,11 +403,17 @@ export async function pageWeights(dist, pages) {
       w.css += gz(buf); w.cssRaw += buf.length; w.styleFiles.push(rel)
     }
     for (const css of f.inlineStyles) { const buf = Buffer.from(css); w.css += gz(buf); w.cssRaw += buf.length }
+    // Images the page always shows, plus the heaviest of its alternatives (D-169): a browser downloads one of them.
+    const alternatives = new Map()
     for (const img of f.imgs) {
       if (!img.src || /^(https?:|data:)/.test(img.src)) continue
       const rel = decodeURIComponent(new URL(img.src, `http://x.invalid${p.url}`).pathname.slice(1))
-      if (existsSync(join(dist, rel))) w.images += (await stat(join(dist, rel))).size
+      if (!existsSync(join(dist, rel))) continue
+      const size = (await stat(join(dist, rel))).size
+      if (img.alternative === null) w.images += size
+      else alternatives.set(img.alternative, (alternatives.get(img.alternative) ?? 0) + size)
     }
+    w.images += Math.max(0, ...alternatives.values())
     weights.set(p.url, w)
   }
   return weights

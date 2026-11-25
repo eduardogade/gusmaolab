@@ -8,13 +8,17 @@
  * It says what happened in the archive's own terms and gives a way back: Home, and a few real
  * destinations from the navigation registry (labels and URLs from `siteNavigation`, so a rename
  * cannot leave a link behind). No tab is selected because no folder owns this URL (ErrorPage).
- * Everything is plain HTML and CSS: it works without JavaScript and loads no script.
+ * The text and links are plain HTML and CSS, and work without JavaScript.
  *
- * Bearnard (P24A, D-168): the illustration is whichever approved one holds the registry's
- * `not-found` role (src/illustrations/bearnard.ts), so it can be replaced without touching this page.
+ * Bearnard (P24A, D-168, D-169): one of the registry's three 404 slots (NOT_FOUND_SLOTS in
+ * src/illustrations/bearnard.ts), chosen at random on each visit by the one small inline script below,
+ * so the slots can be refilled without touching this page. Each slot is an inert <template>, so the
+ * browser loads only the image it shows; without JavaScript the <noscript> shows the first slot. The
+ * script reads no storage, makes no request and sets no timer; nothing moves once the page is drawn.
  * The heading says plainly what happened; the joke is in the line after it, never instead of it.
  */
 import BearnardIllustration from "../components/bearnard/BearnardIllustration.astro"
+import { NOT_FOUND_SLOTS } from "../illustrations/bearnard.ts"
 import ErrorPage from "../layouts/ErrorPage.astro"
 import { siteNavigation } from "../navigation/index.ts"
 
@@ -26,6 +30,7 @@ const SUGGESTED = [
   { id: "contact", about: "get in touch" },
 ].map((item) => ({ ...item, node: siteNavigation.node(item.id) }))
 const home = siteNavigation.node("home")
+const ART = { decorative: true, loading: "eager", sizes: "(min-width: 48rem) 12rem, 9rem", class: "decorative" } as const
 ---
 
 <ErrorPage
@@ -55,7 +60,25 @@ const home = siteNavigation.node("home")
         </ul>
       </nav>
     </div>
-    <BearnardIllustration role="not-found" decorative loading="eager" sizes="(min-width: 48rem) 12rem, 9rem" class="err__art decorative" />
+    <div class="err__art" data-not-found-art>
+      {
+        NOT_FOUND_SLOTS.map((id, slot) => (
+          <template data-not-found-slot={slot}>
+            <BearnardIllustration variant={id} {...ART} />
+          </template>
+        ))
+      }
+      <noscript><BearnardIllustration variant={NOT_FOUND_SLOTS[0]} {...ART} /></noscript>
+    </div>
+    <script is:inline>
+      {
+        const art = document.querySelector("[data-not-found-art]")
+        const slots = art.querySelectorAll("template[data-not-found-slot]")
+        const slot = Math.floor(Math.random() * slots.length)
+        art.dataset.slot = slot
+        art.replaceChildren(slots[slot].content.cloneNode(true))
+      }
+    </script>
   </div>
 </ErrorPage>
 
@@ -73,14 +96,13 @@ const home = siteNavigation.node("home")
     min-inline-size: 0;
   }
 
-  .err :global(.err__art) {
+  .err__art {
     flex: 0 0 auto;
     inline-size: 9rem;
-    block-size: auto;
   }
 
   @media (min-width: 48rem) {
-    .err :global(.err__art) {
+    .err__art {
       inline-size: 12rem;
     }
   }

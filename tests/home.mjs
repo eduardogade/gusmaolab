@@ -171,8 +171,8 @@ await test("HOME-007", "Bearnard's canonical masters remain unchanged", async (c
   if (!gitAvailable) return skip("HOME-007", "git is not available")
   const touched = p15Files(["brand", "assets/bearnard", "public/illustrations", "src/illustrations", "scripts/bearnard_derivatives.py", "src/components/bearnard"])
   check(touched.length === 0, `P15 changed Bearnard files: ${json(touched)}`)
-  // The registry assigns only what the owner approved: the 404 page's `not-found` role (P24A, D-168). Never `home-welcome`.
-  check(ILLUSTRATIONS.every((i) => i.roles.every((r) => r === "not-found")), "an illustration holds a role the owner has not approved")
+  // No illustration holds a role: the 404 page draws its own slots (D-169), and `home-welcome` is never assigned for the owner.
+  check(ILLUSTRATIONS.every((i) => i.roles.length === 0), "an illustration holds a role the owner has not approved")
   check(!ILLUSTRATIONS.some((i) => i.roles.includes("home-welcome")), "an illustration was assigned to home-welcome")
   // And the derivative on disk is the one provenance records.
   const record = JSON.parse(await read("assets/bearnard/derivatives.json"))

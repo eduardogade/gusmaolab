@@ -829,7 +829,7 @@ G-12 (the interactive nucleus) and G-13 (the eight clocks) are not closed by P15
 | G-P18-05 | The unfinished CV cannot be a download; no private or source file in `public/` or the build; the build works with no approved CV | **Passed** (UTIL-017, 018, 048) |
 | G-P18-06 | Synthetic downloads work locally, really download in a browser and never reach the release | **Passed** (UTIL-019, 019B, 020, 021B) |
 | G-P18-07 | The new folders are tracked by git, so an approved file would be committed and deployed | **Passed** (UTIL-050) |
-| G-P18-08 | A custom static 404 page, generated as `404.html`, with a 404 status, recovery links, no selected folder and no script | **Passed** (UTIL-023 to UTIL-030, 033, 025B, 029B) against a Pages-style server and `astro preview`. **Untested** on GitHub Pages itself |
+| G-P18-08 | A custom static 404 page, generated as `404.html`, with a 404 status, recovery links, no selected folder and no script (D-169, P24A, later added one inline script that picks Bearnard's slot) | **Passed** (UTIL-023 to UTIL-030, 033, 025B, 029B) against a Pages-style server and `astro preview`. **Untested** on GitHub Pages itself |
 | G-P18-09 | Empty collections and pages in preparation are not 404s; valid routes are never 404 | **Passed** (UTIL-027, 031) |
 | G-P18-10 | Contact, downloads and the 404 page fit at 320, 390, 430, 768, 1024, 1280 and 1440 px; keyboard focus visible; reduced motion | **Passed** in headless Chromium (UTIL-009, 022, 032, 051) |
 | G-P18-11 | P10 to P17, the folders, palettes, Bearnard assets, the CV and dependencies unchanged | **Passed** (UTIL-034 to UTIL-049) |

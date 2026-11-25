@@ -104,7 +104,7 @@ Contact is the owner's nine profiles in `src/data/contact.ts` (D-164). An email 
 - `brand/` holds sources.
 - `brand/favicon.ico` is the favicon's one source. `public/favicon.ico` is its 16/32/48 px derivative: after changing the source, run `npm run favicon`. REL-016 fails if they disagree.
 - `brand/bearnard/` holds the Bearnard masters. It is ignored by Git, inventoried in `assets/bearnard/`, and never published. Derivatives come only from `scripts/bearnard_derivatives.py` (`assets/bearnard/README.md`).
-- The 404 page shows whichever approved illustration holds the registry's `not-found` role (`src/illustrations/bearnard.ts`).
+- The 404 page shows one of three slots at random, `NOT_FOUND_SLOTS` in `src/illustrations/bearnard.ts` (D-169). All three hold the portrait until the owner chooses three images: register the approved illustration, then put its ID in a slot.
 
 ## 11. Dependencies
 
