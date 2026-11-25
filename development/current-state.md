@@ -617,7 +617,7 @@ P23 was accepted by the owner, D-162 included. P24 prepared the production relea
 
 ## P24A — Final release resolution (2026-11-24)
 
-The owner settled the release decisions (D-167, D-168): one repository, GitHub Pages' own deployment, Pelican retired, the profiles as Contact, no email or booking tests, Chrome only. Status: **deployed: Astro is live at `https://www.gusmaolab.org`**. The owner approved the domain transfer on 2026-11-24, and it was done on 2026-11-25 (UTC). One live check fails until the owner turns on Cloudflare's Always Use HTTPS (below).
+The owner settled the release decisions (D-167, D-168): one repository, GitHub Pages' own deployment, Pelican retired, the profiles as Contact, no email or booking tests, Chrome only. Status: **P24A DEPLOYED — ASTRO LIVE — VERIFIED**. The owner approved the domain transfer on 2026-11-24, and it was done on 2026-11-25 (UTC). The live smoke test passes 11 of 11 since the owner turned on Cloudflare's Always Use HTTPS (below). Safari, a phone and a screen reader are not tested: P24A's instructions kept the browser checks to Chrome, and Safari and the phone are the owner's.
 
 - **Repository.**
   - Removed from the tree, and kept in history at the tag `pelican-archive-final`: the Pelican archive `_backup/` (with its theme submodule), the empty 2025 scaffolding (`docs/`, `data/`, `hyperglam/`, `publications/`) and `.lycheeignore`.
@@ -634,7 +634,10 @@ The owner settled the release decisions (D-167, D-168): one repository, GitHub P
   - Pages is enabled on `eduardogade/gusmaolab` with the GitHub Actions source; the `github-pages` environment accepts `main` only.
   - **Released:** `8d19454` (on `main` and `development`). GitHub QA run 45520788202 passed (static: 683 PASS, 13 SKIPPED, 19 DEFERRED; browser: 188 PASS). Release run 45523199842: build and deploy succeeded, deployment in `github-pages` at `8d19454`.
   - **Domain moved:** the custom domain was removed from `eduardogade/eduardogade.github.io` and set on `eduardogade/gusmaolab`. GitHub then committed "Delete CNAME" (`da20865`) on the old repository's `main`, on top of `dc0cb6c`. No DNS record was changed.
-  - **Live smoke test (the release's verify job):** 10 PASS, 1 FAIL. SMOKE-09 fails because `http://www.gusmaolab.org/` answers 200 without redirecting, which needs Cloudflare's Always Use HTTPS. The job therefore ends red although the site is deployed. Re-run that job once the setting is on.
+  - **Live smoke test (the release's verify job):**
+    - Attempt 1: 10 PASS, 1 FAIL. SMOKE-09 failed because `http://www.gusmaolab.org/` answered 200 without redirecting: Cloudflare's Always Use HTTPS was off.
+    - The owner turned it on. The first probes still answered 200; after the owner checked the setting again, HTTP answered 301 to HTTPS on www and on the apex.
+    - Attempt 2, the verify job alone (build and deploy kept from attempt 1): **11 of 11 PASS**, and the run ends as a success.
   - **Old site:**
     - `eduardogade/eduardogade.github.io` is archived (read-only), and its tag `pelican-final` is at `dc0cb6c`.
     - GitHub refused to switch off Pages for a user site through the API (HTTP 422). The old Pelican copy is therefore still served at `https://eduardogade.github.io/`, though no longer at the domain. The owner can unpublish it in that repository's Settings → Pages (after unarchiving) or delete the repository.
@@ -642,7 +645,7 @@ The owner settled the release decisions (D-167, D-168): one repository, GitHub P
   - **Cloudflare edge additions, outside the build** (the owner's Cloudflare settings, left unchanged):
     - Cloudflare Web Analytics injects its beacon script into pages served to browsers. This conflicts with the site's no-analytics stance (P21).
     - Cloudflare's managed robots.txt prepends its content signals and AI-crawler rules to the site's own `robots.txt`. The sitemap line is still served.
-- **Local QA:** full `npm run qa`, 870 PASS, 0 FAIL, 0 SKIPPED, 19 DEFERRED, 0 NOT RUN, 0 FLAKY.
+- **Local QA:** full `npm run qa`, 870 PASS, 0 FAIL, 0 SKIPPED, 19 DEFERRED, 0 NOT RUN, 0 FLAKY before the 404 slots; 872 PASS, 0 FAIL, 0 SKIPPED, 19 DEFERRED, 0 NOT RUN, 0 FLAKY with them (the released `8d19454`). The 19 Cal.com checks are DEFERRED, not passed.
 - **Chrome, on the local release build:**
   - the 404 page at 1440, 1280, 768 and 390 px (status 404, image loads, no script, the skip link and keyboard order work);
   - Home (nucleus ready, eight clocks);
@@ -656,7 +659,6 @@ The owner settled the release decisions (D-167, D-168): one repository, GitHub P
   - Contact at 768 px: nine profiles, no email, no telephone, no form.
   - Schedule at 768 px: in preparation, links Contact, no Cal.com request.
 - **Not done (the owner's):**
-  - Cloudflare's Always Use HTTPS, then re-run the release's verify job so SMOKE-09 passes;
   - revoke the old personal access token in the owner's GitHub settings (its secret is deleted);
   - decide on Cloudflare Web Analytics, and optionally unpublish the old copy at `eduardogade.github.io`;
   - choose the three 404 images;

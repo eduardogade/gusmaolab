@@ -91,7 +91,7 @@ Its last site commit is `dc0cb6c`, tagged `pelican-final`. GitHub added "Delete 
 ## 8. DNS, HTTPS and mail
 
 - `gusmaolab.org` and `www` are proxied by Cloudflare, and visitors get Cloudflare's certificate. GitHub cannot issue its own while the records are proxied, which is expected. Leave GitHub's "Enforce HTTPS" off, and leave Cloudflare's SSL mode as it is.
-- Cloudflare's **Always Use HTTPS** sends plain HTTP to HTTPS. The smoke test's SMOKE-09 checks it. At the first release it was off, so SMOKE-09 failed.
+- Cloudflare's **Always Use HTTPS** sends plain HTTP to HTTPS. The smoke test's SMOKE-09 checks it. At the first release it was off, so SMOKE-09 failed; it has been on since 2026-11-25, and SMOKE-09 passes. Keep it on, and leave HSTS off unless a decision turns it on.
 - Cloudflare adds two things at its edge, outside the build:
   - its **Web Analytics** beacon, in pages served to browsers;
   - its **managed robots.txt** rules, before the site's own `robots.txt`.

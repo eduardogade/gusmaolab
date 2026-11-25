@@ -1251,3 +1251,7 @@ Both results are recorded in ISSUE-0007, and the first is not converted into a p
   - Chrome on the live site: Home at 1440 and 390 px, Lecture Notes and Back, the 404 page at 1280, 768 and 390 px, Contact and Schedule at 768 px.
   - Cloudflare's own Web Analytics beacon and managed robots.txt rules appear at the edge. Both were recorded and left alone.
   - No email, booking or Cal.com operation was performed.
+- **Verified (2026-11-25 UTC).**
+  - The owner turned on Cloudflare's Always Use HTTPS. Probes every 10 s for 4 min still saw HTTP answer 200. After the owner checked the setting again, `http://www.gusmaolab.org/`, `/portfolio/` and the apex answered 301 to their `https://` address.
+  - Re-ran only the verify job of release run 45523199842 (attempt 2; build and deploy kept from attempt 1). The live smoke test passed 11 of 11, SMOKE-09 included, and the run ended as a success.
+  - Status: **P24A DEPLOYED — ASTRO LIVE — VERIFIED**. Safari, a phone and a screen reader remain untested (the owner's).
